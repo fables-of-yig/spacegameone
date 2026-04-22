@@ -1,0 +1,673 @@
+{
+  "behaviors": [
+    {
+      "id": "npc_idle",
+      "name": "NPC Idle",
+      "description": "Passive non-combat default. Holds idle pose only.",
+      "root": {
+        "type": "action",
+        "name": "idle",
+        "action": "idle",
+        "params": {}
+      }
+    },
+    {
+      "id": "patrol_basic",
+      "name": "Patrol Basic",
+      "description": "Ground patrol that turns at walls and ledges.",
+      "root": {
+        "type": "selector",
+        "name": "main",
+        "params": {},
+        "children": [
+          {
+            "type": "sequence",
+            "name": "turn_at_obstacle",
+            "params": {},
+            "children": [
+              {
+                "type": "selector",
+                "name": "edge_or_wall",
+                "params": {},
+                "children": [
+                  {
+                    "type": "condition",
+                    "name": "wall_ahead",
+                    "condition": "wall_ahead",
+                    "params": {}
+                  },
+                  {
+                    "type": "condition",
+                    "name": "edge_ahead",
+                    "condition": "edge_ahead",
+                    "params": {}
+                  }
+                ]
+              },
+              {
+                "type": "action",
+                "name": "turn_around",
+                "action": "turn_around",
+                "params": {}
+              },
+              {
+                "type": "action",
+                "name": "walk",
+                "action": "walk",
+                "params": {}
+              }
+            ]
+          },
+          {
+            "type": "action",
+            "name": "walk",
+            "action": "walk",
+            "params": {}
+          }
+        ]
+      }
+    },
+    {
+      "id": "melee_aggressive",
+      "name": "Melee Aggressive",
+      "description": "Chases the player, attacks in melee, otherwise patrols.",
+      "root": {
+        "type": "selector",
+        "name": "main",
+        "params": {},
+        "children": [
+          {
+            "type": "sequence",
+            "name": "attack",
+            "params": {},
+            "children": [
+              {
+                "type": "condition",
+                "name": "player_near",
+                "condition": "player_near",
+                "params": { "range": 30.0 }
+              },
+              {
+                "type": "action",
+                "name": "attack",
+                "action": "attack",
+                "params": { "range": 34.0, "cooldown": 0.8 }
+              }
+            ]
+          },
+          {
+            "type": "sequence",
+            "name": "chase",
+            "params": {},
+            "children": [
+              {
+                "type": "condition",
+                "name": "player_seen",
+                "condition": "player_seen",
+                "params": { "range": 160.0 }
+              },
+              {
+                "type": "action",
+                "name": "pursue",
+                "action": "pursue",
+                "params": {}
+              }
+            ]
+          },
+          {
+            "type": "sequence",
+            "name": "turn_at_obstacle",
+            "params": {},
+            "children": [
+              {
+                "type": "selector",
+                "name": "edge_or_wall",
+                "params": {},
+                "children": [
+                  {
+                    "type": "condition",
+                    "name": "wall_ahead",
+                    "condition": "wall_ahead",
+                    "params": {}
+                  },
+                  {
+                    "type": "condition",
+                    "name": "edge_ahead",
+                    "condition": "edge_ahead",
+                    "params": {}
+                  }
+                ]
+              },
+              {
+                "type": "action",
+                "name": "turn_around",
+                "action": "turn_around",
+                "params": {}
+              },
+              {
+                "type": "action",
+                "name": "walk",
+                "action": "walk",
+                "params": {}
+              }
+            ]
+          },
+          {
+            "type": "action",
+            "name": "walk",
+            "action": "walk",
+            "params": {}
+          }
+        ]
+      }
+    },
+    {
+      "id": "ranged_attacker",
+      "name": "Ranged Attacker",
+      "description": "Keeps distance, fires at the player, otherwise patrols.",
+      "root": {
+        "type": "selector",
+        "name": "main",
+        "params": {},
+        "children": [
+          {
+            "type": "sequence",
+            "name": "shoot",
+            "params": {},
+            "children": [
+              {
+                "type": "condition",
+                "name": "player_seen",
+                "condition": "player_seen",
+                "params": { "range": 220.0 }
+              },
+              {
+                "type": "action",
+                "name": "shoot",
+                "action": "shoot",
+                "params": { "aim": "player", "cooldown": 1.4 }
+              }
+            ]
+          },
+          {
+            "type": "sequence",
+            "name": "flee",
+            "params": {},
+            "children": [
+              {
+                "type": "condition",
+                "name": "player_near",
+                "condition": "player_near",
+                "params": { "range": 56.0 }
+              },
+              {
+                "type": "action",
+                "name": "flee",
+                "action": "flee",
+                "params": {}
+              }
+            ]
+          },
+          {
+            "type": "sequence",
+            "name": "turn_at_obstacle",
+            "params": {},
+            "children": [
+              {
+                "type": "selector",
+                "name": "edge_or_wall",
+                "params": {},
+                "children": [
+                  {
+                    "type": "condition",
+                    "name": "wall_ahead",
+                    "condition": "wall_ahead",
+                    "params": {}
+                  },
+                  {
+                    "type": "condition",
+                    "name": "edge_ahead",
+                    "condition": "edge_ahead",
+                    "params": {}
+                  }
+                ]
+              },
+              {
+                "type": "action",
+                "name": "turn_around",
+                "action": "turn_around",
+                "params": {}
+              },
+              {
+                "type": "action",
+                "name": "walk",
+                "action": "walk",
+                "params": {}
+              }
+            ]
+          },
+          {
+            "type": "action",
+            "name": "walk",
+            "action": "walk",
+            "params": {}
+          }
+        ]
+      }
+    },
+    {
+      "id": "stationary_attacker",
+      "name": "Stationary Attacker",
+      "description": "Turret-style shooter with optional close-range melee.",
+      "root": {
+        "type": "selector",
+        "name": "main",
+        "params": {},
+        "children": [
+          {
+            "type": "sequence",
+            "name": "shoot",
+            "params": {},
+            "children": [
+              {
+                "type": "condition",
+                "name": "player_seen",
+                "condition": "player_seen",
+                "params": { "range": 240.0 }
+              },
+              {
+                "type": "action",
+                "name": "shoot",
+                "action": "shoot",
+                "params": { "aim": "player", "cooldown": 1.6 }
+              }
+            ]
+          },
+          {
+            "type": "sequence",
+            "name": "melee",
+            "params": {},
+            "children": [
+              {
+                "type": "condition",
+                "name": "player_near",
+                "condition": "player_near",
+                "params": { "range": 30.0 }
+              },
+              {
+                "type": "action",
+                "name": "attack",
+                "action": "attack",
+                "params": { "range": 34.0, "cooldown": 1.0 }
+              }
+            ]
+          },
+          {
+            "type": "action",
+            "name": "idle",
+            "action": "idle",
+            "params": {}
+          }
+        ]
+      }
+    },
+    {
+      "id": "jumper",
+      "name": "Jumper",
+      "description": "Ground enemy that jumps when the player gets close, then chases.",
+      "root": {
+        "type": "selector",
+        "name": "main",
+        "params": {},
+        "children": [
+          {
+            "type": "sequence",
+            "name": "jump_attack",
+            "params": {},
+            "children": [
+              {
+                "type": "condition",
+                "name": "player_near",
+                "condition": "player_near",
+                "params": { "range": 96.0 }
+              },
+              {
+                "type": "condition",
+                "name": "grounded",
+                "condition": "grounded",
+                "params": {}
+              },
+              {
+                "type": "action",
+                "name": "jump",
+                "action": "jump",
+                "params": { "impulse": 240.0 }
+              }
+            ]
+          },
+          {
+            "type": "sequence",
+            "name": "chase",
+            "params": {},
+            "children": [
+              {
+                "type": "condition",
+                "name": "player_seen",
+                "condition": "player_seen",
+                "params": { "range": 150.0 }
+              },
+              {
+                "type": "action",
+                "name": "pursue",
+                "action": "pursue",
+                "params": {}
+              }
+            ]
+          },
+          {
+            "type": "sequence",
+            "name": "turn_at_obstacle",
+            "params": {},
+            "children": [
+              {
+                "type": "selector",
+                "name": "edge_or_wall",
+                "params": {},
+                "children": [
+                  {
+                    "type": "condition",
+                    "name": "wall_ahead",
+                    "condition": "wall_ahead",
+                    "params": {}
+                  },
+                  {
+                    "type": "condition",
+                    "name": "edge_ahead",
+                    "condition": "edge_ahead",
+                    "params": {}
+                  }
+                ]
+              },
+              {
+                "type": "action",
+                "name": "turn_around",
+                "action": "turn_around",
+                "params": {}
+              },
+              {
+                "type": "action",
+                "name": "walk",
+                "action": "walk",
+                "params": {}
+              }
+            ]
+          },
+          {
+            "type": "action",
+            "name": "walk",
+            "action": "walk",
+            "params": {}
+          }
+        ]
+      }
+    },
+    {
+      "id": "flyer_basic",
+      "name": "Flyer Basic",
+      "description": "Simple hover/fly enemy that homes toward the player.",
+      "root": {
+        "type": "selector",
+        "name": "main",
+        "params": {},
+        "children": [
+          {
+            "type": "sequence",
+            "name": "attack",
+            "params": {},
+            "children": [
+              {
+                "type": "condition",
+                "name": "player_near",
+                "condition": "player_near",
+                "params": { "range": 24.0 }
+              },
+              {
+                "type": "action",
+                "name": "attack",
+                "action": "attack",
+                "params": { "range": 28.0, "cooldown": 0.9 }
+              }
+            ]
+          },
+          {
+            "type": "sequence",
+            "name": "swoop",
+            "params": {},
+            "children": [
+              {
+                "type": "condition",
+                "name": "player_seen",
+                "condition": "player_seen",
+                "params": { "range": 180.0 }
+              },
+              {
+                "type": "action",
+                "name": "pursue_fly",
+                "action": "pursue_fly",
+                "params": {}
+              }
+            ]
+          },
+          {
+            "type": "action",
+            "name": "idle",
+            "action": "idle",
+            "params": {}
+          }
+        ]
+      }
+    },
+    {
+      "id": "flyer_ranged",
+      "name": "Flyer Ranged",
+      "description": "Hover/fly enemy that shoots from range and pulls back up close.",
+      "root": {
+        "type": "selector",
+        "name": "main",
+        "params": {},
+        "children": [
+          {
+            "type": "sequence",
+            "name": "shoot",
+            "params": {},
+            "children": [
+              {
+                "type": "condition",
+                "name": "player_seen",
+                "condition": "player_seen",
+                "params": { "range": 220.0 }
+              },
+              {
+                "type": "action",
+                "name": "shoot",
+                "action": "shoot",
+                "params": { "aim": "player", "cooldown": 1.5 }
+              }
+            ]
+          },
+          {
+            "type": "sequence",
+            "name": "flee",
+            "params": {},
+            "children": [
+              {
+                "type": "condition",
+                "name": "player_near",
+                "condition": "player_near",
+                "params": { "range": 72.0 }
+              },
+              {
+                "type": "action",
+                "name": "flee_fly",
+                "action": "flee_fly",
+                "params": {}
+              }
+            ]
+          },
+          {
+            "type": "sequence",
+            "name": "approach",
+            "params": {},
+            "children": [
+              {
+                "type": "condition",
+                "name": "player_seen",
+                "condition": "player_seen",
+                "params": { "range": 180.0 }
+              },
+              {
+                "type": "action",
+                "name": "pursue_fly",
+                "action": "pursue_fly",
+                "params": { "speed": 48.0 }
+              }
+            ]
+          },
+          {
+            "type": "action",
+            "name": "idle",
+            "action": "idle",
+            "params": {}
+          }
+        ]
+      }
+    },
+    {
+      "id": "boss_phased",
+      "name": "Boss Phased",
+      "description": "Generic boss fallback with a low-HP aggressive phase.",
+      "root": {
+        "type": "selector",
+        "name": "main",
+        "params": {},
+        "children": [
+          {
+            "type": "sequence",
+            "name": "rage",
+            "params": {},
+            "children": [
+              {
+                "type": "condition",
+                "name": "hp_low",
+                "condition": "hp_low",
+                "params": { "threshold": 0.35 }
+              },
+              {
+                "type": "selector",
+                "name": "rage_choice",
+                "params": {},
+                "children": [
+                  {
+                    "type": "sequence",
+                    "name": "dash",
+                    "params": {},
+                    "children": [
+                      {
+                        "type": "condition",
+                        "name": "cooldown_ready",
+                        "condition": "cooldown_ready",
+                        "params": { "name": "dash", "seconds": 3.0 }
+                      },
+                      {
+                        "type": "action",
+                        "name": "dash",
+                        "action": "dash",
+                        "params": { "speed": 240.0, "duration": 0.3, "cooldown": 3.0 }
+                      }
+                    ]
+                  },
+                  {
+                    "type": "sequence",
+                    "name": "shoot",
+                    "params": {},
+                    "children": [
+                      {
+                        "type": "condition",
+                        "name": "player_seen",
+                        "condition": "player_seen",
+                        "params": { "range": 260.0 }
+                      },
+                      {
+                        "type": "action",
+                        "name": "shoot",
+                        "action": "shoot",
+                        "params": { "aim": "player", "cooldown": 1.1 }
+                      }
+                    ]
+                  },
+                  {
+                    "type": "action",
+                    "name": "pursue",
+                    "action": "pursue",
+                    "params": { "speed": 72.0 }
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "type": "selector",
+            "name": "normal",
+            "params": {},
+            "children": [
+              {
+                "type": "sequence",
+                "name": "melee",
+                "params": {},
+                "children": [
+                  {
+                    "type": "condition",
+                    "name": "player_near",
+                    "condition": "player_near",
+                    "params": { "range": 40.0 }
+                  },
+                  {
+                    "type": "action",
+                    "name": "attack",
+                    "action": "attack",
+                    "params": { "range": 44.0, "cooldown": 1.0 }
+                  }
+                ]
+              },
+              {
+                "type": "sequence",
+                "name": "ranged",
+                "params": {},
+                "children": [
+                  {
+                    "type": "condition",
+                    "name": "player_seen",
+                    "condition": "player_seen",
+                    "params": { "range": 240.0 }
+                  },
+                  {
+                    "type": "action",
+                    "name": "shoot",
+                    "action": "shoot",
+                    "params": { "aim": "player", "cooldown": 1.8 }
+                  }
+                ]
+              },
+              {
+                "type": "action",
+                "name": "pursue",
+                "action": "pursue",
+                "params": {}
+              }
+            ]
+          }
+        ]
+      }
+    }
+  ]
+}

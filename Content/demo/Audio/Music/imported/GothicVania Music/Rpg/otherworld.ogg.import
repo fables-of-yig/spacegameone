@@ -1,0 +1,19 @@
+[remap]
+
+importer="oggvorbisstr"
+type="AudioStreamOggVorbis"
+uid="uid://p8ylrmp6ele5"
+path="res://.godot/imported/otherworld.ogg-370d43e1f7c50c68e243bfe87ac34cef.oggvorbisstr"
+
+[deps]
+
+source_file="res://Content/demo/Audio/Music/imported/GothicVania Music/Rpg/otherworld.ogg"
+dest_files=["res://.godot/imported/otherworld.ogg-370d43e1f7c50c68e243bfe87ac34cef.oggvorbisstr"]
+
+[params]
+
+loop=false
+loop_offset=0
+bpm=0
+beat_count=0
+bar_beats=4

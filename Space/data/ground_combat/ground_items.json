@@ -1,0 +1,50 @@
+{
+	"medkit": {
+		"name": "Medkit",
+		"type": "heal",
+		"heal_amount": 40,
+		"ap_cost": 4,
+		"range": 1,
+		"max_carry": 3,
+		"description": "Restores 40 HP to adjacent or self. Medical skill improves healing."
+	},
+	"frag_grenade": {
+		"name": "Frag Grenade",
+		"type": "grenade",
+		"damage": 30,
+		"blast_radius": 1,
+		"ap_cost": 4,
+		"range": 6,
+		"max_carry": 2,
+		"description": "Explosive fragmentation grenade. Damages all units in radius."
+	},
+	"smoke_grenade": {
+		"name": "Smoke Grenade",
+		"type": "smoke",
+		"duration": 3,
+		"blast_radius": 1,
+		"ap_cost": 3,
+		"range": 6,
+		"max_carry": 2,
+		"description": "Deploys smoke cloud blocking line of sight for 3 turns."
+	},
+	"stim_pack": {
+		"name": "Stim Pack",
+		"type": "boost",
+		"ap_boost": 4,
+		"ap_cost": 2,
+		"range": 0,
+		"max_carry": 1,
+		"description": "Grants 4 bonus AP this turn. Self-use only."
+	},
+	"breach_charge": {
+		"name": "Breach Charge",
+		"type": "breach",
+		"damage": 50,
+		"blast_radius": 0,
+		"ap_cost": 4,
+		"range": 1,
+		"max_carry": 2,
+		"description": "Destroys walls and doors. Must be placed adjacent."
+	}
+}

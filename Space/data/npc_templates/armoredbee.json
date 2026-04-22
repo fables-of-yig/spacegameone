@@ -1,0 +1,522 @@
+{
+	"colors": {
+		"primary": [
+			0.300000011920929,
+			0.550000011920929,
+			0.800000011920929
+		],
+		"secondary": [
+			0.150000005960464,
+			0.25,
+			0.449999988079071
+		]
+	},
+	"combat_style": "standard",
+	"core_id": "core_scout",
+	"export_version": 1,
+	"module_count": 62,
+	"modules": [
+		{
+			"deck": 0,
+			"grid_pos": [
+				-1,
+				1
+			],
+			"id": "beam_emitter_mk1"
+		},
+		{
+			"deck": 0,
+			"grid_pos": [
+				1,
+				0
+			],
+			"id": "beam_emitter_mk1"
+		},
+		{
+			"deck": 0,
+			"grid_pos": [
+				2,
+				-1
+			],
+			"id": "beam_emitter_mk1"
+		},
+		{
+			"deck": 0,
+			"grid_pos": [
+				-2,
+				1
+			],
+			"id": "beam_emitter_mk1"
+		},
+		{
+			"deck": 0,
+			"grid_pos": [
+				-2,
+				2
+			],
+			"id": "hornet_battery_mk1"
+		},
+		{
+			"deck": 0,
+			"grid_pos": [
+				2,
+				0
+			],
+			"id": "hornet_battery_mk1"
+		},
+		{
+			"deck": 0,
+			"grid_pos": [
+				1,
+				1
+			],
+			"id": "hornet_battery_mk1"
+		},
+		{
+			"deck": 0,
+			"grid_pos": [
+				-1,
+				2
+			],
+			"id": "hornet_battery_mk1"
+		},
+		{
+			"deck": 0,
+			"grid_pos": [
+				-1,
+				-1
+			],
+			"id": "pulse_laser_mk2"
+		},
+		{
+			"deck": 0,
+			"grid_pos": [
+				0,
+				-1
+			],
+			"id": "pulse_laser_mk2"
+		},
+		{
+			"deck": 0,
+			"grid_pos": [
+				0,
+				-2
+			],
+			"id": "pulse_laser_mk2"
+		},
+		{
+			"deck": 0,
+			"grid_pos": [
+				1,
+				-2
+			],
+			"id": "pulse_laser_mk2"
+		},
+		{
+			"deck": 0,
+			"grid_pos": [
+				-2,
+				3
+			],
+			"id": "shield_gen_mk2"
+		},
+		{
+			"deck": 0,
+			"grid_pos": [
+				2,
+				1
+			],
+			"id": "shield_gen_mk2"
+		},
+		{
+			"deck": 0,
+			"grid_pos": [
+				1,
+				2
+			],
+			"id": "shield_gen_mk2"
+		},
+		{
+			"deck": 0,
+			"grid_pos": [
+				-1,
+				3
+			],
+			"id": "shield_gen_mk2"
+		},
+		{
+			"deck": 0,
+			"grid_pos": [
+				0,
+				5
+			],
+			"id": "thruster_mk2"
+		},
+		{
+			"deck": 0,
+			"grid_pos": [
+				-1,
+				5
+			],
+			"id": "thruster_mk2"
+		},
+		{
+			"deck": 0,
+			"grid_pos": [
+				-2,
+				5
+			],
+			"id": "thruster_mk2"
+		},
+		{
+			"deck": 0,
+			"grid_pos": [
+				1,
+				4
+			],
+			"id": "thruster_mk2"
+		},
+		{
+			"deck": 0,
+			"grid_pos": [
+				2,
+				3
+			],
+			"id": "thruster_mk2"
+		},
+		{
+			"deck": 0,
+			"grid_pos": [
+				0,
+				4
+			],
+			"id": "engine_block_mk1"
+		},
+		{
+			"deck": 0,
+			"grid_pos": [
+				-1,
+				4
+			],
+			"id": "engine_block_mk1"
+		},
+		{
+			"deck": 0,
+			"grid_pos": [
+				-2,
+				4
+			],
+			"id": "engine_block_mk1"
+		},
+		{
+			"deck": 0,
+			"grid_pos": [
+				1,
+				3
+			],
+			"id": "engine_block_mk1"
+		},
+		{
+			"deck": 0,
+			"grid_pos": [
+				2,
+				2
+			],
+			"id": "engine_block_mk1"
+		},
+		{
+			"deck": 0,
+			"grid_pos": [
+				0,
+				3
+			],
+			"id": "engine_block_mk1"
+		},
+		{
+			"deck": 0,
+			"grid_pos": [
+				3,
+				-3
+			],
+			"id": "reactor_mk2",
+			"rotation": 5
+		},
+		{
+			"deck": 0,
+			"grid_pos": [
+				-3,
+				0
+			],
+			"id": "reactor_mk2",
+			"rotation": 1
+		},
+		{
+			"deck": 0,
+			"grid_pos": [
+				0,
+				-3
+			],
+			"id": "reactor_mk2",
+			"rotation": 2
+		},
+		{
+			"deck": 0,
+			"grid_pos": [
+				-4,
+				2
+			],
+			"id": "reactor_mk2",
+			"rotation": 2
+		},
+		{
+			"deck": 0,
+			"grid_pos": [
+				4,
+				-2
+			],
+			"id": "reactor_mk2",
+			"rotation": 2
+		},
+		{
+			"deck": 0,
+			"grid_pos": [
+				0,
+				2
+			],
+			"id": "shield_supercharger_mk1"
+		},
+		{
+			"deck": 0,
+			"grid_pos": [
+				-4,
+				3
+			],
+			"id": "pulse_laser_mk2"
+		},
+		{
+			"deck": 0,
+			"grid_pos": [
+				-3,
+				3
+			],
+			"id": "pulse_laser_mk2"
+		},
+		{
+			"deck": 0,
+			"grid_pos": [
+				3,
+				0
+			],
+			"id": "pulse_laser_mk2"
+		},
+		{
+			"deck": 0,
+			"grid_pos": [
+				4,
+				-1
+			],
+			"id": "pulse_laser_mk2"
+		},
+		{
+			"deck": 0,
+			"grid_pos": [
+				-3,
+				4
+			],
+			"id": "armor_plate_mk1"
+		},
+		{
+			"deck": 0,
+			"grid_pos": [
+				-4,
+				4
+			],
+			"id": "armor_plate_mk1"
+		},
+		{
+			"deck": 0,
+			"grid_pos": [
+				-5,
+				4
+			],
+			"id": "armor_plate_mk1"
+		},
+		{
+			"deck": 0,
+			"grid_pos": [
+				-5,
+				2
+			],
+			"id": "armor_plate_mk1"
+		},
+		{
+			"deck": 0,
+			"grid_pos": [
+				-5,
+				1
+			],
+			"id": "armor_plate_mk1"
+		},
+		{
+			"deck": 0,
+			"grid_pos": [
+				-5,
+				0
+			],
+			"id": "armor_plate_mk1"
+		},
+		{
+			"deck": 0,
+			"grid_pos": [
+				-4,
+				-1
+			],
+			"id": "armor_plate_mk1"
+		},
+		{
+			"deck": 0,
+			"grid_pos": [
+				-3,
+				-1
+			],
+			"id": "armor_plate_mk1"
+		},
+		{
+			"deck": 0,
+			"grid_pos": [
+				-2,
+				-2
+			],
+			"id": "armor_plate_mk1"
+		},
+		{
+			"deck": 0,
+			"grid_pos": [
+				-1,
+				-3
+			],
+			"id": "armor_plate_mk1"
+		},
+		{
+			"deck": 0,
+			"grid_pos": [
+				-1,
+				-4
+			],
+			"id": "armor_plate_mk1"
+		},
+		{
+			"deck": 0,
+			"grid_pos": [
+				0,
+				-5
+			],
+			"id": "armor_plate_mk1"
+		},
+		{
+			"deck": 0,
+			"grid_pos": [
+				1,
+				-5
+			],
+			"id": "armor_plate_mk1"
+		},
+		{
+			"deck": 0,
+			"grid_pos": [
+				1,
+				-4
+			],
+			"id": "armor_plate_mk1"
+		},
+		{
+			"deck": 0,
+			"grid_pos": [
+				2,
+				-4
+			],
+			"id": "armor_plate_mk1"
+		},
+		{
+			"deck": 0,
+			"grid_pos": [
+				3,
+				-4
+			],
+			"id": "armor_plate_mk1"
+		},
+		{
+			"deck": 0,
+			"grid_pos": [
+				4,
+				-5
+			],
+			"id": "armor_plate_mk1"
+		},
+		{
+			"deck": 0,
+			"grid_pos": [
+				5,
+				-5
+			],
+			"id": "armor_plate_mk1"
+		},
+		{
+			"deck": 0,
+			"grid_pos": [
+				5,
+				-4
+			],
+			"id": "armor_plate_mk1"
+		},
+		{
+			"deck": 0,
+			"grid_pos": [
+				5,
+				-3
+			],
+			"id": "armor_plate_mk1"
+		},
+		{
+			"deck": 0,
+			"grid_pos": [
+				5,
+				-1
+			],
+			"id": "armor_plate_mk1"
+		},
+		{
+			"deck": 0,
+			"grid_pos": [
+				4,
+				0
+			],
+			"id": "armor_plate_mk1"
+		},
+		{
+			"deck": 0,
+			"grid_pos": [
+				3,
+				1
+			],
+			"id": "armor_plate_mk1"
+		},
+		{
+			"deck": 0,
+			"grid_pos": [
+				3,
+				2
+			],
+			"id": "armor_plate_mk1"
+		},
+		{
+			"deck": 0,
+			"grid_pos": [
+				-3,
+				5
+			],
+			"id": "armor_plate_mk1"
+		}
+	],
+	"name": "ArmoredBee"
+}

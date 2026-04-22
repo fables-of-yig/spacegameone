@@ -1,0 +1,361 @@
+{
+	"_README": "DIALOGUE TREE TEMPLATES — Copy any top-level key into starter_events.json or encounters.json and rename it. Delete this _README key, it is not a real event.",
+
+	"template_linear": {
+		"title": "Linear Conversation",
+		"nodes": {
+			"start": {
+				"speaker": "NPC Name",
+				"text": "Opening line of dialogue. This is what the player sees first.",
+				"choices": [
+					{"label": "Only option — moves to next node", "next": "node_2"}
+				]
+			},
+			"node_2": {
+				"speaker": "NPC Name",
+				"text": "Second beat. Single-choice nodes feel like a cutscene.",
+				"choices": [
+					{"label": "Continue", "next": "node_3"}
+				]
+			},
+			"node_3": {
+				"speaker": "NPC Name",
+				"text": "Final line. No choices = panel shows a 'Continue' button that closes the event.",
+				"choices": []
+			}
+		}
+	},
+
+	"template_branching": {
+		"title": "Branching Dialogue",
+		"nodes": {
+			"start": {
+				"speaker": "Stranger",
+				"text": "A mysterious figure approaches your ship on comms. \"Captain, I have a proposition for you.\"",
+				"choices": [
+					{"label": "I'm listening.", "next": "pitch"},
+					{"label": "Not interested.", "next": "refuse"},
+					{"label": "[Attack] Open fire.", "next": "attack"}
+				]
+			},
+			"pitch": {
+				"speaker": "Stranger",
+				"text": "\"There's a cargo hold drifting nearby. I can't reach it alone. Split the loot 50-50?\"",
+				"choices": [
+					{"label": "Deal. Let's do it.", "next": "accept_deal"},
+					{"label": "I'll take 70-30 or nothing.", "next": "negotiate"},
+					{"label": "Sounds like a trap.", "next": "refuse"}
+				]
+			},
+			"negotiate": {
+				"speaker": "Stranger",
+				"text": "\"60-40, final offer. Take it or leave it.\"",
+				"choices": [
+					{"label": "Fine. 60-40.", "next": "accept_deal"},
+					{"label": "Forget it.", "next": "refuse"}
+				]
+			},
+			"accept_deal": {
+				"speaker": "Stranger",
+				"text": "\"Good choice, captain. Sending coordinates now. You won't regret this.\"",
+				"effects": [
+					{"type": "give_credits", "amount": 80},
+					{"type": "give_resource_random", "min": 2, "max": 5}
+				],
+				"choices": []
+			},
+			"refuse": {
+				"speaker": "Stranger",
+				"text": "\"Your loss, captain.\" The signal cuts out.",
+				"choices": []
+			},
+			"attack": {
+				"speaker": "",
+				"text": "You open fire. The stranger's ship returns fire as it scrambles to escape.",
+				"effects": [
+					{"type": "spawn_enemies", "count": 1, "min_dist": 150, "max_dist": 300}
+				],
+				"choices": []
+			}
+		}
+	},
+
+	"template_with_effects": {
+		"title": "Effect Showcase",
+		"nodes": {
+			"start": {
+				"speaker": "Quartermaster",
+				"text": "This template shows every effect type you can attach to nodes or choices.",
+				"choices": [
+					{"label": "Give resources", "next": "resources"},
+					{"label": "Combat effects", "next": "combat"},
+					{"label": "Crew and station", "next": "crew"},
+					{"label": "Flags and chaining", "next": "flags"}
+				]
+			},
+			"resources": {
+				"speaker": "Quartermaster",
+				"text": "Resource effects — attach to 'effects' on nodes (fire on enter) or on choices (fire on pick).",
+				"choices": [
+					{
+						"label": "Get 100 credits",
+						"next": "done",
+						"effects": [{"type": "give_credits", "amount": 100}]
+					},
+					{
+						"label": "Spend 50 credits",
+						"next": "done",
+						"effects": [{"type": "take_credits", "amount": 50}]
+					},
+					{
+						"label": "Get fuel + food",
+						"next": "done",
+						"effects": [
+							{"type": "give_fuel", "amount": 20},
+							{"type": "give_food", "amount": 15}
+						]
+					},
+					{
+						"label": "Get random resources (2-6)",
+						"next": "done",
+						"effects": [{"type": "give_resource_random", "min": 2, "max": 6}]
+					},
+					{
+						"label": "Get a module",
+						"next": "done",
+						"effects": [{"type": "give_module", "module_id": "autocannon_mk1", "count": 1}]
+					}
+				]
+			},
+			"combat": {
+				"speaker": "Quartermaster",
+				"text": "Combat and hull effects.",
+				"choices": [
+					{
+						"label": "Spawn 3 enemies",
+						"next": "done",
+						"effects": [{"type": "spawn_enemies", "count": 3, "min_dist": 200, "max_dist": 400}]
+					},
+					{
+						"label": "Take 15 hull damage",
+						"next": "done",
+						"effects": [{"type": "damage_hull", "amount": 15}]
+					},
+					{
+						"label": "Repair 30 hull",
+						"next": "done",
+						"effects": [{"type": "repair", "amount": 30}]
+					}
+				]
+			},
+			"crew": {
+				"speaker": "Quartermaster",
+				"text": "Crew, morale, and station effects.",
+				"choices": [
+					{
+						"label": "Recruit an engineer",
+						"next": "done",
+						"effects": [{"type": "give_crew", "role": "engineer"}]
+					},
+					{
+						"label": "Morale boost",
+						"next": "done",
+						"effects": [{"type": "morale_change", "amount": 10}]
+					},
+					{
+						"label": "Enter station",
+						"next": "done",
+						"effects": [{"type": "enter_station"}]
+					},
+					{
+						"label": "Open shop",
+						"next": "done",
+						"effects": [{"type": "open_shop"}]
+					},
+					{
+						"label": "Open mission board",
+						"next": "done",
+						"effects": [{"type": "open_missions"}]
+					}
+				]
+			},
+			"flags": {
+				"speaker": "Quartermaster",
+				"text": "Tags and event chaining — set_tag saves state, queue_event schedules a follow-up event after a delay.",
+				"choices": [
+					{
+						"label": "Set a tag for later",
+						"next": "done",
+						"effects": [{"type": "set_tag", "tag": "my_custom_flag", "value": true}]
+					},
+					{
+						"label": "Chain into another event (2-5 min delay)",
+						"next": "done",
+						"effects": [{"type": "queue_event", "event_id": "some_followup_event", "delay_min": 120, "delay_max": 300}]
+					},
+					{
+						"label": "Reputation change",
+						"next": "done",
+						"effects": [{"type": "reputation_change", "faction": "independent", "amount": 5}]
+					}
+				]
+			},
+			"done": {
+				"speaker": "",
+				"text": "Effect applied.",
+				"choices": []
+			}
+		}
+	},
+
+	"template_converging": {
+		"title": "Branches That Reconverge",
+		"nodes": {
+			"start": {
+				"speaker": "Officer",
+				"text": "Captain, we've intercepted a distress signal. Two ships are fighting nearby.",
+				"choices": [
+					{"label": "Help the freighter.", "next": "help_freighter"},
+					{"label": "Help the raider.", "next": "help_raider"},
+					{"label": "Ignore it.", "next": "ignore"}
+				]
+			},
+			"help_freighter": {
+				"speaker": "Freighter Captain",
+				"text": "\"Thank the stars! That raider's been chasing us for hours.\"",
+				"effects": [
+					{"type": "spawn_enemies", "count": 1, "min_dist": 200, "max_dist": 350},
+					{"type": "reputation_change", "faction": "independent", "amount": 5}
+				],
+				"choices": [
+					{"label": "Glad to help.", "next": "aftermath"}
+				]
+			},
+			"help_raider": {
+				"speaker": "Raider",
+				"text": "\"Ha! Nice to have backup. Let's crack that hull open.\"",
+				"effects": [
+					{"type": "morale_change", "amount": -5}
+				],
+				"choices": [
+					{"label": "Split the spoils.", "next": "aftermath"}
+				]
+			},
+			"ignore": {
+				"speaker": "Officer",
+				"text": "\"Understood. Setting course away from the engagement.\"",
+				"choices": [
+					{"label": "Move on.", "next": "aftermath"}
+				]
+			},
+			"aftermath": {
+				"speaker": "Officer",
+				"text": "All three branches land here. Use this pattern when paths diverge but the story continues from one point.",
+				"choices": []
+			}
+		}
+	},
+
+	"template_full_encounter": {
+		"id": 9999,
+		"title": "Full Encounter Template",
+		"tags": ["trade", "combat", "story"],
+		"threat": "medium",
+		"weight": 10,
+		"min_day": 0,
+		"max_day": -1,
+		"required_flags": [],
+		"excluded_flags": [],
+		"sets_flags": ["my_encounter_done"],
+		"unique": false,
+		"cooldown_hours": 48,
+		"chain_prev": -1,
+		"chain_next": -1,
+		"spawn": [
+			{
+				"type": "npc_ship",
+				"npc_type": "trader",
+				"faction": "independent",
+				"name": "Template Ship",
+				"hostile": false,
+				"distance": 400,
+				"angle": "random",
+				"wormhole": true
+			}
+		],
+		"nodes": {
+			"start": {
+				"speaker": "Comm Channel",
+				"text": "This is a full encounter with all metadata fields filled in. Copy this into encounters.json and change the id to a unique number.",
+				"choices": [
+					{"label": "Got it.", "next": ""}
+				]
+			}
+		}
+	},
+
+	"template_chained_events": {
+		"title": "Part 1 — The Discovery",
+		"nodes": {
+			"start": {
+				"speaker": "Scientist",
+				"text": "Use queue_event to chain multi-part storylines. This event schedules Part 2 to fire 3-8 minutes later.",
+				"choices": [
+					{
+						"label": "Investigate the anomaly.",
+						"next": "investigate",
+						"effects": [
+							{"type": "set_tag", "tag": "anomaly_investigated", "value": true},
+							{"type": "queue_event", "event_id": "template_chained_part2", "delay_min": 180, "delay_max": 480}
+						]
+					},
+					{
+						"label": "Ignore it.",
+						"next": "ignore"
+					}
+				]
+			},
+			"investigate": {
+				"speaker": "Scientist",
+				"text": "\"Fascinating readings. I'll need time to analyze this. I'll report back soon.\"",
+				"choices": []
+			},
+			"ignore": {
+				"speaker": "Scientist",
+				"text": "\"Your call, captain. But we may not get another chance like this.\"",
+				"choices": []
+			}
+		}
+	},
+	"template_chained_part2": {
+		"title": "Part 2 — The Results",
+		"nodes": {
+			"start": {
+				"speaker": "Scientist",
+				"text": "\"Captain, my analysis is complete. The anomaly contains a rare mineral deposit.\"",
+				"choices": [
+					{
+						"label": "Mine it.",
+						"next": "mine",
+						"effects": [{"type": "give_resource_random", "min": 8, "max": 15}]
+					},
+					{
+						"label": "Sell the coordinates.",
+						"next": "sell",
+						"effects": [{"type": "give_credits", "amount": 200}]
+					}
+				]
+			},
+			"mine": {
+				"speaker": "Scientist",
+				"text": "\"Excellent yield, captain. This will keep us supplied for a while.\"",
+				"choices": []
+			},
+			"sell": {
+				"speaker": "Scientist",
+				"text": "\"A practical choice. The credits will serve us well.\"",
+				"choices": []
+			}
+		}
+	}
+}

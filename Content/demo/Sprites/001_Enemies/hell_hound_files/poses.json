@@ -1,0 +1,19 @@
+﻿{
+    "poses":  {
+                  "idle.png":  {
+                                   "fps":  8,
+                                   "loop_from":  0,
+                                   "frames":  12
+                               },
+                  "jump.png":  {
+                                   "fps":  10,
+                                   "loop_from":  0,
+                                   "frames":  7
+                               },
+                  "walk.png":  {
+                                   "fps":  8,
+                                   "loop_from":  0,
+                                   "frames":  19
+                               }
+              }
+}

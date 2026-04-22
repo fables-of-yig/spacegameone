@@ -1,0 +1,19 @@
+[remap]
+
+importer="oggvorbisstr"
+type="AudioStreamOggVorbis"
+uid="uid://cls5ys7mel1a5"
+path="res://.godot/imported/outrunner.ogg-22a47ad1b0bbbadd8c22e783a8f4b89f.oggvorbisstr"
+
+[deps]
+
+source_file="res://Content/demo/Audio/Music/imported/Warped Music/Warped Music/ACTION PACK 2 OGG/outrunner.ogg"
+dest_files=["res://.godot/imported/outrunner.ogg-22a47ad1b0bbbadd8c22e783a8f4b89f.oggvorbisstr"]
+
+[params]
+
+loop=false
+loop_offset=0
+bpm=0
+beat_count=0
+bar_beats=4

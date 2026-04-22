@@ -1,0 +1,14 @@
+﻿{
+    "poses":  {
+                  "death.png":  {
+                                    "fps":  10,
+                                    "loop_from":  0,
+                                    "frames":  11
+                                },
+                  "special.png":  {
+                                      "fps":  10,
+                                      "loop_from":  0,
+                                      "frames":  3
+                                  }
+              }
+}

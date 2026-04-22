@@ -1,0 +1,19 @@
+[remap]
+
+importer="oggvorbisstr"
+type="AudioStreamOggVorbis"
+uid="uid://or6laa3yb365"
+path="res://.godot/imported/anxiety.ogg-e9419f7403415453144ec48d8116d583.oggvorbisstr"
+
+[deps]
+
+source_file="res://Content/demo/Audio/Music/imported/GothicVania Music/Mystery OGG files/anxiety.ogg"
+dest_files=["res://.godot/imported/anxiety.ogg-e9419f7403415453144ec48d8116d583.oggvorbisstr"]
+
+[params]
+
+loop=false
+loop_offset=0
+bpm=0
+beat_count=0
+bar_beats=4

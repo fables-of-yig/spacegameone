@@ -1,0 +1,300 @@
+{
+	"first_names": [
+		"Kira", "Dax", "Renn", "Cass", "Vex",
+		"Soren", "Mako", "Jyn", "Thane", "Nyx",
+		"Kai", "Zara", "Bosk", "Lira", "Orin",
+		"Holt", "Pax", "Wren", "Fen", "Sable",
+		"Jace", "Asha", "Korr", "Mira", "Drel",
+		"Yara", "Silas", "Tova", "Beck", "Rue",
+		"Zeke", "Iona"
+	],
+	"last_names": [
+		"Vorn", "Kael", "Thresh", "Ardenne", "Sorik",
+		"Halleck", "Dray", "Mercer", "Colvane", "Rysk",
+		"Torr", "Ashwell", "Kren", "Voss", "Dunmar",
+		"Raith", "Haddon", "Stavros", "Pell", "Korvus",
+		"Brask", "Vance", "Dern", "Malik", "Crane",
+		"Okafor", "Stel", "Weylan", "Goss", "Tannen",
+		"Cade", "Varro"
+	],
+	"all_skills": ["piloting", "engineering", "gunnery", "combat", "medical", "mining", "warpsmithing", "science", "cooking", "brewing", "farming", "gunsmithing", "smelting", "hauling", "entertainment"],
+	"skill_names": {
+		"piloting": "Piloting",
+		"engineering": "Engineering",
+		"gunnery": "Gunnery",
+		"combat": "Combat",
+		"medical": "Medical",
+		"mining": "Mining",
+		"warpsmithing": "Warpsmithing",
+		"science": "Science",
+		"cooking": "Cooking",
+		"brewing": "Brewing",
+		"farming": "Farming",
+		"gunsmithing": "Gunsmithing",
+		"smelting": "Smelting",
+		"hauling": "Hauling",
+		"entertainment": "Entertainment"
+	},
+	"module_type_skill": {
+		"engine": "piloting",
+		"bridge": "piloting",
+		"weapon": "gunnery",
+		"shield": "engineering",
+		"reactor": "engineering",
+		"sensor": "science",
+		"medbay": "medical",
+		"construction_hangar": "warpsmithing",
+		"basic_workshop": "warpsmithing",
+		"farmers_workshop": "farming",
+		"solar_field": "farming",
+		"mining": "mining",
+		"colony_spear": "warpsmithing",
+		"fleet_comm": "science",
+		"smelter": "smelting",
+		"kitchen": "cooking",
+		"brewery": "brewing",
+		"hydroponics": "farming",
+		"fabricator": "gunsmithing"
+	},
+	"role_templates": {
+		"marine": {
+			"base_skills": {
+				"combat": 6, "gunnery": 3, "engineering": 1,
+				"piloting": 1, "medical": 2, "mining": 2,
+				"warpsmithing": 1, "science": 1, "cooking": 1,
+				"brewing": 1, "farming": 1, "gunsmithing": 2,
+				"smelting": 1, "hauling": 2, "entertainment": 1
+			},
+			"description": "Frontline fighter. Handles boarding actions and repels intruders.",
+			"hire_cost": 120
+		},
+		"engineer": {
+			"base_skills": {
+				"combat": 1, "gunnery": 2, "engineering": 6,
+				"piloting": 2, "medical": 1, "mining": 3,
+				"warpsmithing": 4, "science": 2, "cooking": 1,
+				"brewing": 1, "farming": 1, "gunsmithing": 2,
+				"smelting": 3, "hauling": 2, "entertainment": 1
+			},
+			"description": "Keeps systems running. Good with tools and repairs.",
+			"hire_cost": 150
+		},
+		"gunner": {
+			"base_skills": {
+				"combat": 2, "gunnery": 6, "engineering": 2,
+				"piloting": 1, "medical": 1, "mining": 1,
+				"warpsmithing": 1, "science": 1, "cooking": 1,
+				"brewing": 1, "farming": 1, "gunsmithing": 4,
+				"smelting": 1, "hauling": 1, "entertainment": 1
+			},
+			"description": "Weapons specialist. Deadly accurate in a turret.",
+			"hire_cost": 130
+		},
+		"pilot": {
+			"base_skills": {
+				"combat": 1, "gunnery": 1, "engineering": 2,
+				"piloting": 7, "medical": 1, "mining": 1,
+				"warpsmithing": 1, "science": 2, "cooking": 1,
+				"brewing": 1, "farming": 1, "gunsmithing": 1,
+				"smelting": 1, "hauling": 1, "entertainment": 1
+			},
+			"description": "Ace helmsman. Born to fly.",
+			"hire_cost": 160
+		},
+		"medic": {
+			"base_skills": {
+				"combat": 1, "gunnery": 1, "engineering": 2,
+				"piloting": 1, "medical": 7, "mining": 1,
+				"warpsmithing": 1, "science": 4, "cooking": 2,
+				"brewing": 2, "farming": 1, "gunsmithing": 1,
+				"smelting": 1, "hauling": 1, "entertainment": 1
+			},
+			"description": "Field surgeon. Keeps the crew breathing.",
+			"hire_cost": 180
+		},
+		"deckhand": {
+			"base_skills": {
+				"combat": 2, "gunnery": 2, "engineering": 3,
+				"piloting": 2, "medical": 2, "mining": 3,
+				"warpsmithing": 3, "science": 2, "cooking": 2,
+				"brewing": 2, "farming": 2, "gunsmithing": 2,
+				"smelting": 2, "hauling": 4, "entertainment": 2
+			},
+			"description": "Jack of all trades. Can fill any role in a pinch.",
+			"hire_cost": 60
+		},
+		"miner": {
+			"base_skills": {
+				"combat": 2, "gunnery": 1, "engineering": 3,
+				"piloting": 1, "medical": 1, "mining": 7,
+				"warpsmithing": 3, "science": 1, "cooking": 1,
+				"brewing": 1, "farming": 1, "gunsmithing": 1,
+				"smelting": 5, "hauling": 3, "entertainment": 1
+			},
+			"description": "Rock breaker. Knows their way around an asteroid.",
+			"hire_cost": 100
+		},
+		"scientist": {
+			"base_skills": {
+				"combat": 1, "gunnery": 1, "engineering": 3,
+				"piloting": 1, "medical": 3, "mining": 1,
+				"warpsmithing": 2, "science": 7, "cooking": 1,
+				"brewing": 2, "farming": 2, "gunsmithing": 1,
+				"smelting": 1, "hauling": 1, "entertainment": 2
+			},
+			"description": "Researcher. Studies anomalies and improves tech.",
+			"hire_cost": 200
+		},
+		"cook": {
+			"base_skills": {
+				"combat": 1, "gunnery": 1, "engineering": 1,
+				"piloting": 1, "medical": 2, "mining": 1,
+				"warpsmithing": 1, "science": 1, "cooking": 7,
+				"brewing": 3, "farming": 3, "gunsmithing": 1,
+				"smelting": 1, "hauling": 2, "entertainment": 2
+			},
+			"description": "Ship's cook. Turns rations into real meals. Keeps bellies full and morale up.",
+			"hire_cost": 80
+		},
+		"brewer": {
+			"base_skills": {
+				"combat": 1, "gunnery": 1, "engineering": 2,
+				"piloting": 1, "medical": 1, "mining": 1,
+				"warpsmithing": 1, "science": 2, "cooking": 3,
+				"brewing": 7, "farming": 2, "gunsmithing": 1,
+				"smelting": 1, "hauling": 2, "entertainment": 3
+			},
+			"description": "Brewmaster. Distills spirits, brews beer, and makes the long hauls bearable.",
+			"hire_cost": 90
+		},
+		"farmer": {
+			"base_skills": {
+				"combat": 1, "gunnery": 1, "engineering": 2,
+				"piloting": 1, "medical": 2, "mining": 2,
+				"warpsmithing": 1, "science": 3, "cooking": 2,
+				"brewing": 1, "farming": 7, "gunsmithing": 1,
+				"smelting": 1, "hauling": 3, "entertainment": 1
+			},
+			"description": "Hydroponics specialist. Grows fresh food in the void. Invaluable on long voyages.",
+			"hire_cost": 100
+		},
+		"warpsmith": {
+			"base_skills": {
+				"combat": 1, "gunnery": 1, "engineering": 5,
+				"piloting": 1, "medical": 1, "mining": 2,
+				"warpsmithing": 7, "science": 2, "cooking": 1,
+				"brewing": 1, "farming": 1, "gunsmithing": 3,
+				"smelting": 4, "hauling": 3, "entertainment": 1
+			},
+			"description": "Shipwright. Builds, repairs, and modifies ship modules. The backbone of any fleet.",
+			"hire_cost": 200
+		},
+		"gunsmith": {
+			"base_skills": {
+				"combat": 2, "gunnery": 4, "engineering": 3,
+				"piloting": 1, "medical": 1, "mining": 1,
+				"warpsmithing": 3, "science": 1, "cooking": 1,
+				"brewing": 1, "farming": 1, "gunsmithing": 7,
+				"smelting": 3, "hauling": 2, "entertainment": 1
+			},
+			"description": "Weapons fabricator. Crafts, maintains, and installs weapon systems.",
+			"hire_cost": 180
+		},
+		"smelter": {
+			"base_skills": {
+				"combat": 1, "gunnery": 1, "engineering": 3,
+				"piloting": 1, "medical": 1, "mining": 4,
+				"warpsmithing": 2, "science": 2, "cooking": 1,
+				"brewing": 1, "farming": 1, "gunsmithing": 2,
+				"smelting": 7, "hauling": 3, "entertainment": 1
+			},
+			"description": "Metalworker. Refines raw ore into usable materials. Essential for self-sufficiency.",
+			"hire_cost": 110
+		},
+		"entertainer": {
+			"base_skills": {
+				"combat": 1, "gunnery": 1, "engineering": 1,
+				"piloting": 1, "medical": 1, "mining": 1,
+				"warpsmithing": 1, "science": 1, "cooking": 2,
+				"brewing": 3, "farming": 1, "gunsmithing": 1,
+				"smelting": 1, "hauling": 1, "entertainment": 7
+			},
+			"description": "Performer and morale officer. Plays music, tells stories, keeps spirits high.",
+			"hire_cost": 70
+		}
+	},
+	"traits": {
+		"tough": {
+			"name": "Tough",
+			"effect": "Takes less damage and recovers faster from injuries.",
+			"modifier": { "damage_resist": 0.15, "heal_rate": 1.25 }
+		},
+		"coward": {
+			"name": "Coward",
+			"effect": "Flees from combat when health drops low. Hurts nearby morale.",
+			"modifier": { "combat": -2, "morale_aura": -0.1 }
+		},
+		"grizzled": {
+			"name": "Grizzled",
+			"effect": "Seen it all. Slower morale decay, slight combat bonus.",
+			"modifier": { "morale_decay": -0.3, "combat": 1 }
+		},
+		"hothead": {
+			"name": "Hothead",
+			"effect": "Fights harder but burns out quickly. Higher hunger and rest drain.",
+			"modifier": { "combat": 2, "hunger_decay": 0.15, "rest_decay": 0.1 }
+		},
+		"steady": {
+			"name": "Steady",
+			"effect": "Consistent performer. Small bonus to all skills under pressure.",
+			"modifier": { "all_skills_stressed": 1 }
+		},
+		"scrounger": {
+			"name": "Scrounger",
+			"effect": "Finds extra supplies during salvage and loot operations.",
+			"modifier": { "loot_bonus": 0.2 }
+		},
+		"green": {
+			"name": "Green",
+			"effect": "Inexperienced. Lower base skills but gains experience faster.",
+			"modifier": { "all_skills": -1, "xp_rate": 1.5 }
+		},
+		"veteran": {
+			"name": "Veteran",
+			"effect": "Battle-hardened. Higher base combat and gunnery skills.",
+			"modifier": { "combat": 2, "gunnery": 1 }
+		},
+		"lucky": {
+			"name": "Lucky",
+			"effect": "Things just go their way. Small chance to avoid fatal hits.",
+			"modifier": { "death_save": 0.15, "crit_chance": 0.1 }
+		},
+		"antisocial": {
+			"name": "Antisocial",
+			"effect": "Prefers working alone. Morale drops faster in crowded quarters.",
+			"modifier": { "morale_crowded": -0.25, "solo_efficiency": 0.15 }
+		},
+		"fast_learner": {
+			"name": "Fast Learner",
+			"effect": "Picks up new skills quickly. +50% skill XP gain.",
+			"modifier": { "xp_rate": 1.5 }
+		},
+		"methodical": {
+			"name": "Methodical",
+			"effect": "Slower but more precise. Slightly better at everything they do.",
+			"modifier": { "all_skills": 1 }
+		}
+	},
+	"skill_xp_per_action": 0.02,
+	"skill_xp_to_level": [0, 10, 25, 50, 85, 130, 190, 265, 360, 480],
+	"need_decay_rates": {
+		"hunger": 0.4,
+		"rest": 0.25,
+		"morale": 0.08
+	},
+	"need_restore_rates": {
+		"hunger": 2.0,
+		"rest": 1.5,
+		"morale": 0.5
+	}
+}

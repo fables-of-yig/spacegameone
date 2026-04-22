@@ -1,0 +1,19 @@
+[remap]
+
+importer="oggvorbisstr"
+type="AudioStreamOggVorbis"
+uid="uid://gsee2flr747b"
+path="res://.godot/imported/Warped Caves.ogg-b220b55ef0312c26863857c43e91d866.oggvorbisstr"
+
+[deps]
+
+source_file="res://Content/demo/Audio/Music/imported/Warped Music/Warped Music/ACTION PACK 2 OGG/Warped Caves.ogg"
+dest_files=["res://.godot/imported/Warped Caves.ogg-b220b55ef0312c26863857c43e91d866.oggvorbisstr"]
+
+[params]
+
+loop=false
+loop_offset=0
+bpm=0
+beat_count=0
+bar_beats=4

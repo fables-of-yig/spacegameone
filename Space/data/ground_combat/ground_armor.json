@@ -1,0 +1,37 @@
+{
+	"none": {
+		"name": "No Armor",
+		"armor": 0,
+		"dodge_bonus": 5,
+		"ap_penalty": 0,
+		"description": "Unarmored. Maximum mobility."
+	},
+	"flight_suit": {
+		"name": "Flight Suit",
+		"armor": 2,
+		"dodge_bonus": 3,
+		"ap_penalty": 0,
+		"description": "Light EVA suit. Minimal protection."
+	},
+	"standard_vest": {
+		"name": "Standard Vest",
+		"armor": 5,
+		"dodge_bonus": 0,
+		"ap_penalty": 0,
+		"description": "Ballistic vest. Decent protection without mobility penalty."
+	},
+	"heavy_armor": {
+		"name": "Heavy Combat Armor",
+		"armor": 10,
+		"dodge_bonus": -5,
+		"ap_penalty": 1,
+		"description": "Full body armor. Strong protection but reduces AP and dodge."
+	},
+	"engineer_suit": {
+		"name": "Engineer's Hardsuit",
+		"armor": 7,
+		"dodge_bonus": -2,
+		"ap_penalty": 0,
+		"description": "Reinforced work suit. Good protection for technical crew."
+	}
+}

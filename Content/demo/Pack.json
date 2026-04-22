@@ -1,0 +1,7 @@
+{
+  "name": "Demo",
+  "version": "0.1.0",
+  "authors": ["mvmania"],
+  "description": "Phase 1 placeholder demo pack for MVMania. User-made brick tiles (backgroundbrix + basebrickfloor) + placeholder player sheet (Fullmain.png, licensed for user's game only — not redistributable with the toolkit).",
+  "entry_room": "start"
+}

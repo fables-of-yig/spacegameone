@@ -1,0 +1,14 @@
+﻿{
+    "poses":  {
+                  "fly.png":  {
+                                  "fps":  8,
+                                  "loop_from":  0,
+                                  "frames":  6
+                              },
+                  "idle.png":  {
+                                   "fps":  8,
+                                   "loop_from":  0,
+                                   "frames":  1
+                               }
+              }
+}

@@ -1,0 +1,81 @@
+{
+	"drop_chance_base": 0.25,
+	"drop_chance_per_threat": 0.05,
+	"tables": {
+		"1": [
+			{"id": "conduit_mk1", "weight": 5},
+			{"id": "armor_plate_mk1", "weight": 3}
+		],
+		"2": [
+			{"id": "conduit_mk1", "weight": 4},
+			{"id": "armor_plate_mk1", "weight": 3},
+			{"id": "pulse_laser_mk1", "weight": 2},
+			{"id": "thruster_mk1", "weight": 2}
+		],
+		"3": [
+			{"id": "armor_plate_mk1", "weight": 3},
+			{"id": "pulse_laser_mk1", "weight": 3},
+			{"id": "shield_gen_mk1", "weight": 2},
+			{"id": "autocannon_mk1", "weight": 2},
+			{"id": "sensor_mk1", "weight": 1},
+			{"id": "cargo_bay_mk1", "weight": 1}
+		],
+		"4": [
+			{"id": "autocannon_mk1", "weight": 2},
+			{"id": "shield_gen_mk1", "weight": 2},
+			{"id": "sensor_mk1", "weight": 2},
+			{"id": "thruster_mk1", "weight": 2},
+			{"id": "pulse_laser_mk2", "weight": 1},
+			{"id": "autocannon_mk2", "weight": 1},
+			{"id": "shield_gen_mk2", "weight": 1},
+			{"id": "repair_module_mk1", "weight": 1}
+		],
+		"5": [
+			{"id": "pulse_laser_mk2", "weight": 3},
+			{"id": "autocannon_mk2", "weight": 3},
+			{"id": "shield_gen_mk2", "weight": 2},
+			{"id": "thruster_mk2", "weight": 2},
+			{"id": "sensor_mk2", "weight": 2},
+			{"id": "armor_plate_mk2", "weight": 2},
+			{"id": "reactor_mk2", "weight": 1},
+			{"id": "beam_emitter_mk1", "weight": 1},
+			{"id": "missile_rack_mk1", "weight": 1},
+			{"id": "hornet_battery_mk1", "weight": 1}
+		]
+	},
+	"shop_stock": {
+		"sol_gateway": [
+			"pulse_laser_mk1", "autocannon_mk1", "shield_gen_mk1", "thruster_mk1",
+			"reactor_mk1", "sensor_mk1", "armor_plate_mk1", "conduit_mk1",
+			"cargo_bay_mk1", "repair_module_mk1",
+			"crew_quarters_mk1", "mess_hall_mk1", "life_support_mk1", "rec_room_mk1",
+			"fuel_scoop_mk1", "mining_laser_mk1"
+		],
+		"veyra_reach": [
+			"pulse_laser_mk1", "autocannon_mk1", "autocannon_mk2", "shield_gen_mk1",
+			"thruster_mk1", "thruster_mk2", "armor_plate_mk1", "armor_plate_mk2",
+			"conduit_mk1", "ecm_jammer_mk1",
+			"crew_quarters_mk1", "medbay_mk1", "life_support_mk1", "brig_mk1"
+		],
+		"ashfall_drift": [
+			"pulse_laser_mk2", "autocannon_mk2", "shield_gen_mk2", "thruster_mk2",
+			"reactor_mk2", "armor_plate_mk2", "conduit_mk1", "cargo_bay_mk2",
+			"crew_quarters_mk2", "mess_hall_mk1", "medbay_mk1", "basic_workshop", "hydroponics_mk1",
+			"fuel_scoop_mk1", "mining_laser_mk1", "mining_laser_mk2"
+		],
+		"ghost_nebula": [
+			"beam_emitter_mk1", "missile_rack_mk1", "point_defense_mk1",
+			"shield_gen_mk2", "sensor_mk2", "ecm_jammer_mk1", "afterburner_mk1",
+			"crew_quarters_mk2", "medbay_mk1", "armory_mk1", "hangar_bay_mk1",
+			"hornet_battery_mk1"
+		],
+		"korrath_expanse": [
+			"pulse_laser_mk2", "autocannon_mk2", "beam_emitter_mk1", "missile_rack_mk1",
+			"shield_gen_mk2", "thruster_mk2", "reactor_mk2", "armor_plate_mk2",
+			"sensor_mk2", "repair_module_mk1", "afterburner_mk1", "point_defense_mk1",
+			"crew_quarters_mk3", "mess_hall_mk2", "medbay_mk2", "basic_workshop",
+			"bridge_mk1", "hangar_bay_mk1", "armory_mk1", "hydroponics_mk1",
+			"fuel_scoop_mk2", "mining_laser_mk2"
+		]
+	}
+}

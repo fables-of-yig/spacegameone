@@ -1,0 +1,29 @@
+﻿{
+    "poses":  {
+                  "attack.png":  {
+                                     "fps":  10,
+                                     "loop_from":  0,
+                                     "frames":  6
+                                 },
+                  "death.png":  {
+                                    "fps":  10,
+                                    "loop_from":  0,
+                                    "frames":  13
+                                },
+                  "fly.png":  {
+                                  "fps":  8,
+                                  "loop_from":  0,
+                                  "frames":  9
+                              },
+                  "idle.png":  {
+                                   "fps":  8,
+                                   "loop_from":  0,
+                                   "frames":  7
+                               },
+                  "special.png":  {
+                                      "fps":  10,
+                                      "loop_from":  0,
+                                      "frames":  11
+                                  }
+              }
+}

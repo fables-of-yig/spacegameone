@@ -1,0 +1,272 @@
+# SpaceboatMania Asset Ingestion Guide
+
+How to drop external asset packs into the merged project so both engines
+can use them. Written for the `D:/SpaceAssetsNoisey/*` pack collection
+but the conventions apply to anything shaped the same way.
+
+## Quick reference: where things live
+
+```
+D:/spaceboatmania/
+├── Content/<pack-id>/                ← MVMania pack root (one per planet)
+│   ├── Pack.json                       Pack manifest (name, version, entry_room)
+│   ├── Flow.json                       Per-room script + effect bindings
+│   ├── PhysicsProfile.tres             Player physics constants
+│   ├── Rooms/rooms.json                Tile data, collision, doors, entities, triggers
+│   ├── SlopeShapes.json                Per-pixel slope geometry
+│   ├── Entities/entities.json          Entity registry (extended by import tool)
+│   ├── Items/items.json                Item type definitions
+│   ├── Audio/audio.json                Music + SFX names → file paths
+│   ├── Dialogue/<id>.json              Dialogue trees
+│   ├── Sprites/<sprite_set>/           Per-animation PNG folders (NEW)
+│   │   ├── idle.png                      Horizontal strip of idle frames
+│   │   ├── walk.png                      Horizontal strip of walk frames
+│   │   ├── attack.png
+│   │   ├── hurt.png
+│   │   └── death.png
+│   └── Tilesets/                       Atlas + lo/hi variants + priority
+│       ├── tileset_NN_atlas.png          Full atlas (palette + canonical)
+│       ├── tileset_NN_atlas_lo.png       Low-priority sub-tiles (behind player)
+│       ├── tileset_NN_atlas_hi.png       High-priority sub-tiles (in front of player)
+│       ├── tileset_NN_priority.json      Per-metatile 4-bit priority masks
+│       └── tileset_NN_priority_mask.png  (Optional) painted mask overrides JSON
+│
+├── Space/art/                        ← SSB asset roots (consumed by GDScript)
+│   ├── modules/<id>.png                Ship modules (red/green mask = player tinted)
+│   ├── projectiles/<id>.png            Beam/missile sprites
+│   ├── ships/<source-pack>/<id>.png    Static ship hulls (NEW)
+│   └── backgrounds/<id>.png            System background images (NEW)
+│
+└── tools/import_pack.gd              ← Asset ingester (this doc explains how)
+```
+
+## Asset pack ingestion
+
+**Tool**: `tools/import_pack.gd` walks an external folder, detects its layout
+(character, tileset, or spaceship), copies the PNGs into the right place,
+and updates `entities.json` so the new content shows up in the level editor's
+entity palette immediately.
+
+**Run**:
+```bash
+godot --headless --script "res://tools/import_pack.gd" -- \
+    --source "D:/SpaceAssetsNoisey/basement-enemies-pixel-art-sprite-pack" \
+    --pack demo
+godot --headless --import   # required after to refresh Godot's import cache
+```
+
+**Pattern detection**:
+- Numbered subfolders (`1/`, `2/`, `3/`) containing PNGs → **character pack**.
+  Each numbered folder becomes one entity sprite set. Filename = animation name
+  (`Idle.png` → `idle`, `Walk.png` → `walk`).
+- `PNG/Ships/` subfolder with `Ship_NN.png` files → **spaceship pack**.
+  Copies into `Space/art/ships/<pack-slug>/`.
+- `Tile_NN.png` files at root or in `Tiles/` subfolder → **tileset pack**.
+  Copies the full atlas as `tileset_NN_atlas.png` + `_lo` (full) + `_hi`
+  (transparent placeholder) plus a default `tileset_NN_priority.json`.
+
+**Override**: pass `--type character|tileset|spaceship` to skip auto-detection.
+
+## How MVMania consumes sprites
+
+### Entity sprite sets (NEW data-driven path)
+Each entity in `entities.json` can reference a sprite folder via the
+`sprite_set` field. The folder lives under `Content/<pack>/Sprites/` and
+contains one PNG per animation. PNG filenames define animation names:
+
+```json
+{
+  "id": "basement_enemies_1",
+  "name": "Basement Enemy 1",
+  "scene": "res://Scenes/Enemy.tscn",
+  "category": "enemy",
+  "sprite_set": "Sprites/basement_enemies_pixel_art_sprite_pack_1"
+}
+```
+
+At runtime, `Enemy.cs`/`NPC.cs`/`Pickup.cs`/`Sign.cs` instantiate
+`SpriteSet.cs` against this folder, infer frame size from PNG height
+(square frames assumed unless `sprite_size: [w, h]` is set on the def),
+and play `walk` (enemies) or `idle` (NPCs/pickups/signs) by default.
+Falls back to the placeholder texture baked into the .tscn if no
+sprite_set is configured.
+
+**Per-instance override**: `EntityInstance.Properties["sprite_set"]` wins
+over the `EntityDef.SpriteSet`, so a single def can spawn many visual
+variants from the same scene.
+
+### Player sprite sheets (LEGACY path)
+The player still uses the old `player_sheet.png` + `player_frames.json` +
+`player_poses.json` grid format. Edit it via the SpriteEditor (now fixed
+to fall back to shipped files when there's no user override). The new
+data-driven SpriteSet system is for entities only — the player rig stays
+on the SM-derived format because of its physics/pose coupling.
+
+### Tilesets
+Atlases come in 16×16 base tiles. The import tool produces:
+- `tileset_NN_atlas.png` — full atlas (also used as the palette source)
+- `tileset_NN_atlas_lo.png` — duplicate of full (everything behind player)
+- `tileset_NN_atlas_hi.png` — transparent placeholder (nothing in front)
+- `tileset_NN_priority.json` — empty masks (`{"masks": []}`)
+
+To elevate specific tiles in front of the player (foreground priority):
+
+**Option 1: paint a priority mask PNG (recommended)**
+Create `tileset_NN_priority_mask.png` next to the atlas, same dimensions.
+In each 16×16 tile cell, paint the four 8×8 sub-tiles white (or fully
+opaque) where you want hi-priority. Save. `TilesetManager` reads the mask
+on next load and assigns 4-bit nibble priorities (TL=1, TR=2, BL=4, BR=8).
+
+**Option 2: edit priority.json directly**
+Each entry in `masks[]` is the 4-bit nibble for one metatile in atlas
+order. Useful for batch scripts.
+
+**Option 3: manual _hi atlas**
+For full visual control, replace `tileset_NN_atlas_hi.png` with an atlas
+that contains only the elevated content (rest transparent).
+
+## How SSB consumes sprites
+
+### Ship modules
+PNGs in `Space/art/modules/<id>.png`. The player-color mask convention
+uses pure red (R>0.9, G<0.1, B<0.1) for primary tint and pure green for
+secondary tint. `GameManager.get_module_sprite()` runs a per-pixel
+replacement on first load.
+
+**Asset-pack modules**: `get_module_sprite()` now auto-detects whether a
+sprite uses the mask convention (samples 256 pixels in a uniform grid).
+If no mask pixels are found, it caches the texture as-is and skips the
+replacement pass. Drop new module PNGs in without preparing them — they
+just won't be player-tinted.
+
+### Static ship hulls (NEW)
+`enemy_ship.gd` and `npc_ship.gd` both expose `static_hull_path: String`.
+When set, `_bake_hull_texture` (or the `_draw` short-circuit) loads that
+PNG and uses it as the ship's hull instead of procedurally rendering
+from modules. Use this to drop in spaceship sprite packs:
+
+```gdscript
+# anywhere you instantiate an enemy_ship or npc_ship
+ship.static_hull_path = "res://Space/art/ships/enemy_spaceship_game_sprites/ship_01.png"
+```
+
+The import tool puts spaceship packs at `Space/art/ships/<pack-slug>/`
+automatically.
+
+### System background images (NEW)
+Each system can specify a `background_image` field in its DataManager
+metadata:
+
+```gdscript
+DataManager.systems[sys_id]["background_image"] = "res://Space/art/backgrounds/nebula_01.png"
+```
+
+`main.gd._draw_system_bg` tiles the image across the visible camera area
+with a parallax factor of 0.18 (drifts slower than the camera). Drawn
+behind the procedural starfield/nebula layer so the painted bg becomes
+the deep-space backdrop.
+
+## Cross-system flag bridge
+
+MVMania trigger conditions and SSB GDScript share a single flag store via
+the `PlanetaryInterface` autoload. Two namespaces:
+
+- **planet flags** (`set_planet_flag` / `get_planet_flag`): per-visit,
+  snapshotted into the planet save when launching, restored on re-landing.
+  This is what `VarStore.Set/Get` (C#) and the `set_var`/`var_eq` trigger
+  primitives route through.
+- **global flags** (`set_global_flag` / `get_global_flag`): cross-system,
+  cross-planet, cross-everything. Persists for the entire session. Use for
+  credits, faction reputation, story flags, completion state.
+
+**From C# (MVMania trigger / Main / TriggerActions):**
+```csharp
+PlanetaryInterface.SetFlag("boss_dead", true);            // planet-scoped
+PlanetaryInterface.SetGlobalFlag("rep_arboreals", -50);   // global
+var dead = (bool)PlanetaryInterface.GetFlag("boss_dead", false);
+```
+`VarStore.Set/Get/Has/Add/Snapshot/Restore` route through the planet namespace
+automatically — existing trigger conditions (`var_eq`, `var_gte`, etc.) work
+unchanged.
+
+**From GDScript (SSB main / data_manager / encounter):**
+```gdscript
+var iface = get_node("/root/PlanetaryInterface")
+iface.set_planet_flag("explored_north", true)
+iface.set_global_flag("credits", 5000)
+var rep: int = iface.get_global_flag("rep_arboreals", 0)
+```
+
+**Inspector**: open the in-game content editor (Editor button on main menu →
+SPACE), Flags tab. Lists both namespaces. Click a row to cycle int/bool
+values, [×] to delete one, CLEAR to wipe the namespace.
+
+**Editor → MVMania flow**: writes from any side fire the GDScript
+`flag_changed(scope, name, old, new)` signal which `Main._Ready` connects
+to and forwards as `EventBus.OnVarChanged`. Triggers listening on
+`var_changed` see GDScript writes too.
+
+## Walk-into trigger volumes
+
+Place an invisible rectangular zone in any room via the level editor's
+entity placement tool. Entity type: `trigger_volume`. Per-instance
+properties:
+
+| Property      | Type    | Default | Purpose |
+|---------------|---------|---------|---------|
+| width         | int     | 32      | Zone rect width in px |
+| height        | int     | 32      | Zone rect height in px |
+| tag           | string  | ""      | Payload `tag` for trigger matching |
+| zone_id       | string  | ""      | Payload `zone_id` for finer matching |
+| once          | bool    | false   | Disarm permanently after first enter |
+| event_name    | string  | ""      | Extra custom event fired alongside `zone_enter` |
+| delay_frames  | int     | 0       | Wait N physics frames before firing after entry |
+
+When the player's position enters the rect, `EventBus.OnZoneEnter` fires
+with payload `{tag, zone_id, x, y, w, h, entity_tags}`. When they leave,
+`OnZoneExit` fires. A trigger in `rooms.json` can listen and gate on the
+tag:
+
+```json
+{
+  "event": "zone_enter",
+  "conditions": { "type": "payload_eq", "key": "tag", "value": "lava_pit" },
+  "actions": [{ "type": "play_sfx", "name": "alarm_klaxon" },
+              { "type": "set_var", "name": "in_danger", "value": true }]
+}
+```
+
+## Doors that launch the player back to space
+
+Tag any door with `exit_to_space` (rooms.json doors[].tags array). When
+the player traverses it, `Main.LoadDestinationRoom` snapshots planet state
+and emits `PlanetaryInterface.launch_requested` so SSB tears down the
+planet viewport and returns the ship to its orbital position. There's
+also a `return_to_space` trigger action for dialogue choices.
+
+## Pack template
+
+To ingest assets into a NEW planet pack (not just `demo`), copy the demo
+pack first:
+```bash
+cp -r D:/spaceboatmania/Content/demo D:/spaceboatmania/Content/<new-pack-id>
+```
+Edit `Pack.json` for the new name + entry_room, then run the import tool
+with `--pack <new-pack-id>`. The import tool itself does NOT create packs
+from scratch yet — that's a future iteration.
+
+## Compatibility table for D:/SpaceAssetsNoisey
+
+| Pack category                      | Engine     | Ingestion path |
+|------------------------------------|------------|---------------|
+| `*-enemies-*`, `*-bosses-*`, character sprite sheets, NPC packs | MVMania | character pack (auto-detected) |
+| `*-tileset-*`, platformer tilesets, village/city tilesets | MVMania | tileset pack (auto-detected) |
+| `Enemy_SpaceShip_*`, `pirate-spaceship-*`, `*-spaceship-*-sprites`, ufo sprites | SSB     | spaceship pack (auto-detected) |
+| `Explosions-Sprite`, `bombs-and-explosions-*`, `fire-pixel-art-*`, magic effects | both    | manual — drop into `Space/art/effects/` or `Content/<pack>/Sprites/effects/` |
+| `*-Avatar-*`, `*-Portraits-*`, NPC portraits | MVMania | manual — `Content/<pack>/Sprites/portraits/` for dialogue boxes |
+| `*-Icons-*` (32×32 icons) | both | manual — `Content/<pack>/Items/icons/` for MVMania items, `Space/art/icons/` for SSB UI |
+| `pixel-art-space-2d-game-backgrounds`, `planet-pixel-art-2d-game-backgrounds` | SSB | manual — drop into `Space/art/backgrounds/`, set `system.background_image` |
+| `*-constructor-*` (gun/car/bike) | both | manual — modular parts, treat each PNG as a sprite_set frame |
+
+The ingester handles the three auto-detect categories. Everything else is
+a `cp -r` to the right destination — the conventions above tell you which.

@@ -1,0 +1,97 @@
+{
+	"colors": {
+		"primary": [
+			0.300000011920929,
+			0.550000011920929,
+			0.800000011920929
+		],
+		"secondary": [
+			0.150000005960464,
+			0.25,
+			0.449999988079071
+		],
+		"trim1": [
+			0.850000023841858,
+			0.550000011920929,
+			0.150000005960464
+		],
+		"trim2": [
+			0.699999988079071,
+			0.200000002980232,
+			0.200000002980232
+		]
+	},
+	"core_id": "core_scout",
+	"export_version": 1,
+	"module_count": 8,
+	"modules": [
+		{
+			"deck": 0,
+			"grid_pos": [
+				1,
+				1
+			],
+			"id": "micro_reactor"
+		},
+		{
+			"deck": 0,
+			"grid_pos": [
+				-1,
+				2
+			],
+			"id": "micro_reactor"
+		},
+		{
+			"deck": 0,
+			"grid_pos": [
+				0,
+				2
+			],
+			"id": "micro_reactor"
+		},
+		{
+			"deck": 0,
+			"grid_pos": [
+				1,
+				0
+			],
+			"id": "crew_quarters_mk1",
+			"rotation": 4
+		},
+		{
+			"deck": 0,
+			"grid_pos": [
+				-1,
+				1
+			],
+			"id": "mess_hall_mk1",
+			"rotation": 4
+		},
+		{
+			"deck": 0,
+			"grid_pos": [
+				0,
+				-1
+			],
+			"id": "medbay_mk1",
+			"rotation": 4
+		},
+		{
+			"deck": 0,
+			"grid_pos": [
+				1,
+				-2
+			],
+			"id": "life_support_mk1"
+		},
+		{
+			"deck": 0,
+			"grid_pos": [
+				-1,
+				-1
+			],
+			"id": "brig_mk1"
+		}
+	],
+	"name": "Testing1"
+}

@@ -1,0 +1,82 @@
+{
+	"cotac": {
+		"name": "COTAC",
+		"color": [0.9, 0.75, 0.3],
+		"disposition": "friendly",
+		"desc": "Church of Technological Advancement and Continuity"
+	},
+	"castellan": {
+		"name": "Castellan",
+		"color": [0.3, 0.5, 0.85],
+		"disposition": "neutral",
+		"desc": "Local governance authority"
+	},
+	"isd": {
+		"name": "ISD",
+		"color": [0.7, 0.2, 0.2],
+		"disposition": "friendly",
+		"desc": "Interstellar Security Directorate"
+	},
+	"union_militia": {
+		"name": "Union Militia",
+		"color": [0.3, 0.7, 0.4],
+		"disposition": "friendly",
+		"desc": "Citizen defense force"
+	},
+	"bulwark": {
+		"name": "Bulwark",
+		"color": [0.5, 0.5, 0.7],
+		"disposition": "neutral",
+		"desc": "Megacorporation with private security"
+	},
+	"xenoculture": {
+		"name": "Xenoculture",
+		"color": [0.6, 0.3, 0.7],
+		"disposition": "neutral",
+		"desc": "Alien cultural exchange collective"
+	},
+	"fringe": {
+		"name": "Fringe",
+		"color": [0.8, 0.4, 0.2],
+		"disposition": "hostile",
+		"desc": "Outlaw raiders and smugglers"
+	},
+	"independent": {
+		"name": "Independent",
+		"color": [0.5, 0.5, 0.55],
+		"disposition": "neutral",
+		"desc": "No faction affiliation"
+	},
+	"terran_union": {
+		"name": "Terran Union",
+		"color": [0.4, 0.6, 0.8],
+		"disposition": "friendly",
+		"desc": "Humanity's central government"
+	},
+	"korrath": {
+		"name": "Korrath",
+		"color": [0.8, 0.3, 0.5],
+		"disposition": "hostile",
+		"desc": "Aggressive alien empire",
+		"is_alien": true
+	},
+	"abyss": {
+		"name": "The Abyss",
+		"color": [0.6, 0.2, 0.8],
+		"disposition": "hostile",
+		"desc": "Unknown entities from the void",
+		"is_alien": true
+	},
+	"unknown": {
+		"name": "Unknown",
+		"color": [0.4, 0.4, 0.5],
+		"disposition": "neutral",
+		"desc": "Unidentified faction"
+	},
+	"uncharted": {
+		"name": "Uncharted",
+		"color": [0.45, 0.4, 0.35],
+		"disposition": "neutral",
+		"desc": "Unclaimed territory"
+	}
+}

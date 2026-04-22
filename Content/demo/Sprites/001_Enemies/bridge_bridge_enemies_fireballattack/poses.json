@@ -1,0 +1,14 @@
+﻿{
+    "poses":  {
+                  "attack.png":  {
+                                     "fps":  10,
+                                     "loop_from":  0,
+                                     "frames":  5
+                                 },
+                  "special.png":  {
+                                      "fps":  10,
+                                      "loop_from":  0,
+                                      "frames":  4
+                                  }
+              }
+}

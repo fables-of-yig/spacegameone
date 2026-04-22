@@ -1,0 +1,110 @@
+{
+	"cattle": {
+		"name": "Cattle",
+		"size": 3,
+		"feed_per_hour": 2,
+		"preferred_feed": ["corn", "oats", "wheat", "barley"],
+		"products": {
+			"milk": {"rate_per_hour": 0.5, "requires_sex": "female"},
+			"beef": {"butcher_yield": 8}
+		},
+		"breed_hours": 720,
+		"max_offspring": 1,
+		"purchase_price": 80,
+		"sell_price": 40,
+		"morale_penalty_no_pen": 0.4,
+		"mess_rate": 0.3,
+		"biomes": ["temperate", "desert"],
+		"description": "Large ruminant. Produces milk daily, excellent beef when butchered."
+	},
+	"chicken": {
+		"name": "Chicken",
+		"size": 1,
+		"feed_per_hour": 0.5,
+		"preferred_feed": ["corn", "wheat", "beans", "peas"],
+		"products": {
+			"eggs": {"rate_per_hour": 0.3, "requires_sex": "female"},
+			"poultry": {"butcher_yield": 2}
+		},
+		"breed_hours": 168,
+		"max_offspring": 4,
+		"purchase_price": 15,
+		"sell_price": 5,
+		"morale_penalty_no_pen": 0.15,
+		"mess_rate": 0.1,
+		"biomes": ["temperate", "jungle", "desert"],
+		"description": "Small poultry. Cheap to keep, steady egg production."
+	},
+	"pig": {
+		"name": "Pig",
+		"size": 2,
+		"feed_per_hour": 1.5,
+		"preferred_feed": ["corn", "potato", "beans", "wheat"],
+		"products": {
+			"pork": {"butcher_yield": 6}
+		},
+		"breed_hours": 480,
+		"max_offspring": 3,
+		"purchase_price": 40,
+		"sell_price": 20,
+		"morale_penalty_no_pen": 0.5,
+		"mess_rate": 0.5,
+		"biomes": ["temperate", "jungle", "swamp"],
+		"description": "Omnivorous livestock. Eats anything, grows fast. Very messy."
+	},
+	"sheep": {
+		"name": "Sheep",
+		"size": 2,
+		"feed_per_hour": 1.0,
+		"preferred_feed": ["oats", "barley", "wheat"],
+		"products": {
+			"wool": {"rate_per_hour": 0.2, "requires_sex": "any"},
+			"milk": {"rate_per_hour": 0.2, "requires_sex": "female"},
+			"mutton": {"butcher_yield": 4}
+		},
+		"breed_hours": 600,
+		"max_offspring": 2,
+		"purchase_price": 50,
+		"sell_price": 25,
+		"morale_penalty_no_pen": 0.2,
+		"mess_rate": 0.2,
+		"biomes": ["temperate", "frozen"],
+		"description": "Woolly ruminant. Produces wool for textiles, decent meat."
+	},
+	"goat": {
+		"name": "Goat",
+		"size": 2,
+		"feed_per_hour": 0.8,
+		"preferred_feed": ["oats", "cabbage", "beans", "corn"],
+		"products": {
+			"milk": {"rate_per_hour": 0.3, "requires_sex": "female"},
+			"goat_meat": {"butcher_yield": 3}
+		},
+		"breed_hours": 480,
+		"max_offspring": 2,
+		"purchase_price": 35,
+		"sell_price": 15,
+		"morale_penalty_no_pen": 0.3,
+		"mess_rate": 0.25,
+		"biomes": ["desert", "temperate", "barren", "frozen"],
+		"description": "Hardy browser. Survives anywhere, eats anything. Stubborn."
+	},
+	"fish": {
+		"name": "Fish",
+		"size": 1,
+		"feed_per_hour": 0.3,
+		"preferred_feed": ["beans", "peas", "mushroom"],
+		"products": {
+			"fish_meat": {"butcher_yield": 2}
+		},
+		"breed_hours": 240,
+		"max_offspring": 6,
+		"purchase_price": 10,
+		"sell_price": 4,
+		"morale_penalty_no_pen": 0.05,
+		"mess_rate": 0.05,
+		"requires_module": "aquaculture_tank",
+		"biomes": ["oceanic", "swamp", "jungle"],
+		"description": "Aquaculture stock. Requires tank module. Low maintenance, fast breeding."
+	}
+}

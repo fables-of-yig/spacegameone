@@ -1,0 +1,7 @@
+{
+  "description": "Adventurer preset generated from shipped source sheets. Left-facing poses intentionally mirror right-facing strips.",
+  "frames": "player_frames.json",
+  "id": "adventurer_male",
+  "name": "Adventurer Male",
+  "poses": "player_poses.json"
+}

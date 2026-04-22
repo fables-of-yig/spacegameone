@@ -1,0 +1,6 @@
+[gd_scene format=3]
+
+[ext_resource type="Script" uid="uid://b52iv71gxnlhq" path="res://Space/scripts/combat/enemy_ship.gd" id="1"]
+
+[node name="EnemyShip" type="Area2D" unique_id=1513409061]
+script = ExtResource("1")

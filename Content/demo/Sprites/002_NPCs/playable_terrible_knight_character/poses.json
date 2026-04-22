@@ -1,0 +1,34 @@
+﻿{
+    "poses":  {
+                  "attack.png":  {
+                                     "fps":  10,
+                                     "loop_from":  0,
+                                     "frames":  10
+                                 },
+                  "crouch.png":  {
+                                     "fps":  8,
+                                     "loop_from":  0,
+                                     "frames":  3
+                                 },
+                  "hurt.png":  {
+                                   "fps":  10,
+                                   "loop_from":  0,
+                                   "frames":  5
+                               },
+                  "idle.png":  {
+                                   "fps":  8,
+                                   "loop_from":  0,
+                                   "frames":  6
+                               },
+                  "jump.png":  {
+                                   "fps":  10,
+                                   "loop_from":  0,
+                                   "frames":  6
+                               },
+                  "walk.png":  {
+                                   "fps":  8,
+                                   "loop_from":  0,
+                                   "frames":  20
+                               }
+              }
+}

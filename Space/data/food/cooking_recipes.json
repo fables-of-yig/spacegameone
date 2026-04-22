@@ -1,0 +1,263 @@
+{
+	"bread": {
+		"name": "Bread",
+		"inputs": {"wheat": 2},
+		"output": "bread",
+		"nutrition": 6,
+		"morale_bonus": 0.05,
+		"skill_min": 1,
+		"description": "Simple loaf. Filling, reliable, crew staple."
+	},
+	"porridge": {
+		"name": "Porridge",
+		"inputs": {"oats": 2, "milk": 1},
+		"output": "porridge",
+		"nutrition": 5,
+		"morale_bonus": 0.03,
+		"skill_min": 1,
+		"description": "Warm oat porridge. Cheap breakfast, keeps you going."
+	},
+	"stew": {
+		"name": "Stew",
+		"inputs": {"beef": 1, "potato": 2, "carrot": 1},
+		"output": "stew",
+		"nutrition": 10,
+		"morale_bonus": 0.1,
+		"skill_min": 2,
+		"description": "Hearty meat stew. Crew favorite, fills the belly."
+	},
+	"vegetable_soup": {
+		"name": "Vegetable Soup",
+		"inputs": {"potato": 1, "carrot": 1, "onion": 1, "herbs": 1},
+		"output": "vegetable_soup",
+		"nutrition": 7,
+		"morale_bonus": 0.06,
+		"skill_min": 1,
+		"description": "Simple veggie soup. Warm, nutritious, no meat needed."
+	},
+	"fried_rice": {
+		"name": "Fried Rice",
+		"inputs": {"rice": 2, "eggs": 1, "onion": 1},
+		"output": "fried_rice",
+		"nutrition": 8,
+		"morale_bonus": 0.07,
+		"skill_min": 2,
+		"description": "Quick wok-fried rice with egg. Fast, filling."
+	},
+	"roast_meat": {
+		"name": "Roast Meat",
+		"inputs": {"beef": 2, "herbs": 1, "garlic": 1},
+		"output": "roast_meat",
+		"nutrition": 12,
+		"morale_bonus": 0.12,
+		"skill_min": 3,
+		"description": "Slow-roasted beef with herbs. Special occasion meal."
+	},
+	"fish_fry": {
+		"name": "Fish Fry",
+		"inputs": {"fish_meat": 2, "potato": 1, "herbs": 1},
+		"output": "fish_fry",
+		"nutrition": 8,
+		"morale_bonus": 0.08,
+		"skill_min": 2,
+		"description": "Crispy fried fish with chips. Classic comfort food."
+	},
+	"meat_pie": {
+		"name": "Meat Pie",
+		"inputs": {"wheat": 2, "pork": 1, "onion": 1},
+		"output": "meat_pie",
+		"nutrition": 9,
+		"morale_bonus": 0.09,
+		"skill_min": 3,
+		"description": "Flaky pastry filled with spiced pork. Portable feast."
+	},
+	"bean_chili": {
+		"name": "Bean Chili",
+		"inputs": {"beans": 2, "tomato": 1, "pepper": 1, "onion": 1},
+		"output": "bean_chili",
+		"nutrition": 8,
+		"morale_bonus": 0.07,
+		"skill_min": 2,
+		"description": "Spicy bean chili. Cheap, filling, packs a punch."
+	},
+	"fruit_pie": {
+		"name": "Fruit Pie",
+		"inputs": {"wheat": 2, "apple": 2, "sugar_cane": 1},
+		"output": "fruit_pie",
+		"nutrition": 6,
+		"morale_bonus": 0.1,
+		"skill_min": 3,
+		"description": "Sweet fruit pie. Dessert that makes everyone smile."
+	},
+	"salad": {
+		"name": "Fresh Salad",
+		"inputs": {"cabbage": 1, "tomato": 1, "carrot": 1},
+		"output": "salad",
+		"nutrition": 5,
+		"morale_bonus": 0.04,
+		"skill_min": 1,
+		"description": "Crisp vegetable salad. Light, healthy, quick to prepare."
+	},
+	"curry": {
+		"name": "Curry",
+		"inputs": {"rice": 2, "spice": 1, "potato": 1, "onion": 1},
+		"output": "curry",
+		"nutrition": 9,
+		"morale_bonus": 0.1,
+		"skill_min": 3,
+		"description": "Rich spiced curry over rice. Complex flavors, crew loves it."
+	},
+	"pasta": {
+		"name": "Pasta",
+		"inputs": {"wheat": 2, "tomato": 2, "garlic": 1, "herbs": 1},
+		"output": "pasta",
+		"nutrition": 8,
+		"morale_bonus": 0.08,
+		"skill_min": 2,
+		"description": "Pasta in tomato sauce with herbs. Crowd-pleaser."
+	},
+	"omelette": {
+		"name": "Omelette",
+		"inputs": {"eggs": 2, "pepper": 1, "onion": 1},
+		"output": "omelette",
+		"nutrition": 6,
+		"morale_bonus": 0.05,
+		"skill_min": 1,
+		"description": "Fluffy egg omelette with peppers. Quick protein."
+	},
+	"bbq_ribs": {
+		"name": "BBQ Ribs",
+		"inputs": {"pork": 2, "sugar_cane": 1, "spice": 1},
+		"output": "bbq_ribs",
+		"nutrition": 11,
+		"morale_bonus": 0.13,
+		"skill_min": 4,
+		"description": "Slow-smoked ribs in sweet glaze. Worth the wait."
+	},
+	"lamb_roast": {
+		"name": "Lamb Roast",
+		"inputs": {"mutton": 2, "potato": 2, "herbs": 1, "garlic": 1},
+		"output": "lamb_roast",
+		"nutrition": 13,
+		"morale_bonus": 0.14,
+		"skill_min": 4,
+		"description": "Roast lamb with potatoes. Feast-grade meal."
+	},
+	"mushroom_risotto": {
+		"name": "Mushroom Risotto",
+		"inputs": {"rice": 2, "mushroom": 2, "onion": 1},
+		"output": "mushroom_risotto",
+		"nutrition": 7,
+		"morale_bonus": 0.08,
+		"skill_min": 3,
+		"description": "Creamy mushroom risotto. Earthy, satisfying."
+	},
+	"chocolate": {
+		"name": "Chocolate",
+		"inputs": {"cocoa": 2, "sugar_cane": 1, "milk": 1},
+		"output": "chocolate",
+		"nutrition": 3,
+		"morale_bonus": 0.2,
+		"skill_min": 2,
+		"description": "Rich chocolate. Tiny nutrition but massive morale boost."
+	},
+	"beer": {
+		"name": "Beer",
+		"inputs": {"hops": 1, "barley": 2, "wheat": 1},
+		"output": "beer",
+		"nutrition": 1,
+		"morale_bonus": 0.15,
+		"skill_min": 2,
+		"is_drink": true,
+		"description": "Proper craft beer. Replaces generic alcohol for morale."
+	},
+	"wine": {
+		"name": "Wine",
+		"inputs": {"grape": 4},
+		"output": "wine",
+		"nutrition": 1,
+		"morale_bonus": 0.18,
+		"skill_min": 3,
+		"is_drink": true,
+		"description": "Fermented grape wine. High-class morale boost."
+	},
+	"rum": {
+		"name": "Rum",
+		"inputs": {"sugar_cane": 3},
+		"output": "rum",
+		"nutrition": 0,
+		"morale_bonus": 0.16,
+		"skill_min": 3,
+		"is_drink": true,
+		"description": "Distilled sugar cane spirit. Strong stuff."
+	},
+	"coffee_brew": {
+		"name": "Coffee",
+		"inputs": {"coffee": 1},
+		"output": "coffee_brew",
+		"nutrition": 0,
+		"morale_bonus": 0.12,
+		"skill_min": 1,
+		"is_drink": true,
+		"rest_bonus": 15.0,
+		"description": "Hot black coffee. Restores rest and boosts morale."
+	},
+	"tea_brew": {
+		"name": "Tea",
+		"inputs": {"tea": 1},
+		"output": "tea_brew",
+		"nutrition": 0,
+		"morale_bonus": 0.08,
+		"skill_min": 1,
+		"is_drink": true,
+		"rest_bonus": 10.0,
+		"description": "Brewed tea. Gentle morale and rest restoration."
+	},
+	"feast": {
+		"name": "Grand Feast",
+		"inputs": {"beef": 2, "wheat": 2, "potato": 2, "tomato": 1, "herbs": 1, "spice": 1, "grape": 1},
+		"output": "feast",
+		"nutrition": 20,
+		"morale_bonus": 0.3,
+		"skill_min": 5,
+		"description": "Multi-course feast. Massive morale event for the whole crew."
+	},
+	"jerky": {
+		"name": "Jerky",
+		"inputs": {"beef": 2, "spice": 1},
+		"output": "jerky",
+		"nutrition": 7,
+		"morale_bonus": 0.03,
+		"skill_min": 1,
+		"shelf_life_mult": 3.0,
+		"description": "Dried spiced meat strips. Stores forever, decent protein."
+	},
+	"pickled_vegetables": {
+		"name": "Pickled Vegetables",
+		"inputs": {"cabbage": 2, "carrot": 1, "onion": 1},
+		"output": "pickled_vegetables",
+		"nutrition": 5,
+		"morale_bonus": 0.04,
+		"skill_min": 1,
+		"shelf_life_mult": 3.0,
+		"description": "Fermented vegetables. Long shelf life, decent nutrition."
+	},
+	"corn_bread": {
+		"name": "Corn Bread",
+		"inputs": {"corn": 2, "eggs": 1},
+		"output": "corn_bread",
+		"nutrition": 5,
+		"morale_bonus": 0.04,
+		"skill_min": 1,
+		"description": "Dense corn bread. Simple, filling, cheap."
+	},
+	"goat_cheese": {
+		"name": "Goat Cheese",
+		"inputs": {"milk": 3, "herbs": 1},
+		"output": "goat_cheese",
+		"nutrition": 4,
+		"morale_bonus": 0.06,
+		"skill_min": 2,
+		"description": "Tangy soft cheese. Good on its own or in recipes."
+	}
+}

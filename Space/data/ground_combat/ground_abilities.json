@@ -1,0 +1,74 @@
+{
+	"called_shot": {
+		"name": "Called Shot",
+		"skill": "combat",
+		"skill_req": 7,
+		"ap_cost": 6,
+		"cooldown": 3,
+		"type": "attack",
+		"accuracy_bonus": 25,
+		"damage_mult": 1.3,
+		"description": "Precise aimed shot with +25% accuracy and 1.3x damage."
+	},
+	"suppressing_fire": {
+		"name": "Suppressing Fire",
+		"skill": "gunnery",
+		"skill_req": 5,
+		"ap_cost": 5,
+		"cooldown": 2,
+		"type": "area",
+		"radius": 1,
+		"suppression": 30,
+		"description": "Pins down enemies in area. Suppressed units lose AP next turn."
+	},
+	"field_medic": {
+		"name": "Field Medic",
+		"skill": "medical",
+		"skill_req": 5,
+		"ap_cost": 4,
+		"cooldown": 2,
+		"type": "heal",
+		"heal_amount": 50,
+		"range": 1,
+		"description": "Expert medical treatment. Heals 50 HP and clears bleeding."
+	},
+	"breach_and_clear": {
+		"name": "Breach & Clear",
+		"skill": "combat",
+		"skill_req": 6,
+		"ap_cost": 5,
+		"cooldown": 4,
+		"type": "special",
+		"description": "Destroy adjacent door/wall and get a free move into the room."
+	},
+	"rally": {
+		"name": "Rally",
+		"skill": "entertainment",
+		"skill_req": 5,
+		"ap_cost": 3,
+		"cooldown": 4,
+		"type": "buff",
+		"radius": 2,
+		"ap_bonus": 2,
+		"description": "Inspire nearby allies. Grants +2 AP to all allies in radius."
+	},
+	"overwatch": {
+		"name": "Overwatch",
+		"skill": "combat",
+		"skill_req": 3,
+		"ap_cost": 5,
+		"cooldown": 0,
+		"type": "overwatch",
+		"description": "Reserve AP to fire at the first enemy that moves in line of sight."
+	},
+	"hunker_down": {
+		"name": "Hunker Down",
+		"skill": "combat",
+		"skill_req": 0,
+		"ap_cost": 2,
+		"cooldown": 0,
+		"type": "defense",
+		"cover_bonus": 30,
+		"description": "Double current cover bonus. Cannot act until next turn."
+	}
+}

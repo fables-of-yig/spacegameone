@@ -1,0 +1,221 @@
+{
+	"ren_vasquez": {
+		"name": "Commander Ren Vasquez",
+		"short_name": "Ren",
+		"role": "Executive Officer",
+		"station": "tactical",
+		"species": "Human",
+		"portrait_color": [0.82, 0.58, 0.38],
+		"aptitudes": {
+			"tactical": 9,
+			"helm": 6,
+			"communications": 5,
+			"engineering": 3,
+			"science": 2,
+			"medical": 3
+		},
+		"barks": {
+			"combat_start": [
+				"Battle stations! All hands!",
+				"Hostiles engaging. Weapons hot.",
+				"Here we go. Stay sharp, everyone.",
+				"Contact! Bringing weapons online."
+			],
+			"combat_hit_enemy": [
+				"Direct hit!",
+				"Target damaged.",
+				"That got their attention.",
+				"Solid hit. Keep it up."
+			],
+			"combat_player_hit": [
+				"We're hit! Damage report!",
+				"Hull breach! Sealing affected sections.",
+				"Shields took that one. Barely.",
+				"Another hit like that and we're in trouble."
+			],
+			"combat_victory": [
+				"Hostiles neutralized. Good work.",
+				"All clear. Stand down from battle stations.",
+				"That's how it's done.",
+				"Threat eliminated. Resuming course."
+			],
+			"exploration_idle": [
+				"Quiet out here. Almost too quiet.",
+				"All systems nominal, Captain.",
+				"Steady as she goes.",
+				"Keeping an eye on long-range sensors.",
+				"Nothing on scopes. For now."
+			],
+			"exploration_discovery": [
+				"Captain, you'll want to see this.",
+				"Picking up something interesting on sensors.",
+				"Now that's not something you see every day.",
+				"New contact. Doesn't match anything in our database."
+			]
+		}
+	},
+	"lian_song": {
+		"name": "Dr. Lian Song",
+		"short_name": "Lian",
+		"role": "Chief Medical Officer",
+		"station": "medical",
+		"species": "Human",
+		"portrait_color": [0.38, 0.72, 0.58],
+		"aptitudes": {
+			"tactical": 1,
+			"helm": 1,
+			"communications": 4,
+			"engineering": 2,
+			"science": 7,
+			"medical": 10
+		},
+		"barks": {
+			"combat_start": [
+				"Med bay standing by. Try not to need me.",
+				"I really preferred it when we weren't being shot at.",
+				"Preparing trauma kits. Just in case.",
+				"Everyone brace. And please don't bleed on my clean floor."
+			],
+			"combat_hit_enemy": [
+				"I don't celebrate violence... but nice shot.",
+				"One less threat. Good.",
+				"I'd rather be healing, but that works too."
+			],
+			"combat_player_hit": [
+				"Injury reports coming in!",
+				"I need a damage assessment, now!",
+				"Everyone stay calm. I've got this.",
+				"That's going to leave a mark. On the ship, I mean."
+			],
+			"combat_victory": [
+				"Anyone hurt? Report to med bay.",
+				"We survived. That's the important part.",
+				"All crew accounted for. Some bruised, nothing critical.",
+				"Good. Now can we go five minutes without being shot at?"
+			],
+			"exploration_idle": [
+				"The crew could use some rest, Captain.",
+				"Morale's holding steady. For now.",
+				"Beautiful out here, isn't it? In a terrifying sort of way.",
+				"I'm reading a fascinating xenobiology paper. Well, I was.",
+				"Crew vitals all in the green. Small mercies."
+			],
+			"exploration_discovery": [
+				"Fascinating. The biological readings here are unprecedented.",
+				"Captain, I'm seeing something medically significant in these scans.",
+				"This could advance our understanding significantly.",
+				"The composition here is... nothing I've ever seen in a textbook."
+			]
+		}
+	},
+	"kira_okafor": {
+		"name": "Kira Okafor",
+		"short_name": "Kira",
+		"role": "Chief Engineer",
+		"station": "engineering",
+		"species": "Human",
+		"portrait_color": [0.92, 0.68, 0.22],
+		"aptitudes": {
+			"tactical": 3,
+			"helm": 4,
+			"communications": 2,
+			"engineering": 10,
+			"science": 5,
+			"medical": 2
+		},
+		"barks": {
+			"combat_start": [
+				"Shields up, weapons hot! Let's go!",
+				"Oh, we're doing this? We're doing this!",
+				"Routing extra power to weapons. You're welcome.",
+				"I just finished calibrating the phase array. GREAT timing."
+			],
+			"combat_hit_enemy": [
+				"Ha! Did you see that?",
+				"Right in the reactor! Beautiful.",
+				"That's what happens when I tune the weapons.",
+				"Boom! ...I mean, confirmed hit."
+			],
+			"combat_player_hit": [
+				"Hey! I just fixed that section!",
+				"Conduit three is sparking -- on it!",
+				"Power fluctuation on deck two, rerouting!",
+				"Okay THAT was my favorite console. This is personal."
+			],
+			"combat_victory": [
+				"Ship's holding together. Mostly.",
+				"Damage isn't too bad. Give me ten minutes.",
+				"I can fix all of this. Probably.",
+				"That was fun! ...don't tell Ren I said that."
+			],
+			"exploration_idle": [
+				"Running diagnostics. Everything's nominal. Ish.",
+				"You ever wonder what these hull panels are actually made of?",
+				"I've got a few upgrade ideas when you have a minute, Captain.",
+				"The port stabilizer has a wobble. I'll get to it.",
+				"I modified the coffee maker. It's 40% more efficient now."
+			],
+			"exploration_discovery": [
+				"Ooh, what's THAT? Can I take it apart?",
+				"Those energy signatures are wild. I need a closer look.",
+				"Whatever that is, the engineering in it is incredible.",
+				"Captain, please tell me we're going to investigate that."
+			]
+		}
+	},
+	"yaro_osei": {
+		"name": "Ensign Yaro Osei",
+		"short_name": "Osei",
+		"role": "Helm Officer",
+		"station": "helm",
+		"species": "Human",
+		"portrait_color": [0.45, 0.55, 0.85],
+		"aptitudes": {
+			"tactical": 5,
+			"helm": 8,
+			"communications": 4,
+			"engineering": 3,
+			"science": 2,
+			"medical": 2
+		},
+		"barks": {
+			"combat_start": [
+				"Evasive maneuvers standing by!",
+				"I've got the stick. We're good.",
+				"Hostiles? Okay. Okay. I trained for this.",
+				"Plotting evasion patterns. Hold on tight."
+			],
+			"combat_hit_enemy": [
+				"Yes! Got 'em!",
+				"One down!",
+				"That's what I'm talking about!",
+				"Did everyone see that? Because that was great."
+			],
+			"combat_player_hit": [
+				"I'm trying to dodge! There are a LOT of them!",
+				"Going evasive! Hang on!",
+				"Sorry! I'll do better!",
+				"That one came out of nowhere!"
+			],
+			"combat_victory": [
+				"We did it! Ha! ...I mean, of course we did.",
+				"Returning to standard heading.",
+				"That was intense. Is it always like this?",
+				"All clear on helm. Nice work, everyone."
+			],
+			"exploration_idle": [
+				"Smooth flying out here. Almost peaceful.",
+				"Heading locked in, Captain. Just say the word.",
+				"You know, the academy never mentioned THIS part of space.",
+				"I could do this all day. The flying part, not the... everything else.",
+				"Helm's responsive. Kira must've been tweaking the thrusters again."
+			],
+			"exploration_discovery": [
+				"Whoa. Are you all seeing this?",
+				"Captain, there's something on the scope. Something big.",
+				"I've never seen readings like this!",
+				"Should we get closer? I want to get closer."
+			]
+		}
+	}
+}

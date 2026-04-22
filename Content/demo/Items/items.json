@@ -1,0 +1,51 @@
+{
+  "_comment": "Phase 5e item registry. Items are referenced by id from pickups, shops, and trigger actions.",
+  "items": [
+    {
+      "id": "coin",
+      "name": "Coin",
+      "description": "Currency. Used at shops.",
+      "max_stack": 9999,
+      "price": 1,
+      "category": "currency"
+    },
+    {
+      "id": "potion",
+      "name": "Potion",
+      "description": "Restores 25 HP when used.",
+      "max_stack": 9,
+      "price": 10,
+      "category": "consumable",
+      "use_effect": "heal_hp",
+      "use_amount": 25,
+      "use_arg": ""
+    },
+    {
+      "id": "key_silver",
+      "name": "Silver Key",
+      "description": "Opens silver-locked doors.",
+      "max_stack": 9,
+      "price": 0,
+      "category": "key"
+    },
+    {
+      "id": "key_gold",
+      "name": "Gold Key",
+      "description": "Opens gold-locked doors.",
+      "max_stack": 9,
+      "price": 0,
+      "category": "key"
+    },
+    {
+      "id": "heart_container",
+      "name": "Heart Container",
+      "description": "Permanently increases max HP by 1.",
+      "max_stack": 99,
+      "price": 0,
+      "category": "upgrade",
+      "use_effect": "max_hp_up",
+      "use_amount": 1,
+      "use_arg": ""
+    }
+  ]
+}

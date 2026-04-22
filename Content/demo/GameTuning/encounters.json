@@ -1,0 +1,10 @@
+{
+  "_comment": "Encounter tuning knobs. EncounterManager reads these at startup. Pack authors can override to adjust pacing.",
+  "min_void_time": 30.0,
+  "encounter_chance_per_sec": 0.003,
+  "encounter_interval_min": 45.0,
+  "encounter_interval_max": 120.0,
+  "max_encounters_per_trip": 3,
+  "chain_weight_boost": 3.0,
+  "void_distance": 18000.0
+}

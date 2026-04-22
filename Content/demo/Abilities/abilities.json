@@ -1,0 +1,89 @@
+{
+  "_comment": "Phase 7 ability registry. Default Super Metroid ability set. Each entry's params are read by Player physics hooks via AbilityDef.ParamFloat/ParamInt — packs can retune (e.g. easier mode with high_jump multiplier 1.6 instead of 1.4) without code edits.",
+  "abilities": [
+    {
+      "id": "morph_ball",
+      "name": "Morph Ball",
+      "description": "Curl into a ball. Press down to enter morph; smaller hitbox lets you fit in 1-tile gaps.",
+      "category": "movement",
+      "params": { "ball_radius": 8 }
+    },
+    {
+      "id": "high_jump",
+      "name": "High Jump Boots",
+      "description": "Jump higher (1.4× normal jump speed).",
+      "category": "movement",
+      "params": { "jump_multiplier": 1.4 }
+    },
+    {
+      "id": "space_jump",
+      "name": "Space Jump",
+      "description": "Re-jump in mid-air after a spin jump apex. Effectively infinite jumps.",
+      "category": "movement",
+      "params": { "rejump_window_frames": 6, "max_air_jumps": 99 }
+    },
+    {
+      "id": "screw_attack",
+      "name": "Screw Attack",
+      "description": "Spin jumps damage enemies on contact and break screw blocks.",
+      "category": "weapon",
+      "params": { "damage": 100 }
+    },
+    {
+      "id": "speed_booster",
+      "name": "Speed Booster",
+      "description": "Run for 1 second to enter shine state. Run faster, plow through soft blocks.",
+      "category": "movement",
+      "params": { "charge_seconds": 1.0, "boost_speed_multiplier": 1.6 }
+    },
+    {
+      "id": "shinespark",
+      "name": "Shinespark",
+      "description": "While shining, crouch then jump in any direction for a damaging dash.",
+      "category": "movement",
+      "params": { "dash_speed": 600, "dash_seconds": 0.6, "stash_seconds": 5.0 }
+    },
+    {
+      "id": "wall_jump",
+      "name": "Wall Jump",
+      "description": "Jump off walls during a wall slide.",
+      "category": "movement",
+      "params": { "wall_jump_x": 200, "wall_jump_y": 280, "cooldown_seconds": 0.25 }
+    },
+    {
+      "id": "grapple_beam",
+      "name": "Grappling Beam",
+      "description": "Latch onto grapple blocks and swing across gaps.",
+      "category": "movement",
+      "params": { "max_length": 200, "speed": 420 }
+    },
+    {
+      "id": "ice_beam",
+      "name": "Ice Beam",
+      "description": "Beams freeze enemies into temporary platforms.",
+      "category": "weapon",
+      "params": { "freeze_seconds": 4.0 }
+    },
+    {
+      "id": "wave_beam",
+      "name": "Wave Beam",
+      "description": "Beams travel in a sinusoidal pattern and pass through walls.",
+      "category": "weapon",
+      "params": { "amplitude": 16, "frequency": 4 }
+    },
+    {
+      "id": "plasma_beam",
+      "name": "Plasma Beam",
+      "description": "High-damage beam that pierces enemies.",
+      "category": "weapon",
+      "params": { "damage_multiplier": 3.0 }
+    },
+    {
+      "id": "double_jump",
+      "name": "Double Jump",
+      "description": "Jump a second time in mid-air.",
+      "category": "movement",
+      "params": { "extra_jumps": 1 }
+    }
+  ]
+}

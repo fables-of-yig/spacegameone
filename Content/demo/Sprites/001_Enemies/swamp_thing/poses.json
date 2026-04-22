@@ -1,0 +1,9 @@
+﻿{
+    "poses":  {
+                  "walk.png":  {
+                                   "fps":  8,
+                                   "loop_from":  0,
+                                   "frames":  4
+                               }
+              }
+}

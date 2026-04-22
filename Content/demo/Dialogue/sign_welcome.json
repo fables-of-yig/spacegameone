@@ -1,0 +1,9 @@
+{
+  "id": "sign_welcome",
+  "lines": [
+    {
+      "speaker": "Sign",
+      "text": "Welcome to MVMania! Press E to interact with NPCs and signs. Hit Tab to open the live editor."
+    }
+  ]
+}

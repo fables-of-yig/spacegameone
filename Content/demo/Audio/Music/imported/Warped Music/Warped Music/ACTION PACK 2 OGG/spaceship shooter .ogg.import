@@ -1,0 +1,19 @@
+[remap]
+
+importer="oggvorbisstr"
+type="AudioStreamOggVorbis"
+uid="uid://dcfo8qi6r1b4i"
+path="res://.godot/imported/spaceship shooter .ogg-179770ea7c83b74f73bd48cb0b7171f9.oggvorbisstr"
+
+[deps]
+
+source_file="res://Content/demo/Audio/Music/imported/Warped Music/Warped Music/ACTION PACK 2 OGG/spaceship shooter .ogg"
+dest_files=["res://.godot/imported/spaceship shooter .ogg-179770ea7c83b74f73bd48cb0b7171f9.oggvorbisstr"]
+
+[params]
+
+loop=false
+loop_offset=0
+bpm=0
+beat_count=0
+bar_beats=4

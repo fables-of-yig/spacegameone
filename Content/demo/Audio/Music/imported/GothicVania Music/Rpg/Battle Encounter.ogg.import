@@ -1,0 +1,19 @@
+[remap]
+
+importer="oggvorbisstr"
+type="AudioStreamOggVorbis"
+uid="uid://ep6ep6cckom8"
+path="res://.godot/imported/Battle Encounter.ogg-9d2150e9ee830c1eba48633259cc67bc.oggvorbisstr"
+
+[deps]
+
+source_file="res://Content/demo/Audio/Music/imported/GothicVania Music/Rpg/Battle Encounter.ogg"
+dest_files=["res://.godot/imported/Battle Encounter.ogg-9d2150e9ee830c1eba48633259cc67bc.oggvorbisstr"]
+
+[params]
+
+loop=false
+loop_offset=0
+bpm=0
+beat_count=0
+bar_beats=4

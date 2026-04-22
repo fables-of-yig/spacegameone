@@ -1,0 +1,1384 @@
+{
+	"afterburner_mk1": {
+		"buy_price": 200.0,
+		"description": "Auxiliary boost system. Adds more kick to each boost.",
+		"hex_size": 1.0,
+		"name": "Afterburner Mk1",
+		"sell_price": 100.0,
+		"stats": {
+			"boost_impulse_bonus": 150.0,
+			"power_draw": 6.0,
+			"thrust": 60.0
+		},
+		"subtype": "afterburner",
+		"tier": "advanced",
+		"type": "engine"
+	},
+	"airlock_mk1": {
+		"buy_price": 80.0,
+		"description": "Reinforced entry point for boarding operations and EVA.",
+		"hex_size": 1.0,
+		"name": "Airlock",
+		"sell_price": 30.0,
+		"stats": {
+			"hull_bonus": 10.0,
+			"power_draw": 1.0
+		},
+		"type": "airlock"
+	},
+	"animal_pen_mk1": {
+		"buy_price": 45.0,
+		"description": "Enclosed livestock pen with feed troughs and waste management. Keeps animals contained and crew happy.",
+		"hex_size": 2.0,
+		"name": "Animal Pen",
+		"sell_price": 20.0,
+		"stats": {
+			"animal_capacity": 4.0,
+			"power_draw": 1.0
+		},
+		"subtype": "livestock",
+		"tier": "standard",
+		"type": "animal_pen"
+	},
+	"animal_pen_mk2": {
+		"buy_price": 120.0,
+		"description": "Spacious livestock facility with climate control and auto-feeding. Houses a proper herd.",
+		"hex_size": 4.0,
+		"name": "Large Animal Pen",
+		"sell_price": 55.0,
+		"stats": {
+			"animal_capacity": 10.0,
+			"power_draw": 2.0
+		},
+		"subtype": "livestock",
+		"tier": "advanced",
+		"type": "animal_pen"
+	},
+	"aquaculture_tank": {
+		"buy_price": 60.0,
+		"description": "Pressurized water tanks for fish farming. Low maintenance protein source.",
+		"hex_size": 2.0,
+		"name": "Aquaculture Tank",
+		"sell_price": 30.0,
+		"sprite": "aquaculturetank",
+		"stats": {
+			"fish_capacity": 8.0,
+			"power_draw": 2.0
+		},
+		"subtype": "livestock",
+		"tier": "standard",
+		"type": "aquaculture_tank"
+	},
+	"armor_plate_mk1": {
+		"buy_price": 50.0,
+		"description": "Bolted-on armor plating. Heavy but effective.",
+		"hex_size": 1.0,
+		"name": "Armor Plating Mk1",
+		"sell_price": 25.0,
+		"stats": {
+			"damage_resist": 0.05,
+			"hull_bonus": 25.0
+		},
+		"tier": "standard",
+		"type": "armor"
+	},
+	"armor_plate_mk2": {
+		"buy_price": 130.0,
+		"description": "Composite armor. Superior protection, manageable weight.",
+		"hex_size": 1.0,
+		"name": "Armor Plating Mk2",
+		"sell_price": 65.0,
+		"stats": {
+			"damage_resist": 0.1,
+			"hull_bonus": 45.0
+		},
+		"tier": "advanced",
+		"type": "armor"
+	},
+	"armory_mk1": {
+		"buy_price": 100.0,
+		"description": "Weapons locker and training mats. Marines hit harder.",
+		"hex_size": 1.0,
+		"name": "Armory Mk1",
+		"sell_price": 50.0,
+		"stats": {
+			"combat_bonus": 2.0,
+			"power_draw": 2.0
+		},
+		"subtype": "armory",
+		"tier": "standard",
+		"type": "armory"
+	},
+	"autocannon_mk1": {
+		"buy_price": 90.0,
+		"description": "Kinetic autocannon. Partially bypasses energy shields.",
+		"hex_size": 1.0,
+		"name": "Autocannon Mk1",
+		"sell_price": 45.0,
+		"sprite": "autocannon1",
+		"stats": {
+			"damage": 35.0,
+			"fire_rate": 0.3,
+			"power_draw": 3.0,
+			"projectile_speed": 2100.0,
+			"range": 1500.0,
+			"shield_pierce": 0.3
+		},
+		"subtype": "kinetic",
+		"tier": "standard",
+		"type": "weapon",
+		"weapon_class": "primary"
+	},
+	"autocannon_mk2": {
+		"buy_price": 220.0,
+		"description": "Heavy autocannon. Tears through shields and hull alike.",
+		"hex_size": 1.0,
+		"name": "Autocannon Mk2",
+		"sell_price": 110.0,
+		"sprite": "autocannon2",
+		"stats": {
+			"damage": 55.0,
+			"fire_rate": 0.25,
+			"power_draw": 5.0,
+			"projectile_speed": 2400.0,
+			"range": 1650.0,
+			"shield_pierce": 0.45
+		},
+		"subtype": "kinetic",
+		"tier": "advanced",
+		"type": "weapon",
+		"weapon_class": "primary"
+	},
+	"basic_workshop": {
+		"buy_price": 120.0,
+		"description": "A simple workbench for crafting modules and equipment from raw materials. The foundation of any production chain.",
+		"hex_size": 2.0,
+		"name": "Basic Workshop",
+		"sell_price": 60.0,
+		"stats": {
+			"crew_slots": 1.0,
+			"power_draw": 3.0
+		},
+		"subtype": "workshop",
+		"tier": "standard",
+		"type": "basic_workshop"
+	},
+	"beam_emitter_mk1": {
+		"buy_price": 300.0,
+		"description": "Sustained energy beam. Low per-hit damage but relentless. Huge power draw.",
+		"hex_shape": [
+			[
+				0.0,
+				0.0
+			],
+			[
+				0.0,
+				-1.0
+			]
+		],
+		"hex_size": 2.0,
+		"name": "Sustained Blast Cannon",
+		"sell_price": 150.0,
+		"sprite": "sustainedblastcannon",
+		"stats": {
+			"beam_width": 8.0,
+			"damage": 60.0,
+			"fire_rate": 0.05,
+			"heat_decay": 6.0,
+			"heat_per_shot": 3.0,
+			"power_draw": 12.0,
+			"projectile_speed": 2000.0,
+			"range": 1890.0
+		},
+		"subtype": "beam",
+		"tier": "advanced",
+		"type": "weapon",
+		"weapon_class": "secondary"
+	},
+	"blast_door_mk1": {
+		"buy_price": 60.0,
+		"description": "Heavy bulkhead. Provides damage containment between sections.",
+		"hex_size": 1.0,
+		"name": "Blast Door",
+		"sell_price": 20.0,
+		"stats": {
+			"damage_resist": 0.02,
+			"hull_bonus": 15.0,
+			"power_draw": 0.0
+		},
+		"type": "structural"
+	},
+	"brewery_mk1": {
+		"buy_price": 180.0,
+		"description": "Distillery and fermentation vats. Converts food into alcohol for crew morale.",
+		"hex_shape": [
+			[
+				0.0,
+				0.0
+			],
+			[
+				0.0,
+				1.0
+			]
+		],
+		"hex_size": 2.0,
+		"name": "Brewery",
+		"sell_price": 90.0,
+		"sprite": "brewery",
+		"stats": {
+			"crew_slots": 1.0,
+			"power_draw": 5.0
+		},
+		"tier": "standard",
+		"type": "brewery"
+	},
+	"bridge_mk1": {
+		"buy_price": 80.0,
+		"description": "Ship command station. Required for command mode navigation.",
+		"hex_size": 1.0,
+		"name": "Bridge Mk1",
+		"sell_price": 40.0,
+		"stats": {
+			"command_bonus": 0.15,
+			"power_draw": 2.0
+		},
+		"subtype": "bridge",
+		"tier": "basic",
+		"type": "bridge"
+	},
+	"brig_mk1": {
+		"buy_price": 30.0,
+		"description": "Reinforced holding cell. Secures captured hostiles or unruly crew.",
+		"hex_size": 1.0,
+		"name": "Brig Mk1",
+		"sell_price": 15.0,
+		"sprite": "brigfull",
+		"stats": {
+			"power_draw": 1.0,
+			"prisoner_capacity": 2.0
+		},
+		"subtype": "brig",
+		"tier": "standard",
+		"type": "brig"
+	},
+	"cargo_bay_mk1": {
+		"buy_price": 80.0,
+		"description": "Pressurized cargo hold. Required for hauling contracts.",
+		"hex_shape": [
+			[
+				0.0,
+				0.0
+			],
+			[
+				0.0,
+				1.0
+			]
+		],
+		"hex_size": 2.0,
+		"name": "Cargo Bay Mk1",
+		"sell_price": 40.0,
+		"sprite": "cargobaymk1",
+		"stats": {
+			"cargo_capacity": 4.0
+		},
+		"tier": "standard",
+		"type": "cargo"
+	},
+	"cargo_bay_mk2": {
+		"buy_price": 200.0,
+		"description": "Expanded cargo hold. Serious hauling capacity.",
+		"hex_size": 4.0,
+		"name": "Cargo Bay Mk2",
+		"sell_price": 100.0,
+		"stats": {
+			"cargo_capacity": 10.0
+		},
+		"tier": "advanced",
+		"type": "cargo"
+	},
+	"colony_spear_mk1": {
+		"buy_price": 500.0,
+		"description": "Planetary deployment system. Allows this ship to land on a planet and establish a permanent colony.",
+		"hex_size": 4.0,
+		"name": "Colony Spear",
+		"sell_price": 250.0,
+		"stats": {
+			"deploy_time": 30.0,
+			"power_draw": 8.0
+		},
+		"subtype": "colony_spear",
+		"tier": "advanced",
+		"type": "colony_spear"
+	},
+	"common_room_mk1": {
+		"buy_price": 200.0,
+		"description": "Large recreation area with seating and entertainment. Great for morale.",
+		"hex_size": 6.0,
+		"name": "Common Room",
+		"sell_price": 70.0,
+		"stats": {
+			"morale_bonus": 0.3,
+			"power_draw": 3.0
+		},
+		"type": "rec_room"
+	},
+	"conduit_mk1": {
+		"buy_price": 20.0,
+		"description": "Routes power from reactors to distant modules. No power cost.",
+		"hex_size": 1.0,
+		"name": "Power Conduit",
+		"sell_price": 10.0,
+		"stats": {
+
+		},
+		"tier": "standard",
+		"type": "conduit"
+	},
+	"construction_hangar_mk1": {
+		"buy_price": 500.0,
+		"description": "Full-scale construction bay. Enables onboard ship modifications without a shipyard. Cruiser hulls only.",
+		"hex_size": 4.0,
+		"min_hull": "cruiser",
+		"name": "Construction Hangar",
+		"sell_price": 250.0,
+		"stats": {
+			"build_speed": 1.0,
+			"power_draw": 5.0
+		},
+		"subtype": "construction_hangar",
+		"tier": "advanced",
+		"type": "construction_hangar"
+	},
+	"core_corvette": {
+		"buy_price": 0.0,
+		"deck_count": 2.0,
+		"description": "Versatile corvette hull. Good balance of space and speed.",
+		"hex_shape": [
+			[
+				0.0,
+				0.0
+			],
+			[
+				0.0,
+				1.0
+			],
+			[
+				0.0,
+				-1.0
+			]
+		],
+		"hex_size": 3.0,
+		"hull_radius": 7.0,
+		"name": "Corvette Frame",
+		"sell_price": 0.0,
+		"stats": {
+			"base_acceleration": 550.0,
+			"base_max_speed": 400.0,
+			"hull_bonus": 25.0,
+			"power_output": 15.0
+		},
+		"tier": "standard",
+		"type": "core"
+	},
+	"core_cruiser": {
+		"buy_price": 0.0,
+		"deck_count": 4.0,
+		"description": "Massive cruiser hull. Enough space to build a station. The final word in shipbuilding.",
+		"hex_size": 7.0,
+		"hull_radius": 12.0,
+		"name": "Cruiser Platform",
+		"sell_price": 0.0,
+		"stats": {
+			"base_acceleration": 350.0,
+			"base_max_speed": 300.0,
+			"hull_bonus": 100.0,
+			"power_output": 30.0
+		},
+		"tier": "elite",
+		"type": "core"
+	},
+	"core_frigate": {
+		"buy_price": 0.0,
+		"deck_count": 3.0,
+		"description": "Heavy frigate chassis. Maximum firepower and protection.",
+		"hex_shape": [
+			[
+				0.0,
+				0.0
+			],
+			[
+				0.0,
+				-1.0
+			],
+			[
+				1.0,
+				-1.0
+			],
+			[
+				-1.0,
+				0.0
+			]
+		],
+		"hex_size": 4.0,
+		"hull_radius": 10.0,
+		"name": "Frigate Frame",
+		"sell_price": 0.0,
+		"sprite": "frigateframe",
+		"stats": {
+			"base_acceleration": 450.0,
+			"base_max_speed": 350.0,
+			"hull_bonus": 50.0,
+			"power_output": 20.0
+		},
+		"tier": "advanced",
+		"type": "core"
+	},
+	"core_pod": {
+		"buy_price": 0.0,
+		"deck_count": 1.0,
+		"description": "Salvaged escape pod. Barely spaceworthy. A humble beginning.",
+		"hex_size": 1.0,
+		"hull_radius": 3.0,
+		"name": "Damaged Frame",
+		"sell_price": 0.0,
+		"sprite": "escapepodcore",
+		"stats": {
+			"base_acceleration": 800.0,
+			"base_max_speed": 450.0,
+			"hull_bonus": -25.0,
+			"power_output": 5.0
+		},
+		"tier": "basic",
+		"type": "core"
+	},
+	"core_scout": {
+		"buy_price": 0.0,
+		"deck_count": 1.0,
+		"description": "Light scout chassis. Fast and agile, limited module space.",
+		"hex_shape": [
+			[
+				0.0,
+				0.0
+			],
+			[
+				0.0,
+				1.0
+			]
+		],
+		"hex_size": 2.0,
+		"hull_radius": 5.0,
+		"name": "Scout Frame",
+		"sell_price": 0.0,
+		"stats": {
+			"base_acceleration": 700.0,
+			"base_max_speed": 500.0,
+			"hull_bonus": 0.0,
+			"power_output": 10.0
+		},
+		"tier": "standard",
+		"type": "core"
+	},
+	"crew_quarters_mk1": {
+		"buy_price": 60.0,
+		"description": "Basic crew bunks. Houses up to four crew members.",
+		"hex_size": 2.0,
+		"name": "Crew Quarters Mk1",
+		"sell_price": 30.0,
+		"stats": {
+			"crew_capacity": 4.0,
+			"power_draw": 2.0
+		},
+		"subtype": "quarters",
+		"tier": "standard",
+		"type": "quarters"
+	},
+	"crew_quarters_mk2": {
+		"buy_price": 150.0,
+		"description": "Expanded living quarters. Comfortable housing for a full crew.",
+		"hex_size": 4.0,
+		"name": "Crew Quarters Mk2",
+		"sell_price": 75.0,
+		"stats": {
+			"crew_capacity": 8.0,
+			"power_draw": 3.0
+		},
+		"subtype": "quarters",
+		"tier": "advanced",
+		"type": "quarters"
+	},
+	"crew_quarters_mk3": {
+		"buy_price": 250.0,
+		"description": "Barracks-grade housing. Crams in a lot of spacers.",
+		"hex_size": 6.0,
+		"name": "Crew Quarters Mk3",
+		"sell_price": 125.0,
+		"stats": {
+			"crew_capacity": 14.0,
+			"power_draw": 5.0
+		},
+		"subtype": "quarters",
+		"tier": "advanced",
+		"type": "quarters"
+	},
+	"deck_ladder_mk1": {
+		"buy_price": 40.0,
+		"description": "Connects adjacent decks. Place at same position on two decks to create a passage.",
+		"hex_size": 1.0,
+		"name": "Deck Ladder",
+		"sell_price": 15.0,
+		"sprite": "deckladder",
+		"stats": {
+			"power_draw": 0.0
+		},
+		"type": "ladder"
+	},
+	"deck_lift_mk1": {
+		"buy_price": 100.0,
+		"description": "Powered lift between decks. Faster crew transit than a ladder.",
+		"hex_size": 1.0,
+		"name": "Deck Lift",
+		"sell_price": 40.0,
+		"stats": {
+			"power_draw": 2.0
+		},
+		"type": "ladder"
+	},
+	"deck_plate": {
+		"buy_price": 5.0,
+		"description": "Basic floor panel. Cheap walkable space for building rooms on top of.",
+		"hex_size": 1.0,
+		"name": "Deck Plate",
+		"sell_price": 2.0,
+		"stats": {
+			"power_draw": 0.0
+		},
+		"type": "hallway"
+	},
+	"docking_collar_mk1": {
+		"buy_price": 300.0,
+		"description": "Heavy-duty structural coupling. Allows linking fleet ships end-to-end to form massive voidships. Cruiser hulls only.",
+		"hex_size": 2.0,
+		"min_hull": "cruiser",
+		"name": "Docking Collar",
+		"sell_price": 150.0,
+		"stats": {
+			"power_draw": 2.0
+		},
+		"subtype": "docking_collar",
+		"tier": "advanced",
+		"type": "docking_collar"
+	},
+	"ecm_jammer_mk1": {
+		"buy_price": 260.0,
+		"description": "Electronic countermeasures. Enemy shots miss 15% more often.",
+		"hex_size": 1.0,
+		"name": "ECM Jammer Mk1",
+		"sell_price": 130.0,
+		"stats": {
+			"evasion_bonus": 0.15,
+			"power_draw": 7.0,
+			"scan_range": 100.0,
+			"scan_speed": 0.3
+		},
+		"subtype": "ecm",
+		"tier": "advanced",
+		"type": "sensor"
+	},
+	"engine_block_mk1": {
+		"buy_price": 100.0,
+		"description": "Structural engine housing. Doubles thrust of adjacent Ion Thrusters. Adjacent Engine Blocks increase each other's boost by 20%.",
+		"hex_size": 1.0,
+		"name": "Engine Block",
+		"sell_price": 50.0,
+		"stats": {
+			"power_draw": 2.0,
+			"thrust": 0.0
+		},
+		"subtype": "engine_block",
+		"tier": "standard",
+		"type": "engine"
+	},
+	"fabricator_mk1": {
+		"buy_price": 350.0,
+		"description": "Precision manufacturing bench. Gunsmiths craft weapon components here.",
+		"hex_size": 2.0,
+		"name": "Fabricator",
+		"sell_price": 175.0,
+		"stats": {
+			"crew_slots": 1.0,
+			"power_draw": 10.0
+		},
+		"tier": "advanced",
+		"type": "fabricator"
+	},
+	"farmers_workshop": {
+		"buy_price": 150.0,
+		"description": "Cultivates mycelium cultures from carbon compounds. Essential feedstock for hydroponics and solar fields.",
+		"hex_size": 2.0,
+		"name": "Farmer's Workshop",
+		"sell_price": 75.0,
+		"stats": {
+			"crew_slots": 1.0,
+			"power_draw": 4.0
+		},
+		"subtype": "workshop",
+		"tier": "standard",
+		"type": "farmers_workshop"
+	},
+	"fleet_comm_mk1": {
+		"buy_price": 200.0,
+		"description": "Long-range fleet communications. Required on flagship to issue orders to fleet ships.",
+		"hex_size": 1.0,
+		"name": "Fleet Comm Array",
+		"sell_price": 100.0,
+		"stats": {
+			"fleet_range": 5000.0,
+			"power_draw": 3.0
+		},
+		"subtype": "fleet_comm",
+		"tier": "standard",
+		"type": "fleet_comm"
+	},
+	"fuel_scoop_mk1": {
+		"buy_price": 150.0,
+		"description": "Collects hydrogen from stellar corona. Refuels passively near stars.",
+		"hex_size": 1.0,
+		"name": "Fuel Scoop Mk1",
+		"sell_price": 75.0,
+		"stats": {
+			"power_draw": 3.0,
+			"scoop_rate": 1.5
+		},
+		"subtype": "fuel_scoop",
+		"tier": "standard",
+		"type": "fuel_scoop"
+	},
+	"fuel_scoop_mk2": {
+		"buy_price": 300.0,
+		"description": "High-capacity ram scoop. Drinks starfire like water.",
+		"hex_size": 1.0,
+		"name": "Fuel Scoop Mk2",
+		"sell_price": 150.0,
+		"stats": {
+			"power_draw": 5.0,
+			"scoop_rate": 3.0
+		},
+		"subtype": "fuel_scoop",
+		"tier": "advanced",
+		"type": "fuel_scoop"
+	},
+	"fuel_tank_mk1": {
+		"buy_price": 80.0,
+		"description": "Additional fuel storage. Essential for long-range fleet operations.",
+		"hex_size": 2.0,
+		"name": "Fuel Tank Mk1",
+		"sell_price": 40.0,
+		"stats": {
+			"fuel_capacity": 50.0,
+			"power_draw": 0.0
+		},
+		"subtype": "fuel_tank",
+		"tier": "standard",
+		"type": "fuel_tank"
+	},
+	"gauss_battery_mk1": {
+		"buy_price": 350.0,
+		"description": "Electromagnetic accelerator battery. Fast kinetic slugs — stack multiples for devastating salvos.",
+		"hex_size": 1.0,
+		"name": "Gauss Battery",
+		"sell_price": 175.0,
+		"sprite": "gaussbattery",
+		"stats": {
+			"aoe_radius": 60.0,
+			"damage": 400.0,
+			"fire_rate": 0.4,
+			"knockback": 2000.0,
+			"power_draw": 12.0,
+			"projectile_speed": 4500.0,
+			"range": 2100.0,
+			"shield_pierce": 0.3
+		},
+		"subtype": "gauss",
+		"tier": "advanced",
+		"type": "weapon",
+		"weapon_class": "special"
+	},
+	"hallway_long": {
+		"buy_price": 35.0,
+		"description": "Extended corridor for connecting distant sections.",
+		"hex_shape": [
+			[
+				0.0,
+				0.0
+			],
+			[
+				1.0,
+				0.0
+			],
+			[
+				2.0,
+				0.0
+			]
+		],
+		"hex_size": 3.0,
+		"name": "Long Corridor",
+		"sell_price": 12.0,
+		"stats": {
+			"power_draw": 0.0
+		},
+		"type": "hallway"
+	},
+	"hallway_mk1": {
+		"buy_price": 15.0,
+		"description": "Standard corridor segment. Routes power and lets crew move through.",
+		"hex_size": 1.0,
+		"name": "Hallway",
+		"sell_price": 5.0,
+		"stats": {
+			"power_draw": 0.0
+		},
+		"type": "hallway"
+	},
+	"hangar_bay_mk1": {
+		"buy_price": 250.0,
+		"description": "Launches boarding pods and stores escape pods.",
+		"hex_size": 4.0,
+		"name": "Hangar Bay Mk1",
+		"sell_price": 125.0,
+		"stats": {
+			"launch_speed": 1.0,
+			"pod_capacity": 2.0,
+			"power_draw": 4.0
+		},
+		"subtype": "hangar",
+		"tier": "standard",
+		"type": "hangar"
+	},
+	"hornet_battery_mk1": {
+		"buy_price": 600.0,
+		"description": "Fires an explosive round that fragments into 8 homing submunitions on impact. 9s cooldown.",
+		"hex_size": 1.0,
+		"name": "Hornet Battery",
+		"sell_price": 300.0,
+		"sprite": "hornetbattery",
+		"stats": {
+			"damage": 120.0,
+			"fire_rate": 9.0,
+			"power_draw": 30.0,
+			"projectile_speed": 1400.0,
+			"range": 3600.0
+		},
+		"subtype": "hornet",
+		"tier": "advanced",
+		"type": "weapon",
+		"weapon_class": "special"
+	},
+	"hydroponics_mk1": {
+		"buy_price": 180.0,
+		"description": "Grows food onboard. Slowly replenishes food supply without stopping at stations.",
+		"hex_size": 2.0,
+		"name": "Hydroponics Mk1",
+		"sell_price": 90.0,
+		"stats": {
+			"food_generation": 0.5,
+			"power_draw": 4.0
+		},
+		"subtype": "hydroponics",
+		"tier": "standard",
+		"type": "hydroponics"
+	},
+	"kitchen_mk1": {
+		"buy_price": 150.0,
+		"description": "Ship galley. A cook turns raw ingredients into proper meals. Generates bonus food.",
+		"hex_size": 1.0,
+		"name": "Kitchen",
+		"sell_price": 75.0,
+		"stats": {
+			"crew_slots": 1.0,
+			"food_generation": 0.3,
+			"power_draw": 4.0
+		},
+		"tier": "standard",
+		"type": "kitchen"
+	},
+	"lance_battery_mk1": {
+		"buy_price": 500.0,
+		"description": "Long-range beam lance. Sustained fire melts armor at extreme range.",
+		"hex_shape": [
+			[
+				0.0,
+				0.0
+			],
+			[
+				0.0,
+				-1.0
+			]
+		],
+		"hex_size": 2.0,
+		"name": "Lance Battery",
+		"sell_price": 250.0,
+		"sprite": "lancebattery",
+		"stats": {
+			"damage": 35.0,
+			"fire_rate": 0.04,
+			"heat_decay": 6.0,
+			"heat_per_shot": 3.0,
+			"power_draw": 14.0,
+			"projectile_speed": 2500.0,
+			"range": 900.0
+		},
+		"subtype": "lance",
+		"tier": "advanced",
+		"type": "weapon",
+		"weapon_class": "secondary"
+	},
+	"life_support_mk1": {
+		"buy_price": 40.0,
+		"description": "Atmospheric recycler. Required to keep crew alive in the void.",
+		"hex_size": 1.0,
+		"name": "Life Support Mk1",
+		"sell_price": 20.0,
+		"stats": {
+			"crew_supported": 6.0,
+			"power_draw": 3.0
+		},
+		"subtype": "life_support",
+		"tier": "standard",
+		"type": "life_support"
+	},
+	"macro_cannon_mk1": {
+		"buy_price": 400.0,
+		"description": "Magnetic Accelerator Cannon. Devastating kinetic slug with explosive impact.",
+		"hex_size": 2.0,
+		"name": "MAC Gun",
+		"sell_price": 200.0,
+		"stats": {
+			"damage": 600.0,
+			"fire_rate": 2.5,
+			"knockback": 10000.0,
+			"power_draw": 15.0,
+			"projectile_speed": 900.0,
+			"range": 600.0,
+			"splash_radius": 80.0
+		},
+		"subtype": "kinetic",
+		"tier": "advanced",
+		"type": "weapon",
+		"weapon_class": "special"
+	},
+	"medbay_mk1": {
+		"buy_price": 120.0,
+		"description": "Onboard medical facility. Treats injuries and stabilizes wounded crew.",
+		"hex_size": 2.0,
+		"name": "Medbay Mk1",
+		"sell_price": 60.0,
+		"stats": {
+			"heal_rate": 2.0,
+			"power_draw": 4.0
+		},
+		"subtype": "medbay",
+		"tier": "standard",
+		"type": "medbay"
+	},
+	"medbay_mk2": {
+		"buy_price": 280.0,
+		"description": "Surgical suite with auto-doc. Patches up even the worst injuries.",
+		"hex_size": 4.0,
+		"name": "Medbay Mk2",
+		"sell_price": 140.0,
+		"stats": {
+			"heal_rate": 4.0,
+			"power_draw": 6.0
+		},
+		"subtype": "medbay",
+		"tier": "advanced",
+		"type": "medbay"
+	},
+	"mess_hall_mk1": {
+		"buy_price": 50.0,
+		"description": "Ship galley and dining area. Keeps the crew fed and functional.",
+		"hex_size": 2.0,
+		"name": "Mess Hall Mk1",
+		"sell_price": 25.0,
+		"stats": {
+			"feed_capacity": 6.0,
+			"power_draw": 2.0
+		},
+		"subtype": "mess",
+		"tier": "standard",
+		"type": "mess"
+	},
+	"mess_hall_mk2": {
+		"buy_price": 120.0,
+		"description": "Full galley with proper cooking equipment. The crew eats well.",
+		"hex_size": 4.0,
+		"name": "Mess Hall Mk2",
+		"sell_price": 60.0,
+		"stats": {
+			"feed_capacity": 12.0,
+			"power_draw": 3.0
+		},
+		"subtype": "mess",
+		"tier": "advanced",
+		"type": "mess"
+	},
+	"micro_reactor": {
+		"buy_price": 40.0,
+		"description": "Salvaged fusion core. Barely enough juice for basic systems.",
+		"hex_size": 1.0,
+		"name": "Micro Reactor",
+		"sell_price": 20.0,
+		"sprite": "microreactor",
+		"stats": {
+			"power_output": 20.0
+		},
+		"tier": "basic",
+		"type": "reactor"
+	},
+	"mining_laser_mk1": {
+		"buy_price": 120.0,
+		"description": "Cuts into asteroid surfaces to extract ore and minerals.",
+		"hex_size": 1.0,
+		"name": "Mining Laser Mk1",
+		"sell_price": 60.0,
+		"stats": {
+			"mine_rate": 1.0,
+			"power_draw": 4.0
+		},
+		"subtype": "mining",
+		"tier": "standard",
+		"type": "mining"
+	},
+	"mining_laser_mk2": {
+		"buy_price": 280.0,
+		"description": "Deep-bore mining rig. Extracts rare minerals from dense asteroids.",
+		"hex_size": 1.0,
+		"name": "Mining Laser Mk2",
+		"sell_price": 140.0,
+		"stats": {
+			"mine_rate": 2.5,
+			"power_draw": 7.0
+		},
+		"subtype": "mining",
+		"tier": "advanced",
+		"type": "mining"
+	},
+	"missile_rack_mk1": {
+		"buy_price": 350.0,
+		"description": "Guided missiles. Slow-firing but devastating. Tracks targets.",
+		"hex_size": 2.0,
+		"name": "Missile Rack Mk1",
+		"sell_price": 175.0,
+		"stats": {
+			"damage": 200.0,
+			"fire_rate": 2.0,
+			"power_draw": 6.0,
+			"projectile_speed": 400.0,
+			"range": 800.0,
+			"splash_radius": 40.0,
+			"tracking": 0.6
+		},
+		"subtype": "missile",
+		"tier": "advanced",
+		"type": "weapon",
+		"weapon_class": "secondary"
+	},
+	"observation_deck_mk1": {
+		"buy_price": 90.0,
+		"description": "Viewport lounge. A quiet place to watch the stars.",
+		"hex_size": 2.0,
+		"name": "Observation Deck",
+		"sell_price": 30.0,
+		"stats": {
+			"morale_bonus": 0.1,
+			"power_draw": 1.0
+		},
+		"type": "rec_room"
+	},
+	"officer_cabin_mk1": {
+		"buy_price": 120.0,
+		"description": "Private quarters with a real bed. Boosts crew morale.",
+		"hex_size": 1.0,
+		"name": "Officer's Cabin",
+		"sell_price": 45.0,
+		"stats": {
+			"crew_capacity": 1.0,
+			"morale_bonus": 0.15,
+			"power_draw": 1.0
+		},
+		"type": "quarters"
+	},
+	"point_defense_mk1": {
+		"buy_price": 250.0,
+		"description": "Automated close-in weapon. Shoots down incoming projectiles.",
+		"hex_size": 1.0,
+		"name": "Point Defense Mk1",
+		"sell_price": 125.0,
+		"stats": {
+			"auto_target": true,
+			"damage": 8.0,
+			"fire_rate": 0.08,
+			"power_draw": 4.0,
+			"projectile_speed": 1200.0,
+			"range": 150.0
+		},
+		"subtype": "point_defense",
+		"tier": "advanced",
+		"type": "weapon",
+		"weapon_class": "primary"
+	},
+	"pulse_laser_mk1": {
+		"buy_price": 80.0,
+		"description": "Standard-issue pulse laser. Reliable and efficient.",
+		"hex_size": 1.0,
+		"name": "Pulse Laser Mk1",
+		"sell_price": 40.0,
+		"sprite": "pulselaser1",
+		"stats": {
+			"damage": 100.0,
+			"fire_rate": 0.15,
+			"heat_decay": 20.0,
+			"heat_per_shot": 1.0,
+			"power_draw": 5.0,
+			"projectile_speed": 3500.0,
+			"range": 1800.0
+		},
+		"subtype": "energy",
+		"tier": "standard",
+		"type": "weapon",
+		"weapon_class": "primary"
+	},
+	"pulse_laser_mk2": {
+		"buy_price": 200.0,
+		"description": "Military-grade pulse laser. Faster, harder, longer reach.",
+		"hex_size": 1.0,
+		"name": "Pulse Laser Mk2",
+		"sell_price": 100.0,
+		"sprite": "pulselaser2",
+		"stats": {
+			"damage": 40.0,
+			"fire_rate": 0.12,
+			"heat_decay": 6.0,
+			"heat_per_shot": 3.0,
+			"power_draw": 7.0,
+			"projectile_speed": 2700.0,
+			"range": 2100.0
+		},
+		"subtype": "energy",
+		"tier": "advanced",
+		"type": "weapon",
+		"weapon_class": "primary"
+	},
+	"railgun_mk1": {
+		"buy_price": 600.0,
+		"description": "Electromagnetic accelerator. One devastating shot at extreme range. Long reload.",
+		"hex_shape": [
+			[
+				0.0,
+				0.0
+			],
+			[
+				0.0,
+				-1.0
+			],
+			[
+				1.0,
+				-1.0
+			]
+		],
+		"hex_size": 3.0,
+		"name": "Railgun",
+		"sell_price": 300.0,
+		"sprite": "railgun",
+		"stats": {
+			"damage": 500.0,
+			"fire_rate": 3.5,
+			"power_draw": 16.0,
+			"projectile_speed": 2000.0,
+			"range": 1200.0,
+			"shield_pierce": 0.7
+		},
+		"subtype": "railgun",
+		"tier": "advanced",
+		"type": "weapon",
+		"weapon_class": "special"
+	},
+	"reactor_mk1": {
+		"buy_price": 150.0,
+		"description": "Compact fusion reactor. The heart of any ship.",
+		"hex_size": 4.0,
+		"name": "Fusion Reactor",
+		"sell_price": 75.0,
+		"sprite": "fusionreactormk1",
+		"stats": {
+			"power_output": 50.0
+		},
+		"tier": "standard",
+		"type": "reactor"
+	},
+	"reactor_mk2": {
+		"buy_price": 350.0,
+		"description": "Antimatter annihilation core. Powers a fully loaded warship.",
+		"hex_shape": [
+			[
+				0.0,
+				0.0
+			],
+			[
+				0.0,
+				-1.0
+			],
+			[
+				-1.0,
+				1.0
+			],
+			[
+				1.0,
+				0.0
+			]
+		],
+		"hex_size": 4.0,
+		"name": "Antimatter Reactor",
+		"sell_price": 175.0,
+		"sprite": "antimatter_reactor",
+		"stats": {
+			"power_output": 100.0
+		},
+		"tier": "advanced",
+		"type": "reactor"
+	},
+	"rec_room_mk1": {
+		"buy_price": 70.0,
+		"description": "Card tables, a screen, and a punching bag. Keeps morale from cratering.",
+		"hex_size": 2.0,
+		"name": "Rec Room Mk1",
+		"sell_price": 35.0,
+		"stats": {
+			"morale_bonus": 1.5,
+			"power_draw": 2.0
+		},
+		"subtype": "rec_room",
+		"tier": "standard",
+		"type": "rec_room"
+	},
+	"repair_module_mk1": {
+		"buy_price": 280.0,
+		"description": "Nanobot swarm that slowly repairs hull damage. +2 HP/s.",
+		"hex_size": 1.0,
+		"name": "Repair Nanobots Mk1",
+		"sell_price": 140.0,
+		"sprite": "repairactualnanobots",
+		"stats": {
+			"hull_bonus": 10.0,
+			"hull_regen": 2.0,
+			"power_draw": 5.0
+		},
+		"subtype": "repair",
+		"tier": "advanced",
+		"type": "armor"
+	},
+	"research_lab_mk1": {
+		"buy_price": 200.0,
+		"description": "Onboard laboratory. Crew research permanent ship upgrades.",
+		"hex_size": 2.0,
+		"name": "Research Lab",
+		"sell_price": 100.0,
+		"stats": {
+			"power_draw": 4.0,
+			"research_speed": 1.0
+		},
+		"subtype": "research_lab",
+		"tier": "advanced",
+		"type": "research_lab"
+	},
+	"sensor_mk1": {
+		"buy_price": 70.0,
+		"description": "Basic sensor array. Sees what's out there.",
+		"hex_size": 1.0,
+		"name": "Sensor Array Mk1",
+		"sell_price": 35.0,
+		"stats": {
+			"power_draw": 4.0,
+			"scan_range": 500.0,
+			"scan_speed": 1.0
+		},
+		"tier": "standard",
+		"type": "sensor"
+	},
+	"sensor_mk2": {
+		"buy_price": 180.0,
+		"description": "Advanced long-range sensors. Nothing hides from these.",
+		"hex_size": 1.0,
+		"name": "Sensor Array Mk2",
+		"sell_price": 90.0,
+		"stats": {
+			"power_draw": 6.0,
+			"scan_range": 800.0,
+			"scan_speed": 1.5
+		},
+		"tier": "advanced",
+		"type": "sensor"
+	},
+	"shield_gen_mk1": {
+		"buy_price": 100.0,
+		"description": "Basic energy shield generator. +150 shields, +12 recharge/s.",
+		"hex_size": 1.0,
+		"name": "Shield Generator Mk1",
+		"sell_price": 50.0,
+		"sprite": "sheildgeneratormk1blue",
+		"stats": {
+			"power_draw": 8.0,
+			"recharge_rate": 12.0,
+			"shield_capacity": 150.0
+		},
+		"tier": "standard",
+		"type": "shield"
+	},
+	"shield_gen_mk2": {
+		"buy_price": 240.0,
+		"description": "Advanced shield emitter. Stronger shields, faster recharge.",
+		"hex_size": 1.0,
+		"name": "Shield Generator Mk2",
+		"sell_price": 120.0,
+		"stats": {
+			"power_draw": 12.0,
+			"recharge_rate": 20.0,
+			"shield_capacity": 250.0
+		},
+		"tier": "advanced",
+		"type": "shield"
+	},
+	"shield_supercharger_mk1": {
+		"buy_price": 350.0,
+		"description": "Overloads shield emitters to create a spinning parry field. Burns all remaining shields to reflect incoming fire.",
+		"hex_size": 1.0,
+		"name": "Shield Supercharger",
+		"sell_price": 175.0,
+		"sprite": "shieldsupercharger",
+		"stats": {
+			"power_draw": 8.0
+		},
+		"tier": "advanced",
+		"type": "shield_supercharger"
+	},
+	"smelter_mk1": {
+		"buy_price": 250.0,
+		"description": "Ore processing furnace. Crew with smelting skill refines raw ore into usable materials.",
+		"hex_size": 2.0,
+		"name": "Smelter",
+		"sell_price": 125.0,
+		"stats": {
+			"crew_slots": 1.0,
+			"power_draw": 8.0
+		},
+		"tier": "standard",
+		"type": "smelter"
+	},
+	"solar_field": {
+		"buy_price": 300.0,
+		"description": "Deploys solar-powered grow arrays. Produces large food yields when orbiting a star.",
+		"hex_size": 3.0,
+		"name": "Solar Field",
+		"sell_price": 150.0,
+		"stats": {
+			"crew_slots": 1.0,
+			"food_generation": 1.5,
+			"power_draw": 6.0
+		},
+		"subtype": "farming",
+		"tier": "advanced",
+		"type": "solar_field"
+	},
+	"storage_locker_mk1": {
+		"buy_price": 40.0,
+		"description": "Compact storage for personal gear and small supplies.",
+		"hex_size": 1.0,
+		"name": "Storage Locker",
+		"sell_price": 15.0,
+		"stats": {
+			"cargo_capacity": 2.0,
+			"power_draw": 0.0
+		},
+		"type": "cargo"
+	},
+	"thruster_mk1": {
+		"buy_price": 60.0,
+		"description": "Standard ion thruster. Gets you where you're going.",
+		"hex_size": 1.0,
+		"name": "Ion Thruster Mk1",
+		"sell_price": 30.0,
+		"stats": {
+			"power_draw": 3.0,
+			"thrust": 100.0
+		},
+		"tier": "standard",
+		"type": "engine"
+	},
+	"thruster_mk2": {
+		"buy_price": 160.0,
+		"description": "Military-grade thruster. Serious acceleration.",
+		"hex_size": 1.0,
+		"name": "Ion Thruster Mk2",
+		"sell_price": 80.0,
+		"stats": {
+			"power_draw": 5.0,
+			"thrust": 180.0
+		},
+		"tier": "advanced",
+		"type": "engine"
+	},
+	"torpedo_launcher_mk1": {
+		"buy_price": 450.0,
+		"description": "Slow-tracking torpedo. Devastating hull damage on impact.",
+		"hex_size": 2.0,
+		"name": "Torpedo Launcher",
+		"sell_price": 225.0,
+		"stats": {
+			"damage": 450.0,
+			"fire_rate": 4.0,
+			"power_draw": 8.0,
+			"projectile_speed": 300.0,
+			"range": 1000.0,
+			"splash_radius": 80.0,
+			"tracking": 0.4
+		},
+		"subtype": "torpedo",
+		"tier": "advanced",
+		"type": "weapon",
+		"weapon_class": "secondary"
+	},
+	"wretched_harpoon_mk1": {
+		"buy_price": 400.0,
+		"description": "Eldritch grappling hook. Fires a writhing tendril that latches onto ships and stations. Swing around anchored targets for traversal and combat tricks.",
+		"hex_shape": [
+			[
+				0.0,
+				0.0
+			],
+			[
+				0.0,
+				-1.0
+			],
+			[
+				0.0,
+				-2.0
+			]
+		],
+		"hex_size": 3.0,
+		"name": "Wretched Harpoon",
+		"sell_price": 200.0,
+		"sprite": "wretchedharpoon",
+		"stats": {
+			"damage": 10.0,
+			"power_draw": 8.0,
+			"projectile_speed": 3600.0,
+			"pull_force": 200.0,
+			"range": 600.0,
+			"tether_length": 500.0
+		},
+		"subtype": "harpoon",
+		"tier": "advanced",
+		"type": "weapon",
+		"weapon_class": "utility"
+	}
+}

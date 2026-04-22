@@ -1,0 +1,29 @@
+# Godot 4 editor + import cache
+.godot/
+/android/
+
+# Imported translations (auto-generated from CSV)
+*.translation
+
+# Mono / .NET runtime + build artifacts
+.mono/
+bin/
+obj/
+*.csproj.user
+*.user
+.vs/
+mono_crash.*.json
+
+# Export presets + outputs
+/export/
+export.cfg
+export_presets.cfg
+
+# Editor + game runtime logs
+*.log
+
+# License-restricted reference material — not redistributable per Pack.json note
+ExternalImportNotToBeShipped/
+
+# Local Claude Code launcher (personal, not committed)
+/claude.bat

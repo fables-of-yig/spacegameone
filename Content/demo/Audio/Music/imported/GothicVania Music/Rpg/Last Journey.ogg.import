@@ -1,0 +1,19 @@
+[remap]
+
+importer="oggvorbisstr"
+type="AudioStreamOggVorbis"
+uid="uid://bufusmmrkyp7q"
+path="res://.godot/imported/Last Journey.ogg-d9e45f68f59f562d4e86aec54e6ff781.oggvorbisstr"
+
+[deps]
+
+source_file="res://Content/demo/Audio/Music/imported/GothicVania Music/Rpg/Last Journey.ogg"
+dest_files=["res://.godot/imported/Last Journey.ogg-d9e45f68f59f562d4e86aec54e6ff781.oggvorbisstr"]
+
+[params]
+
+loop=false
+loop_offset=0
+bpm=0
+beat_count=0
+bar_beats=4

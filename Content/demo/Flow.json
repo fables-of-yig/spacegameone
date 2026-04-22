@@ -1,0 +1,15 @@
+{
+  "version": 1,
+  "start_room": "start",
+  "entry_state": "Playing",
+  "default_music_track": 0,
+  "rooms": {
+    "start": {
+      "name": "Start Room",
+      "script": "default",
+      "effects": []
+    }
+  },
+  "cutscenes": {},
+  "sfx": {}
+}

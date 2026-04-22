@@ -1,0 +1,11 @@
+{
+  "_comment": "Space-layer tuning knobs. GameManager reads these on new-game reset. Pack authors can override defaults by creating this file in their pack.",
+  "starting_credits": 1000,
+  "starting_fuel": 50.0,
+  "fuel_capacity": 100.0,
+  "resource_capacity": 20,
+  "detection_range_mult": 3.0,
+  "conduit_power_radius": 1,
+  "seconds_per_game_hour": 10.0,
+  "faction_build_ship_cost": { "metals": 50, "alloy": 25 }
+}

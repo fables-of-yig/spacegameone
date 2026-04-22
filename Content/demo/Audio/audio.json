@@ -1,0 +1,22 @@
+{
+  "_comment": "Phase 6a audio manifest. Phase 1 demo pack ships zero audio files — every entry below references a file that doesn't exist on disk yet, so PlayMusic/PlaySfx calls log warnings and stay silent. Drop ogg files into the matching paths to start hearing things.",
+  "music": {
+    "title_theme": "Audio/Music/title.ogg",
+    "demo_room":   "Audio/Music/demo_room.ogg",
+    "shop":        "Audio/Music/shop.ogg",
+    "boss":        "Audio/Music/boss.ogg"
+  },
+  "sfx": {
+    "jump":          "Audio/Sfx/jump.ogg",
+    "land":          "Audio/Sfx/land.ogg",
+    "shoot":         "Audio/Sfx/shoot.ogg",
+    "hurt":          "Audio/Sfx/hurt.ogg",
+    "pickup":        "Audio/Sfx/pickup.ogg",
+    "interact":      "Audio/Sfx/interact.ogg",
+    "door_open":     "Audio/Sfx/door_open.ogg",
+    "menu_select":   "Audio/Sfx/menu_select.ogg",
+    "menu_confirm":  "Audio/Sfx/menu_confirm.ogg",
+    "buy":           "Audio/Sfx/buy.ogg",
+    "sell":          "Audio/Sfx/sell.ogg"
+  }
+}

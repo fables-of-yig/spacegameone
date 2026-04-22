@@ -1,0 +1,205 @@
+{
+	"colors": {
+		"primary": [
+			0.300000011920929,
+			0.550000011920929,
+			0.800000011920929
+		],
+		"secondary": [
+			0.150000005960464,
+			0.25,
+			0.449999988079071
+		]
+	},
+	"combat_style": "standard",
+	"core_id": "core_pod",
+	"export_version": 1,
+	"module_count": 23,
+	"modules": [
+		{
+			"deck": 0.0,
+			"grid_pos": [
+				0,
+				1
+			],
+			"id": "micro_reactor"
+		},
+		{
+			"deck": 0.0,
+			"grid_pos": [
+				1,
+				0
+			],
+			"id": "micro_reactor"
+		},
+		{
+			"deck": 0.0,
+			"grid_pos": [
+				-1,
+				1
+			],
+			"id": "micro_reactor"
+		},
+		{
+			"deck": 0.0,
+			"grid_pos": [
+				0,
+				3
+			],
+			"id": "thruster_mk1"
+		},
+		{
+			"deck": 0.0,
+			"grid_pos": [
+				-1,
+				3
+			],
+			"id": "thruster_mk1"
+		},
+		{
+			"deck": 0.0,
+			"grid_pos": [
+				1,
+				2
+			],
+			"id": "thruster_mk1"
+		},
+		{
+			"deck": 0.0,
+			"grid_pos": [
+				0,
+				2
+			],
+			"id": "engine_block_mk1"
+		},
+		{
+			"deck": 0.0,
+			"grid_pos": [
+				0,
+				-1
+			],
+			"id": "shield_gen_mk1"
+		},
+		{
+			"deck": 0.0,
+			"grid_pos": [
+				-1,
+				0
+			],
+			"id": "pulse_laser_mk1"
+		},
+		{
+			"deck": 0.0,
+			"grid_pos": [
+				1,
+				-1
+			],
+			"id": "pulse_laser_mk1"
+		},
+		{
+			"deck": 0,
+			"grid_pos": [
+				-1,
+				2
+			],
+			"id": "engine_block_mk1"
+		},
+		{
+			"deck": 0,
+			"grid_pos": [
+				1,
+				1
+			],
+			"id": "engine_block_mk1"
+		},
+		{
+			"deck": 0,
+			"grid_pos": [
+				-2,
+				3
+			],
+			"id": "armor_plate_mk1"
+		},
+		{
+			"deck": 0,
+			"grid_pos": [
+				-2,
+				2
+			],
+			"id": "armor_plate_mk1"
+		},
+		{
+			"deck": 0,
+			"grid_pos": [
+				-2,
+				1
+			],
+			"id": "armor_plate_mk1"
+		},
+		{
+			"deck": 0,
+			"grid_pos": [
+				-2,
+				0
+			],
+			"id": "armor_plate_mk1"
+		},
+		{
+			"deck": 0,
+			"grid_pos": [
+				-1,
+				-1
+			],
+			"id": "armor_plate_mk1"
+		},
+		{
+			"deck": 0,
+			"grid_pos": [
+				0,
+				-2
+			],
+			"id": "armor_plate_mk1"
+		},
+		{
+			"deck": 0,
+			"grid_pos": [
+				1,
+				-2
+			],
+			"id": "armor_plate_mk1"
+		},
+		{
+			"deck": 0,
+			"grid_pos": [
+				2,
+				-2
+			],
+			"id": "armor_plate_mk1"
+		},
+		{
+			"deck": 0,
+			"grid_pos": [
+				2,
+				-1
+			],
+			"id": "armor_plate_mk1"
+		},
+		{
+			"deck": 0,
+			"grid_pos": [
+				2,
+				0
+			],
+			"id": "armor_plate_mk1"
+		},
+		{
+			"deck": 0,
+			"grid_pos": [
+				2,
+				1
+			],
+			"id": "armor_plate_mk1"
+		}
+	],
+	"name": "Initial Damaged Frame"
+}

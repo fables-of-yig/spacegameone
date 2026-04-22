@@ -1,0 +1,19 @@
+[remap]
+
+importer="oggvorbisstr"
+type="AudioStreamOggVorbis"
+uid="uid://l2m000chtxn6"
+path="res://.godot/imported/Dark Ambient 2.ogg-34b40693f8e998fe908ed5d79babc8c3.oggvorbisstr"
+
+[deps]
+
+source_file="res://Content/demo/Audio/Music/imported/GothicVania Music/Rpg/Dark Ambient 2.ogg"
+dest_files=["res://.godot/imported/Dark Ambient 2.ogg-34b40693f8e998fe908ed5d79babc8c3.oggvorbisstr"]
+
+[params]
+
+loop=false
+loop_offset=0
+bpm=0
+beat_count=0
+bar_beats=4

@@ -1,0 +1,2273 @@
+{
+	"intro_tutorial": {
+		"title": "Solomon Protocol Active",
+		"nodes": {
+			"start": {
+				"speaker": "???",
+				"text": "...neural bridge holding at 94%. Synaptic mirror stable. Captain, can you hear us? Your Solomon Processor activated during the breach. You're... well, you're in the pod now. All of you.",
+				"choices": [
+					{"label": "...", "next": "awakening"}
+				]
+			},
+			"awakening": {
+				"speaker": "Engineer",
+				"text": "Take it easy. Your body didn't make it, but COTAC's hardware did its job. The Processor moved you into the escape pod's command lattice before you flatlined. You're still you -- just... different now.",
+				"choices": [
+					{"label": "What happened to the ship?", "next": "damage_report"},
+					{"label": "How is this possible?", "next": "solomon_explain"}
+				]
+			},
+			"solomon_explain": {
+				"speaker": "Medic",
+				"text": "The Solomon Processor is a neural mirror -- COTAC designed it to preserve command authority in worst-case scenarios. It was never meant to transfer a whole consciousness. But here you are. Your mind lives in the ship's systems now. You can feel the hull, the engines, the power grid. It's all you.",
+				"choices": [
+					{"label": "And the crew is okay with this?", "next": "crew_trust"},
+					{"label": "What happened to the ship?", "next": "damage_report"}
+				]
+			},
+			"crew_trust": {
+				"speaker": "Marine",
+				"text": "Captain, you died getting us through that jump alive. Far as I'm concerned, whatever you are now has earned the right to call the shots. We're with you.",
+				"choices": [
+					{"label": "What happened to the ship?", "next": "damage_report"}
+				]
+			},
+			"damage_report": {
+				"speaker": "Engineer",
+				"text": "The jump tore us apart. We crammed into this escape pod -- engines are barely functional. Both thrusters took damage. I'm picking up a station on sensors though. Fix the engines and we can limp over there.",
+				"choices": [
+					{"label": "How do I manage things from in here?", "next": "crew_tutorial"}
+				]
+			},
+			"crew_tutorial": {
+				"speaker": "Engineer",
+				"text": "You're the ship now, so you can feel everything. Press [TAB] to open the Crew menu -- you'll see the modules and who's assigned where. Right-click a damaged module to send someone to repair it. Our engines are shot -- fix those first.",
+				"choices": [
+					{"label": "What else can I do?", "next": "more_tips"}
+				]
+			},
+			"more_tips": {
+				"speaker": "Pilot",
+				"text": "You've got direct control of propulsion -- [W] to thrust, [A]/[D] to turn. Hold [Shift] to burn hard, but it eats fuel. Press [Q] to pulse the scanner and light up anything nearby on the minimap.",
+				"choices": [
+					{"label": "Anything else I should know?", "next": "final_tips"}
+				]
+			},
+			"final_tips": {
+				"speaker": "Engineer",
+				"text": "Keep an eye on the crew's needs -- hunger, rest, morale. We're people, not machines. Well, most of us. Press [B] for the ship builder when you're docked, [M] for the star map. And captain... thanks for getting us out.",
+				"choices": [
+					{"label": "Let's get to work.", "next": "leave_tutorial"}
+				]
+			},
+			"leave_tutorial": {
+				"speaker": "Marine",
+				"text": "There's a station nearby -- the green diamond on your minimap. Fly over and press [E] to hail them. They'll have repairs, supplies, and maybe some paying work. Let's earn our keep.",
+				"choices": []
+			}
+		}
+	},
+	"home_station": {
+		"title": "Station",
+		"first_visit": "home_station_first",
+		"nodes": {
+			"start": {
+				"speaker": "Station Control",
+				"text": "Welcome back, captain. Transmitting docking vectors now.",
+				"choices": [
+					{"label": "Request docking clearance.", "next": "dock"},
+					{"label": "Just passing through.", "next": "leave"}
+				]
+			},
+			"dock": {
+				"speaker": "Station Control",
+				"text": "Docking clamps engaged. Welcome aboard, captain.",
+				"effects": [{"type": "enter_station"}],
+				"choices": []
+			},
+			"leave": {
+				"speaker": "",
+				"text": "You break off approach and return to open space.",
+				"choices": []
+			}
+		}
+	},
+	"home_station_first": {
+		"title": "Station",
+		"nodes": {
+			"start": {
+				"speaker": "Station Control",
+				"text": "This is station control. We picked up your emergency jump on long-range. You look like you came through something nasty -- half your systems are barely reading. Captain... your biosigns are strange. Are you running a Solomon Processor?",
+				"choices": [
+					{"label": "Something like that. What is this place?", "next": "about"},
+					{"label": "It's a long story. Can you help us?", "next": "help"}
+				]
+			},
+			"about": {
+				"speaker": "Station Control",
+				"text": "We're the local orbital hub -- last friendly port before the frontier. COTAC keeps the lights on, Union keeps the peace. We don't judge what keeps a captain going, long as you keep the peace. Out past here? That's anyone's guess.",
+				"choices": [
+					{"label": "We could use some help getting back on our feet.", "next": "help"}
+				]
+			},
+			"help": {
+				"speaker": "Station Control",
+				"text": "Tell you what -- we'll top off your fuel and patch up your hull, on the house. Solomon or not, you've got crew counting on you. Dock up and check our shop for supplies and the job board for paying work.",
+				"effects": [{"type": "repair", "amount": 999}, {"type": "give_fuel", "amount": 50}, {"type": "give_credits", "amount": 100}],
+				"choices": [
+					{"label": "Much appreciated. What's out there?", "next": "intel"},
+					{"label": "Thanks. Requesting docking clearance.", "next": "dock"}
+				]
+			},
+			"intel": {
+				"speaker": "Station Control",
+				"text": "The nearest systems are rough -- pirates and prospectors. You'll want weapons and crew before heading out. We've got both on the station.",
+				"choices": [
+					{"label": "Good to know. Requesting docking clearance.", "next": "dock"}
+				]
+			},
+			"dock": {
+				"speaker": "Station Control",
+				"text": "Docking clamps engaged. Welcome aboard, captain. Everything you need is on the station.",
+				"effects": [{"type": "enter_station"}],
+				"choices": []
+			},
+			"leave": {
+				"speaker": "Station Control",
+				"text": "Fly safe out there, captain. We're always here if you need us.",
+				"choices": []
+			}
+		}
+	},
+	"derelict_freighter": {
+		"title": "Derelict Freighter",
+		"nodes": {
+			"start": {
+				"speaker": "",
+				"text": "A battered cargo freighter drifts silently, hull breached in multiple places. Emergency lights still flicker inside. Your sensors pick up no life signs... but the cargo bay reads as partially intact.",
+				"choices": [
+					{"label": "Board and salvage the cargo bay", "next": "salvage"},
+					{"label": "Scan the ship more carefully", "next": "scan"},
+					{"label": "Leave it alone", "next": "leave"}
+				]
+			},
+			"salvage": {
+				"speaker": "",
+				"text": "Your crew cuts through the airlock. Inside, crates of spare parts and a functional armor plate. Not bad for a quick grab.",
+				"effects": [
+					{"type": "give_module", "module_id": "armor_plate_mk1", "count": 1}
+				],
+				"choices": [
+					{"label": "Good haul. Let's move.", "next": "leave"}
+				]
+			},
+			"scan": {
+				"speaker": "",
+				"text": "Deep scans reveal residual weapons fire -- pirate signatures. The crew was killed. But the scan also picks up a hidden compartment in the engineering section. Could be worth investigating.",
+				"choices": [
+					{"label": "Check the hidden compartment", "next": "hidden"},
+					{"label": "Just grab the main cargo", "next": "salvage"},
+					{"label": "Not worth the risk", "next": "leave"}
+				]
+			},
+			"hidden": {
+				"speaker": "",
+				"text": "Behind a false bulkhead, you find a prototype sensor array -- military grade, way beyond what a freighter should carry. Someone was smuggling this. Lucky you.",
+				"effects": [
+					{"type": "give_module", "module_id": "sensor_mk1", "count": 1}
+				],
+				"choices": [
+					{"label": "Interesting. Let's go.", "next": "leave"}
+				]
+			},
+			"leave": {
+				"speaker": "",
+				"text": "You leave the wreck behind, its emergency lights still blinking into the void.",
+				"choices": []
+			}
+		}
+	},
+	"asteroid_belt": {
+		"title": "Asteroid Belt",
+		"nodes": {
+			"start": {
+				"speaker": "",
+				"text": "Dense clusters of rock tumble through space, glinting with mineral deposits. Mining this would take time, but the readings look promising.",
+				"choices": [
+					{"label": "Mine for resources", "next": "mine"},
+					{"label": "Move on", "next": "leave"}
+				]
+			},
+			"mine": {
+				"speaker": "",
+				"text": "Your ship's systems aren't really built for mining, but you manage to extract some useful hull plating material from the larger rocks.",
+				"effects": [
+					{"type": "give_module", "module_id": "conduit_mk1", "count": 2}
+				],
+				"choices": [
+					{"label": "Better than nothing.", "next": "leave"}
+				]
+			},
+			"leave": {
+				"speaker": "",
+				"text": "The asteroids drift on, indifferent to your passage.",
+				"choices": []
+			}
+		}
+	},
+	"pirate_haven": {
+		"title": "Pirate Haven",
+		"nodes": {
+			"start": {
+				"speaker": "Pirate Boss",
+				"text": "Well well, look what flew in. You've got nerve showing up here, captain. Question is -- you here to trade, or you here to die?",
+				"choices": [
+					{"label": "I'm coming aboard.", "next": "dock"},
+					{"label": "I'm here to trade.", "next": "trade"},
+					{"label": "Check the black market", "next": "shop"},
+					{"label": "Got any jobs?", "next": "missions"},
+					{"label": "How about you hand over your best gear?", "next": "fight"},
+					{"label": "Wrong turn. I'm leaving.", "next": "leave_hostile"}
+				]
+			},
+			"trade": {
+				"speaker": "Pirate Boss",
+				"text": "Smart. We've got an autocannon that fell off a military transport. Yours for the low price of not asking questions.",
+				"effects": [
+					{"type": "give_module", "module_id": "autocannon_mk1", "count": 1}
+				],
+				"choices": [
+					{"label": "Deal.", "next": "leave"}
+				]
+			},
+			"dock": {
+				"speaker": "Pirate Boss",
+				"text": "Bold. Alright, dock's open. Don't touch anything that ain't yours.",
+				"effects": [{"type": "enter_station"}],
+				"choices": []
+			},
+			"shop": {
+				"speaker": "Pirate Boss",
+				"text": "Take a look. Everything here is... acquired through alternative channels.",
+				"effects": [{"type": "open_shop"}],
+				"choices": []
+			},
+			"missions": {
+				"speaker": "Pirate Boss",
+				"text": "Always got work for those who aren't too picky about the details.",
+				"effects": [{"type": "open_missions"}],
+				"choices": []
+			},
+			"fight": {
+				"speaker": "Pirate Boss",
+				"text": "Ha! You've got a death wish. BOYS, LIGHT 'EM UP!",
+				"effects": [
+					{"type": "spawn_enemies", "count": 4, "min_dist": 200, "max_dist": 400}
+				],
+				"choices": [
+					{"label": "Bring it on.", "next": "leave"}
+				]
+			},
+			"leave_hostile": {
+				"speaker": "Pirate Boss",
+				"text": "Smart move. But don't come back unless you're ready to deal.",
+				"choices": []
+			},
+			"leave": {
+				"speaker": "",
+				"text": "You disengage from the pirate outpost.",
+				"choices": []
+			}
+		}
+	},
+	"signal_source": {
+		"title": "Unknown Signal",
+		"nodes": {
+			"start": {
+				"speaker": "",
+				"text": "The signal is stronger here -- a repeating pattern, clearly artificial. It's coming from a small metallic object tumbling in the void. Not human-made.",
+				"choices": [
+					{"label": "Retrieve the object", "next": "retrieve"},
+					{"label": "Analyze the signal remotely", "next": "analyze"},
+					{"label": "Leave it", "next": "leave"}
+				]
+			},
+			"retrieve": {
+				"speaker": "",
+				"text": "The object is warm to the touch -- impossible in vacuum. It pulses with a faint inner light. Your ship's systems briefly spike when you bring it aboard. Whatever this is, it's advanced.",
+				"effects": [
+					{"type": "give_module", "module_id": "conduit_mk1", "count": 3}
+				],
+				"choices": [
+					{"label": "Store it carefully.", "next": "leave"}
+				]
+			},
+			"analyze": {
+				"speaker": "",
+				"text": "The signal is a navigation beacon -- coordinates for a location deep in the Ghost Nebula. Someone wanted this found. Or wanted to lure someone there.",
+				"choices": [
+					{"label": "Take the object anyway", "next": "retrieve"},
+					{"label": "Note the coordinates and move on", "next": "leave"}
+				]
+			},
+			"leave": {
+				"speaker": "",
+				"text": "The signal fades as you pull away.",
+				"choices": []
+			}
+		}
+	},
+	"volcanic_moon": {
+		"title": "Volcanic Moon",
+		"nodes": {
+			"start": {
+				"speaker": "",
+				"text": "The moon's surface is a hellscape of lava flows and eruptions. But your sensors are going wild -- energy readings off the scale, coming from deep underground. This isn't geological.",
+				"choices": [
+					{"label": "Descend and investigate", "next": "descend"},
+					{"label": "Too dangerous. Pull back.", "next": "leave"}
+				]
+			},
+			"descend": {
+				"speaker": "",
+				"text": "Through the heat and ash, you find it -- a structure, half-buried in cooling magma. Clearly artificial, clearly ancient. A doorway hums with power.",
+				"effects": [
+					{"type": "give_module", "module_id": "shield_gen_mk1", "count": 1}
+				],
+				"choices": [
+					{"label": "Fascinating. Take what we can and go.", "next": "leave"}
+				]
+			},
+			"leave": {
+				"speaker": "",
+				"text": "The moon continues its violent churn below.",
+				"choices": []
+			}
+		}
+	},
+	"ancient_beacon": {
+		"title": "Ancient Beacon",
+		"nodes": {
+			"start": {
+				"speaker": "",
+				"text": "The beacon is enormous -- a spire of dark metal floating in perfect stillness. It shouldn't exist. Your instruments date it at over 50,000 years old, but its signal is crystal clear.",
+				"choices": [
+					{"label": "Attempt to interface with it", "next": "interface"},
+					{"label": "Observe from a distance", "next": "observe"},
+					{"label": "This feels wrong. Leave.", "next": "leave"}
+				]
+			},
+			"interface": {
+				"speaker": "",
+				"text": "The moment you connect, your screens fill with star charts -- systems you've never seen, routes through space that defy physics. Then it goes silent, as if it only had one message to give.",
+				"choices": [
+					{"label": "Incredible.", "next": "leave"}
+				]
+			},
+			"observe": {
+				"speaker": "",
+				"text": "Watching from a safe distance, you notice the beacon's signal changes when you move. It's tracking you. Then, briefly, it projects a holographic star map before going dark.",
+				"choices": [
+					{"label": "Try to interface now", "next": "interface"},
+					{"label": "We've seen enough. Go.", "next": "leave"}
+				]
+			},
+			"leave": {
+				"speaker": "",
+				"text": "The beacon hangs in space, ancient and patient.",
+				"choices": []
+			}
+		}
+	},
+	"nebula_core": {
+		"title": "Nebula Core",
+		"nodes": {
+			"start": {
+				"speaker": "",
+				"text": "The radiation is blinding. Your instruments scream warnings as you push deeper into the nebula's heart. At the center, something impossible -- a sphere of perfectly still gas, untouched by the chaos around it. Inside, a faint geometric pattern pulses with light.",
+				"choices": [
+					{"label": "Fly into the sphere", "next": "enter"},
+					{"label": "Launch a probe", "next": "probe"},
+					{"label": "Back off. This is beyond us.", "next": "leave"}
+				]
+			},
+			"enter": {
+				"speaker": "",
+				"text": "The moment you cross the boundary, silence. Total silence. Your shields flare and reshape themselves. When you emerge, your shield generator is running at frequencies you didn't program. Something upgraded it.",
+				"effects": [
+					{"type": "give_module", "module_id": "shield_gen_mk2", "count": 1}
+				],
+				"choices": [
+					{"label": "What just happened?", "next": "leave"}
+				]
+			},
+			"probe": {
+				"speaker": "",
+				"text": "The probe enters the sphere and immediately stops transmitting. Five seconds later, it reappears behind your ship, structurally intact but reassembled at the molecular level. Its data core contains schematics for technology you've never seen.",
+				"effects": [
+					{"type": "give_module", "module_id": "sensor_mk1", "count": 1},
+					{"type": "give_module", "module_id": "conduit_mk1", "count": 2}
+				],
+				"choices": [
+					{"label": "Fascinating. Store the data.", "next": "leave"},
+					{"label": "Fly in ourselves", "next": "enter"}
+				]
+			},
+			"leave": {
+				"speaker": "",
+				"text": "The nebula core continues its impossible stillness behind you, pulsing in rhythms that almost sound like breathing.",
+				"choices": []
+			}
+		}
+	},
+	"lost_convoy": {
+		"title": "Lost Convoy",
+		"nodes": {
+			"start": {
+				"speaker": "",
+				"text": "Three ships hang motionless in the nebula's haze. A bulk freighter, an escort corvette, and a science vessel. No drift, no tumble -- frozen mid-flight as if time stopped. Ice crystals coat every surface. Your scanners detect faint power signatures in the corvette.",
+				"choices": [
+					{"label": "Board the corvette", "next": "corvette"},
+					{"label": "Check the freighter's cargo", "next": "freighter"},
+					{"label": "Scan the science vessel", "next": "science"},
+					{"label": "Something's wrong here. Leave.", "next": "leave"}
+				]
+			},
+			"corvette": {
+				"speaker": "",
+				"text": "The airlock opens with a gasp. Inside, the crew sits at their stations, eyes open, frozen solid. Whatever hit them was instant. But the weapons locker is intact -- a military-grade autocannon, still warm in its casing.",
+				"effects": [
+					{"type": "give_module", "module_id": "autocannon_mk2", "count": 1}
+				],
+				"choices": [
+					{"label": "Take it and check the other ships.", "next": "freighter"},
+					{"label": "Take it and go. Now.", "next": "leave"}
+				]
+			},
+			"freighter": {
+				"speaker": "",
+				"text": "The freighter's hold is full of standard cargo containers, most cracked by flash-freezing. But among the debris, you find sealed military crates with reinforced armor plating -- the good stuff.",
+				"effects": [
+					{"type": "give_module", "module_id": "armor_plate_mk1", "count": 2}
+				],
+				"choices": [
+					{"label": "Good salvage. Move on.", "next": "leave"}
+				]
+			},
+			"science": {
+				"speaker": "",
+				"text": "The science vessel's logs are still playing on loop. The last entry: 'The core is alive. It doesn't want us here. It's reaching out and--' Static. But their research terminal contains advanced thruster calibrations.",
+				"effects": [
+					{"type": "give_module", "module_id": "thruster_mk1", "count": 1}
+				],
+				"choices": [
+					{"label": "Download the data and leave.", "next": "leave"},
+					{"label": "Check the other ships first.", "next": "corvette"}
+				]
+			},
+			"leave": {
+				"speaker": "",
+				"text": "You pull away from the convoy. In your rear cameras, you swear the frozen ships have rotated slightly to face you.",
+				"choices": []
+			}
+		}
+	},
+	"whisper_relay": {
+		"title": "Whisper Relay",
+		"nodes": {
+			"start": {
+				"speaker": "",
+				"text": "The structure is clearly not human -- crystalline spires arranged in a double helix, thrumming with energy. Your comms crackle with fragments of a transmission. Not words, not quite music. Something in between. Your crew goes quiet.",
+				"choices": [
+					{"label": "Attempt to hail it", "next": "hail"},
+					{"label": "Analyze the signal pattern", "next": "analyze"},
+					{"label": "Power down comms and leave", "next": "leave"}
+				]
+			},
+			"hail": {
+				"speaker": "???",
+				"text": "The whispers stop. A single clear tone resonates through your hull. Then, in a voice that sounds like it's being assembled from recordings of your own crew: 'You are... heard. Take this. Remember.'",
+				"effects": [
+					{"type": "give_module", "module_id": "pulse_laser_mk2", "count": 1}
+				],
+				"choices": [
+					{"label": "...Thank you?", "next": "leave"}
+				]
+			},
+			"analyze": {
+				"speaker": "",
+				"text": "The signal is layered -- hundreds of transmissions overlapping. Your computer isolates fragments: distress calls, navigation data, personal logs. All from ships that entered the nebula. The relay has been listening for centuries, collecting voices.",
+				"choices": [
+					{"label": "Try to communicate with it", "next": "hail"},
+					{"label": "Extract the navigation data", "next": "extract"},
+					{"label": "Disturbing. Let's go.", "next": "leave"}
+				]
+			},
+			"extract": {
+				"speaker": "",
+				"text": "Among the collected signals, you find detailed thruster tuning data from a ship that clearly knew how to fly. The relay seems to offer it willingly, as if feeding you information to keep you alive.",
+				"effects": [
+					{"type": "give_module", "module_id": "thruster_mk1", "count": 1},
+					{"type": "give_module", "module_id": "conduit_mk1", "count": 2}
+				],
+				"choices": [
+					{"label": "We'll take what we can get.", "next": "leave"}
+				]
+			},
+			"leave": {
+				"speaker": "",
+				"text": "The whispers resume as you pull away, softer now. Almost fond.",
+				"choices": []
+			}
+		}
+	},
+	"korrath_outpost": {
+		"title": "Korrath Outpost",
+		"nodes": {
+			"start": {
+				"speaker": "Korrath Commander",
+				"text": "Human vessel, you have entered sovereign Korrath space. State your purpose or be destroyed. You have ten seconds.",
+				"choices": [
+					{"label": "I come in peace. I wish to trade.", "next": "trade"},
+					{"label": "I'm just passing through.", "next": "pass"},
+					{"label": "Try me.", "next": "fight"}
+				]
+			},
+			"trade": {
+				"speaker": "Korrath Commander",
+				"text": "Trade? Interesting. Most humans only come here to die. We respect boldness. We will offer you Korrath engineering -- superior to your crude fabrications. In exchange, you will carry a message to your Gateway Station. We are watching.",
+				"effects": [
+					{"type": "give_module", "module_id": "reactor_mk1", "count": 1},
+					{"type": "give_module", "module_id": "armor_plate_mk1", "count": 2}
+				],
+				"choices": [
+					{"label": "Deal. What's the message?", "next": "message"},
+					{"label": "I don't run errands for aliens.", "next": "refuse"}
+				]
+			},
+			"message": {
+				"speaker": "Korrath Commander",
+				"text": "Tell them: the boundary holds. For now. Go, human. Do not test our patience twice.",
+				"choices": [
+					{"label": "Understood.", "next": "leave"}
+				]
+			},
+			"refuse": {
+				"speaker": "Korrath Commander",
+				"text": "Then you are useless. Leave before we change our minds about letting you live.",
+				"choices": [
+					{"label": "Fine.", "next": "leave"}
+				]
+			},
+			"pass": {
+				"speaker": "Korrath Commander",
+				"text": "There is no 'passing through' Korrath space. You are here, therefore you are trespassing. Leave immediately, or we will escort you out in pieces.",
+				"choices": [
+					{"label": "Wait -- I want to trade.", "next": "trade"},
+					{"label": "Leaving now.", "next": "leave"}
+				]
+			},
+			"fight": {
+				"speaker": "Korrath Commander",
+				"text": "So be it. Warriors -- destroy this insect.",
+				"effects": [
+					{"type": "spawn_enemies", "count": 5, "min_dist": 200, "max_dist": 400}
+				],
+				"choices": [
+					{"label": "Bring it.", "next": "leave"}
+				]
+			},
+			"leave": {
+				"speaker": "",
+				"text": "The Korrath outpost's weapons track you as you pull away.",
+				"choices": []
+			}
+		}
+	},
+	"shattered_planet": {
+		"title": "Shattered Planet",
+		"nodes": {
+			"start": {
+				"speaker": "",
+				"text": "It was a world once. Now it's a field of continent-sized fragments drifting apart in slow motion, the planet's core still glowing molten between the gaps. Your sensors detect energy readings that shouldn't exist in natural debris -- something artificial is embedded in the largest fragment.",
+				"choices": [
+					{"label": "Navigate into the debris field", "next": "navigate"},
+					{"label": "Scan from a safe distance", "next": "scan"},
+					{"label": "Too dangerous. Leave.", "next": "leave"}
+				]
+			},
+			"navigate": {
+				"speaker": "",
+				"text": "Threading between mountain-sized rocks, you reach the largest fragment. Buried in the exposed geological layers is a structure -- not built on the planet, but inside it. Pre-dating the planet's formation. Inside, still-functioning technology hums with power.",
+				"effects": [
+					{"type": "give_module", "module_id": "shield_gen_mk2", "count": 1},
+					{"type": "give_module", "module_id": "conduit_mk1", "count": 3}
+				],
+				"choices": [
+					{"label": "What destroyed this world?", "next": "question"},
+					{"label": "Take what we found and go.", "next": "leave"}
+				]
+			},
+			"question": {
+				"speaker": "",
+				"text": "Your scans of the debris pattern suggest the planet wasn't hit by anything. It was pulled apart from the inside, as if something buried deep within broke free. The fragments are still accelerating outward, centuries later.",
+				"choices": [
+					{"label": "Let's not stick around.", "next": "leave"}
+				]
+			},
+			"scan": {
+				"speaker": "",
+				"text": "Long-range scans confirm the artificial signatures. They also detect trace elements of Korrath alloys among the debris -- the Korrath know about this place. Your scans pull useful calibration data from the planet's exposed core.",
+				"effects": [
+					{"type": "give_module", "module_id": "sensor_mk1", "count": 1}
+				],
+				"choices": [
+					{"label": "Go in for a closer look", "next": "navigate"},
+					{"label": "We have enough. Leave.", "next": "leave"}
+				]
+			},
+			"leave": {
+				"speaker": "",
+				"text": "The shattered world drifts on, its glowing core casting long shadows through the debris field.",
+				"choices": []
+			}
+		}
+	},
+	"the_maw": {
+		"title": "The Maw",
+		"nodes": {
+			"start": {
+				"speaker": "",
+				"text": "It's not a structure. It's not a black hole. It's a wound in space -- a ragged tear where reality frays at the edges. Light bends wrong around it. Your instruments show readings that contradict each other. Distance means nothing here. Your crew's hands are shaking.",
+				"choices": [
+					{"label": "Approach the edge", "next": "approach"},
+					{"label": "Deploy sensors at safe distance", "next": "sensors"},
+					{"label": "Full reverse. Get us out of here.", "next": "leave"}
+				]
+			},
+			"approach": {
+				"speaker": "",
+				"text": "At the boundary, space folds. You see your own ship from the outside, receding into infinite copies. Then something reaches back -- not hostile, not kind, just... aware. Your reactor surges with energy patterns you didn't input. When your vision clears, your systems are running better than they ever have.",
+				"effects": [
+					{"type": "give_module", "module_id": "reactor_mk1", "count": 1},
+					{"type": "give_module", "module_id": "pulse_laser_mk2", "count": 1}
+				],
+				"choices": [
+					{"label": "What was that?", "next": "aftermath"},
+					{"label": "Go. Go. Go.", "next": "leave"}
+				]
+			},
+			"aftermath": {
+				"speaker": "",
+				"text": "Your ship's logs show a gap of forty-seven minutes that neither you nor your crew remember. Whatever looked at you through the Maw decided to let you go. Or decided you weren't ready yet.",
+				"choices": [
+					{"label": "...", "next": "leave"}
+				]
+			},
+			"sensors": {
+				"speaker": "",
+				"text": "The sensors transmit for exactly three seconds before disintegrating. In those three seconds, they record data that fills your entire computer. Most of it is noise. Some of it is weapons schematics from a civilization that never existed.",
+				"effects": [
+					{"type": "give_module", "module_id": "autocannon_mk2", "count": 1}
+				],
+				"choices": [
+					{"label": "Close enough. Let's leave.", "next": "leave"},
+					{"label": "Get closer.", "next": "approach"}
+				]
+			},
+			"leave": {
+				"speaker": "",
+				"text": "The Maw watches you leave. You're certain of that now. It watches.",
+				"choices": []
+			}
+		}
+	},
+	"jungle_ruins": {
+		"title": "Overgrown Ruins",
+		"nodes": {
+			"start": {
+				"speaker": "",
+				"text": "Stone walls rise from the undergrowth, wrapped in vines thicker than your arm. The architecture is wrong for human construction -- curved where it should be straight, surfaces covered in spiral grooves. Your sensors detect a faint power source underground.",
+				"choices": [
+					{"label": "Clear the entrance and go inside", "next": "enter"},
+					{"label": "Scan the exterior thoroughly", "next": "scan"},
+					{"label": "Leave it undisturbed", "next": "leave"}
+				]
+			},
+			"enter": {
+				"speaker": "",
+				"text": "Inside, bioluminescent fungi line the walls. The chambers are vast -- clearly not built for human proportions. In what might be a storage vault, you find technology fused with organic material. Still functional after millennia.",
+				"effects": [
+					{"type": "give_module", "module_id": "sensor_mk2", "count": 1}
+				],
+				"choices": [
+					{"label": "Check the deeper chambers", "next": "deep"},
+					{"label": "Take it and leave", "next": "leave"}
+				]
+			},
+			"deep": {
+				"speaker": "",
+				"text": "Deeper in, the walls are warm. You find a chamber with a pool of luminous liquid -- some kind of biological reactor, still churning after all this time. Your engineer rigs a containment unit and siphons off a sample. The energy readings are extraordinary.",
+				"effects": [
+					{"type": "give_module", "module_id": "reactor_mk1", "count": 1},
+					{"type": "give_resource_random", "min": 4, "max": 8}
+				],
+				"choices": [
+					{"label": "Incredible find. Time to go.", "next": "leave"}
+				]
+			},
+			"scan": {
+				"speaker": "",
+				"text": "Surface scans reveal the structure extends far underground -- at least six levels. The spiral grooves are conduits of some kind, still carrying trace energy. Your scans also detect refined minerals embedded in the walls.",
+				"effects": [
+					{"type": "give_resource_random", "min": 5, "max": 10}
+				],
+				"choices": [
+					{"label": "Go inside", "next": "enter"},
+					{"label": "We've got the data. Move on.", "next": "leave"}
+				]
+			},
+			"leave": {
+				"speaker": "",
+				"text": "The jungle swallows the ruins behind you. In a century, no one will know they were here.",
+				"choices": []
+			}
+		}
+	},
+	"settler_homestead": {
+		"title": "Settler Homestead",
+		"nodes": {
+			"start": {
+				"speaker": "Settler",
+				"text": "Don't shoot! We're just farmers -- ex-COTAC maintenance crew. Walked off the job when they started cutting corners on the Dynamo. We grow what we can out here. You look like you've been flying a while. Hungry? We can trade, too.",
+				"choices": [
+					{"label": "Trade supplies", "next": "trade"},
+					{"label": "Got any food to spare?", "next": "food"},
+					{"label": "Need a hand around here?", "next": "work"},
+					{"label": "Any of your people want to crew up?", "next": "recruit"},
+					{"label": "Just passing through.", "next": "leave"}
+				]
+			},
+			"trade": {
+				"speaker": "Settler",
+				"text": "We've got spare parts from the old job, nothing fancy. Take what's useful.",
+				"effects": [{"type": "open_shop"}],
+				"choices": []
+			},
+			"food": {
+				"speaker": "Settler",
+				"text": "We just harvested. Take some -- you look like you need it more than we do. Just remember us if you find any medical supplies out there.",
+				"effects": [
+					{"type": "give_food", "amount": 30}
+				],
+				"choices": [
+					{"label": "Thank you. Really.", "next": "start"},
+					{"label": "I owe you one.", "next": "leave"}
+				]
+			},
+			"work": {
+				"speaker": "Settler",
+				"text": "Actually, yeah. Something's been raiding our crops at night -- big, fast, leaves claw marks on the fencing. We can't get a shot at it. If you could run a patrol... we'd pay in supplies.",
+				"choices": [
+					{"label": "I'll handle it.", "next": "patrol"},
+					{"label": "Not my problem.", "next": "start"}
+				]
+			},
+			"patrol": {
+				"speaker": "",
+				"text": "You sweep the perimeter in low passes. Motion sensors trip -- three contacts, fast-moving. Not animals. Rogue drones, scavenging for organics. Your guns make short work of them.",
+				"effects": [
+					{"type": "spawn_enemies", "count": 3, "min_dist": 150, "max_dist": 300},
+					{"type": "give_credits", "amount": 120},
+					{"type": "give_food", "amount": 15}
+				],
+				"choices": [
+					{"label": "That should do it.", "next": "leave"}
+				]
+			},
+			"recruit": {
+				"speaker": "Settler",
+				"text": "Mira's been itching to get off-world. Good with her hands -- fixed half the equipment here. She's yours if you'll have her.",
+				"effects": [
+					{"type": "give_crew", "role": "engineer"}
+				],
+				"choices": [
+					{"label": "Welcome aboard, Mira.", "next": "leave"},
+					{"label": "Thanks. Anything else?", "next": "start"}
+				]
+			},
+			"leave": {
+				"speaker": "Settler",
+				"text": "Safe travels, captain. You're always welcome back.",
+				"choices": []
+			}
+		}
+	},
+	"smuggler_drop": {
+		"title": "Smuggler's Drop",
+		"nodes": {
+			"start": {
+				"speaker": "",
+				"text": "A reinforced cargo pod, half-sunk in mud. The camouflage netting is torn but the seals are intact. Someone meant to come back for this. The markings have been scraped off, but your scanner picks up dense metallic contents.",
+				"choices": [
+					{"label": "Crack it open", "next": "open"},
+					{"label": "Check for traps first", "next": "check"},
+					{"label": "Someone else's business. Leave it.", "next": "leave"}
+				]
+			},
+			"open": {
+				"speaker": "",
+				"text": "Inside: military hardware. An autocannon with filed-off serial numbers and a stack of armor plating, probably from a hijacked ISD convoy. Finders keepers.",
+				"effects": [
+					{"type": "give_module", "module_id": "autocannon_mk1", "count": 1},
+					{"type": "give_module", "module_id": "armor_plate_mk1", "count": 1},
+					{"type": "give_credits", "amount": 80}
+				],
+				"choices": [
+					{"label": "Nice haul.", "next": "leave"}
+				]
+			},
+			"check": {
+				"speaker": "",
+				"text": "Smart move. There's a proximity mine wired to the latch. Your engineer disarms it carefully. Inside the pod, you find the goods -- plus a data chip with coordinates to two more drops. Could be worth investigating later.",
+				"effects": [
+					{"type": "give_module", "module_id": "autocannon_mk1", "count": 1},
+					{"type": "give_module", "module_id": "armor_plate_mk1", "count": 1},
+					{"type": "give_credits", "amount": 150},
+					{"type": "set_tag", "tag": "found_smuggler_drop", "value": true}
+				],
+				"choices": [
+					{"label": "Excellent. Let's move.", "next": "leave"}
+				]
+			},
+			"leave": {
+				"speaker": "",
+				"text": "The jungle closes in over the empty pod.",
+				"choices": []
+			}
+		}
+	},
+	"lava_forge": {
+		"title": "Lava Forge",
+		"nodes": {
+			"start": {
+				"speaker": "",
+				"text": "Pre-fab industrial buildings clustered around a natural lava channel. The machinery is still running -- automated smelters feeding on geothermal heat, churning out refined alloys into cooling troughs. No crew. No signs of recent occupation. Just machines doing what they were built to do.",
+				"choices": [
+					{"label": "Salvage the output troughs", "next": "salvage"},
+					{"label": "Tap into the control system", "next": "control"},
+					{"label": "Too hot. Back off.", "next": "leave"}
+				]
+			},
+			"salvage": {
+				"speaker": "",
+				"text": "The cooling troughs are full of refined metal -- high-grade stuff, better than anything you'd mine by hand. You load as much as your hold can carry. The machines don't seem to care.",
+				"effects": [
+					{"type": "give_resource_random", "min": 8, "max": 15},
+					{"type": "give_credits", "amount": 100}
+				],
+				"choices": [
+					{"label": "Check the control system too", "next": "control"},
+					{"label": "Good enough. Let's go.", "next": "leave"}
+				]
+			},
+			"control": {
+				"speaker": "",
+				"text": "The control terminal is old COTAC hardware. Logs show this was a black-site operation -- off the books, no oversight. The smelters have been running on autopilot for years. The system offers to queue a fabrication run from stored schematics.",
+				"choices": [
+					{"label": "Run the fabrication", "next": "fabricate"},
+					{"label": "Download the schematics and go", "next": "download"}
+				]
+			},
+			"fabricate": {
+				"speaker": "",
+				"text": "The forge roars to life. Twenty minutes later, the output trough delivers a freshly manufactured armor plate -- still warm, factory-perfect. The machine queues another run, but the lava channel surges and the building starts to shake.",
+				"effects": [
+					{"type": "give_module", "module_id": "armor_plate_mk2", "count": 1},
+					{"type": "damage_hull", "amount": 15}
+				],
+				"choices": [
+					{"label": "Grab it and run!", "next": "leave"}
+				]
+			},
+			"download": {
+				"speaker": "",
+				"text": "The schematics are military-grade fabrication patterns. Your workshop could use these. You also extract the site coordinates for COTAC records -- might be worth something to someone.",
+				"effects": [
+					{"type": "give_module", "module_id": "conduit_mk1", "count": 3},
+					{"type": "give_credits", "amount": 200}
+				],
+				"choices": [
+					{"label": "Useful. Time to leave.", "next": "leave"}
+				]
+			},
+			"leave": {
+				"speaker": "",
+				"text": "The forge continues its endless work, feeding on the planet's blood.",
+				"choices": []
+			}
+		}
+	},
+	"surface_distress": {
+		"title": "Distress Beacon",
+		"nodes": {
+			"start": {
+				"speaker": "",
+				"text": "An automated SOS, looping on emergency frequencies. The signal leads to a downed shuttle -- landing struts crumpled, hull scorched. The cabin is intact. Biosigns: two, both weak.",
+				"choices": [
+					{"label": "Land and investigate", "next": "investigate"},
+					{"label": "Hail them on comms", "next": "hail"},
+					{"label": "Could be a trap. Leave.", "next": "leave"}
+				]
+			},
+			"investigate": {
+				"speaker": "Survivor",
+				"text": "Oh thank god. We've been here for weeks. Nav computer failed on approach -- we hit the ground hard. Kell's leg is broken and I've been rationing what food we had. Please, can you get us out of here?",
+				"choices": [
+					{"label": "We've got room. Come aboard.", "next": "rescue"},
+					{"label": "I can give you supplies but can't take passengers.", "next": "supplies"},
+					{"label": "What can you offer in return?", "next": "negotiate"}
+				]
+			},
+			"hail": {
+				"speaker": "Survivor",
+				"text": "This is shuttle Kestrel-7, we are down and unable to launch! Two crew, one injured. We've got some cargo we can trade for a ride -- please, we're running out of time here.",
+				"choices": [
+					{"label": "Coming to you now.", "next": "investigate"},
+					{"label": "What kind of cargo?", "next": "negotiate"},
+					{"label": "Sorry. Can't help.", "next": "leave"}
+				]
+			},
+			"rescue": {
+				"speaker": "Survivor",
+				"text": "You're a lifesaver, captain. Kell here used to be a gunner on a patrol corvette -- lost his commission in a budget cut. He's good in a fight if you'll have him. And take whatever you want from the shuttle.",
+				"effects": [
+					{"type": "give_crew", "role": "gunner"},
+					{"type": "give_fuel", "amount": 15},
+					{"type": "give_module", "module_id": "conduit_mk1", "count": 2}
+				],
+				"choices": [
+					{"label": "Welcome aboard.", "next": "leave"}
+				]
+			},
+			"supplies": {
+				"speaker": "Survivor",
+				"text": "Understood. Thank you -- any food and fuel you can spare will keep us going until another ship comes by. We'll leave our spare parts as payment. Good luck out there, captain.",
+				"effects": [
+					{"type": "give_module", "module_id": "thruster_mk1", "count": 1},
+					{"type": "give_credits", "amount": 60}
+				],
+				"choices": [
+					{"label": "Stay safe.", "next": "leave"}
+				]
+			},
+			"negotiate": {
+				"speaker": "Survivor",
+				"text": "We were running sensor equipment for a survey company. The gear survived the crash -- it's yours if you take us. Military-grade sensor package, worth more than our shuttle was.",
+				"effects": [
+					{"type": "give_module", "module_id": "sensor_mk2", "count": 1},
+					{"type": "give_crew", "role": "deckhand"}
+				],
+				"choices": [
+					{"label": "Deal. Let's get you out of here.", "next": "leave"}
+				]
+			},
+			"leave": {
+				"speaker": "",
+				"text": "The beacon falls silent behind you.",
+				"choices": []
+			}
+		}
+	},
+	"obsidian_monolith": {
+		"title": "Obsidian Monolith",
+		"nodes": {
+			"start": {
+				"speaker": "",
+				"text": "It rises from the volcanic plain like a black tooth -- thirty meters of polished obsidian, perfectly smooth, reflecting the lava glow. There are no tool marks. No seams. Your sensors can't penetrate it. But they detect vibrations inside, rhythmic, like a heartbeat.",
+				"choices": [
+					{"label": "Touch the surface", "next": "touch"},
+					{"label": "Set up sensor equipment around it", "next": "sensors"},
+					{"label": "Something about this feels wrong. Leave.", "next": "leave"}
+				]
+			},
+			"touch": {
+				"speaker": "",
+				"text": "The moment your glove contacts the surface, the vibrations stop. Then the monolith splits -- a hairline crack racing from base to tip. Inside, suspended in nothing, a crystalline object rotates slowly. It drops into your hands. The monolith seals itself shut.",
+				"effects": [
+					{"type": "give_module", "module_id": "shield_gen_mk2", "count": 1}
+				],
+				"choices": [
+					{"label": "What just happened?", "next": "aftermath"},
+					{"label": "Take it and go. Now.", "next": "leave"}
+				]
+			},
+			"aftermath": {
+				"speaker": "",
+				"text": "Your medic reports brief neurological spikes across the crew -- elevated serotonin, vivid imagery, and a shared sensation of being observed from very far away. The object integrates perfectly with your shield systems. It was waiting for someone.",
+				"choices": [
+					{"label": "For us specifically?", "next": "leave"}
+				]
+			},
+			"sensors": {
+				"speaker": "",
+				"text": "The sensor grid captures three hours of data. The vibrations are information -- compressed, layered, containing what your computer identifies as navigational coordinates, material specifications, and something that might be biological data. Your engineer extracts what they can.",
+				"effects": [
+					{"type": "give_resource_random", "min": 6, "max": 12},
+					{"type": "give_credits", "amount": 150}
+				],
+				"choices": [
+					{"label": "Touch the surface", "next": "touch"},
+					{"label": "We have what we need.", "next": "leave"}
+				]
+			},
+			"leave": {
+				"speaker": "",
+				"text": "The monolith stands unchanged. The vibrations resume as you depart.",
+				"choices": []
+			}
+		}
+	},
+	"pirate_camp": {
+		"title": "Pirate Camp",
+		"nodes": {
+			"start": {
+				"speaker": "Camp Boss",
+				"text": "Easy there, flyboy. Guns down. This is neutral ground -- we don't shoot customers. You want gear, you want crew, you want intel? We got it all. For a price.",
+				"choices": [
+					{"label": "Show me what you've got", "next": "shop"},
+					{"label": "I need crew. Anyone looking for work?", "next": "recruit"},
+					{"label": "What do you know about this system?", "next": "intel"},
+					{"label": "How about I just take what I want?", "next": "fight"},
+					{"label": "Wrong turn.", "next": "leave"}
+				]
+			},
+			"shop": {
+				"speaker": "Camp Boss",
+				"text": "Black market's open. No receipts, no questions.",
+				"effects": [{"type": "open_shop"}],
+				"choices": []
+			},
+			"recruit": {
+				"speaker": "Camp Boss",
+				"text": "Voss here got thrown off a Union destroyer for insubordination. Best marine I've ever seen. He's eating us out of house and home -- take him, please.",
+				"effects": [
+					{"type": "give_crew", "role": "marine"}
+				],
+				"choices": [
+					{"label": "He's hired.", "next": "start"},
+					{"label": "Anyone else?", "next": "recruit2"}
+				]
+			},
+			"recruit2": {
+				"speaker": "Camp Boss",
+				"text": "There's a medic downstairs patching up my people for free. Idealist type. She'd be happier on a ship that isn't shooting people for a living.",
+				"effects": [
+					{"type": "give_crew", "role": "medic"}
+				],
+				"choices": [
+					{"label": "I'll talk to her.", "next": "leave"},
+					{"label": "Thanks. What else you got?", "next": "start"}
+				]
+			},
+			"intel": {
+				"speaker": "Camp Boss",
+				"text": "Veyra's a mess right now. Castellan patrols got pulled back for some big operation coreward. That means the outer routes are wide open -- for us and for everyone else. Good hunting if you're fast. Dangerous if you're not.",
+				"effects": [
+					{"type": "give_credits", "amount": 50}
+				],
+				"choices": [
+					{"label": "Useful. Thanks.", "next": "start"},
+					{"label": "I'll keep my eyes open.", "next": "leave"}
+				]
+			},
+			"fight": {
+				"speaker": "Camp Boss",
+				"text": "Big mistake, friend. EVERYONE, WEAPONS HOT!",
+				"effects": [
+					{"type": "spawn_enemies", "count": 4, "min_dist": 150, "max_dist": 350}
+				],
+				"choices": [
+					{"label": "Bring it.", "next": "leave"}
+				]
+			},
+			"leave": {
+				"speaker": "",
+				"text": "The camp fades behind you, dust devils swirling between the prefabs.",
+				"choices": []
+			}
+		}
+	},
+	"crashed_smuggler": {
+		"title": "Crashed Smuggler",
+		"nodes": {
+			"start": {
+				"speaker": "",
+				"text": "A light freighter, nose-first in a dune. The cockpit is crushed but the cargo hold split open on impact, scattering crates across the sand. Scorch marks on the hull -- this ship was shot down, not crashed. Someone wanted what it was carrying.",
+				"choices": [
+					{"label": "Search the cargo", "next": "cargo"},
+					{"label": "Check the cockpit for logs", "next": "cockpit"},
+					{"label": "Scan for hostiles first", "next": "scan"},
+					{"label": "Move on.", "next": "leave"}
+				]
+			},
+			"cargo": {
+				"speaker": "",
+				"text": "Most crates are smashed, contents scattered to the wind. But three sealed containers survived. Inside: weapons components, shield capacitors, and a suspiciously large sum of credits in unmarked chits.",
+				"effects": [
+					{"type": "give_module", "module_id": "pulse_laser_mk1", "count": 1},
+					{"type": "give_credits", "amount": 200}
+				],
+				"choices": [
+					{"label": "Check the cockpit too", "next": "cockpit"},
+					{"label": "Good enough. Go.", "next": "leave"}
+				]
+			},
+			"cockpit": {
+				"speaker": "",
+				"text": "The pilot didn't make it. The flight recorder is intact though. Last entry: 'They found the route. ISD patrol on intercept. Dumping cargo at-- ' Static. The nav computer has coordinates for three more cache sites across the system.",
+				"effects": [
+					{"type": "give_fuel", "amount": 20},
+					{"type": "set_tag", "tag": "smuggler_routes", "value": true}
+				],
+				"choices": [
+					{"label": "Search the cargo", "next": "cargo"},
+					{"label": "We have the data. Move on.", "next": "leave"}
+				]
+			},
+			"scan": {
+				"speaker": "",
+				"text": "Smart. Your sweep picks up three contacts lurking behind a ridge -- scavengers who were here first and don't like competition. They're powering weapons.",
+				"effects": [
+					{"type": "spawn_enemies", "count": 3, "min_dist": 200, "max_dist": 400}
+				],
+				"choices": [
+					{"label": "Deal with them, then search the wreck.", "next": "cargo"}
+				]
+			},
+			"leave": {
+				"speaker": "",
+				"text": "The wreck settles deeper into the dust behind you.",
+				"choices": []
+			}
+		}
+	},
+	"abandoned_mine": {
+		"title": "Abandoned Mine",
+		"nodes": {
+			"start": {
+				"speaker": "",
+				"text": "A shaft entrance carved into the canyon wall, boarded up with steel plates and warning signs. 'CONDEMNED -- STRUCTURAL FAILURE -- DO NOT ENTER.' But your scanner detects refined ore stockpiles inside, and the supports look stable enough.",
+				"choices": [
+					{"label": "Pry the boards off and go in", "next": "enter"},
+					{"label": "Send a drone first", "next": "drone"},
+					{"label": "The signs are there for a reason.", "next": "leave"}
+				]
+			},
+			"enter": {
+				"speaker": "",
+				"text": "The shaft descends at a steep angle. Old mining equipment lines the walls -- picks, drills, portable smelters. At the bottom, you find what they were digging for: a vein of crystallized minerals, partially extracted. Enough left to fill your hold.",
+				"effects": [
+					{"type": "give_resource_random", "min": 10, "max": 18}
+				],
+				"choices": [
+					{"label": "Keep going deeper", "next": "deep"},
+					{"label": "Take what's here and leave", "next": "leave"}
+				]
+			},
+			"deep": {
+				"speaker": "",
+				"text": "The tunnel opens into a natural cavern. And you see why they really sealed the mine -- something is down here. Eggs. Dozens of them, each the size of a fuel drum, translucent, with something moving inside. Then you hear skittering above you.",
+				"effects": [
+					{"type": "spawn_enemies", "count": 3, "min_dist": 100, "max_dist": 250},
+					{"type": "damage_hull", "amount": 10}
+				],
+				"choices": [
+					{"label": "Fight through and grab what you can!", "next": "grab"},
+					{"label": "RUN!", "next": "leave"}
+				]
+			},
+			"grab": {
+				"speaker": "",
+				"text": "In the chaos, you snatch a cluster of crystallized compounds from the nest floor -- the creatures were hoarding refined minerals. You take a beating getting out, but the haul is worth it.",
+				"effects": [
+					{"type": "give_resource_random", "min": 8, "max": 14},
+					{"type": "give_module", "module_id": "armor_plate_mk1", "count": 1}
+				],
+				"choices": [
+					{"label": "Never again.", "next": "leave"}
+				]
+			},
+			"drone": {
+				"speaker": "",
+				"text": "The drone maps three levels. Ore stockpiles on level one, abandoned equipment on level two, and... the feed cuts out on level three. The last frame shows something large and fast. But levels one and two look safe enough.",
+				"choices": [
+					{"label": "Go in. Just the first two levels.", "next": "enter"},
+					{"label": "That last frame was enough for me.", "next": "leave"}
+				]
+			},
+			"leave": {
+				"speaker": "",
+				"text": "You seal the boards back as best you can. Some things should stay buried.",
+				"choices": []
+			}
+		}
+	},
+	"prospector_shack": {
+		"title": "Prospector's Shack",
+		"nodes": {
+			"start": {
+				"speaker": "Old Prospector",
+				"text": "Well I'll be damned, a ship that isn't shooting at me. Name's Harlow. Been working these canyons for twelve years. I know every rock, every vein, every patch of ground worth digging in this whole system. You need fuel? Food? Information? I can do all three.",
+				"choices": [
+					{"label": "I could use fuel and food.", "next": "supplies"},
+					{"label": "What do you know about this area?", "next": "info"},
+					{"label": "Got anything to trade?", "next": "trade"},
+					{"label": "Just exploring.", "next": "leave"}
+				]
+			},
+			"supplies": {
+				"speaker": "Old Prospector",
+				"text": "Got a still that makes fuel from the local sandwort -- tastes terrible but burns clean. And jerky from canyon lizards. It ain't fancy but it'll keep you flying.",
+				"effects": [
+					{"type": "give_fuel", "amount": 25},
+					{"type": "give_food", "amount": 20}
+				],
+				"choices": [
+					{"label": "You're a lifesaver, Harlow.", "next": "start"},
+					{"label": "Thanks. What else you got?", "next": "info"}
+				]
+			},
+			"info": {
+				"speaker": "Old Prospector",
+				"text": "Three things. One: the pirates leave me alone because I fix their ships. Two: there's a wrecked military transport in the deep canyon, about four klicks east. Nobody's cracked it yet. Three: don't dig below fifty meters. Trust me on that one.",
+				"effects": [
+					{"type": "set_tag", "tag": "harlow_tip", "value": true}
+				],
+				"choices": [
+					{"label": "What's below fifty meters?", "next": "warning"},
+					{"label": "Thanks for the tips.", "next": "start"}
+				]
+			},
+			"warning": {
+				"speaker": "Old Prospector",
+				"text": "Something that doesn't like company. Lost two drills and a surveyor bot down there. The ground shakes when you dig too deep. I stopped asking questions. You should too.",
+				"choices": [
+					{"label": "Noted. Anything to trade?", "next": "trade"},
+					{"label": "I'll be careful.", "next": "leave"}
+				]
+			},
+			"trade": {
+				"speaker": "Old Prospector",
+				"text": "I found this in a collapsed shaft last month. Don't know what it is, but my scanner says it's worth more than my shack. Yours for a fair price.",
+				"effects": [{"type": "open_shop"}],
+				"choices": []
+			},
+			"leave": {
+				"speaker": "Old Prospector",
+				"text": "Fly safe, captain. And remember -- don't dig too deep.",
+				"choices": []
+			}
+		}
+	},
+	"frozen_outpost": {
+		"title": "Frozen Research Station",
+		"nodes": {
+			"start": {
+				"speaker": "",
+				"text": "A cluster of pre-fab modules half-buried in ice. The lights are on but the windows are frosted over. The front airlock is jammed partially open -- ice has forced it. Your bio-scanner reads ambient temperature at minus sixty. No life signs, but the computers are still running.",
+				"choices": [
+					{"label": "Enter through the airlock", "next": "enter"},
+					{"label": "Access the external data port", "next": "data"},
+					{"label": "Not worth freezing for.", "next": "leave"}
+				]
+			},
+			"enter": {
+				"speaker": "",
+				"text": "Inside, everything is frozen in place. Coffee cups, data pads, coats on hooks. The crew left in a hurry -- or didn't leave at all. In the main lab, you find research terminals still processing data, and a sealed crate marked 'SAMPLES -- DO NOT OPEN WITHOUT QUARANTINE.'",
+				"choices": [
+					{"label": "Check the research data", "next": "research"},
+					{"label": "Open the sample crate", "next": "samples"},
+					{"label": "Search for supplies", "next": "supplies"}
+				]
+			},
+			"research": {
+				"speaker": "",
+				"text": "The team was studying the ice formations outside. Their conclusion, recorded in the last log entry: 'The crystals are not geological. They are growing in response to the nebula's energy output. They are antenna. Something is listening through them.' The log ends there.",
+				"effects": [
+					{"type": "give_credits", "amount": 200},
+					{"type": "set_tag", "tag": "ice_research", "value": true}
+				],
+				"choices": [
+					{"label": "Open the samples", "next": "samples"},
+					{"label": "Search for supplies", "next": "supplies"},
+					{"label": "We've learned enough.", "next": "leave"}
+				]
+			},
+			"samples": {
+				"speaker": "",
+				"text": "The crate holds a containment unit with a single ice crystal, glowing faintly blue. It's warm. Your engineer connects it to a diagnostic port and gets readings that make no sense -- the crystal is generating energy from nothing. Or from somewhere you can't detect.",
+				"effects": [
+					{"type": "give_module", "module_id": "reactor_mk1", "count": 1}
+				],
+				"choices": [
+					{"label": "Incredible. Store it safely.", "next": "leave"}
+				]
+			},
+			"supplies": {
+				"speaker": "",
+				"text": "The station's stores are frozen but intact. Emergency rations, fuel cells, and medical supplies. The crew never used them, which means they either left or... didn't have time to.",
+				"effects": [
+					{"type": "give_fuel", "amount": 20},
+					{"type": "give_food", "amount": 25},
+					{"type": "repair", "amount": 30}
+				],
+				"choices": [
+					{"label": "Check the research", "next": "research"},
+					{"label": "Take it all and go.", "next": "leave"}
+				]
+			},
+			"data": {
+				"speaker": "",
+				"text": "The external port gives you access to the station's outbound logs. Weeks of data transmissions to a corporate address you don't recognize. The last transmission is flagged URGENT and contains coordinates deep in the nebula, along with the words: 'IT KNOWS WE'RE HERE.'",
+				"effects": [
+					{"type": "give_credits", "amount": 100},
+					{"type": "set_tag", "tag": "ice_research", "value": true}
+				],
+				"choices": [
+					{"label": "Go inside anyway", "next": "enter"},
+					{"label": "Take the data and leave", "next": "leave"}
+				]
+			},
+			"leave": {
+				"speaker": "",
+				"text": "The station lights flicker once as you leave, as if acknowledging your departure.",
+				"choices": []
+			}
+		}
+	},
+	"ice_anomaly": {
+		"title": "Ice Formation",
+		"nodes": {
+			"start": {
+				"speaker": "",
+				"text": "They're beautiful and wrong. Spires of ice, fifty meters tall, arranged in concentric rings. Each one hums at a different frequency. Standing in the center, you can feel the vibrations in your chest. Your sensors are recording data they can't categorize.",
+				"choices": [
+					{"label": "Collect a sample from the nearest spire", "next": "sample"},
+					{"label": "Fly to the center of the formation", "next": "center"},
+					{"label": "Record and leave", "next": "leave"}
+				]
+			},
+			"sample": {
+				"speaker": "",
+				"text": "The moment your cutting tool touches the ice, every spire in the formation shifts pitch. Higher. Louder. The sample you cut glows in your hand, pulsing with internal light. Then the formation goes quiet, as if holding its breath.",
+				"effects": [
+					{"type": "give_module", "module_id": "shield_gen_mk1", "count": 1},
+					{"type": "give_resource_random", "min": 3, "max": 7}
+				],
+				"choices": [
+					{"label": "Fly to the center", "next": "center"},
+					{"label": "Don't push our luck.", "next": "leave"}
+				]
+			},
+			"center": {
+				"speaker": "",
+				"text": "In the center, the air itself vibrates. Your ship's systems spike -- shields recalibrate, weapons charge, engines surge. Then, for exactly one second, your viewscreen shows something: a vast structure, not in space but beneath the ice, extending kilometers down. Then it's gone. Your systems are running 10% more efficiently.",
+				"effects": [
+					{"type": "repair", "amount": 50},
+					{"type": "give_module", "module_id": "sensor_mk1", "count": 1}
+				],
+				"choices": [
+					{"label": "What is down there?", "next": "leave"}
+				]
+			},
+			"leave": {
+				"speaker": "",
+				"text": "The spires resume their humming, indifferent to your departure.",
+				"choices": []
+			}
+		}
+	},
+	"buried_ship": {
+		"title": "Buried Ship",
+		"nodes": {
+			"start": {
+				"speaker": "",
+				"text": "An engine nacelle protrudes from a snowdrift at a sharp angle. The ship went down hard and the ice has been building around it for years. You can see hull markings -- this was a military vessel, probably from the convoys that went missing in the nebula.",
+				"choices": [
+					{"label": "Dig it out", "next": "dig"},
+					{"label": "Access the exposed nacelle", "next": "nacelle"},
+					{"label": "Leave it buried.", "next": "leave"}
+				]
+			},
+			"dig": {
+				"speaker": "",
+				"text": "Hours of work, but your ship's exhaust melts enough ice to reach the cargo bay. Inside: weapons, supplies, and the crew -- frozen at their stations, faces calm. Whatever got them, they didn't see it coming. Or they accepted it.",
+				"effects": [
+					{"type": "give_module", "module_id": "autocannon_mk1", "count": 1},
+					{"type": "give_module", "module_id": "missile_rack_mk1", "count": 1},
+					{"type": "give_fuel", "amount": 15}
+				],
+				"choices": [
+					{"label": "Strip the engines too", "next": "nacelle"},
+					{"label": "Rest well, crew. Time to go.", "next": "leave"}
+				]
+			},
+			"nacelle": {
+				"speaker": "",
+				"text": "The engine is a military-grade thruster, surprisingly intact. Your engineer patches out the frozen coolant lines and declares it salvageable. The ship's black box is also accessible -- the last recorded words: 'The ice moved. The ice is moving toward us.'",
+				"effects": [
+					{"type": "give_module", "module_id": "thruster_mk2", "count": 1}
+				],
+				"choices": [
+					{"label": "Dig into the cargo bay", "next": "dig"},
+					{"label": "Take the engine and go. Fast.", "next": "leave"}
+				]
+			},
+			"leave": {
+				"speaker": "",
+				"text": "Snow begins to cover your tracks almost immediately.",
+				"choices": []
+			}
+		}
+	},
+	"korrath_garrison": {
+		"title": "Korrath Garrison",
+		"nodes": {
+			"start": {
+				"speaker": "Korrath Officer",
+				"text": "Human. You are either very brave or very stupid to land on Ironveil. This garrison protects something you cannot comprehend. State your business before we disassemble your vessel.",
+				"choices": [
+					{"label": "I come with an offer of trade.", "next": "trade"},
+					{"label": "I'm looking for missing human ships.", "next": "ships"},
+					{"label": "I want to understand your people.", "next": "culture"},
+					{"label": "Do your worst.", "next": "fight"}
+				]
+			},
+			"trade": {
+				"speaker": "Korrath Officer",
+				"text": "Trade. With a human. Unusual. But not unwelcome. We have materials your species values. In return, we require fuel -- our refineries are overtaxed. An exchange, nothing more.",
+				"effects": [
+					{"type": "give_module", "module_id": "armor_plate_mk2", "count": 1},
+					{"type": "give_module", "module_id": "conduit_mk1", "count": 3}
+				],
+				"choices": [
+					{"label": "A fair deal.", "next": "leave_peaceful"},
+					{"label": "While I'm here -- any humans pass through recently?", "next": "ships"}
+				]
+			},
+			"ships": {
+				"speaker": "Korrath Officer",
+				"text": "Your missing ships violated our space. Some were warned. Some were not. Those who surrendered are... guests of the Expanse. Those who fought are debris. If you seek them, look to the compound in the eastern valley. But know this: those who enter Korrath space belong to the Korrath.",
+				"effects": [
+					{"type": "set_tag", "tag": "korrath_prisoners", "value": true}
+				],
+				"choices": [
+					{"label": "I want them back.", "next": "demand"},
+					{"label": "I understand. Thank you.", "next": "leave_peaceful"}
+				]
+			},
+			"demand": {
+				"speaker": "Korrath Officer",
+				"text": "Your audacity is noted. We respect strength, human. Prove yours. Defeat our champion in combat, and we will release two of your people. Fail, and you join them.",
+				"effects": [
+					{"type": "spawn_enemies", "count": 2, "min_dist": 200, "max_dist": 300}
+				],
+				"choices": [
+					{"label": "Accepted.", "next": "victory"}
+				]
+			},
+			"victory": {
+				"speaker": "Korrath Officer",
+				"text": "Impressive. A bargain is a bargain. Take your people. But remember -- you are known to us now. The Korrath do not forget.",
+				"effects": [
+					{"type": "give_crew", "role": "marine"},
+					{"type": "give_crew", "role": "engineer"}
+				],
+				"choices": [
+					{"label": "We won't forget either.", "next": "leave_peaceful"}
+				]
+			},
+			"culture": {
+				"speaker": "Korrath Officer",
+				"text": "Understand us? No human can. But I will give you this: we are not conquerors. We are wardens. What lies beneath this world must never be disturbed. Every Korrath life spent here is spent in service to that duty. Your species digs and pries and never asks what sleeps below.",
+				"effects": [
+					{"type": "set_tag", "tag": "korrath_purpose", "value": true}
+				],
+				"choices": [
+					{"label": "What sleeps below?", "next": "warning"},
+					{"label": "I appreciate the honesty.", "next": "trade"}
+				]
+			},
+			"warning": {
+				"speaker": "Korrath Officer",
+				"text": "If we told you, you would dig faster. That is the nature of your species. Go, human. And do not come to Ironveil again without permission.",
+				"choices": [
+					{"label": "Understood.", "next": "leave_peaceful"}
+				]
+			},
+			"fight": {
+				"speaker": "Korrath Officer",
+				"text": "So be it. For the Expanse!",
+				"effects": [
+					{"type": "spawn_enemies", "count": 5, "min_dist": 150, "max_dist": 350}
+				],
+				"choices": [
+					{"label": "Come on then.", "next": "leave"}
+				]
+			},
+			"leave_peaceful": {
+				"speaker": "",
+				"text": "The Korrath watch you depart, weapons tracking but not firing. An uneasy peace.",
+				"choices": []
+			},
+			"leave": {
+				"speaker": "",
+				"text": "You pull away from the garrison under fire.",
+				"choices": []
+			}
+		}
+	},
+	"korrath_monument": {
+		"title": "Alien Monument",
+		"nodes": {
+			"start": {
+				"speaker": "",
+				"text": "A tower of dark metal, forty meters high, covered in glowing Korrath script that shifts and changes as you watch. The ground around it is scorched clean -- nothing grows within a hundred meters. Your translator can't parse the language, but it detects recurring mathematical patterns.",
+				"choices": [
+					{"label": "Record the patterns", "next": "record"},
+					{"label": "Touch the monument", "next": "touch"},
+					{"label": "Leave it alone.", "next": "leave"}
+				]
+			},
+			"record": {
+				"speaker": "",
+				"text": "Hours of recording yield a breakthrough. The patterns aren't just language -- they're schematics. Buried in the Korrath script are engineering specifications for shield technology more advanced than anything human science has produced. Your engineer is giddy.",
+				"effects": [
+					{"type": "give_module", "module_id": "shield_gen_mk2", "count": 1},
+					{"type": "give_credits", "amount": 300}
+				],
+				"choices": [
+					{"label": "What else is in there?", "next": "touch"},
+					{"label": "This is enough. Go.", "next": "leave"}
+				]
+			},
+			"touch": {
+				"speaker": "",
+				"text": "The metal is warm. The script freezes, then rearranges itself into a single repeating symbol. Your translator offers one word: WARNING. The ground shakes. The monument is transmitting -- your position, your ship's signature, broadcast on Korrath military frequencies.",
+				"effects": [
+					{"type": "spawn_enemies", "count": 4, "min_dist": 300, "max_dist": 500},
+					{"type": "give_module", "module_id": "reactor_mk1", "count": 1}
+				],
+				"choices": [
+					{"label": "Grab what we can and run!", "next": "leave"}
+				]
+			},
+			"leave": {
+				"speaker": "",
+				"text": "The monument's glow fades as you gain altitude. The script continues its slow rotation, patient and ancient.",
+				"choices": []
+			}
+		}
+	},
+	"prisoner_compound": {
+		"title": "Prisoner Compound",
+		"nodes": {
+			"start": {
+				"speaker": "",
+				"text": "Human-scale buildings behind shimming energy fencing. You count a dozen structures, modular, clearly designed for bipeds not much larger than you. Movement inside -- people. Your comms pick up a weak signal: 'Any human vessel, this is Camp 7. We are held against our will. Please respond.'",
+				"choices": [
+					{"label": "Respond on comms", "next": "respond"},
+					{"label": "Scout the perimeter for weaknesses", "next": "scout"},
+					{"label": "This is Korrath territory. Don't interfere.", "next": "leave"}
+				]
+			},
+			"respond": {
+				"speaker": "Prisoner",
+				"text": "Oh god, you're real. There are fifteen of us -- crew from three different ships. The Korrath keep us fed and sheltered but we can't leave. The fence goes down for thirty seconds during the guard rotation at local midnight. If you hit the generator on the south wall during the switch, we can get some people out.",
+				"choices": [
+					{"label": "I'll hit the generator. Be ready.", "next": "breakout"},
+					{"label": "Can you get to the fence without being seen?", "next": "sneak"},
+					{"label": "I can't risk it. I'm sorry.", "next": "leave"}
+				]
+			},
+			"breakout": {
+				"speaker": "",
+				"text": "You strafe the generator with a burst of fire. The fence drops. In the chaos, three prisoners sprint for your position -- a pilot, an engineer, and a deckhand. Korrath response is immediate and furious.",
+				"effects": [
+					{"type": "give_crew", "role": "pilot"},
+					{"type": "give_crew", "role": "engineer"},
+					{"type": "spawn_enemies", "count": 4, "min_dist": 200, "max_dist": 400}
+				],
+				"choices": [
+					{"label": "Get aboard! We're leaving!", "next": "leave"}
+				]
+			},
+			"sneak": {
+				"speaker": "Prisoner",
+				"text": "There's a blind spot on the north side during the second patrol sweep. We've been timing it for months. Land quiet, engines cold, and we can slip two people through the gap.",
+				"effects": [
+					{"type": "give_crew", "role": "medic"},
+					{"type": "give_crew", "role": "deckhand"}
+				],
+				"choices": [
+					{"label": "Quiet exit. Smart.", "next": "leave_quiet"}
+				]
+			},
+			"scout": {
+				"speaker": "",
+				"text": "The fence has three generator nodes -- south, east, and west. Destroy any one and you'd create a gap. Guard patrols run on a twelve-minute cycle. The Korrath are disciplined but predictable. You also spot a supply depot outside the fence -- food, fuel, medical supplies.",
+				"choices": [
+					{"label": "Hit the generator and free the prisoners", "next": "breakout"},
+					{"label": "Raid the supply depot instead", "next": "raid"},
+					{"label": "Too risky.", "next": "leave"}
+				]
+			},
+			"raid": {
+				"speaker": "",
+				"text": "You hit the supply depot during the patrol gap. No alarms. Your crew loads fuel cells, ration packs, and a crate of repair materials. The prisoners watch from behind the fence. You can see their faces.",
+				"effects": [
+					{"type": "give_fuel", "amount": 30},
+					{"type": "give_food", "amount": 25},
+					{"type": "repair", "amount": 40}
+				],
+				"choices": [
+					{"label": "I'll come back for them. I promise.", "next": "leave_quiet"},
+					{"label": "Hit the generator too.", "next": "breakout"}
+				]
+			},
+			"leave_quiet": {
+				"speaker": "",
+				"text": "You slip away in the dark, engines cold, skimming the terrain. The compound shrinks behind you.",
+				"choices": []
+			},
+			"leave": {
+				"speaker": "",
+				"text": "The signal fades behind you. 'Please... come back.'",
+				"choices": []
+			}
+		}
+	},
+	"scrap_heap": {
+		"title": "Scrap Heap",
+		"nodes": {
+			"start": {
+				"speaker": "",
+				"text": "A graveyard of human ships, stripped and stacked like broken toys. Dozens of hulls, some military, some civilian, all systematically disassembled. The Korrath are thorough -- but not perfect. Your scanner picks up intact components in the deeper layers.",
+				"choices": [
+					{"label": "Dig through the wreckage", "next": "dig"},
+					{"label": "Scan for the best salvage targets", "next": "scan"},
+					{"label": "Too exposed. Let's go.", "next": "leave"}
+				]
+			},
+			"dig": {
+				"speaker": "",
+				"text": "It's grim work, crawling through dead ships. You find a functional weapons array wedged between two crushed corvettes, and enough spare parts to keep your own ship running for a while.",
+				"effects": [
+					{"type": "give_module", "module_id": "pulse_laser_mk2", "count": 1},
+					{"type": "give_module", "module_id": "conduit_mk1", "count": 2},
+					{"type": "give_resource_random", "min": 5, "max": 10}
+				],
+				"choices": [
+					{"label": "Keep searching", "next": "deep"},
+					{"label": "Good haul. Move out.", "next": "leave"}
+				]
+			},
+			"scan": {
+				"speaker": "",
+				"text": "Your sensors highlight three high-value targets: a military engine module near the surface, a reactor core buried deep, and a sealed emergency pod in the center of the pile -- still broadcasting a distress signal.",
+				"choices": [
+					{"label": "Go for the engine", "next": "engine"},
+					{"label": "Get the reactor", "next": "deep"},
+					{"label": "Check the escape pod", "next": "pod"}
+				]
+			},
+			"engine": {
+				"speaker": "",
+				"text": "The engine is from a patrol cutter -- fast, efficient, barely damaged. Your engineer has it extracted in twenty minutes.",
+				"effects": [
+					{"type": "give_module", "module_id": "thruster_mk2", "count": 1}
+				],
+				"choices": [
+					{"label": "Check the other targets", "next": "deep"},
+					{"label": "Enough. Go.", "next": "leave"}
+				]
+			},
+			"deep": {
+				"speaker": "",
+				"text": "Deep in the pile, you find a reactor core that's still hot -- whoever this ship belonged to, they had serious hardware. Extracting it triggers a structural collapse in the surrounding wreckage. Debris rains down.",
+				"effects": [
+					{"type": "give_module", "module_id": "reactor_mk1", "count": 1},
+					{"type": "damage_hull", "amount": 20}
+				],
+				"choices": [
+					{"label": "Worth it. Let's go.", "next": "leave"}
+				]
+			},
+			"pod": {
+				"speaker": "Pod Survivor",
+				"text": "The pod cracks open with a hiss. Inside, a woman in a cracked pressure suit, barely conscious. She blinks at you. 'How long... how long has it been?' Her pod's chronometer says eight months. She was a pilot on a survey ship. The Korrath shot her down but missed the pod.",
+				"effects": [
+					{"type": "give_crew", "role": "pilot"}
+				],
+				"choices": [
+					{"label": "Welcome back to the living.", "next": "dig"},
+					{"label": "Let's get you somewhere safe.", "next": "leave"}
+				]
+			},
+			"leave": {
+				"speaker": "",
+				"text": "The scrap heap sits in silence. A monument to the cost of crossing the Korrath.",
+				"choices": []
+			}
+		}
+	},
+	"alien_eggs": {
+		"title": "Egg Cluster",
+		"nodes": {
+			"start": {
+				"speaker": "",
+				"text": "A cluster of leathery pods, each the size of a watermelon, arranged around a thermal vent. They're warm, pliant, and definitely organic. Something is moving inside the larger ones. Your bio-scanner flags them as 'UNKNOWN ORGANISM -- CAUTION ADVISED.'",
+				"choices": [
+					{"label": "Get a closer look", "next": "closer"},
+					{"label": "Collect a sample for study", "next": "sample"},
+					{"label": "Nope. Nope nope nope.", "next": "leave"}
+				]
+			},
+			"closer": {
+				"speaker": "",
+				"text": "You lean in. The nearest pod peels open like a flower. Something wet, fast, and many-legged launches at your helmet. It latches on before anyone can react. Your crew pulls you back, but the thing has a grip like a hydraulic clamp. After thirty seconds of panicked wrestling, it goes limp and falls off. Your medic checks you over -- seems fine. Pulse normal. Breathing normal. You feel great, actually.",
+				"effects": [
+					{"type": "give_resource_random", "min": 2, "max": 5},
+					{"type": "queue_event", "event_id": "facehugger_stage1", "delay_min": 120, "delay_max": 300}
+				],
+				"choices": [
+					{"label": "I'm fine. Totally fine. Let's go.", "next": "leave"}
+				]
+			},
+			"sample": {
+				"speaker": "",
+				"text": "Your engineer reaches for one of the smaller pods with a containment tool. The moment they touch it, a larger pod bursts open and something scrambles up their arm and onto their face. It clings for a few heartbeats, then drops dead. Your medic says your engineer's vitals are normal. They say they feel fine. Better than fine.",
+				"effects": [
+					{"type": "give_resource_random", "min": 3, "max": 6},
+					{"type": "queue_event", "event_id": "facehugger_stage1", "delay_min": 120, "delay_max": 300}
+				],
+				"choices": [
+					{"label": "Bag it and tag it. Let's go.", "next": "leave"}
+				]
+			},
+			"leave": {
+				"speaker": "",
+				"text": "The remaining pods pulse gently in the heat. You don't look back.",
+				"choices": []
+			}
+		}
+	},
+	"facehugger_stage1": {
+		"title": "Medical Alert",
+		"nodes": {
+			"start": {
+				"speaker": "Ship Medic",
+				"text": "{_event_crew} has been complaining of heartburn and chest tightness. I ran a scan and... captain, there's something inside them. It's small, but it's growing. Fast. I don't know what it is, but it wasn't there yesterday.",
+				"choices": [
+					{"label": "Can you remove it surgically?", "next": "surgery"},
+					{"label": "Quarantine them immediately.", "next": "quarantine"},
+					{"label": "Keep monitoring. Don't panic.", "next": "wait"}
+				]
+			},
+			"surgery": {
+				"speaker": "Ship Medic",
+				"text": "I'll try, but captain -- this thing has wrapped itself around their ribcage. It's like it was designed to be impossible to remove without killing the host. I can attempt it, but I can't guarantee {_event_crew} survives.",
+				"choices": [
+					{"label": "Do it. Save them if you can.", "next": "surgery_attempt"},
+					{"label": "Too risky. Quarantine instead.", "next": "quarantine"}
+				]
+			},
+			"surgery_attempt": {
+				"speaker": "Ship Medic",
+				"text": "Four hours on the table. It fought us the whole way. We got it out -- a pale, wriggling thing the size of a fist, all teeth and tail. We spaced it through the airlock. {_event_crew} is in critical condition but stable. They'll live. They'll have one hell of a scar.",
+				"effects": [
+					{"type": "damage_hull", "amount": 5}
+				],
+				"choices": [
+					{"label": "Good work, doc.", "next": "leave"}
+				]
+			},
+			"quarantine": {
+				"speaker": "Ship Medic",
+				"text": "Done. {_event_crew} is sealed in the medbay. They're... not happy about it. But captain, whatever this thing is, it's growing faster now. We might have twelve hours before... I don't know. Before it does whatever it's going to do.",
+				"effects": [
+					{"type": "queue_event", "event_id": "chestburster_crisis", "delay_min": 90, "delay_max": 240}
+				],
+				"choices": [
+					{"label": "Keep me posted.", "next": "leave"}
+				]
+			},
+			"wait": {
+				"speaker": "Ship Medic",
+				"text": "Captain, with respect -- this is NOT a 'keep monitoring' situation. But fine. I'll run hourly scans. Just... don't be surprised if this gets worse.",
+				"effects": [
+					{"type": "queue_event", "event_id": "chestburster_crisis", "delay_min": 60, "delay_max": 180}
+				],
+				"choices": [
+					{"label": "Noted.", "next": "leave"}
+				]
+			},
+			"leave": {
+				"speaker": "",
+				"text": "The medbay lights hum. Something in the ship feels different.",
+				"choices": []
+			}
+		}
+	},
+	"chestburster_crisis": {
+		"title": "ALERT: Containment Breach",
+		"nodes": {
+			"start": {
+				"speaker": "Ship Medic",
+				"text": "CAPTAIN! It's out! The thing -- it -- {_event_crew} started convulsing and then something BURST out of their chest and it's loose on the ship! It's fast, captain, it went into the ventilation! {_event_crew} is... they're alive, barely. The creature is growing. I can hear it moving in the walls.",
+				"choices": [
+					{"label": "All hands, arm up. We're hunting this thing.", "next": "hunt"},
+					{"label": "Seal all sections. Vent atmosphere in the ducts.", "next": "vent"},
+					{"label": "Lure it into the cargo bay with food.", "next": "lure"},
+					{"label": "Can we... keep it?", "next": "keep"}
+				]
+			},
+			"hunt": {
+				"speaker": "",
+				"text": "Your crew arms up and spreads through the ship. Twenty minutes of tense searching. Scratching in the walls. A tail disappearing around a corner. Finally, your marine corners it in engineering. It's the size of a dog now, all black chitin and acid drool. A brief, violent firefight. Three conduits destroyed. One crew member with acid burns. But it's dead.",
+				"effects": [
+					{"type": "damage_hull", "amount": 25},
+					{"type": "give_resource_random", "min": 3, "max": 6}
+				],
+				"choices": [
+					{"label": "Bag the carcass. Someone might pay for this.", "next": "leave_loot"},
+					{"label": "Space it. Space all of it.", "next": "leave"}
+				]
+			},
+			"vent": {
+				"speaker": "",
+				"text": "You seal the ship section by section and vent the ducts to vacuum. Something screeches in the walls -- a horrible, resonating sound that makes your teeth hurt. Then silence. When you repressurise, you find the frozen remains wedged in a ventilation junction. It's bigger than you expected. Much bigger.",
+				"effects": [
+					{"type": "damage_hull", "amount": 15}
+				],
+				"choices": [
+					{"label": "Effective. Brutal, but effective.", "next": "leave_loot"},
+					{"label": "Never speak of this again.", "next": "leave"}
+				]
+			},
+			"lure": {
+				"speaker": "",
+				"text": "You dump a crate of rations in the cargo bay and seal all exits but one. It takes an hour, but the creature emerges -- it's grown to the size of a large cat, sleek and terrifying. It eats everything. While it's gorging, you slam the bay doors and jettison the entire cargo bay section to vacuum. Goodbye, creature. Goodbye, rations.",
+				"effects": [
+					{"type": "give_food", "amount": -30},
+					{"type": "damage_hull", "amount": 10}
+				],
+				"choices": [
+					{"label": "Anyone who says 'I told you so' walks home.", "next": "leave"}
+				]
+			},
+			"keep": {
+				"speaker": "Ship Medic",
+				"text": "KEEP IT?! Captain, it just exploded out of a person's ribcage! It has acid for blood! It's eating through the bulkhead RIGHT NOW!",
+				"choices": [
+					{"label": "You're right. Hunt it.", "next": "hunt"},
+					{"label": "But think of the scientific value!", "next": "keep2"}
+				]
+			},
+			"keep2": {
+				"speaker": "Ship Medic",
+				"text": "I... fine. FINE. We build a containment cage from hull plating and pray it holds. But if this thing gets loose again, I am holding you PERSONALLY responsible, captain.",
+				"effects": [
+					{"type": "give_module", "module_id": "sensor_mk2", "count": 1},
+					{"type": "damage_hull", "amount": 20},
+					{"type": "set_tag", "tag": "kept_alien", "value": true}
+				],
+				"choices": [
+					{"label": "I'll name it Steve.", "next": "leave"}
+				]
+			},
+			"leave_loot": {
+				"speaker": "",
+				"text": "The carcass yields unusual biological compounds. Your engineer thinks they might be useful. {_event_crew} is in the medbay, recovering. They don't remember much. Probably for the best.",
+				"effects": [
+					{"type": "give_module", "module_id": "armor_plate_mk1", "count": 1},
+					{"type": "give_credits", "amount": 150}
+				],
+				"choices": []
+			},
+			"leave": {
+				"speaker": "",
+				"text": "The ship is quiet again. Too quiet. Your crew jumps at every noise for the next three days.",
+				"choices": []
+			}
+		}
+	},
+	"space_fungus_seed": {
+		"title": "Strange Fungus",
+		"nodes": {
+			"start": {
+				"speaker": "",
+				"text": "Iridescent fungal growth covers the cooling lava like a living carpet. It's beautiful -- shifting colors, bioluminescent tendrils reaching toward your ship's heat signature. Spores drift lazily upward. Your bio-scanner says they're harmless. Mostly.",
+				"choices": [
+					{"label": "Collect a sample", "next": "collect"},
+					{"label": "Fly through the spore cloud", "next": "fly"},
+					{"label": "Keep your distance.", "next": "leave"}
+				]
+			},
+			"collect": {
+				"speaker": "",
+				"text": "You scoop a clump of the fungus into a containment jar. It pulses gently in its container, cycling through blues and greens. Pretty. Your engineer wants to study it. Your medic wants to space it. You bring it aboard.",
+				"effects": [
+					{"type": "give_resource_random", "min": 3, "max": 6},
+					{"type": "queue_event", "event_id": "fungus_stage1", "delay_min": 180, "delay_max": 360}
+				],
+				"choices": [
+					{"label": "Science demands sacrifice.", "next": "leave"}
+				]
+			},
+			"fly": {
+				"speaker": "",
+				"text": "The spore cloud coats your hull in a fine iridescent dust. Your sensors spike briefly then return to normal. Your engineer notes that the hull temperature has dropped two degrees. Probably nothing.",
+				"effects": [
+					{"type": "queue_event", "event_id": "fungus_stage1", "delay_min": 240, "delay_max": 480}
+				],
+				"choices": [
+					{"label": "Pretty light show.", "next": "leave"}
+				]
+			},
+			"leave": {
+				"speaker": "",
+				"text": "The fungus carpets glows faintly in your wake. Spores drift on the thermal updraft.",
+				"choices": []
+			}
+		}
+	},
+	"fungus_stage1": {
+		"title": "Hull Anomaly",
+		"nodes": {
+			"start": {
+				"speaker": "Engineer",
+				"text": "Captain, we've got a... situation. That fungus from the planet surface? It's growing. On the hull. Inside the hull. It's gotten into the conduit junctions and it's spreading. The good news is it seems to be reinforcing the structural integrity wherever it grows. The bad news is it's eating through the insulation on our secondary power lines.",
+				"choices": [
+					{"label": "Burn it out. All of it.", "next": "burn"},
+					{"label": "Can we control where it grows?", "next": "control"},
+					{"label": "If it's making the hull stronger, let it spread.", "next": "spread"}
+				]
+			},
+			"burn": {
+				"speaker": "Engineer",
+				"text": "I'll rig up plasma torches in the affected sections. Fair warning -- the fungus releases toxic spores when heated. Everyone needs respirators. Here goes... okay, it's fighting back. The spores are THICK. Visibility zero. But it's working -- the fungus is dying. Hull sections are clear. Power lines are intact. We lost some cargo in the fire, though.",
+				"effects": [
+					{"type": "damage_hull", "amount": 20}
+				],
+				"choices": [
+					{"label": "Better safe than sorry.", "next": "leave"}
+				]
+			},
+			"control": {
+				"speaker": "Engineer",
+				"text": "Maybe? It grows toward heat sources and away from cold. If I vent the conduit sections to vacuum and run heat through the armor plating instead... yeah, I think I can channel it. It'll eat the insulation in non-critical areas but reinforce the hull plating. We'd be trading power efficiency for structural integrity.",
+				"effects": [
+					{"type": "give_module", "module_id": "armor_plate_mk1", "count": 2},
+					{"type": "set_tag", "tag": "fungus_controlled", "value": true},
+					{"type": "queue_event", "event_id": "fungus_stage2", "delay_min": 300, "delay_max": 600}
+				],
+				"choices": [
+					{"label": "Do it. Symbiotic armor plating.", "next": "leave"}
+				]
+			},
+			"spread": {
+				"speaker": "Engineer",
+				"text": "Your call, captain. But I want it on record that I think this is insane. The fungus is literally eating our ship and you want to... encourage it.",
+				"effects": [
+					{"type": "give_module", "module_id": "armor_plate_mk1", "count": 1},
+					{"type": "set_tag", "tag": "fungus_wild", "value": true},
+					{"type": "queue_event", "event_id": "fungus_stage2", "delay_min": 180, "delay_max": 360}
+				],
+				"choices": [
+					{"label": "Think of it as a living upgrade.", "next": "leave"}
+				]
+			},
+			"leave": {
+				"speaker": "",
+				"text": "The ship hums differently now. Not unpleasantly. Just... differently.",
+				"choices": []
+			}
+		}
+	},
+	"fungus_stage2": {
+		"title": "The Ship Is Alive",
+		"nodes": {
+			"start": {
+				"speaker": "Engineer",
+				"text": "Captain. The fungus has reached the reactor. It's... feeding on it. But here's the wild part: it's feeding energy BACK. Our power output is up 12%. The hull is covered in a bioluminescent sheen -- we look like a deep-sea fish. Several crew members report hearing a faint humming when they touch the walls. Your medic is losing her mind about biosafety but honestly? The ship has never run better.",
+				"choices": [
+					{"label": "Full symbiosis. Let it integrate.", "next": "integrate"},
+					{"label": "This has gone too far. Purge it now.", "next": "purge"},
+					{"label": "Talk to it. If it's alive, maybe it understands.", "next": "talk"}
+				]
+			},
+			"integrate": {
+				"speaker": "Engineer",
+				"text": "The fungus wraps the reactor in a warm cocoon. Power output jumps. The hull gleams. Your ship is half-machine, half-organism now. Some of the crew think it's beautiful. Some of them refuse to touch the walls. But nobody can argue with the performance numbers.",
+				"effects": [
+					{"type": "give_module", "module_id": "reactor_mk1", "count": 1},
+					{"type": "give_module", "module_id": "armor_plate_mk2", "count": 1},
+					{"type": "set_tag", "tag": "fungus_ship", "value": true}
+				],
+				"choices": [
+					{"label": "We are the ship. The ship is us.", "next": "leave"}
+				]
+			},
+			"purge": {
+				"speaker": "Engineer",
+				"text": "We vent the entire ship to vacuum for sixty seconds. Emergency suits only. The fungus screams -- not with sound, but with light. Every surface pulses crimson. Then it dies, all at once, turning to grey ash. The ship feels... colder. Emptier. But it's ours again.",
+				"effects": [
+					{"type": "damage_hull", "amount": 30},
+					{"type": "give_resource_random", "min": 5, "max": 10}
+				],
+				"choices": [
+					{"label": "I'm sorry, little fungus.", "next": "leave"},
+					{"label": "Good riddance.", "next": "leave"}
+				]
+			},
+			"talk": {
+				"speaker": "",
+				"text": "You press your palm flat against the wall. The humming intensifies. Colors ripple outward from your hand. You don't hear words, but you feel... gratitude? Warmth? The fungus pulses brighter where crew members stand, dims in empty corridors. It's been paying attention. It likes you. This is the weirdest day of your career.",
+				"effects": [
+					{"type": "give_module", "module_id": "shield_gen_mk1", "count": 1},
+					{"type": "repair", "amount": 40},
+					{"type": "set_tag", "tag": "fungus_friend", "value": true}
+				],
+				"choices": [
+					{"label": "We have a pet. A ship-sized pet.", "next": "leave"}
+				]
+			},
+			"leave": {
+				"speaker": "",
+				"text": "The crew will be talking about this one for a long time.",
+				"choices": []
+			}
+		}
+	},
+	"cursed_relic_seed": {
+		"title": "Glowing Crevasse",
+		"nodes": {
+			"start": {
+				"speaker": "",
+				"text": "A deep crack in the ice, radiating warmth that shouldn't exist. At the bottom, something glows with a steady amber light. Your scanner says it's metallic, extremely old, and emitting a signal on a frequency your computer can't identify. The ice around it has melted in a perfect circle.",
+				"choices": [
+					{"label": "Send someone down to retrieve it", "next": "retrieve"},
+					{"label": "Lower a grapple hook", "next": "hook"},
+					{"label": "Some things are buried for a reason.", "next": "leave"}
+				]
+			},
+			"retrieve": {
+				"speaker": "",
+				"text": "Your crew member descends on a winch cable. They reach the object -- a palm-sized disc covered in geometric engravings, warm to the touch, vibrating gently. The moment they pick it up, every light on your ship flickers. Your nav computer displays coordinates to a location that doesn't appear on any chart. Then everything returns to normal. The disc sits in your crew member's hand, humming quietly.",
+				"effects": [
+					{"type": "give_credits", "amount": 200},
+					{"type": "queue_event", "event_id": "cursed_relic_stage1", "delay_min": 150, "delay_max": 300}
+				],
+				"choices": [
+					{"label": "Bag it. Carefully.", "next": "leave"}
+				]
+			},
+			"hook": {
+				"speaker": "",
+				"text": "The grapple snags the object on the third try. As it rises, the crevasse walls begin to glow -- not reflection, but the ice itself is lighting up, pulsing in time with the object. When it clears the surface, the glow dies. In your hand: a warm metallic disc, etched with symbols that seem to shift when you're not looking directly at them.",
+				"effects": [
+					{"type": "give_credits", "amount": 150},
+					{"type": "queue_event", "event_id": "cursed_relic_stage1", "delay_min": 180, "delay_max": 360}
+				],
+				"choices": [
+					{"label": "Interesting. Very interesting.", "next": "leave"}
+				]
+			},
+			"leave": {
+				"speaker": "",
+				"text": "The crevasse glows behind you, patient and warm.",
+				"choices": []
+			}
+		}
+	},
+	"cursed_relic_stage1": {
+		"title": "Strange Behavior",
+		"nodes": {
+			"start": {
+				"speaker": "Ship Medic",
+				"text": "{_event_crew} hasn't slept in two days. They say they're fine, but they've been talking to themselves in the cargo bay -- where we stored that disc from the ice. When I checked on them, they were holding it, eyes closed, whispering coordinates. Over and over. The same coordinates your nav computer displayed when we first touched it.",
+				"choices": [
+					{"label": "Take the disc away from them.", "next": "confiscate"},
+					{"label": "What are the coordinates?", "next": "coordinates"},
+					{"label": "Space the disc. Right now.", "next": "space"}
+				]
+			},
+			"confiscate": {
+				"speaker": "Ship Medic",
+				"text": "I tried. When I reached for it, {_event_crew} grabbed my wrist -- hard. Their eyes were open but they weren't looking at me. They were looking through me. They said, in a voice that wasn't quite theirs: 'It wants to go home.' Then they blinked, looked confused, and handed it over. They don't remember any of it.",
+				"effects": [
+					{"type": "queue_event", "event_id": "cursed_relic_stage2", "delay_min": 120, "delay_max": 240}
+				],
+				"choices": [
+					{"label": "Lock it in a shielded container.", "next": "leave"},
+					{"label": "Let me see those coordinates.", "next": "coordinates"}
+				]
+			},
+			"coordinates": {
+				"speaker": "",
+				"text": "You pull up the coordinates on the nav computer. They point to a location in deep space between the Ghost Nebula and The Deep -- a region your charts show as empty void. But the disc pulses brighter when the nav screen displays the location, as if confirming. As if eager.",
+				"choices": [
+					{"label": "We're not going there.", "next": "confiscate"},
+					{"label": "Plot a course. Let's see what's there.", "next": "course"}
+				]
+			},
+			"course": {
+				"speaker": "",
+				"text": "The moment you set the heading, the disc stops humming. The lights stabilize. {_event_crew} falls asleep instantly -- the first rest they've had in days. Whatever the disc is, it's satisfied. For now.",
+				"effects": [
+					{"type": "give_credits", "amount": 100},
+					{"type": "set_tag", "tag": "relic_course_set", "value": true}
+				],
+				"choices": [
+					{"label": "This can't possibly go wrong.", "next": "leave"}
+				]
+			},
+			"space": {
+				"speaker": "",
+				"text": "You grab the disc from the cargo bay. It's warm -- warmer than before. Vibrating. You carry it to the airlock. The lights flicker with every step. As you cycle the airlock, your comms crackle with static that almost sounds like words. The disc tumbles into the void, glowing amber against the black. Three crew members report headaches that last exactly seventeen minutes.",
+				"effects": [
+					{"type": "damage_hull", "amount": 10}
+				],
+				"choices": [
+					{"label": "Good. It's gone. Move on.", "next": "leave"}
+				]
+			},
+			"leave": {
+				"speaker": "",
+				"text": "The ship's lights take three hours to fully stabilize.",
+				"choices": []
+			}
+		}
+	},
+	"cursed_relic_stage2": {
+		"title": "It Wants To Go Home",
+		"nodes": {
+			"start": {
+				"speaker": "",
+				"text": "You wake to alarms. {_event_crew} is on the bridge -- they've changed your heading toward the disc's coordinates. The shielded container is open, the disc floating in mid-air above the nav console, spinning slowly. {_event_crew} turns to face you. Their eyes are glowing amber. 'Please,' they say, in a voice layered with harmonics. 'It's so close to home. Just let us go.'",
+				"choices": [
+					{"label": "Sedate {_event_crew} and space the disc.", "next": "force"},
+					{"label": "Fine. Let's see where it wants to go.", "next": "follow"},
+					{"label": "Talk to whatever is speaking through them.", "next": "talk"}
+				]
+			},
+			"force": {
+				"speaker": "",
+				"text": "Your marine hits {_event_crew} with a sedative dart. They crumple. The disc drops and clatters across the deck, suddenly inert. You grab it with insulated gloves and cycle it out the airlock. It floats away, its amber glow fading. Then, briefly, it flares -- bright as a star -- and vanishes. Your nav computer logs a burst of data that your systems can't decode. {_event_crew} sleeps for fourteen hours and wakes up with no memory of any of it.",
+				"effects": [
+					{"type": "give_credits", "amount": 200}
+				],
+				"choices": [
+					{"label": "Delete the nav data. All of it.", "next": "leave"},
+					{"label": "Save the data. Just in case.", "next": "leave_data"}
+				]
+			},
+			"follow": {
+				"speaker": "",
+				"text": "You hold course. The disc hums louder. At the coordinates -- nothing. Empty space. Then the disc releases a pulse of energy that makes every screen on your ship display the same image: a vast structure, invisible to normal sensors, hanging in the dark. A station. Or a temple. Or both. A bay opens. Inside, lights that have been waiting a very long time come on. The disc floats out of your ship and through the bay. Something incredibly valuable floats back.",
+				"effects": [
+					{"type": "give_module", "module_id": "shield_gen_mk2", "count": 1},
+					{"type": "give_module", "module_id": "reactor_mk1", "count": 1},
+					{"type": "give_fuel", "amount": 50},
+					{"type": "set_tag", "tag": "found_hidden_station", "value": true}
+				],
+				"choices": [
+					{"label": "What was that place?", "next": "leave_wonder"}
+				]
+			},
+			"talk": {
+				"speaker": "{_event_crew}",
+				"text": "The amber eyes focus on you. 'We are old. Older than your stars. We left pieces of ourselves in the cold places so we would not be forgotten. This one wants to go home. It has been alone for so long. Will you help us? We will remember your kindness. We always remember.'",
+				"choices": [
+					{"label": "Take it home.", "next": "follow"},
+					{"label": "Release my crew member first.", "next": "negotiate"},
+					{"label": "Get out of my crew member. Now.", "next": "force"}
+				]
+			},
+			"negotiate": {
+				"speaker": "{_event_crew}",
+				"text": "'Yes. Of course. They are not harmed -- merely... borrowed. Here.' The amber fades from {_event_crew}'s eyes. They stumble, confused. The disc continues to hover, pulsing gently. 'We will wait. We are patient. We have always been patient.'",
+				"effects": [
+					{"type": "give_module", "module_id": "sensor_mk2", "count": 1}
+				],
+				"choices": [
+					{"label": "Take it home. It's earned that much.", "next": "follow"},
+					{"label": "Space it while it's cooperating.", "next": "force"}
+				]
+			},
+			"leave": {
+				"speaker": "",
+				"text": "The ship is yours again. The walls are just walls. For now.",
+				"choices": []
+			},
+			"leave_data": {
+				"speaker": "",
+				"text": "You keep the data. Encrypted, buried deep in the nav archives. Someday you might need it. Or wish you'd deleted it.",
+				"effects": [
+					{"type": "give_credits", "amount": 300},
+					{"type": "set_tag", "tag": "relic_data_saved", "value": true}
+				],
+				"choices": []
+			},
+			"leave_wonder": {
+				"speaker": "",
+				"text": "The station fades from your sensors the moment the disc enters. {_event_crew} blinks, looks around, and asks what happened. The coordinates show empty space again. But your ship is loaded with technology that shouldn't exist. And somewhere in the dark, something ancient is smiling.",
+				"choices": []
+			}
+		}
+	},
+	"echo_chamber": {
+		"title": "Echo Chamber",
+		"nodes": {
+			"start": {
+				"speaker": "",
+				"text": "Your sensors are doing something impossible -- they're showing your ship's position five minutes from now. Multiple positions, branching timelines displayed on your nav screen like a tree of futures. One branch shows you finding something valuable. Another shows your ship destroyed. They're all happening at once.",
+				"choices": [
+					{"label": "Follow the valuable branch", "next": "follow"},
+					{"label": "Try to understand the phenomenon", "next": "study"},
+					{"label": "Ignore it and leave", "next": "leave"}
+				]
+			},
+			"follow": {
+				"speaker": "",
+				"text": "You fly the route your future self took. At the endpoint, floating in nothing, a module that shouldn't exist yet -- built from alloys your civilization won't discover for centuries. It fits your ship perfectly, as if it was made for you. Because it was.",
+				"effects": [
+					{"type": "give_module", "module_id": "repair_module_mk1", "count": 1},
+					{"type": "give_module", "module_id": "shield_gen_mk2", "count": 1}
+				],
+				"choices": [
+					{"label": "This place breaks my brain.", "next": "leave"}
+				]
+			},
+			"study": {
+				"speaker": "",
+				"text": "The longer you observe, the more timelines appear. In most of them, you leave safely. In a few, something finds you here. In one, you stay forever, becoming part of the echo yourself. Your computer extracts navigational patterns from the overlapping futures.",
+				"effects": [
+					{"type": "give_module", "module_id": "thruster_mk1", "count": 1},
+					{"type": "give_module", "module_id": "sensor_mk1", "count": 1}
+				],
+				"choices": [
+					{"label": "Follow the path to the find", "next": "follow"},
+					{"label": "We've learned enough. Go.", "next": "leave"}
+				]
+			},
+			"leave": {
+				"speaker": "",
+				"text": "As you leave, your sensors briefly show a future where you return. It looks like you will.",
+				"choices": []
+			}
+		}
+	}
+}

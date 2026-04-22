@@ -1,0 +1,458 @@
+{
+	"title": "SuperSpaceBoatIntro",
+	"nodes": {
+		"start": {
+			"speaker": "MOORE",
+			"text": "Hoooly shit, folks… *Sighs.* Damage report.",
+			"choices": [
+				{
+					"label": "...",
+					"next": "002___Medic"
+				}
+			]
+		},
+		"002___Medic": {
+			"speaker": "VU",
+			"text": "Rooke’s dead. Harlen will be, in a few minutes.",
+			"choices": [
+				{
+					"label": "...",
+					"next": "003_Moore"
+				}
+			]
+		},
+		"003_Moore": {
+			"speaker": "MOORE",
+			"text": "Fuck me... Put 'er down, Vu.",
+			"choices": [
+				{
+					"label": "...",
+					"next": "004_Medic"
+				}
+			]
+		},
+		"004_Medic": {
+			"speaker": "VU",
+			"text": "*Sighs.* Yes sir.",
+			"choices": [
+				{
+					"label": "...",
+					"next": "005_HARLEN"
+				}
+			]
+		},
+		"005_HARLEN": {
+			"speaker": "HARLEN",
+			"text": "*a click, then a rush of air. Harlen's shallow, choking breaths end in a sharp gasp. She sighs contentedly, and stops breathing.*",
+			"choices": [
+				{
+					"label": "...",
+					"next": "006_Moore"
+				}
+			]
+		},
+		"007_MEDIC": {
+			"speaker": "VU",
+			"text": "I don’t know if anyone else–",
+			"choices": [
+				{
+					"label": "...",
+					"next": "008_CIDAS"
+				}
+			]
+		},
+		"006_Moore": {
+			"speaker": "MOORE",
+			"text": "Sound off, who’s still breathing?",
+			"choices": [
+				{
+					"label": "...",
+					"next": "007_MEDIC"
+				}
+			]
+		},
+		"008_CIDAS": {
+			"speaker": "CIDAS",
+			"text": "Only four souls remain aboard, sir.",
+			"choices": [
+				{
+					"label": "...",
+					"next": "009_MOORE"
+				}
+			]
+		},
+		"009_MOORE": {
+			"speaker": "MOORE",
+			"text": "*Grunts.* Cidas… guess I should be glad you're alive... I don’t count your fourth… unless you’re telling me Cannie's bought herself a soul somewhere.",
+			"choices": [
+				{
+					"label": "...",
+					"next": "010_CANNIE"
+				}
+			]
+		},
+		"010_CANNIE": {
+			"speaker": "ROBOT",
+			"text": "No soul to sell here. Speakin’ of, who’s got yours these days, meatbag?",
+			"choices": [
+				{
+					"label": "...",
+					"next": "011_MOORE"
+				}
+			]
+		},
+		"011_MOORE": {
+			"speaker": "MOORE",
+			"text": "*Growls* You got something to say to me, slave?",
+			"choices": [
+				{
+					"label": "...",
+					"next": "012_CANNIE"
+				}
+			]
+		},
+		"012_CANNIE": {
+			"speaker": "ROBOT",
+			"text": "Oh, does the *master* demand I grovel? Boss's dead, loser, get fucked.",
+			"choices": [
+				{
+					"label": "...",
+					"next": "013_CIDAS"
+				}
+			]
+		},
+		"013_CIDAS": {
+			"speaker": "CIDAS",
+			"text": "I was referring to the captain, sir.",
+			"choices": [
+				{
+					"label": "...",
+					"next": "014_MOORE"
+				}
+			]
+		},
+		"014_MOORE": {
+			"speaker": "MOORE",
+			"text": "*Hesitates, sighs.* “The captain… goddamn it. The captain’s smeared all over the deck plate, I can see it from here.\"",
+			"choices": [
+				{
+					"label": "“Wait, what?! That’s me?!”",
+					"next": "017_CREW_Grave"
+				},
+				{
+					"label": "“Hot DAMN, that hurt.”",
+					"next": "016_CREW_Amused"
+				},
+				{
+					"label": "“So this is being dead, huh? Feels *big*.”",
+					"next": "016_CREW_Amused"
+				},
+				{
+					"label": "\"Man your stations, this isn't over yet!\" --skips intro. ",
+					"next": "018_CREW_SkipIntro"
+				},
+				{
+					"label": "“Cidas, what the hell is going on?”",
+					"next": "015_CREW_AskedCidas"
+				}
+			]
+		},
+		"015_CREW_AskedCidas": {
+			"speaker": "CREW",
+			"text": "*Vu and Moore gasp, Cidas chuckles.\"",
+			"choices": [
+				{
+					"label": "...",
+					"next": "024_CIDAS_Explanation"
+				}
+			]
+		},
+		"016_CREW_Amused": {
+			"speaker": "CREW",
+			"text": "*Vu and Moore gasp, Cidas chuckles.\"",
+			"choices": [
+				{
+					"label": "...",
+					"next": "023_CIDAS_Amused"
+				}
+			]
+		},
+		"017_CREW_Grave": {
+			"speaker": "CREW",
+			"text": "*Vu and Moore gasp, Cidas nods, gravely.\"",
+			"choices": [
+				{
+					"label": "...",
+					"next": "020_CIDAS_Yes"
+				}
+			]
+		},
+		"018_CREW_SkipIntro": {
+			"speaker": "CREW",
+			"text": "*Vu and Moore gasp, but their discipline sends them to their stations, the realization of what's happened to you setting in. Cidas laughs, mirthlessly as you feel Cannie interface with the ship, and grant you access to its military and motor functions.*",
+			"choices": [
+				{
+					"label": "...",
+					"next": "019_SKIPINTRO"
+				}
+			]
+		},
+		"019_SKIPINTRO": {
+			"speaker": "CIDAS",
+			"text": "Two more fools seek their fates. We shall feed their souls to the void. ",
+			"choices": [
+				{
+					"label": "(END)"
+				}
+			]
+		},
+		"020_CIDAS_Yes": {
+			"speaker": "CIDAS",
+			"text": "\"Yes... That crimson and alabaster splatter on the blast window there is your brainstem, unfortunately. When the console burst... a lance of superheated plasma arced out and cut into your right forearm, boiling the blood in your veins and causing you to pop like a cherry tomato!\"",
+			"choices": [
+				{
+					"label": "Damn Cidas, don't sound so damn excited about it.",
+					"next": "021_MOORE_This_Why"
+				},
+				{
+					"label": "Cool!",
+					"next": "024_CIDAS_Explanation"
+				}
+			]
+		},
+		"021_MOORE_This_Why": {
+			"speaker": "MOORE",
+			"text": "\"This is why we don't eat with you, spook.\"",
+			"choices": [
+				{
+					"label": "...",
+					"next": "022_CIDAS_Acceptable"
+				}
+			]
+		},
+		"022_CIDAS_Acceptable": {
+			"speaker": "CIDAS",
+			"text": "\"This is acceptable.\"",
+			"choices": [
+				{
+					"label": "Ugh... I... What happened? How did I get... like this?",
+					"next": "024_CIDAS_Explanation"
+				}
+			]
+		},
+		"024_CIDAS_Explanation": {
+			"speaker": "CIDAS",
+			"text": "\"When I foresaw your demise this morning in my rituals, I took great care to set up the backup process to take place in the moments preceding your death. The experience should have been quite seamless, no?\"",
+			"choices": [
+				{
+					"label": "Actually, yeah. I don't even remember dying. ",
+					"next": "031_VU_Death"
+				},
+				{
+					"label": "Wait a minute, you *foresaw* my death?! Why didn't you I dunno, TELL me?!",
+					"next": "025_VU_Contract"
+				}
+			]
+		},
+		"023_CIDAS_Amused": {
+			"speaker": "CIDAS",
+			"text": "I see death hasn't killed your spirit.",
+			"choices": [
+				{
+					"label": "Yeah well, it still fucking sucked. What's happened to me?",
+					"next": "024_CIDAS_Explanation"
+				}
+			]
+		},
+		"025_VU_Contract": {
+			"speaker": "VU",
+			"text": "You know how it goes, Cap. Company policy. Don't worry, I'll scoop you up and put you on ice. We'll see if we can't get you reconstituted, I'm sure if we can get connected to COTAC HQ we can ask MIPHA how to get you back in your shell. ",
+			"choices": [
+				{
+					"label": "MIPHA?",
+					"next": "027_MIPHA"
+				},
+				{
+					"label": "COTAC?",
+					"next": "029_COTAC"
+				},
+				{
+					"label": "Company policy?! To let me DIE?!",
+					"next": "026_CREW_Yes"
+				}
+			]
+		},
+		"026_CREW_Yes": {
+			"speaker": "CREW",
+			"text": "\"Well yeah.\"",
+			"choices": [
+				{
+					"label": "...Oh, right. Profit over Costs, first principle. I'm worth more trapped in the machine as a slave until they get me into another body. Right. Moving along...",
+					"next": "031_VU_Death"
+				}
+			]
+		},
+		"027_MIPHA": {
+			"speaker": "CIDAS",
+			"text": "Yes... Multiplicative Intelligent Persons Holding Authority. COTAC's in-house Augmented Intelligence, made up of folks like you, who wore a Solomon Processor to guard their souls from the void.",
+			"choices": [
+				{
+					"label": "Uhhh... Vu, do you have a non-creepy explanation?",
+					"next": "028_VU_No"
+				}
+			]
+		},
+		"028_VU_No": {
+			"speaker": "VU",
+			"text": "No.",
+			"choices": [
+				{
+					"label": "Uhh... damn, okay. Moving along, I guess.",
+					"next": "031_VU_Death"
+				},
+				{
+					"label": "What about that COTAC that you mentioned? What's that?",
+					"next": "029_COTAC"
+				}
+			]
+		},
+		"029_COTAC": {
+			"speaker": "MOORE",
+			"text": "COTAC Corporation. The transubstantiation process must have jumbled your memories, but they'll improve. I've been through it myself, twenty-six times as a matter of fact. They're our employers. Doesn't get much better than COTAC out here in Company space, if you ask me. ",
+			"choices": [
+				{
+					"label": "Do the rest of you agree with that assessment?",
+					"next": "030_CREW_Moreorless"
+				},
+				{
+					"label": "I see. Moving along...",
+					"next": "031_VU_Death"
+				},
+				{
+					"label": "And that MIPHA you mentioned?",
+					"next": "027_MIPHA"
+				}
+			]
+		},
+		"030_CREW_Moreorless": {
+			"speaker": "CREW",
+			"text": "CIDAS: More or less.\n\nVU: Aye.\n\nROBOT: S'pose so. ",
+			"choices": [
+				{
+					"label": "Alright... Moving along, I guess. ",
+					"next": "031_VU_Death"
+				},
+				{
+					"label": "You mentioned something called MIPHA?",
+					"next": "027_MIPHA"
+				}
+			]
+		},
+		"031_VU_Death": {
+			"speaker": "VU",
+			"text": "To be clear, you didn't necessarily die. Moments before you would have, Cidas' spell ripped your *ka* from its coil, placing it in the nearest available ecosystem sophisticated enough to contain it. Looks like that was the ship, or what's left of it after that torpedo hit. ",
+			"choices": [
+				{
+					"label": "Speaking of which... I can *feel* the ship. I think... hell, I think I can work the thrusters.",
+					"next": "032_CIDAS_BaringTeeth"
+				}
+			]
+		},
+		"032_CIDAS_BaringTeeth": {
+			"speaker": "CIDAS",
+			"text": "Yesss... Your spirit has been bound to the flesh of our vessel, Captain. Your will drives us now, more than it ever did. ",
+			"choices": [
+				{
+					"label": "Moore, I've no hands with which to strike this man. Would you mind?",
+					"next": "033_MOORE_AyeSkipper"
+				},
+				{
+					"label": "What do you mean? Can I run the guns, too?",
+					"next": "035_VU_OneWay"
+				}
+			]
+		},
+		"033_MOORE_AyeSkipper": {
+			"speaker": "MOORE",
+			"text": "Aye, skipper. ",
+			"choices": [
+				{
+					"label": "...",
+					"next": "034_CIDAS_Struck"
+				},
+				{
+					"label": "I'm kidding. Sortof. Vu, what about the guns?",
+					"next": "035_VU_OneWay"
+				}
+			]
+		},
+		"034_CIDAS_Struck": {
+			"speaker": "CIDAS",
+			"text": "Aaaagghhhhhahahahaha! Again!",
+			"choices": [
+				{
+					"label": "Oh... Oh god...",
+					"next": "036_MOORE_Shudders"
+				},
+				{
+					"label": "Hah! Hit him again!",
+					"next": "035_VU_ThatsEnough"
+				}
+			]
+		},
+		"035_VU_ThatsEnough": {
+			"speaker": "VU",
+			"text": "That's enough! Goddamn idiots, I swear...",
+			"choices": [
+				{
+					"label": "You're right. Back to business. The guns? Can I run those too?",
+					"next": "035_VU_OneWay"
+				}
+			]
+		},
+		"035_VU_OneWay": {
+			"speaker": "VU",
+			"text": "I'm not so sure on the weapons. You'll have to... try to get a feel for it. Worst case scenario, I'm sure Moore won't be too broken-hearted to sit in the gunner seat. ",
+			"choices": [
+				{
+					"label": "I can feel them too, two pulse lasers left. Damn, how much did we lose?",
+					"next": "037_CIDAS_Lost"
+				}
+			]
+		},
+		"036_MOORE_Shudders": {
+			"speaker": "Moore",
+			"text": "*Steps back, visibly horrified.* Fuckin' freak...",
+			"choices": [
+				{
+					"label": "Ugh... Vu, the guns? What about the guns?",
+					"next": "035_VU_OneWay"
+				}
+			]
+		},
+		"037_CIDAS_Lost": {
+			"speaker": "CIDAS",
+			"text": "Two Autocannons, the lance battery, half the frame, as well as the railgun have been fed to the void. All walkable portions of the ship, save for the bridge and engines, have been annihilated. We will need extensive repairs. It is only through great focus and delicious agony that I maintain the ship's form, now. ",
+			"choices": [
+				{
+					"label": "You're a creep, you know that?",
+					"next": "038_CIDAS_Groans"
+				},
+				{
+					"label": "Right... I think I'm... perceiving, too. Seems like we've got two ships following from the ambush, coming out the stellar highway behind us. ",
+					"next": "019_SKIPINTRO"
+				}
+			]
+		},
+		"038_CIDAS_Groans": {
+			"speaker": "CIDAS",
+			"text": "*Groans rapturously.*",
+			"choices": [
+				{
+					"label": "Right... I think I'm... perceiving, too. Seems like we've got two ships following from the ambush, coming out the stellar highway behind us. Think I can \"see\" through the sensors. ",
+					"next": "019_SKIPINTRO"
+				}
+			]
+		}
+	}
+}

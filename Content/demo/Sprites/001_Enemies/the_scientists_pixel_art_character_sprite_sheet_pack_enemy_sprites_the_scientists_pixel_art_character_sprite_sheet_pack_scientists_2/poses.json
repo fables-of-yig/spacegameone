@@ -1,0 +1,19 @@
+﻿{
+    "poses":  {
+                  "hurt.png":  {
+                                   "fps":  10,
+                                   "loop_from":  0,
+                                   "frames":  1
+                               },
+                  "idle.png":  {
+                                   "fps":  8,
+                                   "loop_from":  0,
+                                   "frames":  1
+                               },
+                  "walk.png":  {
+                                   "fps":  8,
+                                   "loop_from":  0,
+                                   "frames":  2
+                               }
+              }
+}

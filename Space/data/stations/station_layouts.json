@@ -1,0 +1,165 @@
+{
+	"small_trade_station": {
+		"name": "Trade Station",
+		"decks": 1,
+		"rooms": [
+			{
+				"type": "docking_bay",
+				"cells": [[0,0], [1,0], [-1,0], [0,1], [0,-1], [1,-1], [-1,1], [1,1], [-1,-1], [2,0], [-2,0], [2,-1], [-2,1]],
+				"spawn_point": [0, 0],
+				"label": "Docking Bay"
+			},
+			{
+				"type": "corridor",
+				"cells": [[3,0], [3,-1], [-3,0], [-3,1], [0,2], [1,2], [-1,2], [0,-2], [1,-2]]
+			},
+			{
+				"type": "shop",
+				"cells": [[4,0], [4,-1], [5,-1], [5,-2], [4,-2], [3,-2]],
+				"interact_cell": [4, 0],
+				"npc": {"name": "Vendor", "role": "shopkeeper", "cell": [5, -1]},
+				"label": "Trading Post"
+			},
+			{
+				"type": "mission_board",
+				"cells": [[2,-2], [1,-3], [2,-3], [3,-3]],
+				"interact_cell": [2, -2],
+				"label": "Job Board"
+			},
+			{
+				"type": "bar",
+				"cells": [[-4,1], [-4,0], [-5,1], [-5,2], [-4,2], [-3,2], [-6,2]],
+				"interact_cell": [-4, 0],
+				"npc": {"name": "Bartender", "role": "bartender", "cell": [-5, 2]},
+				"label": "Cantina"
+			},
+			{
+				"type": "corridor",
+				"cells": [[-2,2], [-1,3], [-2,3]]
+			},
+			{
+				"type": "medbay",
+				"cells": [[-3,3], [-3,4], [-4,4], [-2,4], [-4,3]],
+				"interact_cell": [-3, 3],
+				"label": "Medbay"
+			},
+			{
+				"type": "quarters",
+				"cells": [[2,2], [2,3], [3,2], [3,3], [1,3]],
+				"label": "Quarters"
+			}
+		],
+		"wandering_npcs": [
+			{"name": "Dock Worker", "role": "worker"},
+			{"name": "Traveler", "role": "civilian"},
+			{"name": "Spacer", "role": "civilian"}
+		]
+	},
+	"pirate_haven": {
+		"name": "Pirate Haven",
+		"decks": 1,
+		"rooms": [
+			{
+				"type": "docking_bay",
+				"cells": [[0,0], [1,0], [-1,0], [0,1], [0,-1], [1,-1], [-1,1], [2,-1], [-2,1]],
+				"spawn_point": [0, 0],
+				"label": "Docking Bay"
+			},
+			{
+				"type": "corridor",
+				"cells": [[2,0], [3,0], [-2,0], [-3,0], [-3,1], [0,2], [-1,2]]
+			},
+			{
+				"type": "shop",
+				"cells": [[4,0], [4,-1], [3,-1], [5,-1], [5,0]],
+				"interact_cell": [4, 0],
+				"npc": {"name": "Fence", "role": "shopkeeper", "cell": [5, -1]},
+				"label": "Black Market"
+			},
+			{
+				"type": "bar",
+				"cells": [[-4,0], [-4,1], [-5,1], [-5,2], [-4,2], [-3,2], [-6,2], [-6,3]],
+				"interact_cell": [-4, 0],
+				"npc": {"name": "Barkeep", "role": "bartender", "cell": [-5, 1]},
+				"label": "Dive Bar"
+			},
+			{
+				"type": "corridor",
+				"cells": [[1,1], [2,1], [3,1]]
+			},
+			{
+				"type": "mission_board",
+				"cells": [[4,1], [4,2], [3,2], [5,1]],
+				"interact_cell": [4, 1],
+				"label": "Bounty Board"
+			},
+			{
+				"type": "quarters",
+				"cells": [[-2,2], [-2,3], [-1,3], [-3,3]],
+				"label": "Bunks"
+			}
+		],
+		"wandering_npcs": [
+			{"name": "Pirate", "role": "thug"},
+			{"name": "Smuggler", "role": "civilian"},
+			{"name": "Pirate", "role": "thug"}
+		]
+	},
+	"gateway_hub": {
+		"name": "Gateway Station",
+		"decks": 1,
+		"rooms": [
+			{
+				"type": "docking_bay",
+				"cells": [[0,0], [1,0], [-1,0], [0,1], [0,-1], [1,-1], [-1,1], [1,1], [-1,-1], [2,0], [-2,0], [2,-1], [-2,1], [3,-1], [-3,1]],
+				"spawn_point": [0, 0],
+				"label": "Docking Bay"
+			},
+			{
+				"type": "corridor",
+				"cells": [[3,0], [4,0], [-3,0], [-4,0], [-4,1], [0,2], [1,2], [-1,2], [0,-2], [1,-2], [-1,-1]]
+			},
+			{
+				"type": "shop",
+				"cells": [[5,0], [5,-1], [6,-1], [6,-2], [5,-2], [4,-1], [4,-2]],
+				"interact_cell": [5, 0],
+				"npc": {"name": "Quartermaster", "role": "shopkeeper", "cell": [6, -1]},
+				"label": "Supply Depot"
+			},
+			{
+				"type": "mission_board",
+				"cells": [[2,-2], [2,-3], [3,-2], [3,-3], [1,-3]],
+				"interact_cell": [2, -2],
+				"label": "Operations Board"
+			},
+			{
+				"type": "bar",
+				"cells": [[-5,1], [-5,0], [-6,1], [-6,2], [-5,2], [-7,2], [-7,3], [-6,3]],
+				"interact_cell": [-5, 1],
+				"npc": {"name": "Bartender", "role": "bartender", "cell": [-6, 2]},
+				"label": "Officers' Lounge"
+			},
+			{
+				"type": "corridor",
+				"cells": [[-2,2], [-3,2], [-3,3], [-2,3]]
+			},
+			{
+				"type": "medbay",
+				"cells": [[-4,3], [-4,4], [-5,4], [-3,4], [-5,3]],
+				"interact_cell": [-4, 3],
+				"label": "Medical Bay"
+			},
+			{
+				"type": "quarters",
+				"cells": [[2,2], [2,3], [3,2], [3,3], [4,2], [4,3], [1,3]],
+				"label": "Crew Quarters"
+			}
+		],
+		"wandering_npcs": [
+			{"name": "Officer", "role": "military"},
+			{"name": "Technician", "role": "worker"},
+			{"name": "Merchant", "role": "civilian"},
+			{"name": "Ensign", "role": "military"}
+		]
+	}
+}

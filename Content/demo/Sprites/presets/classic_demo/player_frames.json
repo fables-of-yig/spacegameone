@@ -1,0 +1,1131 @@
+﻿{
+    "frame_height":  84,
+    "sheet_cols":  1,
+    "seed_version":  4,
+    "center_x":  48,
+    "center_y":  42,
+    "frame_width":  96,
+    "frames":  [
+                   {
+                       "pose":  0,
+                       "layers":  [
+                                      {
+                                          "sheet":  "src_idle_idle01",
+                                          "index":  0
+                                      }
+                                  ]
+                   },
+                   {
+                       "pose":  1,
+                       "layers":  [
+                                      {
+                                          "sheet":  "src_idle_idle01",
+                                          "index":  0
+                                      }
+                                  ]
+                   },
+                   {
+                       "pose":  1,
+                       "layers":  [
+                                      {
+                                          "sheet":  "src_idle_idle02",
+                                          "index":  0
+                                      }
+                                  ]
+                   },
+                   {
+                       "pose":  1,
+                       "layers":  [
+                                      {
+                                          "sheet":  "src_idle_idle03",
+                                          "index":  0
+                                      }
+                                  ]
+                   },
+                   {
+                       "pose":  1,
+                       "layers":  [
+                                      {
+                                          "sheet":  "src_idle_idle04",
+                                          "index":  0
+                                      }
+                                  ]
+                   },
+                   {
+                       "pose":  1,
+                       "layers":  [
+                                      {
+                                          "sheet":  "src_idle_idle05",
+                                          "index":  0
+                                      }
+                                  ]
+                   },
+                   {
+                       "pose":  1,
+                       "layers":  [
+                                      {
+                                          "sheet":  "src_idle_idle06",
+                                          "index":  0
+                                      }
+                                  ]
+                   },
+                   {
+                       "pose":  1,
+                       "layers":  [
+                                      {
+                                          "sheet":  "src_idle_idle07",
+                                          "index":  0
+                                      }
+                                  ]
+                   },
+                   {
+                       "pose":  9,
+                       "layers":  [
+                                      {
+                                          "sheet":  "src_run_run01",
+                                          "index":  0
+                                      }
+                                  ]
+                   },
+                   {
+                       "pose":  9,
+                       "layers":  [
+                                      {
+                                          "sheet":  "src_run_run02",
+                                          "index":  0
+                                      }
+                                  ]
+                   },
+                   {
+                       "pose":  9,
+                       "layers":  [
+                                      {
+                                          "sheet":  "src_run_run03",
+                                          "index":  0
+                                      }
+                                  ]
+                   },
+                   {
+                       "pose":  9,
+                       "layers":  [
+                                      {
+                                          "sheet":  "src_run_run04",
+                                          "index":  0
+                                      }
+                                  ]
+                   },
+                   {
+                       "pose":  9,
+                       "layers":  [
+                                      {
+                                          "sheet":  "src_run_run05",
+                                          "index":  0
+                                      }
+                                  ]
+                   },
+                   {
+                       "pose":  9,
+                       "layers":  [
+                                      {
+                                          "sheet":  "src_run_run06",
+                                          "index":  0
+                                      }
+                                  ]
+                   },
+                   {
+                       "pose":  9,
+                       "layers":  [
+                                      {
+                                          "sheet":  "src_run_run07",
+                                          "index":  0
+                                      }
+                                  ]
+                   },
+                   {
+                       "pose":  9,
+                       "layers":  [
+                                      {
+                                          "sheet":  "src_run_run08",
+                                          "index":  0
+                                      }
+                                  ]
+                   },
+                   {
+                       "pose":  25,
+                       "layers":  [
+                                      {
+                                          "sheet":  "src_spin_spin01",
+                                          "index":  0
+                                      }
+                                  ]
+                   },
+                   {
+                       "pose":  25,
+                       "layers":  [
+                                      {
+                                          "sheet":  "src_spin_spin02",
+                                          "index":  0
+                                      }
+                                  ]
+                   },
+                   {
+                       "pose":  25,
+                       "layers":  [
+                                      {
+                                          "sheet":  "src_spin_spin03",
+                                          "index":  0
+                                      }
+                                  ]
+                   },
+                   {
+                       "pose":  25,
+                       "layers":  [
+                                      {
+                                          "sheet":  "src_spin_spin04",
+                                          "index":  0
+                                      }
+                                  ]
+                   },
+                   {
+                       "pose":  25,
+                       "layers":  [
+                                      {
+                                          "sheet":  "src_spin_spin05",
+                                          "index":  0
+                                      }
+                                  ]
+                   },
+                   {
+                       "pose":  25,
+                       "layers":  [
+                                      {
+                                          "sheet":  "src_spin_spin06",
+                                          "index":  0
+                                      }
+                                  ]
+                   },
+                   {
+                       "pose":  25,
+                       "layers":  [
+                                      {
+                                          "sheet":  "src_spin_spin07",
+                                          "index":  0
+                                      }
+                                  ]
+                   },
+                   {
+                       "pose":  25,
+                       "layers":  [
+                                      {
+                                          "sheet":  "src_spin_spin08",
+                                          "index":  0
+                                      }
+                                  ]
+                   },
+                   {
+                       "pose":  37,
+                       "layers":  [
+                                      {
+                                          "sheet":  "src_runtoidle_runtoidle01",
+                                          "index":  0
+                                      }
+                                  ]
+                   },
+                   {
+                       "pose":  37,
+                       "layers":  [
+                                      {
+                                          "sheet":  "src_runtoidle_runtoidle02",
+                                          "index":  0
+                                      }
+                                  ]
+                   },
+                   {
+                       "pose":  37,
+                       "layers":  [
+                                      {
+                                          "sheet":  "src_runtoidle_runtoidle03",
+                                          "index":  0
+                                      }
+                                  ]
+                   },
+                   {
+                       "pose":  41,
+                       "layers":  [
+                                      {
+                                          "sheet":  "src_jumpfall_jumpfall01",
+                                          "index":  0
+                                      }
+                                  ]
+                   },
+                   {
+                       "pose":  47,
+                       "layers":  [
+                                      {
+                                          "sheet":  "src_jump_jump01",
+                                          "index":  0
+                                      }
+                                  ]
+                   },
+                   {
+                       "pose":  47,
+                       "layers":  [
+                                      {
+                                          "sheet":  "src_jump_jump02",
+                                          "index":  0
+                                      }
+                                  ]
+                   },
+                   {
+                       "pose":  47,
+                       "layers":  [
+                                      {
+                                          "sheet":  "src_jump_jump03",
+                                          "index":  0
+                                      }
+                                  ]
+                   },
+                   {
+                       "pose":  53,
+                       "layers":  [
+                                      {
+                                          "sheet":  "src_crouch_crouch01",
+                                          "index":  0
+                                      }
+                                  ]
+                   },
+                   {
+                       "pose":  53,
+                       "layers":  [
+                                      {
+                                          "sheet":  "src_crouch_crouch02",
+                                          "index":  0
+                                      }
+                                  ]
+                   },
+                   {
+                       "pose":  53,
+                       "layers":  [
+                                      {
+                                          "sheet":  "src_crouch_crouch03",
+                                          "index":  0
+                                      }
+                                  ]
+                   },
+                   {
+                       "pose":  59,
+                       "layers":  [
+                                      {
+                                          "sheet":  "src_lookup_lookup01",
+                                          "index":  0
+                                      }
+                                  ]
+                   },
+                   {
+                       "pose":  59,
+                       "layers":  [
+                                      {
+                                          "sheet":  "src_lookup_lookup02",
+                                          "index":  0
+                                      }
+                                  ]
+                   },
+                   {
+                       "pose":  59,
+                       "layers":  [
+                                      {
+                                          "sheet":  "src_lookup_lookup03",
+                                          "index":  0
+                                      }
+                                  ]
+                   },
+                   {
+                       "pose":  67,
+                       "layers":  [
+                                      {
+                                          "sheet":  "src_crouch_crouch06",
+                                          "index":  0
+                                      }
+                                  ]
+                   },
+                   {
+                       "pose":  75,
+                       "layers":  [
+                                      {
+                                          "sheet":  "src_jumprise_jumprise01",
+                                          "index":  0
+                                      }
+                                  ]
+                   },
+                   {
+                       "pose":  135,
+                       "layers":  [
+                                      {
+                                          "sheet":  "src_jump_jump01",
+                                          "index":  0
+                                      }
+                                  ]
+                   },
+                   {
+                       "pose":  135,
+                       "layers":  [
+                                      {
+                                          "sheet":  "src_jump_jump02",
+                                          "index":  0
+                                      }
+                                  ]
+                   },
+                   {
+                       "pose":  135,
+                       "layers":  [
+                                      {
+                                          "sheet":  "src_jump_jump03",
+                                          "index":  0
+                                      }
+                                  ]
+                   },
+                   {
+                       "pose":  164,
+                       "layers":  [
+                                      {
+                                          "sheet":  "src_land_land01",
+                                          "index":  0
+                                      }
+                                  ]
+                   },
+                   {
+                       "pose":  164,
+                       "layers":  [
+                                      {
+                                          "sheet":  "src_land_land02",
+                                          "index":  0
+                                      }
+                                  ]
+                   },
+                   {
+                       "pose":  166,
+                       "layers":  [
+                                      {
+                                          "sheet":  "src_land_land01",
+                                          "index":  0
+                                      }
+                                  ]
+                   },
+                   {
+                       "pose":  166,
+                       "layers":  [
+                                      {
+                                          "sheet":  "src_land_land02",
+                                          "index":  0
+                                      }
+                                  ]
+                   },
+                   {
+                       "pose":  201,
+                       "layers":  [
+                                      {
+                                          "sheet":  "src_combat_swordcombo01_swordcombo0101",
+                                          "index":  0
+                                      }
+                                  ]
+                   },
+                   {
+                       "pose":  201,
+                       "layers":  [
+                                      {
+                                          "sheet":  "src_combat_swordcombo01_swordcombo0102",
+                                          "index":  0
+                                      }
+                                  ]
+                   },
+                   {
+                       "pose":  201,
+                       "layers":  [
+                                      {
+                                          "sheet":  "src_combat_swordcombo01_swordcombo0103",
+                                          "index":  0
+                                      }
+                                  ]
+                   },
+                   {
+                       "pose":  201,
+                       "layers":  [
+                                      {
+                                          "sheet":  "src_combat_swordcombo01_swordcombo0104",
+                                          "index":  0
+                                      }
+                                  ]
+                   },
+                   {
+                       "pose":  201,
+                       "layers":  [
+                                      {
+                                          "sheet":  "src_combat_swordcombo01_swordcombo0105",
+                                          "index":  0
+                                      }
+                                  ]
+                   },
+                   {
+                       "pose":  201,
+                       "layers":  [
+                                      {
+                                          "sheet":  "src_combat_swordcombo01_swordcombo0106",
+                                          "index":  0
+                                      }
+                                  ]
+                   },
+                   {
+                       "pose":  203,
+                       "layers":  [
+                                      {
+                                          "sheet":  "src_combat_swordcombo02_swordcombo0201",
+                                          "index":  0
+                                      }
+                                  ]
+                   },
+                   {
+                       "pose":  203,
+                       "layers":  [
+                                      {
+                                          "sheet":  "src_combat_swordcombo02_swordcombo0202",
+                                          "index":  0
+                                      }
+                                  ]
+                   },
+                   {
+                       "pose":  203,
+                       "layers":  [
+                                      {
+                                          "sheet":  "src_combat_swordcombo02_swordcombo0203",
+                                          "index":  0
+                                      }
+                                  ]
+                   },
+                   {
+                       "pose":  203,
+                       "layers":  [
+                                      {
+                                          "sheet":  "src_combat_swordcombo02_swordcombo0204",
+                                          "index":  0
+                                      }
+                                  ]
+                   },
+                   {
+                       "pose":  203,
+                       "layers":  [
+                                      {
+                                          "sheet":  "src_combat_swordcombo02_swordcombo0205",
+                                          "index":  0
+                                      }
+                                  ]
+                   },
+                   {
+                       "pose":  205,
+                       "layers":  [
+                                      {
+                                          "sheet":  "src_combat_swordcombo03_swordcombo0301",
+                                          "index":  0
+                                      }
+                                  ]
+                   },
+                   {
+                       "pose":  205,
+                       "layers":  [
+                                      {
+                                          "sheet":  "src_combat_swordcombo03_swordcombo0302",
+                                          "index":  0
+                                      }
+                                  ]
+                   },
+                   {
+                       "pose":  205,
+                       "layers":  [
+                                      {
+                                          "sheet":  "src_combat_swordcombo03_swordcombo0303",
+                                          "index":  0
+                                      }
+                                  ]
+                   },
+                   {
+                       "pose":  205,
+                       "layers":  [
+                                      {
+                                          "sheet":  "src_combat_swordcombo03_swordcombo0304",
+                                          "index":  0
+                                      }
+                                  ]
+                   },
+                   {
+                       "pose":  205,
+                       "layers":  [
+                                      {
+                                          "sheet":  "src_combat_swordcombo03_swordcombo0305",
+                                          "index":  0
+                                      }
+                                  ]
+                   },
+                   {
+                       "pose":  207,
+                       "layers":  [
+                                      {
+                                          "sheet":  "src_combat_gunfire_gunfire01",
+                                          "index":  0
+                                      }
+                                  ]
+                   },
+                   {
+                       "pose":  207,
+                       "layers":  [
+                                      {
+                                          "sheet":  "src_combat_gunfire_gunfire02",
+                                          "index":  0
+                                      }
+                                  ]
+                   },
+                   {
+                       "pose":  207,
+                       "layers":  [
+                                      {
+                                          "sheet":  "src_combat_gunfire_gunfire03",
+                                          "index":  0
+                                      }
+                                  ]
+                   },
+                   {
+                       "pose":  207,
+                       "layers":  [
+                                      {
+                                          "sheet":  "src_combat_gunfire_gunfire04",
+                                          "index":  0
+                                      }
+                                  ]
+                   },
+                   {
+                       "pose":  207,
+                       "layers":  [
+                                      {
+                                          "sheet":  "src_combat_gunfire_gunfire05",
+                                          "index":  0
+                                      }
+                                  ]
+                   },
+                   {
+                       "pose":  209,
+                       "layers":  [
+                                      {
+                                          "sheet":  "src_combat_gunfire2h_gunfire2h01",
+                                          "index":  0
+                                      }
+                                  ]
+                   },
+                   {
+                       "pose":  209,
+                       "layers":  [
+                                      {
+                                          "sheet":  "src_combat_gunfire2h_gunfire2h02",
+                                          "index":  0
+                                      }
+                                  ]
+                   },
+                   {
+                       "pose":  209,
+                       "layers":  [
+                                      {
+                                          "sheet":  "src_combat_gunfire2h_gunfire2h03",
+                                          "index":  0
+                                      }
+                                  ]
+                   },
+                   {
+                       "pose":  209,
+                       "layers":  [
+                                      {
+                                          "sheet":  "src_combat_gunfire2h_gunfire2h04",
+                                          "index":  0
+                                      }
+                                  ]
+                   },
+                   {
+                       "pose":  209,
+                       "layers":  [
+                                      {
+                                          "sheet":  "src_combat_gunfire2h_gunfire2h05",
+                                          "index":  0
+                                      }
+                                  ]
+                   },
+                   {
+                       "pose":  211,
+                       "layers":  [
+                                      {
+                                          "sheet":  "src_roll_roll01",
+                                          "index":  0
+                                      }
+                                  ]
+                   },
+                   {
+                       "pose":  211,
+                       "layers":  [
+                                      {
+                                          "sheet":  "src_roll_roll02",
+                                          "index":  0
+                                      }
+                                  ]
+                   },
+                   {
+                       "pose":  211,
+                       "layers":  [
+                                      {
+                                          "sheet":  "src_roll_roll03",
+                                          "index":  0
+                                      }
+                                  ]
+                   },
+                   {
+                       "pose":  211,
+                       "layers":  [
+                                      {
+                                          "sheet":  "src_roll_roll04",
+                                          "index":  0
+                                      }
+                                  ]
+                   },
+                   {
+                       "pose":  211,
+                       "layers":  [
+                                      {
+                                          "sheet":  "src_roll_roll05",
+                                          "index":  0
+                                      }
+                                  ]
+                   },
+                   {
+                       "pose":  211,
+                       "layers":  [
+                                      {
+                                          "sheet":  "src_roll_roll06",
+                                          "index":  0
+                                      }
+                                  ]
+                   },
+                   {
+                       "pose":  211,
+                       "layers":  [
+                                      {
+                                          "sheet":  "src_roll_roll07",
+                                          "index":  0
+                                      }
+                                  ]
+                   },
+                   {
+                       "pose":  211,
+                       "layers":  [
+                                      {
+                                          "sheet":  "src_roll_roll08",
+                                          "index":  0
+                                      }
+                                  ]
+                   },
+                   {
+                       "pose":  211,
+                       "layers":  [
+                                      {
+                                          "sheet":  "src_roll_roll09",
+                                          "index":  0
+                                      }
+                                  ]
+                   },
+                   {
+                       "pose":  211,
+                       "layers":  [
+                                      {
+                                          "sheet":  "src_roll_roll10",
+                                          "index":  0
+                                      }
+                                  ]
+                   }
+               ],
+    "_comment":  "Default baseline generated from labeled source folders under Pixel Prototype Player/Sprites. Each frame points at the copied source PNG assigned to that pose instead of a baked combined sheet. Left-facing poses intentionally keep empty strips so editor/runtime mirroring can drive them from the right-facing source poses.",
+    "sheets":  [
+                   {
+                       "id":  "src_idle_idle01",
+                       "file":  "default_player/Idle/Idle01.png",
+                       "z":  0
+                   },
+                   {
+                       "id":  "src_idle_idle02",
+                       "file":  "default_player/Idle/Idle02.png",
+                       "z":  0
+                   },
+                   {
+                       "id":  "src_idle_idle03",
+                       "file":  "default_player/Idle/Idle03.png",
+                       "z":  0
+                   },
+                   {
+                       "id":  "src_idle_idle04",
+                       "file":  "default_player/Idle/Idle04.png",
+                       "z":  0
+                   },
+                   {
+                       "id":  "src_idle_idle05",
+                       "file":  "default_player/Idle/Idle05.png",
+                       "z":  0
+                   },
+                   {
+                       "id":  "src_idle_idle06",
+                       "file":  "default_player/Idle/Idle06.png",
+                       "z":  0
+                   },
+                   {
+                       "id":  "src_idle_idle07",
+                       "file":  "default_player/Idle/Idle07.png",
+                       "z":  0
+                   },
+                   {
+                       "id":  "src_run_run01",
+                       "file":  "default_player/Run/Run01.png",
+                       "z":  0
+                   },
+                   {
+                       "id":  "src_run_run02",
+                       "file":  "default_player/Run/Run02.png",
+                       "z":  0
+                   },
+                   {
+                       "id":  "src_run_run03",
+                       "file":  "default_player/Run/Run03.png",
+                       "z":  0
+                   },
+                   {
+                       "id":  "src_run_run04",
+                       "file":  "default_player/Run/Run04.png",
+                       "z":  0
+                   },
+                   {
+                       "id":  "src_run_run05",
+                       "file":  "default_player/Run/Run05.png",
+                       "z":  0
+                   },
+                   {
+                       "id":  "src_run_run06",
+                       "file":  "default_player/Run/Run06.png",
+                       "z":  0
+                   },
+                   {
+                       "id":  "src_run_run07",
+                       "file":  "default_player/Run/Run07.png",
+                       "z":  0
+                   },
+                   {
+                       "id":  "src_run_run08",
+                       "file":  "default_player/Run/Run08.png",
+                       "z":  0
+                   },
+                   {
+                       "id":  "src_spin_spin01",
+                       "file":  "default_player/Spin/Spin01.png",
+                       "z":  0
+                   },
+                   {
+                       "id":  "src_spin_spin02",
+                       "file":  "default_player/Spin/Spin02.png",
+                       "z":  0
+                   },
+                   {
+                       "id":  "src_spin_spin03",
+                       "file":  "default_player/Spin/Spin03.png",
+                       "z":  0
+                   },
+                   {
+                       "id":  "src_spin_spin04",
+                       "file":  "default_player/Spin/Spin04.png",
+                       "z":  0
+                   },
+                   {
+                       "id":  "src_spin_spin05",
+                       "file":  "default_player/Spin/Spin05.png",
+                       "z":  0
+                   },
+                   {
+                       "id":  "src_spin_spin06",
+                       "file":  "default_player/Spin/Spin06.png",
+                       "z":  0
+                   },
+                   {
+                       "id":  "src_spin_spin07",
+                       "file":  "default_player/Spin/Spin07.png",
+                       "z":  0
+                   },
+                   {
+                       "id":  "src_spin_spin08",
+                       "file":  "default_player/Spin/Spin08.png",
+                       "z":  0
+                   },
+                   {
+                       "id":  "src_runtoidle_runtoidle01",
+                       "file":  "default_player/RunToIdle/RunToIdle01.png",
+                       "z":  0
+                   },
+                   {
+                       "id":  "src_runtoidle_runtoidle02",
+                       "file":  "default_player/RunToIdle/RunToIdle02.png",
+                       "z":  0
+                   },
+                   {
+                       "id":  "src_runtoidle_runtoidle03",
+                       "file":  "default_player/RunToIdle/RunToIdle03.png",
+                       "z":  0
+                   },
+                   {
+                       "id":  "src_jumpfall_jumpfall01",
+                       "file":  "default_player/JumpFall/JumpFall01.png",
+                       "z":  0
+                   },
+                   {
+                       "id":  "src_jump_jump01",
+                       "file":  "default_player/Jump/Jump01.png",
+                       "z":  0
+                   },
+                   {
+                       "id":  "src_jump_jump02",
+                       "file":  "default_player/Jump/Jump02.png",
+                       "z":  0
+                   },
+                   {
+                       "id":  "src_jump_jump03",
+                       "file":  "default_player/Jump/Jump03.png",
+                       "z":  0
+                   },
+                   {
+                       "id":  "src_crouch_crouch01",
+                       "file":  "default_player/Crouch/Crouch01.png",
+                       "z":  0
+                   },
+                   {
+                       "id":  "src_crouch_crouch02",
+                       "file":  "default_player/Crouch/Crouch02.png",
+                       "z":  0
+                   },
+                   {
+                       "id":  "src_crouch_crouch03",
+                       "file":  "default_player/Crouch/Crouch03.png",
+                       "z":  0
+                   },
+                   {
+                       "id":  "src_lookup_lookup01",
+                       "file":  "default_player/LookUp/LookUp01.png",
+                       "z":  0
+                   },
+                   {
+                       "id":  "src_lookup_lookup02",
+                       "file":  "default_player/LookUp/LookUp02.png",
+                       "z":  0
+                   },
+                   {
+                       "id":  "src_lookup_lookup03",
+                       "file":  "default_player/LookUp/LookUp03.png",
+                       "z":  0
+                   },
+                   {
+                       "id":  "src_crouch_crouch06",
+                       "file":  "default_player/Crouch/Crouch06.png",
+                       "z":  0
+                   },
+                   {
+                       "id":  "src_jumprise_jumprise01",
+                       "file":  "default_player/JumpRise/JumpRise01.png",
+                       "z":  0
+                   },
+                   {
+                       "id":  "src_land_land01",
+                       "file":  "default_player/Land/Land01.png",
+                       "z":  0
+                   },
+                   {
+                       "id":  "src_land_land02",
+                       "file":  "default_player/Land/Land02.png",
+                       "z":  0
+                   },
+                   {
+                       "id":  "src_combat_swordcombo01_swordcombo0101",
+                       "file":  "default_player/Combat/SwordCombo01/SwordCombo0101.png",
+                       "z":  0
+                   },
+                   {
+                       "id":  "src_combat_swordcombo01_swordcombo0102",
+                       "file":  "default_player/Combat/SwordCombo01/SwordCombo0102.png",
+                       "z":  0
+                   },
+                   {
+                       "id":  "src_combat_swordcombo01_swordcombo0103",
+                       "file":  "default_player/Combat/SwordCombo01/SwordCombo0103.png",
+                       "z":  0
+                   },
+                   {
+                       "id":  "src_combat_swordcombo01_swordcombo0104",
+                       "file":  "default_player/Combat/SwordCombo01/SwordCombo0104.png",
+                       "z":  0
+                   },
+                   {
+                       "id":  "src_combat_swordcombo01_swordcombo0105",
+                       "file":  "default_player/Combat/SwordCombo01/SwordCombo0105.png",
+                       "z":  0
+                   },
+                   {
+                       "id":  "src_combat_swordcombo01_swordcombo0106",
+                       "file":  "default_player/Combat/SwordCombo01/SwordCombo0106.png",
+                       "z":  0
+                   },
+                   {
+                       "id":  "src_combat_swordcombo02_swordcombo0201",
+                       "file":  "default_player/Combat/SwordCombo02/SwordCombo0201.png",
+                       "z":  0
+                   },
+                   {
+                       "id":  "src_combat_swordcombo02_swordcombo0202",
+                       "file":  "default_player/Combat/SwordCombo02/SwordCombo0202.png",
+                       "z":  0
+                   },
+                   {
+                       "id":  "src_combat_swordcombo02_swordcombo0203",
+                       "file":  "default_player/Combat/SwordCombo02/SwordCombo0203.png",
+                       "z":  0
+                   },
+                   {
+                       "id":  "src_combat_swordcombo02_swordcombo0204",
+                       "file":  "default_player/Combat/SwordCombo02/SwordCombo0204.png",
+                       "z":  0
+                   },
+                   {
+                       "id":  "src_combat_swordcombo02_swordcombo0205",
+                       "file":  "default_player/Combat/SwordCombo02/SwordCombo0205.png",
+                       "z":  0
+                   },
+                   {
+                       "id":  "src_combat_swordcombo03_swordcombo0301",
+                       "file":  "default_player/Combat/SwordCombo03/SwordCombo0301.png",
+                       "z":  0
+                   },
+                   {
+                       "id":  "src_combat_swordcombo03_swordcombo0302",
+                       "file":  "default_player/Combat/SwordCombo03/SwordCombo0302.png",
+                       "z":  0
+                   },
+                   {
+                       "id":  "src_combat_swordcombo03_swordcombo0303",
+                       "file":  "default_player/Combat/SwordCombo03/SwordCombo0303.png",
+                       "z":  0
+                   },
+                   {
+                       "id":  "src_combat_swordcombo03_swordcombo0304",
+                       "file":  "default_player/Combat/SwordCombo03/SwordCombo0304.png",
+                       "z":  0
+                   },
+                   {
+                       "id":  "src_combat_swordcombo03_swordcombo0305",
+                       "file":  "default_player/Combat/SwordCombo03/SwordCombo0305.png",
+                       "z":  0
+                   },
+                   {
+                       "id":  "src_combat_gunfire_gunfire01",
+                       "file":  "default_player/Combat/GunFire/GunFire01.png",
+                       "z":  0
+                   },
+                   {
+                       "id":  "src_combat_gunfire_gunfire02",
+                       "file":  "default_player/Combat/GunFire/GunFire02.png",
+                       "z":  0
+                   },
+                   {
+                       "id":  "src_combat_gunfire_gunfire03",
+                       "file":  "default_player/Combat/GunFire/GunFire03.png",
+                       "z":  0
+                   },
+                   {
+                       "id":  "src_combat_gunfire_gunfire04",
+                       "file":  "default_player/Combat/GunFire/GunFire04.png",
+                       "z":  0
+                   },
+                   {
+                       "id":  "src_combat_gunfire_gunfire05",
+                       "file":  "default_player/Combat/GunFire/GunFire05.png",
+                       "z":  0
+                   },
+                   {
+                       "id":  "src_combat_gunfire2h_gunfire2h01",
+                       "file":  "default_player/Combat/GunFire2H/GunFire2H01.png",
+                       "z":  0
+                   },
+                   {
+                       "id":  "src_combat_gunfire2h_gunfire2h02",
+                       "file":  "default_player/Combat/GunFire2H/GunFire2H02.png",
+                       "z":  0
+                   },
+                   {
+                       "id":  "src_combat_gunfire2h_gunfire2h03",
+                       "file":  "default_player/Combat/GunFire2H/GunFire2H03.png",
+                       "z":  0
+                   },
+                   {
+                       "id":  "src_combat_gunfire2h_gunfire2h04",
+                       "file":  "default_player/Combat/GunFire2H/GunFire2H04.png",
+                       "z":  0
+                   },
+                   {
+                       "id":  "src_combat_gunfire2h_gunfire2h05",
+                       "file":  "default_player/Combat/GunFire2H/GunFire2H05.png",
+                       "z":  0
+                   },
+                   {
+                       "id":  "src_roll_roll01",
+                       "file":  "default_player/Roll/Roll01.png",
+                       "z":  0
+                   },
+                   {
+                       "id":  "src_roll_roll02",
+                       "file":  "default_player/Roll/Roll02.png",
+                       "z":  0
+                   },
+                   {
+                       "id":  "src_roll_roll03",
+                       "file":  "default_player/Roll/Roll03.png",
+                       "z":  0
+                   },
+                   {
+                       "id":  "src_roll_roll04",
+                       "file":  "default_player/Roll/Roll04.png",
+                       "z":  0
+                   },
+                   {
+                       "id":  "src_roll_roll05",
+                       "file":  "default_player/Roll/Roll05.png",
+                       "z":  0
+                   },
+                   {
+                       "id":  "src_roll_roll06",
+                       "file":  "default_player/Roll/Roll06.png",
+                       "z":  0
+                   },
+                   {
+                       "id":  "src_roll_roll07",
+                       "file":  "default_player/Roll/Roll07.png",
+                       "z":  0
+                   },
+                   {
+                       "id":  "src_roll_roll08",
+                       "file":  "default_player/Roll/Roll08.png",
+                       "z":  0
+                   },
+                   {
+                       "id":  "src_roll_roll09",
+                       "file":  "default_player/Roll/Roll09.png",
+                       "z":  0
+                   },
+                   {
+                       "id":  "src_roll_roll10",
+                       "file":  "default_player/Roll/Roll10.png",
+                       "z":  0
+                   }
+               ]
+}

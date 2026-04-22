@@ -1,0 +1,19 @@
+[remap]
+
+importer="oggvorbisstr"
+type="AudioStreamOggVorbis"
+uid="uid://b7m3atvuijfwa"
+path="res://.godot/imported/top-down-fantasy-1.ogg-2fb35546b217e46be26116db374e0702.oggvorbisstr"
+
+[deps]
+
+source_file="res://Content/demo/Audio/Music/imported/GothicVania Music/Mystery 3 OGG files/top-down-fantasy-1.ogg"
+dest_files=["res://.godot/imported/top-down-fantasy-1.ogg-2fb35546b217e46be26116db374e0702.oggvorbisstr"]
+
+[params]
+
+loop=false
+loop_offset=0
+bpm=0
+beat_count=0
+bar_beats=4

@@ -1,0 +1,168 @@
+{
+	"haul_supplies_veyra": {
+		"title": "Supply Run to Veyra Reach",
+		"type": "cargo_haul",
+		"description": "Transport medical supplies to the independent settlements at Veyra Reach. Pay's decent, route's not too dangerous.",
+		"giver": "Station Control",
+		"origin_system": "sol_gateway",
+		"destination_system": "veyra_reach",
+		"cargo_id": "medical_supplies",
+		"cargo_name": "Medical Supplies",
+		"cargo_size": 2,
+		"reward_modules": {
+			"conduit_mk1": 3,
+			"armor_plate_mk1": 1
+		},
+		"reward_text": "150 credits, 3x Power Conduit, 1x Armor Plating",
+		"time_limit": 0,
+		"min_threat": 1,
+		"reward_credits": 150
+	},
+	"haul_parts_ashfall": {
+		"title": "Equipment Delivery to Ashfall",
+		"type": "cargo_haul",
+		"description": "A mining operation on Ashfall needs drilling equipment. Hazardous route through volcanic debris.",
+		"giver": "Mining Foreman",
+		"origin_system": "sol_gateway",
+		"destination_system": "ashfall_drift",
+		"cargo_id": "drilling_equipment",
+		"cargo_name": "Drilling Equipment",
+		"cargo_size": 3,
+		"reward_modules": {
+			"thruster_mk1": 1,
+			"shield_gen_mk1": 1
+		},
+		"reward_text": "250 credits, 1x Ion Thruster, 1x Shield Generator",
+		"time_limit": 0,
+		"min_threat": 1,
+		"reward_credits": 250
+	},
+	"haul_weapons_korrath": {
+		"title": "Arms Shipment to the Front",
+		"type": "cargo_haul",
+		"description": "The Korrath border needs munitions. Long haul through hostile space. Danger pay included.",
+		"giver": "Terran Military",
+		"origin_system": "sol_gateway",
+		"destination_system": "korrath_expanse",
+		"cargo_id": "munitions",
+		"cargo_name": "Munitions Crate",
+		"cargo_size": 4,
+		"reward_modules": {
+			"autocannon_mk2": 1,
+			"armor_plate_mk2": 1
+		},
+		"reward_text": "500 credits, 1x Autocannon Mk2, 1x Armor Mk2",
+		"time_limit": 0,
+		"min_threat": 2,
+		"reward_credits": 500
+	},
+	"bounty_veyra_pirates": {
+		"title": "Clear Pirate Patrols",
+		"type": "bounty",
+		"description": "Pirates are disrupting trade in Veyra Reach. Eliminate their patrol ships. The Frontier Council is offering a bounty.",
+		"giver": "Frontier Council",
+		"target_system": "veyra_reach",
+		"kill_target": 6,
+		"reward_modules": {
+			"pulse_laser_mk2": 1
+		},
+		"reward_text": "300 credits, 1x Pulse Laser Mk2",
+		"min_threat": 1,
+		"reward_credits": 300
+	},
+	"bounty_ghost_nebula": {
+		"title": "Ghost Nebula Sweep",
+		"type": "bounty",
+		"description": "Something's controlling the hostiles in the Ghost Nebula. Thin their numbers so our scouts can investigate.",
+		"giver": "Naval Intelligence",
+		"target_system": "ghost_nebula",
+		"kill_target": 10,
+		"reward_modules": {
+			"sensor_mk2": 1,
+			"shield_gen_mk2": 1
+		},
+		"reward_text": "600 credits, 1x Sensor Mk2, 1x Shield Gen Mk2",
+		"min_threat": 2,
+		"reward_credits": 600
+	},
+	"patrol_ashfall": {
+		"title": "Ashfall Security Patrol",
+		"type": "bounty",
+		"description": "The mining colonies need protection. Patrol Ashfall Drift and neutralize hostiles.",
+		"giver": "Colony Admin",
+		"target_system": "ashfall_drift",
+		"kill_target": 5,
+		"reward_modules": {
+			"repair_module_mk1": 1,
+			"conduit_mk1": 2
+		},
+		"reward_text": "200 credits, 1x Repair Nanobots, 2x Conduit",
+		"min_threat": 1,
+		"reward_credits": 200
+	},
+	"salvage_ghost_data": {
+		"title": "Recover Black Box Data",
+		"type": "salvage",
+		"description": "One of our survey ships went down in the Ghost Nebula. We need the black box data -- fly there and scan for the wreck.",
+		"giver": "Survey Corps",
+		"target_system": "ghost_nebula",
+		"target_poi": "Lost Convoy",
+		"reward_modules": {
+			"ecm_jammer_mk1": 1
+		},
+		"reward_text": "400 credits, 1x ECM Jammer Mk1",
+		"min_threat": 2,
+		"reward_credits": 400
+	},
+	"salvage_deep_probe": {
+		"title": "Retrieve Deep Space Probe",
+		"type": "salvage",
+		"description": "An unmanned probe was sent into The Deep. It stopped transmitting. If you can find it, the data would be invaluable.",
+		"giver": "Research Division",
+		"target_system": "the_deep",
+		"target_poi": "Echo Chamber",
+		"reward_modules": {
+			"reactor_mk2": 1
+		},
+		"reward_text": "800 credits, 1x Fusion Reactor Mk2",
+		"min_threat": 3,
+		"reward_credits": 800
+	},
+	"haul_refugees_veyra": {
+		"title": "Refugee Transport",
+		"type": "cargo_haul",
+		"description": "Displaced settlers need passage to Veyra Reach. They don't have much, but they'll share what tech they saved.",
+		"giver": "Refugee Leader",
+		"origin_system": "ashfall_drift",
+		"destination_system": "veyra_reach",
+		"cargo_id": "refugees",
+		"cargo_name": "Refugee Passengers",
+		"cargo_size": 2,
+		"reward_modules": {
+			"afterburner_mk1": 1
+		},
+		"reward_text": "100 credits, 1x Afterburner Mk1",
+		"time_limit": 0,
+		"min_threat": 1,
+		"reward_credits": 100
+	},
+	"haul_research_deep": {
+		"title": "Research Materials to The Deep",
+		"type": "cargo_haul",
+		"description": "Scientists need exotic materials transported to a research outpost near The Deep. Extremely dangerous route.",
+		"giver": "Dr. Voss",
+		"origin_system": "ghost_nebula",
+		"destination_system": "the_deep",
+		"cargo_id": "research_materials",
+		"cargo_name": "Exotic Research Samples",
+		"cargo_size": 3,
+		"reward_modules": {
+			"beam_emitter_mk1": 1,
+			"reactor_mk2": 1
+		},
+		"reward_text": "700 credits, 1x Beam Emitter, 1x Reactor Mk2",
+		"time_limit": 0,
+		"min_threat": 3,
+		"reward_credits": 700
+	}
+}

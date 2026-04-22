@@ -1,0 +1,110 @@
+{
+  "size": [
+    1920,
+    1088
+  ],
+  "themes": [
+    {
+      "theme": "desert_ocean",
+      "description": "Vast empty desert meeting a distant ocean horizon.",
+      "layers": [
+        {
+          "file": "desert_ocean_far.png",
+          "speed": [
+            0.18,
+            0.12
+          ]
+        },
+        {
+          "file": "desert_ocean_mid.png",
+          "speed": [
+            0.42,
+            0.18
+          ]
+        },
+        {
+          "file": "desert_ocean_near.png",
+          "speed": [
+            0.72,
+            0.24
+          ]
+        },
+        {
+          "file": "desert_ocean_composite.png",
+          "speed": [
+            0.94,
+            0.97
+          ]
+        }
+      ]
+    },
+    {
+      "theme": "ruined_hull_bay",
+      "description": "Underground ruin with crashed ship hull segments and failing catwalks.",
+      "layers": [
+        {
+          "file": "ruined_hull_bay_far.png",
+          "speed": [
+            0.16,
+            0.1
+          ]
+        },
+        {
+          "file": "ruined_hull_bay_mid.png",
+          "speed": [
+            0.46,
+            0.18
+          ]
+        },
+        {
+          "file": "ruined_hull_bay_near.png",
+          "speed": [
+            0.76,
+            0.24
+          ]
+        },
+        {
+          "file": "ruined_hull_bay_composite.png",
+          "speed": [
+            0.94,
+            0.97
+          ]
+        }
+      ]
+    },
+    {
+      "theme": "ruined_reactor_trench",
+      "description": "Collapsed underground installation with reactor light and broken industrial supports.",
+      "layers": [
+        {
+          "file": "ruined_reactor_trench_far.png",
+          "speed": [
+            0.14,
+            0.1
+          ]
+        },
+        {
+          "file": "ruined_reactor_trench_mid.png",
+          "speed": [
+            0.44,
+            0.18
+          ]
+        },
+        {
+          "file": "ruined_reactor_trench_near.png",
+          "speed": [
+            0.78,
+            0.24
+          ]
+        },
+        {
+          "file": "ruined_reactor_trench_composite.png",
+          "speed": [
+            0.94,
+            0.97
+          ]
+        }
+      ]
+    }
+  ]
+}

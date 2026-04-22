@@ -1,0 +1,1270 @@
+{
+    "sprites":  [
+                    {
+                        "file":  "Systems/AstralBodies/imported/Animated Planets/Planet_CloudsOnly01_100px_16x15.png"
+                    },
+                    {
+                        "file":  "Systems/AstralBodies/imported/Animated Planets/Planet_CloudsOnly02_100px_16x15.png"
+                    },
+                    {
+                        "file":  "Systems/AstralBodies/imported/Animated Planets/Planet_CloudsOnly03_100px_16x15.png"
+                    },
+                    {
+                        "file":  "Systems/AstralBodies/imported/Animated Planets/Planet_CloudsOnly04_100px_16x15.png"
+                    },
+                    {
+                        "file":  "Systems/AstralBodies/imported/Animated Planets/Planet_CloudsOnly05_50px_16x15.png"
+                    },
+                    {
+                        "file":  "Systems/AstralBodies/imported/Animated Planets/Planet_CloudsOnly06_50px_16x15.png"
+                    },
+                    {
+                        "file":  "Systems/AstralBodies/imported/Animated Planets/Planet_CloudsOnly07_Full_55px_16x15.png"
+                    },
+                    {
+                        "file":  "Systems/AstralBodies/imported/Animated Planets/Planet_Dead01_50px_16x15.png"
+                    },
+                    {
+                        "file":  "Systems/AstralBodies/imported/Animated Planets/Planet_Dead02_60px_16x15.png"
+                    },
+                    {
+                        "file":  "Systems/AstralBodies/imported/Animated Planets/Planet_Dead03_40px_16x15.png"
+                    },
+                    {
+                        "file":  "Systems/AstralBodies/imported/Animated Planets/Planet_EarthLike01_100px_16x15.png"
+                    },
+                    {
+                        "file":  "Systems/AstralBodies/imported/Animated Planets/Planet_EarthLike02_HeavyClouds_100px_16x15.png"
+                    },
+                    {
+                        "file":  "Systems/AstralBodies/imported/Animated Planets/Planet_EarthLike03_50px_16x15.png"
+                    },
+                    {
+                        "file":  "Systems/AstralBodies/imported/Animated Planets/Planet_Gas01_YellowPurple_70px_16x15_.png"
+                    },
+                    {
+                        "file":  "Systems/AstralBodies/imported/Animated Planets/Planet_Gas02_100px_16x15.png"
+                    },
+                    {
+                        "file":  "Systems/AstralBodies/imported/Animated Planets/Planet_Gas03_DarkBlue_90px_16x15.png"
+                    },
+                    {
+                        "file":  "Systems/AstralBodies/imported/Animated Planets/Planet_Gas04_Giant_100px_16x15.png"
+                    },
+                    {
+                        "file":  "Systems/AstralBodies/imported/Animated Planets/Planet_Ice01_100px_16x15.png"
+                    },
+                    {
+                        "file":  "Systems/AstralBodies/imported/Animated Planets/Planet_Ice02_Snow_37px_16x15.png"
+                    },
+                    {
+                        "file":  "Systems/AstralBodies/imported/Animated Planets/Planet_Ice03_100px_16x15.png"
+                    },
+                    {
+                        "file":  "Systems/AstralBodies/imported/Animated Planets/Planet_Ice04_100px_16x15.png"
+                    },
+                    {
+                        "file":  "Systems/AstralBodies/imported/Animated Planets/Planet_Ice04_Green_88px_16x15.png"
+                    },
+                    {
+                        "file":  "Systems/AstralBodies/imported/Animated Planets/Planet_Islands01_Paradise_100px_16x15.png"
+                    },
+                    {
+                        "file":  "Systems/AstralBodies/imported/Animated Planets/Planet_Islands02_100px_16x15.png"
+                    },
+                    {
+                        "file":  "Systems/AstralBodies/imported/Animated Planets/Planet_Lava01_FullFluid_100px_16x15.png"
+                    },
+                    {
+                        "file":  "Systems/AstralBodies/imported/Animated Planets/Planet_Lava02_XenoFluid_60px_16x15.png"
+                    },
+                    {
+                        "file":  "Systems/AstralBodies/imported/Animated Planets/Planet_Lava03_LowFluid_100px_16x15.png"
+                    },
+                    {
+                        "file":  "Systems/AstralBodies/imported/Animated Planets/Planet_Lava04_MediumFluid_100px_16x15.png"
+                    },
+                    {
+                        "file":  "Systems/AstralBodies/imported/Animated Planets/Planet_Metalic01_100px_16x15.png"
+                    },
+                    {
+                        "file":  "Systems/AstralBodies/imported/Animated Planets/Planet_Moon01_21px_8x8.png"
+                    },
+                    {
+                        "file":  "Systems/AstralBodies/imported/Animated Planets/Planet_Moon02_35px_8x8.png"
+                    },
+                    {
+                        "file":  "Systems/AstralBodies/imported/Animated Planets/Planet_Ocean01_80px_16x15.png"
+                    },
+                    {
+                        "file":  "Systems/AstralBodies/imported/Animated Planets/Planet_Ocean02_Frozen_100px_16x15.png"
+                    },
+                    {
+                        "file":  "Systems/AstralBodies/imported/Animated Planets/Planet_Ring01_300px_16x15.png"
+                    },
+                    {
+                        "file":  "Systems/AstralBodies/imported/Animated Planets/Planet_Ring02_300px_16x15.png"
+                    },
+                    {
+                        "file":  "Systems/AstralBodies/imported/Animated Planets/Planet_Ring03_300px_16x15.png"
+                    },
+                    {
+                        "file":  "Systems/AstralBodies/imported/Animated Planets/Planet_Ring04_102px_16x15.png"
+                    },
+                    {
+                        "file":  "Systems/AstralBodies/imported/Animated Planets/Planet_Ring05_240px_16x15.png"
+                    },
+                    {
+                        "file":  "Systems/AstralBodies/imported/Animated Planets/Planet_Ring06_192px_16x15.png"
+                    },
+                    {
+                        "file":  "Systems/AstralBodies/imported/Animated Planets/Planet_Rock01_100px_16x15.png"
+                    },
+                    {
+                        "file":  "Systems/AstralBodies/imported/Animated Planets/Planet_Rock02_Purple_60px_16x15.png"
+                    },
+                    {
+                        "file":  "Systems/AstralBodies/imported/Animated Planets/Planet_Rock03_100px_16x15.png"
+                    },
+                    {
+                        "file":  "Systems/AstralBodies/imported/Animated Planets/Planet_Rock04_OrangePink_85px_16x15.png"
+                    },
+                    {
+                        "file":  "Systems/AstralBodies/imported/Animated Planets/Planet_Rock05_RedPurple_51px_16x15.png"
+                    },
+                    {
+                        "file":  "Systems/AstralBodies/imported/Animated Planets/Planet_Rock06_41px_16x15.png"
+                    },
+                    {
+                        "file":  "Systems/AstralBodies/imported/Animated Planets/Planet_Sand01_90px_16x15.png"
+                    },
+                    {
+                        "file":  "Systems/AstralBodies/imported/Animated Planets/Planet_Sand02_100px_16x15.png"
+                    },
+                    {
+                        "file":  "Systems/AstralBodies/imported/Animated Planets/Planet_Sand03_Red_100px_16x15.png"
+                    },
+                    {
+                        "file":  "Systems/AstralBodies/imported/Animated Planets/Planet_Swamp01_60px_16x15.png"
+                    },
+                    {
+                        "file":  "Systems/AstralBodies/imported/Animated Planets/Planet_Swamp02_100px_16x15.png"
+                    },
+                    {
+                        "file":  "Systems/AstralBodies/imported/Animated Planets/Planet_Toxic01_74px_16x15.png"
+                    },
+                    {
+                        "file":  "Systems/AstralBodies/imported/Animated Planets/Planet_Toxic02_80px_16x15.png"
+                    },
+                    {
+                        "file":  "Systems/AstralBodies/imported/Animated Planets/Planet_Unstable01_Yellow_120px_9x8.png"
+                    },
+                    {
+                        "file":  "Systems/AstralBodies/imported/Animated Planets/Planet_Unstable02_Crimson_120px_9x8.png"
+                    },
+                    {
+                        "file":  "Systems/AstralBodies/imported/Animated Planets/Planet_Unstable03_Pink_120px_9x8.png"
+                    },
+                    {
+                        "file":  "Systems/AstralBodies/imported/Animated Planets/Planet_Unstable04_Turquoise_120px_9x8.png"
+                    },
+                    {
+                        "file":  "Systems/AstralBodies/imported/Animated Planets/Planet_Weirdo01_100px_16x15.png"
+                    },
+                    {
+                        "file":  "Systems/AstralBodies/imported/Animated Planets/Planet_Weirdo02_61px_16x15.png"
+                    },
+                    {
+                        "file":  "Systems/AstralBodies/imported/Animated Planets/Planet_Weirdo03_55px_16x15.png"
+                    },
+                    {
+                        "file":  "Systems/AstralBodies/imported/Animated Planets/Planet_Weirdo04_51px_16x15.png"
+                    },
+                    {
+                        "file":  "Systems/AstralBodies/imported/Animated Planets (Our Solar System)/SolarSystem_Earth_50px_16x15.png"
+                    },
+                    {
+                        "file":  "Systems/AstralBodies/imported/Animated Planets (Our Solar System)/SolarSystem_Jupiter_90px_16x15.png"
+                    },
+                    {
+                        "file":  "Systems/AstralBodies/imported/Animated Planets (Our Solar System)/SolarSystem_Mars_37px_16x15.png"
+                    },
+                    {
+                        "file":  "Systems/AstralBodies/imported/Animated Planets (Our Solar System)/SolarSystem_Mercury_21px_20x6.png"
+                    },
+                    {
+                        "file":  "Systems/AstralBodies/imported/Animated Planets (Our Solar System)/SolarSystem_Moon_21px_8x8.png"
+                    },
+                    {
+                        "file":  "Systems/AstralBodies/imported/Animated Planets (Our Solar System)/SolarSystem_Neptune_73px_16x15.png"
+                    },
+                    {
+                        "file":  "Systems/AstralBodies/imported/Animated Planets (Our Solar System)/SolarSystem_Pluto_21px_20x6.png"
+                    },
+                    {
+                        "file":  "Systems/AstralBodies/imported/Animated Planets (Our Solar System)/SolarSystem_Saturn_240px_16x15.png"
+                    },
+                    {
+                        "file":  "Systems/AstralBodies/imported/Animated Planets (Our Solar System)/SolarSystem_Sun_140px_10x6.png"
+                    },
+                    {
+                        "file":  "Systems/AstralBodies/imported/Animated Planets (Our Solar System)/SolarSystem_Uranus_79px_16x15.png"
+                    },
+                    {
+                        "file":  "Systems/AstralBodies/imported/Animated Planets (Our Solar System)/SolarSystem_Venus_50px_16x15.png"
+                    },
+                    {
+                        "file":  "Systems/AstralBodies/imported/Animated Suns (Big Stars)/Star_Special_RedDwarf_15x1.png"
+                    },
+                    {
+                        "file":  "Systems/AstralBodies/imported/Animated Suns (Big Stars)/Star_Special_RedGiant_10x6.png"
+                    },
+                    {
+                        "file":  "Systems/AstralBodies/imported/Animated Suns (Big Stars)/Star_Special_SuperGiant_10x6.png"
+                    },
+                    {
+                        "file":  "Systems/AstralBodies/imported/Animated Suns (Big Stars)/Star_Sun01_Little_15x1.png"
+                    },
+                    {
+                        "file":  "Systems/AstralBodies/imported/Animated Suns (Big Stars)/Star_Sun02_20x1.png"
+                    },
+                    {
+                        "file":  "Systems/AstralBodies/imported/Animated Suns (Big Stars)/Star_Sun03_15x1.png"
+                    },
+                    {
+                        "file":  "Systems/AstralBodies/imported/Animated Suns (Big Stars)/Star_Sun04_Yellow_10x6.png"
+                    },
+                    {
+                        "file":  "Systems/AstralBodies/imported/Animated Suns (Big Stars)/Star_Sun05_Yellow_10x6.png"
+                    },
+                    {
+                        "file":  "Systems/AstralBodies/imported/Animated Suns (Big Stars)/Star_Sun06_15x1.png"
+                    },
+                    {
+                        "file":  "Systems/AstralBodies/imported/Asteroids_Frames/Asteroids00_Big/Asteroids00_Big_00.png"
+                    },
+                    {
+                        "file":  "Systems/AstralBodies/imported/Asteroids_Frames/Asteroids00_Big/Asteroids00_Big_01.png"
+                    },
+                    {
+                        "file":  "Systems/AstralBodies/imported/Asteroids_Frames/Asteroids00_Big/Asteroids00_Big_02.png"
+                    },
+                    {
+                        "file":  "Systems/AstralBodies/imported/Asteroids_Frames/Asteroids00_Big/Asteroids00_Big_03.png"
+                    },
+                    {
+                        "file":  "Systems/AstralBodies/imported/Asteroids_Frames/Asteroids00_Big/Asteroids00_Big_04.png"
+                    },
+                    {
+                        "file":  "Systems/AstralBodies/imported/Asteroids_Frames/Asteroids00_Big/Asteroids00_Big_05.png"
+                    },
+                    {
+                        "file":  "Systems/AstralBodies/imported/Asteroids_Frames/Asteroids00_Big/Asteroids00_Big_06.png"
+                    },
+                    {
+                        "file":  "Systems/AstralBodies/imported/Asteroids_Frames/Asteroids00_Big/Asteroids00_Big_07.png"
+                    },
+                    {
+                        "file":  "Systems/AstralBodies/imported/Asteroids_Frames/Asteroids00_Big/Asteroids00_Big_08.png"
+                    },
+                    {
+                        "file":  "Systems/AstralBodies/imported/Asteroids_Frames/Asteroids00_Big/Asteroids00_Big_09.png"
+                    },
+                    {
+                        "file":  "Systems/AstralBodies/imported/Asteroids_Frames/Asteroids00_Big/Asteroids00_Big_10.png"
+                    },
+                    {
+                        "file":  "Systems/AstralBodies/imported/Asteroids_Frames/Asteroids00_Big/Asteroids00_Big_11.png"
+                    },
+                    {
+                        "file":  "Systems/AstralBodies/imported/Asteroids_Frames/Asteroids00_Big/Asteroids00_Big_12.png"
+                    },
+                    {
+                        "file":  "Systems/AstralBodies/imported/Asteroids_Frames/Asteroids00_Big/Asteroids00_Big_13.png"
+                    },
+                    {
+                        "file":  "Systems/AstralBodies/imported/Asteroids_Frames/Asteroids00_Big/Asteroids00_Big_14.png"
+                    },
+                    {
+                        "file":  "Systems/AstralBodies/imported/Asteroids_Frames/Asteroids00_Big/Asteroids00_Big_15.png"
+                    },
+                    {
+                        "file":  "Systems/AstralBodies/imported/Asteroids_Frames/Asteroids00_Big/Asteroids00_Big_16.png"
+                    },
+                    {
+                        "file":  "Systems/AstralBodies/imported/Asteroids_Frames/Asteroids00_Big/Asteroids00_Big_17.png"
+                    },
+                    {
+                        "file":  "Systems/AstralBodies/imported/Asteroids_Frames/Asteroids00_Little/Asteroids00_Little_00.png"
+                    },
+                    {
+                        "file":  "Systems/AstralBodies/imported/Asteroids_Frames/Asteroids00_Little/Asteroids00_Little_01.png"
+                    },
+                    {
+                        "file":  "Systems/AstralBodies/imported/Asteroids_Frames/Asteroids00_Little/Asteroids00_Little_02.png"
+                    },
+                    {
+                        "file":  "Systems/AstralBodies/imported/Asteroids_Frames/Asteroids00_Little/Asteroids00_Little_03.png"
+                    },
+                    {
+                        "file":  "Systems/AstralBodies/imported/Asteroids_Frames/Asteroids00_Little/Asteroids00_Little_04.png"
+                    },
+                    {
+                        "file":  "Systems/AstralBodies/imported/Asteroids_Frames/Asteroids00_Little/Asteroids00_Little_05.png"
+                    },
+                    {
+                        "file":  "Systems/AstralBodies/imported/Asteroids_Frames/Asteroids00_Little/Asteroids00_Little_06.png"
+                    },
+                    {
+                        "file":  "Systems/AstralBodies/imported/Asteroids_Frames/Asteroids00_Little/Asteroids00_Little_07.png"
+                    },
+                    {
+                        "file":  "Systems/AstralBodies/imported/Asteroids_Frames/Asteroids00_Little/Asteroids00_Little_08.png"
+                    },
+                    {
+                        "file":  "Systems/AstralBodies/imported/Asteroids_Frames/Asteroids00_Little/Asteroids00_Little_09.png"
+                    },
+                    {
+                        "file":  "Systems/AstralBodies/imported/Asteroids_Frames/Asteroids00_Little/Asteroids00_Little_10.png"
+                    },
+                    {
+                        "file":  "Systems/AstralBodies/imported/Asteroids_Frames/Asteroids00_Little/Asteroids00_Little_11.png"
+                    },
+                    {
+                        "file":  "Systems/AstralBodies/imported/Asteroids_Frames/Asteroids00_Little/Asteroids00_Little_12.png"
+                    },
+                    {
+                        "file":  "Systems/AstralBodies/imported/Asteroids_Frames/Asteroids00_Little/Asteroids00_Little_13.png"
+                    },
+                    {
+                        "file":  "Systems/AstralBodies/imported/Asteroids_Frames/Asteroids00_Little/Asteroids00_Little_14.png"
+                    },
+                    {
+                        "file":  "Systems/AstralBodies/imported/Asteroids_Frames/Asteroids00_Little/Asteroids00_Little_15.png"
+                    },
+                    {
+                        "file":  "Systems/AstralBodies/imported/Asteroids_Frames/Asteroids00_Little/Asteroids00_Little_16.png"
+                    },
+                    {
+                        "file":  "Systems/AstralBodies/imported/Asteroids_Frames/Asteroids00_Medium/Asteroids00_Medium_00.png"
+                    },
+                    {
+                        "file":  "Systems/AstralBodies/imported/Asteroids_Frames/Asteroids00_Medium/Asteroids00_Medium_01.png"
+                    },
+                    {
+                        "file":  "Systems/AstralBodies/imported/Asteroids_Frames/Asteroids00_Medium/Asteroids00_Medium_02.png"
+                    },
+                    {
+                        "file":  "Systems/AstralBodies/imported/Asteroids_Frames/Asteroids00_Medium/Asteroids00_Medium_03.png"
+                    },
+                    {
+                        "file":  "Systems/AstralBodies/imported/Asteroids_Frames/Asteroids00_Medium/Asteroids00_Medium_04.png"
+                    },
+                    {
+                        "file":  "Systems/AstralBodies/imported/Asteroids_Frames/Asteroids00_Medium/Asteroids00_Medium_05.png"
+                    },
+                    {
+                        "file":  "Systems/AstralBodies/imported/Asteroids_Frames/Asteroids00_Medium/Asteroids00_Medium_06.png"
+                    },
+                    {
+                        "file":  "Systems/AstralBodies/imported/Asteroids_Frames/Asteroids00_Medium/Asteroids00_Medium_07.png"
+                    },
+                    {
+                        "file":  "Systems/AstralBodies/imported/Asteroids_Frames/Asteroids00_Medium/Asteroids00_Medium_08.png"
+                    },
+                    {
+                        "file":  "Systems/AstralBodies/imported/Asteroids_Frames/Asteroids00_Medium/Asteroids00_Medium_09.png"
+                    },
+                    {
+                        "file":  "Systems/AstralBodies/imported/Asteroids_Frames/Asteroids00_Medium/Asteroids00_Medium_10.png"
+                    },
+                    {
+                        "file":  "Systems/AstralBodies/imported/Asteroids_Frames/Asteroids00_Medium/Asteroids00_Medium_11.png"
+                    },
+                    {
+                        "file":  "Systems/AstralBodies/imported/Asteroids_Frames/Asteroids00_Medium/Asteroids00_Medium_12.png"
+                    },
+                    {
+                        "file":  "Systems/AstralBodies/imported/Asteroids_Frames/Asteroids00_Medium/Asteroids00_Medium_13.png"
+                    },
+                    {
+                        "file":  "Systems/AstralBodies/imported/Asteroids_Frames/Asteroids00_Medium/Asteroids00_Medium_14.png"
+                    },
+                    {
+                        "file":  "Systems/AstralBodies/imported/Asteroids_Frames/Asteroids00_Medium/Asteroids00_Medium_15.png"
+                    },
+                    {
+                        "file":  "Systems/AstralBodies/imported/Asteroids_Frames/Asteroids00_Medium/Asteroids00_Medium_16.png"
+                    },
+                    {
+                        "file":  "Systems/AstralBodies/imported/Asteroids_Frames/Asteroids00_Medium/Asteroids00_Medium_17.png"
+                    },
+                    {
+                        "file":  "Systems/AstralBodies/imported/Asteroids_Frames/Asteroids00_Medium/Asteroids00_Medium_18.png"
+                    },
+                    {
+                        "file":  "Systems/AstralBodies/imported/Asteroids_Frames/Asteroids01_Big/Asteroids01_Big_00.png"
+                    },
+                    {
+                        "file":  "Systems/AstralBodies/imported/Asteroids_Frames/Asteroids01_Big/Asteroids01_Big_01.png"
+                    },
+                    {
+                        "file":  "Systems/AstralBodies/imported/Asteroids_Frames/Asteroids01_Big/Asteroids01_Big_02.png"
+                    },
+                    {
+                        "file":  "Systems/AstralBodies/imported/Asteroids_Frames/Asteroids01_Big/Asteroids01_Big_03.png"
+                    },
+                    {
+                        "file":  "Systems/AstralBodies/imported/Asteroids_Frames/Asteroids01_Big/Asteroids01_Big_04.png"
+                    },
+                    {
+                        "file":  "Systems/AstralBodies/imported/Asteroids_Frames/Asteroids01_Big/Asteroids01_Big_05.png"
+                    },
+                    {
+                        "file":  "Systems/AstralBodies/imported/Asteroids_Frames/Asteroids01_Big/Asteroids01_Big_06.png"
+                    },
+                    {
+                        "file":  "Systems/AstralBodies/imported/Asteroids_Frames/Asteroids01_Big/Asteroids01_Big_07.png"
+                    },
+                    {
+                        "file":  "Systems/AstralBodies/imported/Asteroids_Frames/Asteroids01_Big/Asteroids01_Big_08.png"
+                    },
+                    {
+                        "file":  "Systems/AstralBodies/imported/Asteroids_Frames/Asteroids01_Big/Asteroids01_Big_09.png"
+                    },
+                    {
+                        "file":  "Systems/AstralBodies/imported/Asteroids_Frames/Asteroids01_Big/Asteroids01_Big_10.png"
+                    },
+                    {
+                        "file":  "Systems/AstralBodies/imported/Asteroids_Frames/Asteroids01_Big/Asteroids01_Big_11.png"
+                    },
+                    {
+                        "file":  "Systems/AstralBodies/imported/Asteroids_Frames/Asteroids01_Big/Asteroids01_Big_12.png"
+                    },
+                    {
+                        "file":  "Systems/AstralBodies/imported/Asteroids_Frames/Asteroids01_Big/Asteroids01_Big_13.png"
+                    },
+                    {
+                        "file":  "Systems/AstralBodies/imported/Asteroids_Frames/Asteroids01_Big/Asteroids01_Big_14.png"
+                    },
+                    {
+                        "file":  "Systems/AstralBodies/imported/Asteroids_Frames/Asteroids01_Big/Asteroids01_Big_15.png"
+                    },
+                    {
+                        "file":  "Systems/AstralBodies/imported/Asteroids_Frames/Asteroids01_Big/Asteroids01_Big_16.png"
+                    },
+                    {
+                        "file":  "Systems/AstralBodies/imported/Asteroids_Frames/Asteroids01_Big/Asteroids01_Big_17.png"
+                    },
+                    {
+                        "file":  "Systems/AstralBodies/imported/Asteroids_Frames/Asteroids01_Little/Asteroids01_Little_00.png"
+                    },
+                    {
+                        "file":  "Systems/AstralBodies/imported/Asteroids_Frames/Asteroids01_Little/Asteroids01_Little_01.png"
+                    },
+                    {
+                        "file":  "Systems/AstralBodies/imported/Asteroids_Frames/Asteroids01_Little/Asteroids01_Little_02.png"
+                    },
+                    {
+                        "file":  "Systems/AstralBodies/imported/Asteroids_Frames/Asteroids01_Little/Asteroids01_Little_03.png"
+                    },
+                    {
+                        "file":  "Systems/AstralBodies/imported/Asteroids_Frames/Asteroids01_Little/Asteroids01_Little_04.png"
+                    },
+                    {
+                        "file":  "Systems/AstralBodies/imported/Asteroids_Frames/Asteroids01_Little/Asteroids01_Little_05.png"
+                    },
+                    {
+                        "file":  "Systems/AstralBodies/imported/Asteroids_Frames/Asteroids01_Little/Asteroids01_Little_06.png"
+                    },
+                    {
+                        "file":  "Systems/AstralBodies/imported/Asteroids_Frames/Asteroids01_Little/Asteroids01_Little_07.png"
+                    },
+                    {
+                        "file":  "Systems/AstralBodies/imported/Asteroids_Frames/Asteroids01_Little/Asteroids01_Little_08.png"
+                    },
+                    {
+                        "file":  "Systems/AstralBodies/imported/Asteroids_Frames/Asteroids01_Little/Asteroids01_Little_09.png"
+                    },
+                    {
+                        "file":  "Systems/AstralBodies/imported/Asteroids_Frames/Asteroids01_Little/Asteroids01_Little_10.png"
+                    },
+                    {
+                        "file":  "Systems/AstralBodies/imported/Asteroids_Frames/Asteroids01_Little/Asteroids01_Little_11.png"
+                    },
+                    {
+                        "file":  "Systems/AstralBodies/imported/Asteroids_Frames/Asteroids01_Little/Asteroids01_Little_12.png"
+                    },
+                    {
+                        "file":  "Systems/AstralBodies/imported/Asteroids_Frames/Asteroids01_Little/Asteroids01_Little_13.png"
+                    },
+                    {
+                        "file":  "Systems/AstralBodies/imported/Asteroids_Frames/Asteroids01_Little/Asteroids01_Little_14.png"
+                    },
+                    {
+                        "file":  "Systems/AstralBodies/imported/Asteroids_Frames/Asteroids01_Little/Asteroids01_Little_15.png"
+                    },
+                    {
+                        "file":  "Systems/AstralBodies/imported/Asteroids_Frames/Asteroids01_Little/Asteroids01_Little_16.png"
+                    },
+                    {
+                        "file":  "Systems/AstralBodies/imported/Asteroids_Frames/Asteroids01_Medium/Asteroids01_Medium_00.png"
+                    },
+                    {
+                        "file":  "Systems/AstralBodies/imported/Asteroids_Frames/Asteroids01_Medium/Asteroids01_Medium_01.png"
+                    },
+                    {
+                        "file":  "Systems/AstralBodies/imported/Asteroids_Frames/Asteroids01_Medium/Asteroids01_Medium_02.png"
+                    },
+                    {
+                        "file":  "Systems/AstralBodies/imported/Asteroids_Frames/Asteroids01_Medium/Asteroids01_Medium_03.png"
+                    },
+                    {
+                        "file":  "Systems/AstralBodies/imported/Asteroids_Frames/Asteroids01_Medium/Asteroids01_Medium_04.png"
+                    },
+                    {
+                        "file":  "Systems/AstralBodies/imported/Asteroids_Frames/Asteroids01_Medium/Asteroids01_Medium_05.png"
+                    },
+                    {
+                        "file":  "Systems/AstralBodies/imported/Asteroids_Frames/Asteroids01_Medium/Asteroids01_Medium_06.png"
+                    },
+                    {
+                        "file":  "Systems/AstralBodies/imported/Asteroids_Frames/Asteroids01_Medium/Asteroids01_Medium_07.png"
+                    },
+                    {
+                        "file":  "Systems/AstralBodies/imported/Asteroids_Frames/Asteroids01_Medium/Asteroids01_Medium_08.png"
+                    },
+                    {
+                        "file":  "Systems/AstralBodies/imported/Asteroids_Frames/Asteroids01_Medium/Asteroids01_Medium_09.png"
+                    },
+                    {
+                        "file":  "Systems/AstralBodies/imported/Asteroids_Frames/Asteroids01_Medium/Asteroids01_Medium_10.png"
+                    },
+                    {
+                        "file":  "Systems/AstralBodies/imported/Asteroids_Frames/Asteroids01_Medium/Asteroids01_Medium_11.png"
+                    },
+                    {
+                        "file":  "Systems/AstralBodies/imported/Asteroids_Frames/Asteroids01_Medium/Asteroids01_Medium_12.png"
+                    },
+                    {
+                        "file":  "Systems/AstralBodies/imported/Asteroids_Frames/Asteroids01_Medium/Asteroids01_Medium_13.png"
+                    },
+                    {
+                        "file":  "Systems/AstralBodies/imported/Asteroids_Frames/Asteroids01_Medium/Asteroids01_Medium_14.png"
+                    },
+                    {
+                        "file":  "Systems/AstralBodies/imported/Asteroids_Frames/Asteroids01_Medium/Asteroids01_Medium_15.png"
+                    },
+                    {
+                        "file":  "Systems/AstralBodies/imported/Asteroids_Frames/Asteroids01_Medium/Asteroids01_Medium_16.png"
+                    },
+                    {
+                        "file":  "Systems/AstralBodies/imported/Asteroids_Frames/Asteroids01_Medium/Asteroids01_Medium_17.png"
+                    },
+                    {
+                        "file":  "Systems/AstralBodies/imported/Asteroids_Frames/Asteroids01_Medium/Asteroids01_Medium_18.png"
+                    },
+                    {
+                        "file":  "Systems/AstralBodies/imported/Asteroids_Frames/Asteroids02_Big/Asteroids02_Big_00.png"
+                    },
+                    {
+                        "file":  "Systems/AstralBodies/imported/Asteroids_Frames/Asteroids02_Big/Asteroids02_Big_01.png"
+                    },
+                    {
+                        "file":  "Systems/AstralBodies/imported/Asteroids_Frames/Asteroids02_Big/Asteroids02_Big_02.png"
+                    },
+                    {
+                        "file":  "Systems/AstralBodies/imported/Asteroids_Frames/Asteroids02_Big/Asteroids02_Big_03.png"
+                    },
+                    {
+                        "file":  "Systems/AstralBodies/imported/Asteroids_Frames/Asteroids02_Big/Asteroids02_Big_04.png"
+                    },
+                    {
+                        "file":  "Systems/AstralBodies/imported/Asteroids_Frames/Asteroids02_Big/Asteroids02_Big_05.png"
+                    },
+                    {
+                        "file":  "Systems/AstralBodies/imported/Asteroids_Frames/Asteroids02_Big/Asteroids02_Big_06.png"
+                    },
+                    {
+                        "file":  "Systems/AstralBodies/imported/Asteroids_Frames/Asteroids02_Big/Asteroids02_Big_07.png"
+                    },
+                    {
+                        "file":  "Systems/AstralBodies/imported/Asteroids_Frames/Asteroids02_Big/Asteroids02_Big_08.png"
+                    },
+                    {
+                        "file":  "Systems/AstralBodies/imported/Asteroids_Frames/Asteroids02_Big/Asteroids02_Big_09.png"
+                    },
+                    {
+                        "file":  "Systems/AstralBodies/imported/Asteroids_Frames/Asteroids02_Big/Asteroids02_Big_10.png"
+                    },
+                    {
+                        "file":  "Systems/AstralBodies/imported/Asteroids_Frames/Asteroids02_Big/Asteroids02_Big_11.png"
+                    },
+                    {
+                        "file":  "Systems/AstralBodies/imported/Asteroids_Frames/Asteroids02_Big/Asteroids02_Big_12.png"
+                    },
+                    {
+                        "file":  "Systems/AstralBodies/imported/Asteroids_Frames/Asteroids02_Big/Asteroids02_Big_13.png"
+                    },
+                    {
+                        "file":  "Systems/AstralBodies/imported/Asteroids_Frames/Asteroids02_Big/Asteroids02_Big_14.png"
+                    },
+                    {
+                        "file":  "Systems/AstralBodies/imported/Asteroids_Frames/Asteroids02_Big/Asteroids02_Big_15.png"
+                    },
+                    {
+                        "file":  "Systems/AstralBodies/imported/Asteroids_Frames/Asteroids02_Big/Asteroids02_Big_16.png"
+                    },
+                    {
+                        "file":  "Systems/AstralBodies/imported/Asteroids_Frames/Asteroids02_Big/Asteroids02_Big_17.png"
+                    },
+                    {
+                        "file":  "Systems/AstralBodies/imported/Asteroids_Frames/Asteroids02_Little/Asteroids02_Little_00.png"
+                    },
+                    {
+                        "file":  "Systems/AstralBodies/imported/Asteroids_Frames/Asteroids02_Little/Asteroids02_Little_01.png"
+                    },
+                    {
+                        "file":  "Systems/AstralBodies/imported/Asteroids_Frames/Asteroids02_Little/Asteroids02_Little_02.png"
+                    },
+                    {
+                        "file":  "Systems/AstralBodies/imported/Asteroids_Frames/Asteroids02_Little/Asteroids02_Little_03.png"
+                    },
+                    {
+                        "file":  "Systems/AstralBodies/imported/Asteroids_Frames/Asteroids02_Little/Asteroids02_Little_04.png"
+                    },
+                    {
+                        "file":  "Systems/AstralBodies/imported/Asteroids_Frames/Asteroids02_Little/Asteroids02_Little_05.png"
+                    },
+                    {
+                        "file":  "Systems/AstralBodies/imported/Asteroids_Frames/Asteroids02_Little/Asteroids02_Little_06.png"
+                    },
+                    {
+                        "file":  "Systems/AstralBodies/imported/Asteroids_Frames/Asteroids02_Little/Asteroids02_Little_07.png"
+                    },
+                    {
+                        "file":  "Systems/AstralBodies/imported/Asteroids_Frames/Asteroids02_Little/Asteroids02_Little_08.png"
+                    },
+                    {
+                        "file":  "Systems/AstralBodies/imported/Asteroids_Frames/Asteroids02_Little/Asteroids02_Little_09.png"
+                    },
+                    {
+                        "file":  "Systems/AstralBodies/imported/Asteroids_Frames/Asteroids02_Little/Asteroids02_Little_10.png"
+                    },
+                    {
+                        "file":  "Systems/AstralBodies/imported/Asteroids_Frames/Asteroids02_Little/Asteroids02_Little_11.png"
+                    },
+                    {
+                        "file":  "Systems/AstralBodies/imported/Asteroids_Frames/Asteroids02_Little/Asteroids02_Little_12.png"
+                    },
+                    {
+                        "file":  "Systems/AstralBodies/imported/Asteroids_Frames/Asteroids02_Little/Asteroids02_Little_13.png"
+                    },
+                    {
+                        "file":  "Systems/AstralBodies/imported/Asteroids_Frames/Asteroids02_Little/Asteroids02_Little_14.png"
+                    },
+                    {
+                        "file":  "Systems/AstralBodies/imported/Asteroids_Frames/Asteroids02_Little/Asteroids02_Little_15.png"
+                    },
+                    {
+                        "file":  "Systems/AstralBodies/imported/Asteroids_Frames/Asteroids02_Little/Asteroids02_Little_16.png"
+                    },
+                    {
+                        "file":  "Systems/AstralBodies/imported/Asteroids_Frames/Asteroids02_Medium/Asteroids02_Medium_00.png"
+                    },
+                    {
+                        "file":  "Systems/AstralBodies/imported/Asteroids_Frames/Asteroids02_Medium/Asteroids02_Medium_01.png"
+                    },
+                    {
+                        "file":  "Systems/AstralBodies/imported/Asteroids_Frames/Asteroids02_Medium/Asteroids02_Medium_02.png"
+                    },
+                    {
+                        "file":  "Systems/AstralBodies/imported/Asteroids_Frames/Asteroids02_Medium/Asteroids02_Medium_03.png"
+                    },
+                    {
+                        "file":  "Systems/AstralBodies/imported/Asteroids_Frames/Asteroids02_Medium/Asteroids02_Medium_04.png"
+                    },
+                    {
+                        "file":  "Systems/AstralBodies/imported/Asteroids_Frames/Asteroids02_Medium/Asteroids02_Medium_05.png"
+                    },
+                    {
+                        "file":  "Systems/AstralBodies/imported/Asteroids_Frames/Asteroids02_Medium/Asteroids02_Medium_06.png"
+                    },
+                    {
+                        "file":  "Systems/AstralBodies/imported/Asteroids_Frames/Asteroids02_Medium/Asteroids02_Medium_07.png"
+                    },
+                    {
+                        "file":  "Systems/AstralBodies/imported/Asteroids_Frames/Asteroids02_Medium/Asteroids02_Medium_08.png"
+                    },
+                    {
+                        "file":  "Systems/AstralBodies/imported/Asteroids_Frames/Asteroids02_Medium/Asteroids02_Medium_09.png"
+                    },
+                    {
+                        "file":  "Systems/AstralBodies/imported/Asteroids_Frames/Asteroids02_Medium/Asteroids02_Medium_10.png"
+                    },
+                    {
+                        "file":  "Systems/AstralBodies/imported/Asteroids_Frames/Asteroids02_Medium/Asteroids02_Medium_11.png"
+                    },
+                    {
+                        "file":  "Systems/AstralBodies/imported/Asteroids_Frames/Asteroids02_Medium/Asteroids02_Medium_12.png"
+                    },
+                    {
+                        "file":  "Systems/AstralBodies/imported/Asteroids_Frames/Asteroids02_Medium/Asteroids02_Medium_13.png"
+                    },
+                    {
+                        "file":  "Systems/AstralBodies/imported/Asteroids_Frames/Asteroids02_Medium/Asteroids02_Medium_14.png"
+                    },
+                    {
+                        "file":  "Systems/AstralBodies/imported/Asteroids_Frames/Asteroids02_Medium/Asteroids02_Medium_15.png"
+                    },
+                    {
+                        "file":  "Systems/AstralBodies/imported/Asteroids_Frames/Asteroids02_Medium/Asteroids02_Medium_16.png"
+                    },
+                    {
+                        "file":  "Systems/AstralBodies/imported/Asteroids_Frames/Asteroids02_Medium/Asteroids02_Medium_17.png"
+                    },
+                    {
+                        "file":  "Systems/AstralBodies/imported/Asteroids_Frames/Asteroids02_Medium/Asteroids02_Medium_18.png"
+                    },
+                    {
+                        "file":  "Systems/AstralBodies/imported/Asteroids_Frames/Asteroids_All_Spritesheets/All_Asteroids00_10px_17x1.png"
+                    },
+                    {
+                        "file":  "Systems/AstralBodies/imported/Asteroids_Frames/Asteroids_All_Spritesheets/All_Asteroids00_24px_19x1.png"
+                    },
+                    {
+                        "file":  "Systems/AstralBodies/imported/Asteroids_Frames/Asteroids_All_Spritesheets/All_Asteroids00_60px_9x2.png"
+                    },
+                    {
+                        "file":  "Systems/AstralBodies/imported/Asteroids_Frames/Asteroids_All_Spritesheets/All_Asteroids01_10px_17x1.png"
+                    },
+                    {
+                        "file":  "Systems/AstralBodies/imported/Asteroids_Frames/Asteroids_All_Spritesheets/All_Asteroids01_24px_19x1.png"
+                    },
+                    {
+                        "file":  "Systems/AstralBodies/imported/Asteroids_Frames/Asteroids_All_Spritesheets/All_Asteroids01_60px_9x2.png"
+                    },
+                    {
+                        "file":  "Systems/AstralBodies/imported/Asteroids_Frames/Asteroids_All_Spritesheets/All_Asteroids02_10px_17x1.png"
+                    },
+                    {
+                        "file":  "Systems/AstralBodies/imported/Asteroids_Frames/Asteroids_All_Spritesheets/All_Asteroids02_24px_19x1.png"
+                    },
+                    {
+                        "file":  "Systems/AstralBodies/imported/Asteroids_Frames/Asteroids_All_Spritesheets/All_Asteroids02_60px_9x2.png"
+                    },
+                    {
+                        "file":  "Systems/AstralBodies/imported/Asteroids_Frames/Asteroids_All_Spritesheets/All_Asteroids03_60px_9x2.png"
+                    },
+                    {
+                        "file":  "Systems/AstralBodies/imported/BG_Stars_Frames/BG_Stars 00 Blue/BG_Star00_Big_00.png"
+                    },
+                    {
+                        "file":  "Systems/AstralBodies/imported/BG_Stars_Frames/BG_Stars 00 Blue/BG_Star00_Big_01.png"
+                    },
+                    {
+                        "file":  "Systems/AstralBodies/imported/BG_Stars_Frames/BG_Stars 00 Blue/BG_Star00_Big_02.png"
+                    },
+                    {
+                        "file":  "Systems/AstralBodies/imported/BG_Stars_Frames/BG_Stars 00 Blue/BG_Star00_Little_00.png"
+                    },
+                    {
+                        "file":  "Systems/AstralBodies/imported/BG_Stars_Frames/BG_Stars 00 Blue/BG_Star00_Little_01.png"
+                    },
+                    {
+                        "file":  "Systems/AstralBodies/imported/BG_Stars_Frames/BG_Stars 00 Blue/BG_Star00_Little_02.png"
+                    },
+                    {
+                        "file":  "Systems/AstralBodies/imported/BG_Stars_Frames/BG_Stars 00 Blue/BG_Star00_Little_03.png"
+                    },
+                    {
+                        "file":  "Systems/AstralBodies/imported/BG_Stars_Frames/BG_Stars 00 Blue/BG_Star00_Little_04.png"
+                    },
+                    {
+                        "file":  "Systems/AstralBodies/imported/BG_Stars_Frames/BG_Stars 00 Blue/BG_Star00_Little_05.png"
+                    },
+                    {
+                        "file":  "Systems/AstralBodies/imported/BG_Stars_Frames/BG_Stars 00 Blue/BG_Star00_Little_06.png"
+                    },
+                    {
+                        "file":  "Systems/AstralBodies/imported/BG_Stars_Frames/BG_Stars 00 Blue/BG_Star00_Little_07.png"
+                    },
+                    {
+                        "file":  "Systems/AstralBodies/imported/BG_Stars_Frames/BG_Stars 00 Blue/BG_Star00_Little_08.png"
+                    },
+                    {
+                        "file":  "Systems/AstralBodies/imported/BG_Stars_Frames/BG_Stars 00 Blue/BG_Star00_Little_10.png"
+                    },
+                    {
+                        "file":  "Systems/AstralBodies/imported/BG_Stars_Frames/BG_Stars 00 Blue/BG_Star00_Little_11.png"
+                    },
+                    {
+                        "file":  "Systems/AstralBodies/imported/BG_Stars_Frames/BG_Stars 00 Blue/BG_Star00_Medium_00.png"
+                    },
+                    {
+                        "file":  "Systems/AstralBodies/imported/BG_Stars_Frames/BG_Stars 00 Blue/BG_Star00_Medium_01.png"
+                    },
+                    {
+                        "file":  "Systems/AstralBodies/imported/BG_Stars_Frames/BG_Stars 00 Blue/BG_Star00_Medium_02.png"
+                    },
+                    {
+                        "file":  "Systems/AstralBodies/imported/BG_Stars_Frames/BG_Stars 00 Blue/BG_Star00_Medium_03.png"
+                    },
+                    {
+                        "file":  "Systems/AstralBodies/imported/BG_Stars_Frames/BG_Stars 00 Blue/BG_Star00_Medium_04.png"
+                    },
+                    {
+                        "file":  "Systems/AstralBodies/imported/BG_Stars_Frames/BG_Stars 00 Blue/BG_Star00_Medium_05.png"
+                    },
+                    {
+                        "file":  "Systems/AstralBodies/imported/BG_Stars_Frames/BG_Stars 01 Yellow/BG_Star01_Big_00.png"
+                    },
+                    {
+                        "file":  "Systems/AstralBodies/imported/BG_Stars_Frames/BG_Stars 01 Yellow/BG_Star01_Big_01.png"
+                    },
+                    {
+                        "file":  "Systems/AstralBodies/imported/BG_Stars_Frames/BG_Stars 01 Yellow/BG_Star01_Big_02.png"
+                    },
+                    {
+                        "file":  "Systems/AstralBodies/imported/BG_Stars_Frames/BG_Stars 01 Yellow/BG_Star01_Little_00.png"
+                    },
+                    {
+                        "file":  "Systems/AstralBodies/imported/BG_Stars_Frames/BG_Stars 01 Yellow/BG_Star01_Little_01.png"
+                    },
+                    {
+                        "file":  "Systems/AstralBodies/imported/BG_Stars_Frames/BG_Stars 01 Yellow/BG_Star01_Little_02.png"
+                    },
+                    {
+                        "file":  "Systems/AstralBodies/imported/BG_Stars_Frames/BG_Stars 01 Yellow/BG_Star01_Little_03.png"
+                    },
+                    {
+                        "file":  "Systems/AstralBodies/imported/BG_Stars_Frames/BG_Stars 01 Yellow/BG_Star01_Little_04.png"
+                    },
+                    {
+                        "file":  "Systems/AstralBodies/imported/BG_Stars_Frames/BG_Stars 01 Yellow/BG_Star01_Little_05.png"
+                    },
+                    {
+                        "file":  "Systems/AstralBodies/imported/BG_Stars_Frames/BG_Stars 01 Yellow/BG_Star01_Little_06.png"
+                    },
+                    {
+                        "file":  "Systems/AstralBodies/imported/BG_Stars_Frames/BG_Stars 01 Yellow/BG_Star01_Little_07.png"
+                    },
+                    {
+                        "file":  "Systems/AstralBodies/imported/BG_Stars_Frames/BG_Stars 01 Yellow/BG_Star01_Little_08.png"
+                    },
+                    {
+                        "file":  "Systems/AstralBodies/imported/BG_Stars_Frames/BG_Stars 01 Yellow/BG_Star01_Little_10.png"
+                    },
+                    {
+                        "file":  "Systems/AstralBodies/imported/BG_Stars_Frames/BG_Stars 01 Yellow/BG_Star01_Little_11.png"
+                    },
+                    {
+                        "file":  "Systems/AstralBodies/imported/BG_Stars_Frames/BG_Stars 01 Yellow/BG_Star01_Medium_00.png"
+                    },
+                    {
+                        "file":  "Systems/AstralBodies/imported/BG_Stars_Frames/BG_Stars 01 Yellow/BG_Star01_Medium_01.png"
+                    },
+                    {
+                        "file":  "Systems/AstralBodies/imported/BG_Stars_Frames/BG_Stars 01 Yellow/BG_Star01_Medium_02.png"
+                    },
+                    {
+                        "file":  "Systems/AstralBodies/imported/BG_Stars_Frames/BG_Stars 01 Yellow/BG_Star01_Medium_03.png"
+                    },
+                    {
+                        "file":  "Systems/AstralBodies/imported/BG_Stars_Frames/BG_Stars 01 Yellow/BG_Star01_Medium_04.png"
+                    },
+                    {
+                        "file":  "Systems/AstralBodies/imported/BG_Stars_Frames/BG_Stars 01 Yellow/BG_Star01_Medium_05.png"
+                    },
+                    {
+                        "file":  "Systems/AstralBodies/imported/BG_Stars_Frames/BG_Stars 02 Green/BG_Star02_Big_00.png"
+                    },
+                    {
+                        "file":  "Systems/AstralBodies/imported/BG_Stars_Frames/BG_Stars 02 Green/BG_Star02_Big_01.png"
+                    },
+                    {
+                        "file":  "Systems/AstralBodies/imported/BG_Stars_Frames/BG_Stars 02 Green/BG_Star02_Big_02.png"
+                    },
+                    {
+                        "file":  "Systems/AstralBodies/imported/BG_Stars_Frames/BG_Stars 02 Green/BG_Star02_Little_00.png"
+                    },
+                    {
+                        "file":  "Systems/AstralBodies/imported/BG_Stars_Frames/BG_Stars 02 Green/BG_Star02_Little_01.png"
+                    },
+                    {
+                        "file":  "Systems/AstralBodies/imported/BG_Stars_Frames/BG_Stars 02 Green/BG_Star02_Little_02.png"
+                    },
+                    {
+                        "file":  "Systems/AstralBodies/imported/BG_Stars_Frames/BG_Stars 02 Green/BG_Star02_Little_03.png"
+                    },
+                    {
+                        "file":  "Systems/AstralBodies/imported/BG_Stars_Frames/BG_Stars 02 Green/BG_Star02_Little_04.png"
+                    },
+                    {
+                        "file":  "Systems/AstralBodies/imported/BG_Stars_Frames/BG_Stars 02 Green/BG_Star02_Little_05.png"
+                    },
+                    {
+                        "file":  "Systems/AstralBodies/imported/BG_Stars_Frames/BG_Stars 02 Green/BG_Star02_Little_06.png"
+                    },
+                    {
+                        "file":  "Systems/AstralBodies/imported/BG_Stars_Frames/BG_Stars 02 Green/BG_Star02_Little_07.png"
+                    },
+                    {
+                        "file":  "Systems/AstralBodies/imported/BG_Stars_Frames/BG_Stars 02 Green/BG_Star02_Little_08.png"
+                    },
+                    {
+                        "file":  "Systems/AstralBodies/imported/BG_Stars_Frames/BG_Stars 02 Green/BG_Star02_Little_10.png"
+                    },
+                    {
+                        "file":  "Systems/AstralBodies/imported/BG_Stars_Frames/BG_Stars 02 Green/BG_Star02_Little_11.png"
+                    },
+                    {
+                        "file":  "Systems/AstralBodies/imported/BG_Stars_Frames/BG_Stars 02 Green/BG_Star02_Medium_00.png"
+                    },
+                    {
+                        "file":  "Systems/AstralBodies/imported/BG_Stars_Frames/BG_Stars 02 Green/BG_Star02_Medium_01.png"
+                    },
+                    {
+                        "file":  "Systems/AstralBodies/imported/BG_Stars_Frames/BG_Stars 02 Green/BG_Star02_Medium_02.png"
+                    },
+                    {
+                        "file":  "Systems/AstralBodies/imported/BG_Stars_Frames/BG_Stars 02 Green/BG_Star02_Medium_03.png"
+                    },
+                    {
+                        "file":  "Systems/AstralBodies/imported/BG_Stars_Frames/BG_Stars 02 Green/BG_Star02_Medium_04.png"
+                    },
+                    {
+                        "file":  "Systems/AstralBodies/imported/BG_Stars_Frames/BG_Stars 02 Green/BG_Star02_Medium_05.png"
+                    },
+                    {
+                        "file":  "Systems/AstralBodies/imported/BG_Stars_Frames/BG_Stars 03 Pink-Purple/BG_Star03_Big_00.png"
+                    },
+                    {
+                        "file":  "Systems/AstralBodies/imported/BG_Stars_Frames/BG_Stars 03 Pink-Purple/BG_Star03_Big_01.png"
+                    },
+                    {
+                        "file":  "Systems/AstralBodies/imported/BG_Stars_Frames/BG_Stars 03 Pink-Purple/BG_Star03_Big_02.png"
+                    },
+                    {
+                        "file":  "Systems/AstralBodies/imported/BG_Stars_Frames/BG_Stars 03 Pink-Purple/BG_Star03_Little_00.png"
+                    },
+                    {
+                        "file":  "Systems/AstralBodies/imported/BG_Stars_Frames/BG_Stars 03 Pink-Purple/BG_Star03_Little_01.png"
+                    },
+                    {
+                        "file":  "Systems/AstralBodies/imported/BG_Stars_Frames/BG_Stars 03 Pink-Purple/BG_Star03_Little_02.png"
+                    },
+                    {
+                        "file":  "Systems/AstralBodies/imported/BG_Stars_Frames/BG_Stars 03 Pink-Purple/BG_Star03_Little_03.png"
+                    },
+                    {
+                        "file":  "Systems/AstralBodies/imported/BG_Stars_Frames/BG_Stars 03 Pink-Purple/BG_Star03_Little_04.png"
+                    },
+                    {
+                        "file":  "Systems/AstralBodies/imported/BG_Stars_Frames/BG_Stars 03 Pink-Purple/BG_Star03_Little_05.png"
+                    },
+                    {
+                        "file":  "Systems/AstralBodies/imported/BG_Stars_Frames/BG_Stars 03 Pink-Purple/BG_Star03_Little_06.png"
+                    },
+                    {
+                        "file":  "Systems/AstralBodies/imported/BG_Stars_Frames/BG_Stars 03 Pink-Purple/BG_Star03_Little_07.png"
+                    },
+                    {
+                        "file":  "Systems/AstralBodies/imported/BG_Stars_Frames/BG_Stars 03 Pink-Purple/BG_Star03_Little_08.png"
+                    },
+                    {
+                        "file":  "Systems/AstralBodies/imported/BG_Stars_Frames/BG_Stars 03 Pink-Purple/BG_Star03_Little_10.png"
+                    },
+                    {
+                        "file":  "Systems/AstralBodies/imported/BG_Stars_Frames/BG_Stars 03 Pink-Purple/BG_Star03_Little_11.png"
+                    },
+                    {
+                        "file":  "Systems/AstralBodies/imported/BG_Stars_Frames/BG_Stars 03 Pink-Purple/BG_Star03_Medium_00.png"
+                    },
+                    {
+                        "file":  "Systems/AstralBodies/imported/BG_Stars_Frames/BG_Stars 03 Pink-Purple/BG_Star03_Medium_01.png"
+                    },
+                    {
+                        "file":  "Systems/AstralBodies/imported/BG_Stars_Frames/BG_Stars 03 Pink-Purple/BG_Star03_Medium_02.png"
+                    },
+                    {
+                        "file":  "Systems/AstralBodies/imported/BG_Stars_Frames/BG_Stars 03 Pink-Purple/BG_Star03_Medium_03.png"
+                    },
+                    {
+                        "file":  "Systems/AstralBodies/imported/BG_Stars_Frames/BG_Stars 03 Pink-Purple/BG_Star03_Medium_04.png"
+                    },
+                    {
+                        "file":  "Systems/AstralBodies/imported/BG_Stars_Frames/BG_Stars 03 Pink-Purple/BG_Star03_Medium_05.png"
+                    },
+                    {
+                        "file":  "Systems/AstralBodies/imported/BG_Stars_Frames/BG_Stars 04 Orange-Purple/BG_Star04_Little_00.png"
+                    },
+                    {
+                        "file":  "Systems/AstralBodies/imported/BG_Stars_Frames/BG_Stars 04 Orange-Purple/BG_Star04_Little_01.png"
+                    },
+                    {
+                        "file":  "Systems/AstralBodies/imported/BG_Stars_Frames/BG_Stars 04 Orange-Purple/BG_Star04_Little_02.png"
+                    },
+                    {
+                        "file":  "Systems/AstralBodies/imported/BG_Stars_Frames/BG_Stars 04 Orange-Purple/BG_Star04_Little_03.png"
+                    },
+                    {
+                        "file":  "Systems/AstralBodies/imported/BG_Stars_Frames/BG_Stars 04 Orange-Purple/BG_Star04_Little_04.png"
+                    },
+                    {
+                        "file":  "Systems/AstralBodies/imported/BG_Stars_Frames/BG_Stars 04 Orange-Purple/BG_Star04_Little_05.png"
+                    },
+                    {
+                        "file":  "Systems/AstralBodies/imported/BG_Stars_Frames/BG_Stars 04 Orange-Purple/BG_Star04_Little_06.png"
+                    },
+                    {
+                        "file":  "Systems/AstralBodies/imported/BG_Stars_Frames/BG_Stars 04 Orange-Purple/BG_Star04_Little_07.png"
+                    },
+                    {
+                        "file":  "Systems/AstralBodies/imported/BG_Stars_Frames/BG_Stars 04 Orange-Purple/BG_Star04_Little_08.png"
+                    },
+                    {
+                        "file":  "Systems/AstralBodies/imported/BG_Stars_Frames/BG_Stars 04 Orange-Purple/BG_Star04_Little_10.png"
+                    },
+                    {
+                        "file":  "Systems/AstralBodies/imported/BG_Stars_Frames/BG_Stars 04 Orange-Purple/BG_Star04_Little_11.png"
+                    },
+                    {
+                        "file":  "Systems/AstralBodies/imported/BG_Stars_Frames/BG_Stars 04 Orange-Purple/BG_Star04_Medium_00.png"
+                    },
+                    {
+                        "file":  "Systems/AstralBodies/imported/BG_Stars_Frames/BG_Stars 04 Orange-Purple/BG_Star04_Medium_01.png"
+                    },
+                    {
+                        "file":  "Systems/AstralBodies/imported/BG_Stars_Frames/BG_Stars 04 Orange-Purple/BG_Star04_Medium_02.png"
+                    },
+                    {
+                        "file":  "Systems/AstralBodies/imported/BG_Stars_Frames/BG_Stars 04 Orange-Purple/BG_Star04_Medium_03.png"
+                    },
+                    {
+                        "file":  "Systems/AstralBodies/imported/BG_Stars_Frames/BG_Stars 04 Orange-Purple/BG_Star04_Medium_04.png"
+                    },
+                    {
+                        "file":  "Systems/AstralBodies/imported/BG_Stars_Frames/BG_Stars 04 Orange-Purple/BG_Star04_Medium_05.png"
+                    },
+                    {
+                        "file":  "Systems/AstralBodies/imported/BG_Stars_Frames/BG_Stars 04 Orange-Purple/BG_Star05_Big_00.png"
+                    },
+                    {
+                        "file":  "Systems/AstralBodies/imported/BG_Stars_Frames/BG_Stars 04 Orange-Purple/BG_Star05_Big_01.png"
+                    },
+                    {
+                        "file":  "Systems/AstralBodies/imported/BG_Stars_Frames/BG_Stars 04 Orange-Purple/BG_Star05_Big_02.png"
+                    },
+                    {
+                        "file":  "Systems/AstralBodies/imported/BG_Stars_Frames/BG_Stars_All_Spritesheets/BG_Stars_Big_11px_15x1.png"
+                    },
+                    {
+                        "file":  "Systems/AstralBodies/imported/BG_Stars_Frames/BG_Stars_All_Spritesheets/BG_Stars_Little2_4px_10x1.png"
+                    },
+                    {
+                        "file":  "Systems/AstralBodies/imported/BG_Stars_Frames/BG_Stars_All_Spritesheets/BG_Stars_Little_5px_45x1.png"
+                    },
+                    {
+                        "file":  "Systems/AstralBodies/imported/BG_Stars_Frames/BG_Stars_All_Spritesheets/BG_Stars_Medium_9px_30x1.png"
+                    },
+                    {
+                        "file":  "Systems/AstralBodies/imported/FX_BlackHole/FX_BlackHole_Big_Red_7x8.png"
+                    },
+                    {
+                        "file":  "Systems/AstralBodies/imported/FX_BlackHole/FX_BlackHole_Little_Blue_7x8.png"
+                    },
+                    {
+                        "file":  "Systems/AstralBodies/imported/FX_BlackHole/FX_BlackHole_Little_Orange_7x8.png"
+                    },
+                    {
+                        "file":  "Systems/AstralBodies/imported/FX_BlackHole/FX_BlackHole_Little_Yellow_7x8.png"
+                    },
+                    {
+                        "file":  "Systems/AstralBodies/imported/FX_BlackHole/FX_BlackHole_Medium_OrangePink_7x8.png"
+                    },
+                    {
+                        "file":  "Systems/AstralBodies/imported/FX_BlackHole/FX_BlackHole_Medium_Pink_7x8.png"
+                    },
+                    {
+                        "file":  "Systems/AstralBodies/imported/FX_BlackHole/FX_BlackHole_Medium_Yellow_7x8.png"
+                    },
+                    {
+                        "file":  "Systems/AstralBodies/imported/FX_BlackHole/FX_BlackHole_NoAlpha2_Medium_Blue_7x8.png"
+                    },
+                    {
+                        "file":  "Systems/AstralBodies/imported/FX_BlackHole/FX_BlackHole_NoAlpha_Medium_Pink_7x8.png"
+                    },
+                    {
+                        "file":  "Systems/AstralBodies/imported/FX_BlackHole/FX_BlackHole_NoAlpha_Medium_Yellow_7x8.png"
+                    },
+                    {
+                        "file":  "Systems/AstralBodies/imported/FX_Celestial (Other Astrologic Bodies)/FX_Celestial01_5x4.png"
+                    },
+                    {
+                        "file":  "Systems/AstralBodies/imported/FX_Celestial (Other Astrologic Bodies)/FX_Celestial02_6x5.png"
+                    },
+                    {
+                        "file":  "Systems/AstralBodies/imported/FX_Celestial (Other Astrologic Bodies)/FX_Celestial03_Spiral_6x5.png"
+                    },
+                    {
+                        "file":  "Systems/AstralBodies/imported/FX_Celestial (Other Astrologic Bodies)/FX_Celestial04_15x1.png"
+                    },
+                    {
+                        "file":  "Systems/AstralBodies/imported/FX_Celestial (Other Astrologic Bodies)/FX_Celestial05_ProtoplanetaryDisk_15x1.png"
+                    },
+                    {
+                        "file":  "Systems/AstralBodies/imported/FX_Celestial (Other Astrologic Bodies)/FX_Celestial06_15x1.png"
+                    },
+                    {
+                        "file":  "Systems/AstralBodies/imported/FX_Celestial (Other Astrologic Bodies)/FX_Celestial07_15x1.png"
+                    },
+                    {
+                        "file":  "Systems/AstralBodies/imported/FX_Celestial (Other Astrologic Bodies)/FX_Celestial08_20x1.png"
+                    },
+                    {
+                        "file":  "Systems/AstralBodies/imported/FX_Celestial (Other Astrologic Bodies)/FX_Celestial09_15x1.png"
+                    },
+                    {
+                        "file":  "Systems/AstralBodies/imported/FX_Celestial (Other Astrologic Bodies)/FX_Celestial10_Neutrons_15x1.png"
+                    },
+                    {
+                        "file":  "Systems/AstralBodies/imported/FX_Celestial (Other Astrologic Bodies)/FX_Celestial11_5x4.png"
+                    },
+                    {
+                        "file":  "Systems/AstralBodies/imported/FX_Celestial (Other Astrologic Bodies)/FX_Celestial12_Neutrons_15x1.png"
+                    },
+                    {
+                        "file":  "Systems/AstralBodies/imported/FX_Eclipse/FX_Eclipse01_20x1.png"
+                    },
+                    {
+                        "file":  "Systems/AstralBodies/imported/FX_Eclipse/FX_Eclipse02_20x1.png"
+                    },
+                    {
+                        "file":  "Systems/AstralBodies/imported/FX_Eclipse/FX_Eclipse03_15x1.png"
+                    },
+                    {
+                        "file":  "Systems/AstralBodies/imported/FX_Galaxy/FX_Galaxy_Little_Purple19x1.png"
+                    },
+                    {
+                        "file":  "Systems/AstralBodies/imported/FX_Galaxy/FX_Galaxy_Little_Turquoise_19x1.png"
+                    },
+                    {
+                        "file":  "Systems/AstralBodies/imported/FX_Galaxy/FX_Galaxy_Medium_Pink_19x1.png"
+                    },
+                    {
+                        "file":  "Systems/AstralBodies/imported/FX_Galaxy/Planet_Galaxy_Big_Purple_Smooth_10x8.png"
+                    },
+                    {
+                        "file":  "Systems/AstralBodies/imported/FX_Meteorite/FX_Meteorite_Blue_10x6.png"
+                    },
+                    {
+                        "file":  "Systems/AstralBodies/imported/FX_Meteorite/FX_Meteorite_Green_10x6.png"
+                    },
+                    {
+                        "file":  "Systems/AstralBodies/imported/FX_Meteorite/FX_Meteorite_Orange_10x6.png"
+                    },
+                    {
+                        "file":  "Systems/AstralBodies/imported/FX_Meteorite/FX_Meteorite_Purple_10x6.png"
+                    },
+                    {
+                        "file":  "Systems/AstralBodies/imported/FX_ShootingStar/FX_ShootingStar_Big_Blue_6x4.png"
+                    },
+                    {
+                        "file":  "Systems/AstralBodies/imported/FX_ShootingStar/FX_ShootingStar_Big_Green_6x4.png"
+                    },
+                    {
+                        "file":  "Systems/AstralBodies/imported/FX_ShootingStar/FX_ShootingStar_Big_Orange_6x4.png"
+                    },
+                    {
+                        "file":  "Systems/AstralBodies/imported/FX_ShootingStar/FX_ShootingStar_Big_Pink_6x4.png"
+                    },
+                    {
+                        "file":  "Systems/AstralBodies/imported/FX_ShootingStar/FX_ShootingStar_Big_Yellow_6x4.png"
+                    },
+                    {
+                        "file":  "Systems/AstralBodies/imported/FX_ShootingStar/FX_ShootingStar_Mini_Blue_7x4.png"
+                    },
+                    {
+                        "file":  "Systems/AstralBodies/imported/FX_ShootingStar/FX_ShootingStar_Mini_Green_7x4.png"
+                    },
+                    {
+                        "file":  "Systems/AstralBodies/imported/FX_ShootingStar/FX_ShootingStar_Mini_Orange_7x4.png"
+                    },
+                    {
+                        "file":  "Systems/AstralBodies/imported/FX_ShootingStar/FX_ShootingStar_Mini_Pink_7x4.png"
+                    },
+                    {
+                        "file":  "Systems/AstralBodies/imported/FX_ShootingStar/FX_ShootingStar_Mini_Yellow_7x4.png"
+                    },
+                    {
+                        "file":  "Systems/AstralBodies/imported/FX_StarGlowing_Mini/FX_StarGlowing01_Mini_Orange_20x1.png"
+                    },
+                    {
+                        "file":  "Systems/AstralBodies/imported/FX_StarGlowing_Mini/FX_StarGlowing02_Mini_Green_20x1.png"
+                    },
+                    {
+                        "file":  "Systems/AstralBodies/imported/FX_StarGlowing_Mini/FX_StarGlowing03_Mini_Blue_20x1.png"
+                    },
+                    {
+                        "file":  "Systems/AstralBodies/imported/FX_StarGlowing_Mini/FX_StarGlowing04_Mini_Purple_20x1.png"
+                    },
+                    {
+                        "file":  "Systems/AstralBodies/imported/FX_StarGlowing_Mini/FX_StarGlowing05_Mini_Multicolor_20x1.png"
+                    },
+                    {
+                        "file":  "Systems/AstralBodies/imported/FX_StarShine/FX_StarShine_Big_Blue_13x1.png"
+                    },
+                    {
+                        "file":  "Systems/AstralBodies/imported/FX_StarShine/FX_StarShine_Big_Green_13x1.png"
+                    },
+                    {
+                        "file":  "Systems/AstralBodies/imported/FX_StarShine/FX_StarShine_Big_Orange_13x1.png"
+                    },
+                    {
+                        "file":  "Systems/AstralBodies/imported/FX_StarShine/FX_StarShine_Big_Pink_13x1.png"
+                    },
+                    {
+                        "file":  "Systems/AstralBodies/imported/FX_StarShine/FX_StarShine_Mini_Blue_13x1.png"
+                    },
+                    {
+                        "file":  "Systems/AstralBodies/imported/FX_StarShine/FX_StarShine_Mini_Green_13x1.png"
+                    },
+                    {
+                        "file":  "Systems/AstralBodies/imported/FX_StarShine/FX_StarShine_Mini_Orange_13x1.png"
+                    },
+                    {
+                        "file":  "Systems/AstralBodies/imported/FX_StarShine/FX_StarShine_Mini_Pink_13x1.png"
+                    },
+                    {
+                        "file":  "Systems/AstralBodies/imported/Other FX/FX_Radiation_StylizedCircleLines_9x1.png"
+                    },
+                    {
+                        "file":  "Systems/AstralBodies/imported/Scrolling_Space_Background/BG_Color.png"
+                    },
+                    {
+                        "file":  "Systems/AstralBodies/imported/Scrolling_Space_Background/TiledBG_ScrollingSpace_Left_01.png"
+                    },
+                    {
+                        "file":  "Systems/AstralBodies/imported/Scrolling_Space_Background/TiledBG_ScrollingSpace_Left_02.png"
+                    },
+                    {
+                        "file":  "Systems/AstralBodies/imported/Scrolling_Space_Background/TiledBG_ScrollingSpace_Left_03.png"
+                    },
+                    {
+                        "file":  "Systems/AstralBodies/imported/Scrolling_Space_Background/TiledBG_ScrollingSpace_Left_04.png"
+                    },
+                    {
+                        "file":  "Systems/AstralBodies/imported/Scrolling_Space_Background/TiledBG_ScrollingSpace_Right_01.png"
+                    },
+                    {
+                        "file":  "Systems/AstralBodies/imported/Scrolling_Space_Background/TiledBG_ScrollingSpace_Right_02.png"
+                    },
+                    {
+                        "file":  "Systems/AstralBodies/imported/Scrolling_Space_Background/TiledBG_ScrollingSpace_Right_03.png"
+                    },
+                    {
+                        "file":  "Systems/AstralBodies/imported/Scrolling_Space_Background/TiledBG_ScrollingSpace_Right_04.png"
+                    }
+                ]
+}

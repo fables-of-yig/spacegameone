@@ -1,0 +1,19 @@
+[remap]
+
+importer="oggvorbisstr"
+type="AudioStreamOggVorbis"
+uid="uid://bw0nwjwaepuya"
+path="res://.godot/imported/moonlight.ogg-c08c41b16efb37558adf20e560cd891d.oggvorbisstr"
+
+[deps]
+
+source_file="res://Content/demo/Audio/Music/imported/Warped Music/Warped Music/ACTION PACK 2 OGG/moonlight.ogg"
+dest_files=["res://.godot/imported/moonlight.ogg-c08c41b16efb37558adf20e560cd891d.oggvorbisstr"]
+
+[params]
+
+loop=false
+loop_offset=0
+bpm=0
+beat_count=0
+bar_beats=4

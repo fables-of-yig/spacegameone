@@ -1,0 +1,878 @@
+class_name MvMain
+extends Node2D
+
+signal camera_focus_finished
+
+const RegIO = preload("res://Space/scripts/editor/reg/reg_io.gd")
+const OVERWORLD_BLOCK_SIZE: float = 16.0
+
+# Top-level game orchestrator for the MVMania planet layer. Ported from the
+# C# Main with a heavy trim: flow scripts, effects, cutscenes, entity
+# spawning, trigger engine, dialogue runner, HUD, boss HUD, editor overlay,
+# and save/load are all deferred to the post-port rebuild. What's left is
+# the core loop the user actually wants preserved:
+#
+#   1. Load the content pack in _enter_tree (so RoomManager._ready can read it)
+#   2. Spawn the player at the first floor column of the start room
+#   3. Tick the camera follow + initial fade-in
+#   4. Run 3-phase door transitions (fade out → load room → fade in)
+#   5. Hand control back to SSB when the player walks through an
+#      "exit_to_space" tagged door
+#
+# The scene root (res://MV/scenes/main.tscn) expects these children:
+#   RoomLayer (MvRoomManager), PlayerLayer, ForegroundLayer, Camera2D, FadeRect.
+
+var _room_manager: MvRoomManager = null
+var _camera: Camera2D = null
+var _player: MvPlayer = null
+var _fade_rect: ColorRect = null
+var _trigger_debug_overlay: CanvasLayer = null
+
+# Runtime viewport — the C# code swapped this between game (480x270) and
+# editor (1280x720) sizes when the editor opened. Editor's deferred, so we
+# only need the game size; keep the constant so a future re-add is trivial.
+const GAME_VIEWPORT: Vector2i = Vector2i(480, 270)
+
+var _transitioning: bool = false
+var _fade: float = 1.0
+var _fade_frame: int = 0
+var _transition_phase: int = 0   # 0=idle, 1=fade-out, 2=load, 3=fade-in
+var _transition_frame: int = 0
+var _pending_door: Dictionary = {}
+var _pending_direction: String = ""
+var _camera_focus_mode: String = ""
+var _camera_focus_target: String = ""
+var _camera_focus_pos: Vector2 = Vector2.ZERO
+var _camera_pan_active: bool = false
+var _camera_pan_tween: Tween = null
+const FADE_OUT_FRAMES: int = 12
+const FADE_IN_FRAMES: int = 18
+
+
+func _enter_tree() -> void:
+    MvGame.main = self
+
+    # Load the content pack BEFORE any child _ready runs. MvRoomManager
+    # reads MvPackLoader.current_pack in its own _ready, so this has to
+    # fire first. _enter_tree is top-down (parent before children), _ready
+    # is bottom-up (children before parent) — so loading the pack here
+    # puts it in place for every downstream _ready.
+    #
+    # pending_pack_id is set by PlanetaryInterface.begin_landing from the
+    # SSB layer when the player interacts with a planet POI. Falls back
+    # to "demo" for standalone runs and dev.
+    var pack_id: String = PlanetaryInterface.pending_pack_id
+    if pack_id.is_empty():
+        pack_id = "demo"
+    var pack: MvPackRef = MvPackLoader.load_pack(pack_id)
+    if pack == null:
+        push_error("MvMain: failed to load '%s' pack in _enter_tree" % pack_id)
+
+
+func _exit_tree() -> void:
+    if MvGame.main == self:
+        MvGame.main = null
+    if MvGame.room_manager == _room_manager:
+        MvGame.room_manager = null
+
+
+func _ready() -> void:
+    MvGame.simulation_paused = false
+
+    # Only claim the root viewport when running standalone. When hosted
+    # inside SSB's planet SubViewport, the parent project owns the root
+    # viewport at 1920x1080 and the planet runs at 480x270 via the
+    # container's stretch_shrink.
+    if not PlanetaryInterface.hosted:
+        get_tree().root.content_scale_size = GAME_VIEWPORT
+
+    _room_manager = $RoomLayer as MvRoomManager
+    _camera = $Camera2D
+    _fade_rect = $FadeLayer/FadeRect
+    # FadeRect is a fullscreen ColorRect in a CanvasLayer. Its default MouseFilter is STOP,
+    # so its bounds would eat mouse events even when fully transparent.
+    # The fade is purely visual; let input pass straight through.
+    _fade_rect.mouse_filter = Control.MOUSE_FILTER_IGNORE
+    _layout_fade_rect()
+    if not get_viewport().size_changed.is_connected(_on_viewport_size_changed):
+        get_viewport().size_changed.connect(_on_viewport_size_changed)
+    _ensure_trigger_debug_overlay()
+
+    MvGame.room_manager = _room_manager
+
+    # Hand the RoomManager the ForegroundLayer so Layer1 hi-priority tiles
+    # render in front of the player (PlayerLayer is earlier in the tree).
+    var fg_layer: Node2D = get_node_or_null("ForegroundLayer") as Node2D
+    if fg_layer != null:
+        _room_manager.attach_foreground_layer(fg_layer)
+
+    # Spawn the player.
+    var player_scene: PackedScene = load("res://MV/scenes/player.tscn")
+    _player = player_scene.instantiate() as MvPlayer
+    ($PlayerLayer as Node).add_child(_player)
+    _player.entered_door.connect(_on_player_door)
+    _player.player_died.connect(_on_player_died)
+
+    # Apply ManiaVar stat effects to the player's physics profile before
+    # the first room loads, so gravity/jump/speed reflect stat levels.
+    if MvPackLoader.current_pack != null and MvPackLoader.current_pack.physics != null:
+        StatsApplier.apply(_player, MvPackLoader.current_pack.physics)
+
+    # Region props (music, gravity_mult, encounter hook) land here via
+    # PlanetaryInterface when Space staged a landing. Cleared on consume.
+    _apply_pending_region_meta()
+
+    # Load the start room (no flow engine — MvRoomManager carries the
+    # pack's start_room address directly).
+    _room_manager.load_start_room()
+    _spawn_player_in_room()
+    _setup_camera()
+
+    var pack_id := MvPackLoader.current_pack.pack_id if MvPackLoader.current_pack != null else "demo"
+    MvTriggerEngine.load_triggers(pack_id)
+    if not MvTriggerEngine.action_spawn_entity.is_connected(_on_trigger_spawn_entity):
+        MvTriggerEngine.action_spawn_entity.connect(_on_trigger_spawn_entity)
+    if not MvTriggerEngine.action_despawn_entity.is_connected(_on_trigger_despawn_entity):
+        MvTriggerEngine.action_despawn_entity.connect(_on_trigger_despawn_entity)
+    if not MvTriggerEngine.action_spawn_entity_at_zone.is_connected(_on_trigger_spawn_entity_at_zone):
+        MvTriggerEngine.action_spawn_entity_at_zone.connect(_on_trigger_spawn_entity_at_zone)
+    if not MvTriggerEngine.action_move_entity_to_zone.is_connected(_on_trigger_move_entity_to_zone):
+        MvTriggerEngine.action_move_entity_to_zone.connect(_on_trigger_move_entity_to_zone)
+    if not MvTriggerEngine.action_play_entity_anim.is_connected(_on_trigger_play_entity_anim):
+        MvTriggerEngine.action_play_entity_anim.connect(_on_trigger_play_entity_anim)
+    if not MvTriggerEngine.action_set_entity_facing.is_connected(_on_trigger_set_entity_facing):
+        MvTriggerEngine.action_set_entity_facing.connect(_on_trigger_set_entity_facing)
+    if not MvTriggerEngine.action_camera_focus.is_connected(_on_trigger_camera_focus):
+        MvTriggerEngine.action_camera_focus.connect(_on_trigger_camera_focus)
+    if not MvTriggerEngine.action_camera_unlock.is_connected(_on_trigger_camera_unlock):
+        MvTriggerEngine.action_camera_unlock.connect(_on_trigger_camera_unlock)
+    _fade = 1.0
+    _fade_frame = 0
+
+    print("MVMania — pack loaded, game state online")
+
+    # After the initial room load + player spawn, hand control to the
+    # PlanetaryInterface so it can rehydrate any pending per-planet
+    # snapshot (player position, hp). No-op on fresh boots and first visits.
+    PlanetaryInterface.restore_pending_if_any(self)
+
+    # Editor playtest handoff: if the env editor staged a spawn room/pos
+    # via begin_landing, load that instead of start_room. This runs AFTER
+    # restore_pending_if_any so it wins over any stale per-planet snapshot.
+    if not PlanetaryInterface.pending_spawn_room.is_empty():
+        var target_room: String = PlanetaryInterface.pending_spawn_room
+        var target_pos: Vector2 = PlanetaryInterface.pending_spawn_pos
+        PlanetaryInterface.pending_spawn_room = ""
+        PlanetaryInterface.pending_spawn_pos = Vector2.ZERO
+        load_from_snapshot(target_room, target_pos, -1)
+
+    var boot_room_addr: String = _room_manager.current_room_addr() if _room_manager != null else ""
+    MvTriggerEngine.fire_event("player_spawn", { "room": boot_room_addr })
+    MvTriggerEngine.fire_event("game_started", { "room": boot_room_addr })
+
+
+func _input(event: InputEvent) -> void:
+    # Ctrl+9 — return to the environment editor. Only fires when
+    # pending_return_to_editor is set (i.e. we entered MV via the editor's
+    # playtest handoff). Scene-changes back to Space; Space main._ready
+    # notices the flag and re-opens environment_editor at the stashed
+    # pack/region/room.
+    if event is InputEventKey and event.pressed and not event.echo:
+        var ke: InputEventKey = event
+        if ke.keycode == KEY_9 and ke.ctrl_pressed and not ke.shift_pressed and not ke.alt_pressed:
+            if PlanetaryInterface.pending_return_to_editor:
+                get_viewport().set_input_as_handled()
+                get_tree().change_scene_to_file.call_deferred("res://Space/scenes/main.tscn")
+
+
+func _physics_process(_delta: float) -> void:
+    if _player == null:
+        return
+
+    # Camera follow is gated behind !simulation_paused so a future editor
+    # overlay can drive its own pan/zoom without Main re-snapping the
+    # camera to the player every physics tick.
+    if not MvGame.simulation_paused and not _camera_pan_active:
+        _camera.position = _resolve_camera_focus_position()
+        _camera.offset = Vector2.ZERO
+
+    # Initial room fade-in (black → clear over 30 frames).
+    if _fade > 0.0 and _transition_phase == 0:
+        _fade_frame += 1
+        _fade = 1.0 - float(_fade_frame) / 30.0
+        if _fade < 0.0:
+            _fade = 0.0
+        _fade_rect.color = Color(0.0, 0.0, 0.0, _fade)
+
+    _tick_door_transition()
+
+
+func _on_viewport_size_changed() -> void:
+    _layout_fade_rect()
+
+
+func _layout_fade_rect() -> void:
+    if _fade_rect == null:
+        return
+    var rect := get_viewport().get_visible_rect()
+    _fade_rect.position = rect.position
+    _fade_rect.size = rect.size
+
+
+func _ensure_trigger_debug_overlay() -> void:
+    if _trigger_debug_overlay != null:
+        return
+    _trigger_debug_overlay = CanvasLayer.new()
+    _trigger_debug_overlay.set_script(preload("res://MV/scripts/trigger_debug_overlay.gd"))
+    add_child(_trigger_debug_overlay)
+
+
+# ===== Region meta =====
+
+func _apply_pending_region_meta() -> void:
+    var meta: Dictionary = PlanetaryInterface.pending_region_meta
+    var region_id: String = PlanetaryInterface.pending_region_id
+    PlanetaryInterface.pending_region_id = ""
+    PlanetaryInterface.pending_region_meta = {}
+    if meta.is_empty():
+        return
+
+    var music_id: String = str(meta.get("music_id", ""))
+    if music_id != "":
+        var am: Node = get_node_or_null("/root/AudioManager")
+        if am != null and am.has_method("set_ambient"):
+            am.set_ambient(music_id)
+
+    var gravity_mult: float = float(meta.get("gravity_mult", 1.0))
+    if absf(gravity_mult - 1.0) > 0.0001:
+        var pack: MvPackRef = MvPackLoader.current_pack
+        if pack != null and pack.physics != null:
+            pack.physics.gravity *= gravity_mult
+            if _player != null and _player.has_method("set_physics_profile"):
+                _player.set_physics_profile(pack.physics)
+
+    MvTriggerEngine.fire_event("region_enter", {
+        "region_id": region_id,
+        "music_id": music_id,
+        "encounter_id": str(meta.get("encounter_id", "")),
+        "visual_theme": str(meta.get("visual_theme", "")),
+        "hazard_type": str(meta.get("hazard_type", "")),
+        "gravity_mult": gravity_mult,
+    })
+
+
+# ===== Player spawn =====
+
+func _spawn_player_in_room() -> void:
+    var room: Dictionary = _room_manager.current_room()
+    if room.is_empty() or (room["collision"] as Array).size() == 0:
+        return
+
+    var spawn_pos := _find_player_spawn_in_room(room)
+    if spawn_pos.x >= 0.0 and spawn_pos.y >= 0.0:
+        _player.spawn_at(spawn_pos)
+        return
+
+    var collision: Array = room["collision"]
+    var rows: int = collision.size()
+    var cols: int = (collision[0] as Array).size()
+
+    for r in range(1, rows):
+        for c in range(cols):
+            if _is_floor_at(int(collision[r][c])) and not _is_floor_at(int(collision[r - 1][c])):
+                var x := float(c * 16 + 8)
+                var y := float(r * 16)
+                _player.spawn_at(Vector2(x, y))
+                return
+
+    var wpx: int = int(room["width_px"])
+    var hpx: int = int(room["height_px"])
+    _player.spawn_at(Vector2(wpx / 2.0, hpx / 2.0))
+
+
+func _find_player_spawn_in_room(room: Dictionary) -> Vector2:
+    var entities_v: Variant = room.get("entities", [])
+    if typeof(entities_v) != TYPE_ARRAY:
+        return Vector2(-1, -1)
+    for entity_v in entities_v:
+        if typeof(entity_v) != TYPE_DICTIONARY:
+            continue
+        var entity: Dictionary = entity_v
+        if str(entity.get("type", "")).strip_edges() != "player_spawn":
+            continue
+        if entity.has("x") and entity.has("y"):
+            return Vector2(float(entity.get("x", -1.0)), float(entity.get("y", -1.0)))
+        var pos_v: Variant = entity.get("position", null)
+        if pos_v is Vector2:
+            return pos_v
+        if typeof(pos_v) == TYPE_DICTIONARY:
+            return Vector2(float(pos_v.get("x", -1.0)), float(pos_v.get("y", -1.0)))
+        if typeof(pos_v) == TYPE_ARRAY:
+            var pos_arr: Array = pos_v
+            if pos_arr.size() >= 2:
+                return Vector2(float(pos_arr[0]), float(pos_arr[1]))
+    return Vector2(-1, -1)
+
+
+func _setup_camera() -> void:
+    refresh_camera_limits()
+
+
+# Reset Camera2D limits to the current room's pixel bounds. Public so a
+# future editor can call it after closing.
+func refresh_camera_limits() -> void:
+    var room: Dictionary = _room_manager.current_room()
+    if _camera == null or room.is_empty():
+        return
+    _camera.limit_left = 0
+    _camera.limit_top = 0
+    _camera.limit_right = int(room["width_px"])
+    _camera.limit_bottom = int(room["height_px"])
+
+
+func _resolve_camera_focus_position() -> Vector2:
+    if _camera_focus_mode.is_empty() or _camera_focus_mode == "player":
+        return _player.position if _player != null else Vector2.ZERO
+    if _camera_focus_mode == "position":
+        return _camera_focus_pos
+    if _camera_focus_mode == "entity" and _room_manager != null:
+        var node := _room_manager.find_entity_node(_camera_focus_target)
+        if node != null:
+            return node.position
+    elif _camera_focus_mode == "zone" and _room_manager != null:
+        var pos := _room_manager.resolve_zone_position(_camera_focus_target)
+        if pos.x >= 0.0 and pos.y >= 0.0:
+            return pos
+    return _player.position if _player != null else Vector2.ZERO
+
+
+func _stop_camera_pan() -> void:
+    _camera_pan_active = false
+    if _camera_pan_tween != null:
+        _camera_pan_tween.kill()
+        _camera_pan_tween = null
+
+
+func _set_camera_focus(mode: String, target_ref: String = "", pos: Vector2 = Vector2.ZERO, duration: float = 0.0) -> void:
+    _camera_focus_mode = mode
+    _camera_focus_target = target_ref.strip_edges()
+    _camera_focus_pos = pos
+    var target_pos := _resolve_camera_focus_position()
+    _stop_camera_pan()
+    if _camera == null:
+        return
+    if duration <= 0.0:
+        _camera.position = target_pos
+        _camera.offset = Vector2.ZERO
+        camera_focus_finished.emit()
+        return
+    _camera_pan_active = true
+    _camera_pan_tween = create_tween()
+    _camera_pan_tween.tween_property(_camera, "position", target_pos, duration)
+    _camera_pan_tween.finished.connect(_on_camera_pan_finished)
+
+
+func _on_camera_pan_finished() -> void:
+    _camera_pan_active = false
+    _camera_pan_tween = null
+    if _camera != null:
+        _camera.position = _resolve_camera_focus_position()
+        _camera.offset = Vector2.ZERO
+    camera_focus_finished.emit()
+
+
+# ===== External control =====
+
+# Trigger-action target: move the player to a new world position (and
+# optionally a different room). Used by teleport_player trigger actions
+# and by future cutscenes / scripted sequences.
+func teleport_player(pos: Vector2, room_addr: String = "") -> void:
+    if not room_addr.is_empty() and room_addr != _room_manager.current_room_addr():
+        _room_manager.load_room(room_addr)
+        _setup_camera()
+    if _player != null:
+        _player.spawn_at(pos)
+
+
+# Hot-swap the player's physics profile. Used by a set_physics trigger.
+func set_player_physics_profile(profile: MvPhysicsProfile) -> void:
+    if _player != null:
+        _player.set_physics_profile(profile)
+
+
+# Public wrapper so a future editor can switch the runtime to a freshly-
+# created room after ReloadRooms has picked up the new entry.
+func load_room_by_addr(addr: String) -> void:
+    _room_manager.load_room(addr)
+    _setup_camera()
+    _spawn_player_in_room()
+
+
+# Dev hotkey entry point for the SSB F9 force-launch: bounce out of the
+# planet without going through a door.
+func debug_force_launch_from_here() -> void:
+    PlanetaryInterface.begin_launch(self)
+
+
+func request_return_to_overworld(region_id: String = "", spawn_pos: Vector2 = Vector2(-1, -1)) -> void:
+    var pack_id: String = PlanetaryInterface.pending_pack_id.strip_edges()
+    if pack_id.is_empty() and MvPackLoader.current_pack != null:
+        pack_id = MvPackLoader.current_pack.pack_id
+    if pack_id.is_empty():
+        push_error("MvMain: request_return_to_overworld with no active pack")
+        return
+
+    var realm_id: String = _resolve_current_realm_id()
+    if realm_id.is_empty():
+        push_error("MvMain: request_return_to_overworld with no active realm")
+        return
+
+    var target_spawn: Vector2 = spawn_pos
+    if target_spawn.x < 0.0 or target_spawn.y < 0.0:
+        var target_region_id: String = region_id.strip_edges()
+        if target_region_id.is_empty():
+            target_region_id = _resolve_current_region_id()
+        target_spawn = _resolve_overworld_spawn_for_region(pack_id, realm_id, target_region_id)
+
+    PlanetaryInterface.request_return_to_overworld(pack_id, realm_id, target_spawn)
+
+
+# ===== Snapshot helpers (post-port rebuild target) =====
+
+func get_current_room_addr() -> String:
+    if _room_manager == null:
+        return ""
+    return _room_manager.current_room_addr()
+
+
+func get_player_snapshot() -> Dictionary:
+    var d: Dictionary = {}
+    if _player == null:
+        return d
+    d["x"] = _player.position.x
+    d["y"] = _player.position.y
+    d["hp"] = _player.hp
+    return d
+
+
+func _resolve_current_realm_id() -> String:
+    var room_addr: String = get_current_room_addr()
+    var parts: PackedStringArray = room_addr.split("/", false)
+    if parts.size() >= 3:
+        return str(parts[0]).strip_edges()
+    return PlanetaryInterface.pending_realm_id.strip_edges()
+
+
+func _resolve_current_region_id() -> String:
+    var room_addr: String = get_current_room_addr()
+    var parts: PackedStringArray = room_addr.split("/", false)
+    if parts.size() >= 3:
+        return str(parts[1]).strip_edges()
+    return ""
+
+
+func _resolve_overworld_spawn_for_region(pack_id: String, realm_id: String, region_id: String) -> Vector2:
+    var bundle: Dictionary = RegIO.load_or_init(pack_id, realm_id)
+    var realm: Dictionary = bundle.get("realm", {})
+    var regions_v: Variant = realm.get("regions", [])
+    if typeof(regions_v) == TYPE_ARRAY:
+        var regions: Array = regions_v
+        for entry_v in regions:
+            if typeof(entry_v) != TYPE_DICTIONARY:
+                continue
+            var entry: Dictionary = entry_v
+            if str(entry.get("id", "")).strip_edges() != region_id:
+                continue
+            var col: int = int(entry.get("col", 0))
+            var row: int = int(entry.get("row", 0))
+            return Vector2(
+                (float(col) + 0.5) * OVERWORLD_BLOCK_SIZE,
+                (float(row) + 0.5) * OVERWORLD_BLOCK_SIZE
+            )
+    return Vector2(-1, -1)
+
+
+func _on_trigger_spawn_entity(entity_id: String, pos: Vector2, data: Dictionary) -> void:
+    if _room_manager == null:
+        return
+    var entity_tags: Array = data.get("tags", [])
+    var entity_props: Dictionary = data.get("properties", {})
+    _room_manager.spawn_entity_dynamic(entity_id, pos, entity_tags, entity_props)
+
+
+func _on_trigger_despawn_entity(entity_id: String) -> void:
+    if _room_manager == null:
+        return
+    _room_manager.despawn_entity_by_id(entity_id)
+
+
+func _on_trigger_spawn_entity_at_zone(entity_id: String, zone_id: String, data: Dictionary) -> void:
+    if _room_manager == null:
+        return
+    _room_manager.spawn_entity_at_zone(entity_id, zone_id, data)
+
+
+func _on_trigger_move_entity_to_zone(entity_ref: String, zone_id: String, speed: float) -> void:
+    if _room_manager == null:
+        return
+    if entity_ref == "player" and _player != null:
+        var pos := _room_manager.resolve_zone_position(zone_id)
+        if pos.x >= 0.0 and pos.y >= 0.0:
+            _player.begin_scripted_move(pos, speed)
+        return
+    _room_manager.move_entity_to_zone(entity_ref, zone_id, speed)
+
+
+func _on_trigger_play_entity_anim(entity_ref: String, anim_name: String, loop: bool, speed_scale: float) -> void:
+    if _room_manager == null:
+        return
+    if entity_ref == "player" and _player != null:
+        _player.play_scripted_animation(anim_name, loop, speed_scale)
+        return
+    _room_manager.play_entity_animation(entity_ref, anim_name, loop, speed_scale)
+
+
+func _on_trigger_set_entity_facing(entity_ref: String, direction: String, zone_id: String) -> void:
+    var facing_dir: float = 0.0
+    var dir_mode: String = direction.strip_edges().to_lower()
+    match dir_mode:
+        "left":
+            facing_dir = -1.0
+        "right":
+            facing_dir = 1.0
+        "toward_zone", "away_from_zone":
+            if _room_manager == null:
+                return
+            var zone_pos := _room_manager.resolve_zone_position(zone_id)
+            if zone_pos.x < 0.0 or zone_pos.y < 0.0:
+                return
+            var origin := _player.position if entity_ref == "player" and _player != null else Vector2.ZERO
+            if entity_ref != "player":
+                var node := _room_manager.find_entity_node(entity_ref)
+                if node == null:
+                    return
+                origin = node.position
+            facing_dir = signf(zone_pos.x - origin.x)
+            if dir_mode == "away_from_zone":
+                facing_dir *= -1.0
+        _:
+            return
+    if absf(facing_dir) < 0.001:
+        return
+    if entity_ref == "player" and _player != null:
+        if _player.has_method("set_scripted_facing"):
+            _player.set_scripted_facing(facing_dir)
+        return
+    if _room_manager == null:
+        return
+    var target := _room_manager.find_entity_node(entity_ref)
+    if target == null:
+        return
+    if target.has_method("set_scripted_facing"):
+        target.call("set_scripted_facing", facing_dir)
+    elif target.has_method("ai_face_dir"):
+        target.call("ai_face_dir", facing_dir)
+
+
+func _on_trigger_camera_focus(mode: String, target_ref: String, pos: Vector2, duration: float) -> void:
+    _set_camera_focus(mode, target_ref, pos, duration)
+
+
+func _on_trigger_camera_unlock() -> void:
+    _camera_focus_mode = ""
+    _camera_focus_target = ""
+    _camera_focus_pos = Vector2.ZERO
+    _stop_camera_pan()
+    camera_focus_finished.emit()
+
+
+func _resolve_trigger_actor(entity_ref: String) -> Node:
+    var trimmed: String = entity_ref.strip_edges()
+    if trimmed == "player":
+        return _player
+    if _room_manager == null:
+        return null
+    return _room_manager.find_entity_node(trimmed)
+
+
+func wait_for_scripted_move(entity_ref: String, timeout: float = 0.0) -> bool:
+    var target: Node = _resolve_trigger_actor(entity_ref)
+    if target == null:
+        return false
+    if target.has_method("is_scripted_move_active"):
+        var active_v: Variant = target.call("is_scripted_move_active")
+        if typeof(active_v) == TYPE_BOOL and not bool(active_v):
+            return true
+        if timeout > 0.0:
+            var started_ms: int = Time.get_ticks_msec()
+            while true:
+                var still_active_v: Variant = target.call("is_scripted_move_active")
+                if typeof(still_active_v) == TYPE_BOOL and not bool(still_active_v):
+                    return true
+                var elapsed: float = float(Time.get_ticks_msec() - started_ms) / 1000.0
+                if elapsed >= timeout:
+                    return false
+                await get_tree().process_frame
+    if not target.has_signal("scripted_move_finished"):
+        return false
+    await target.scripted_move_finished
+    return true
+
+
+func wait_for_scripted_animation(entity_ref: String, anim_name: String = "", timeout: float = 0.0) -> bool:
+    var target: Node = _resolve_trigger_actor(entity_ref)
+    if target == null:
+        return false
+    var wanted: String = anim_name.strip_edges()
+    if target.has_method("is_scripted_animation_active"):
+        var active_v: Variant = target.call("is_scripted_animation_active")
+        if typeof(active_v) == TYPE_BOOL and not bool(active_v):
+            return true
+    if not wanted.is_empty() and target.has_method("current_scripted_animation_name"):
+        var current_v: Variant = target.call("current_scripted_animation_name")
+        if str(current_v).strip_edges() != wanted:
+            return true
+    if timeout > 0.0 and target.has_method("is_scripted_animation_active"):
+        var started_ms: int = Time.get_ticks_msec()
+        while true:
+            var active_now: Variant = target.call("is_scripted_animation_active")
+            if typeof(active_now) == TYPE_BOOL and not bool(active_now):
+                return true
+            if not wanted.is_empty() and target.has_method("current_scripted_animation_name"):
+                var current_name_v: Variant = target.call("current_scripted_animation_name")
+                if str(current_name_v).strip_edges() != wanted:
+                    return true
+            var elapsed: float = float(Time.get_ticks_msec() - started_ms) / 1000.0
+            if elapsed >= timeout:
+                return false
+            await get_tree().process_frame
+    if not target.has_signal("scripted_animation_finished"):
+        return false
+    while true:
+        var finished_name: Variant = await target.scripted_animation_finished
+        if wanted.is_empty() or str(finished_name).strip_edges() == wanted:
+            return true
+    return false
+
+
+func wait_for_camera_focus(timeout: float = 0.0) -> bool:
+    if not _camera_pan_active:
+        return true
+    if timeout <= 0.0:
+        await camera_focus_finished
+        return true
+    var started_ms: int = Time.get_ticks_msec()
+    while _camera_pan_active:
+        var elapsed: float = float(Time.get_ticks_msec() - started_ms) / 1000.0
+        if elapsed >= timeout:
+            return false
+        await get_tree().process_frame
+    return true
+
+
+func load_from_snapshot(room_addr: String, pos: Vector2, hp: int) -> void:
+    if not room_addr.is_empty() and room_addr != _room_manager.current_room_addr():
+        _room_manager.load_room(room_addr)
+        _setup_camera()
+    if _player != null:
+        if pos.x >= 0.0 and pos.y >= 0.0:
+            _player.spawn_at(pos)
+        else:
+            _spawn_player_in_room()
+        if hp > 0:
+            _player.hp = hp
+
+
+# ===== Door transitions =====
+
+func _on_player_door(direction: String) -> void:
+    if _player.is_locked():
+        return
+    var from_room: String = _room_manager.current_room_addr()
+    var door: Dictionary = _resolve_active_door(direction)
+    if door.is_empty():
+        return
+    MvTriggerEngine.fire_event("door_enter", {
+        "direction": direction,
+        "from_room": from_room,
+        "to_room": _resolve_door_target(door),
+    })
+    start_door_transition(direction, door)
+
+
+func start_door_transition(direction: String, door_override: Dictionary = {}) -> void:
+    if _transitioning:
+        return
+    var door: Dictionary = door_override if not door_override.is_empty() else _resolve_active_door(direction)
+    if door.is_empty():
+        return
+
+    _transitioning = true
+    _pending_door = door
+    _pending_direction = direction
+    _transition_phase = 1
+    _transition_frame = 0
+    _player.velocity = Vector2.ZERO
+    _player.set_locked(true)
+
+
+func _tick_door_transition() -> void:
+    if _transition_phase == 0:
+        return
+    _transition_frame += 1
+
+    if _transition_phase == 1:
+        var t := clampf(float(_transition_frame) / float(FADE_OUT_FRAMES), 0.0, 1.0)
+        _fade_rect.color = Color(0.0, 0.0, 0.0, t)
+        if _transition_frame >= FADE_OUT_FRAMES:
+            if not _load_destination_room():
+                return
+            _transition_phase = 3
+            _transition_frame = 0
+    elif _transition_phase == 3:
+        var t := clampf(1.0 - float(_transition_frame) / float(FADE_IN_FRAMES), 0.0, 1.0)
+        _fade_rect.color = Color(0.0, 0.0, 0.0, t)
+        if _transition_frame >= FADE_IN_FRAMES:
+            _transition_phase = 0
+            _transitioning = false
+            _pending_door = {}
+
+
+func _load_destination_room() -> bool:
+    var door := _pending_door
+    var direction := _pending_direction
+    if door.is_empty():
+        _abort_door_transition()
+        return false
+
+    # Planet launch door: if this door carries the "exit_to_space" tag,
+    # hand control back to SSB instead of loading a room. The
+    # PlanetaryInterface autoload snapshots current planet state and emits
+    # launch_requested so SSB can tear down the viewport.
+    if bool(door.get("send_to_overworld", false)):
+        print("MvMain: overworld door traversed - returning to overworld")
+        request_return_to_overworld()
+        return true
+    var tags: Array = door.get("tags", [])
+    if tags.has("exit_to_space"):
+        print("MvMain: exit_to_space door traversed — requesting launch")
+        PlanetaryInterface.begin_launch(self)
+        return true
+
+    # Walk destinations list, pick first (condition-aware routing deferred
+    # with the rest of the trigger/flow rebuild). Fall back to the legacy
+    # single target.
+    var target: String = _resolve_door_target(door)
+    if _room_manager.has_method("resolve_room_addr"):
+        target = str(_room_manager.resolve_room_addr(target, _room_manager.current_room_addr()))
+    if target.is_empty():
+        push_error("MvMain: door in direction '%s' has no resolvable target" % direction)
+        _abort_door_transition()
+        return false
+    if not _room_manager.has_room(target):
+        push_error("MvMain: door '%s' → '%s' not found (target room missing/unloaded)" % [direction, target])
+        _abort_door_transition()
+        return false
+
+    _room_manager.load_room(target)
+    _setup_camera()
+
+    var room: Dictionary = _room_manager.current_room()
+    if room.is_empty():
+        _abort_door_transition()
+        return false
+
+    var width_px: int = int(room["width_px"])
+    var height_px: int = int(room["height_px"])
+    var width_blocks: int = int(room["width_blocks"])
+
+    var spawn_x: float = 0.0
+    var spawn_y: float = 0.0
+    var dest_x: int = int(door.get("dest_pixel_x", 0))
+    var dest_y: int = int(door.get("dest_pixel_y", 0))
+    if dest_x != 0 or dest_y != 0:
+        spawn_x = float(dest_x) if dest_x != 0 else float(width_px) / 2.0
+        spawn_y = float(dest_y) if dest_y != 0 else float(height_px) / 2.0
+    else:
+        match direction:
+            "left":
+                spawn_x = float(width_px - 24)
+                spawn_y = _find_floor_y(room, width_blocks - 2)
+            "right":
+                spawn_x = 24.0
+                spawn_y = _find_floor_y(room, 1)
+            "up":
+                spawn_x = float(width_px) / 2.0
+                spawn_y = float(height_px - 24)
+            "down":
+                spawn_x = float(width_px) / 2.0
+                spawn_y = 24.0
+            _:
+                spawn_x = float(width_px) / 2.0
+                spawn_y = float(height_px) / 2.0
+
+    _player.spawn_at(Vector2(spawn_x, spawn_y), direction)
+    _player.set_locked(false)
+    print("Door transition: %s -> %s spawn=(%s,%s)" % [direction, target, spawn_x, spawn_y])
+    return true
+
+
+func _resolve_active_door(direction: String) -> Dictionary:
+    if _player != null and _player.has_method("current_authored_door"):
+        var authored: Dictionary = _player.current_authored_door(direction)
+        if not authored.is_empty():
+            return authored
+    return _room_manager.find_door(direction)
+
+
+static func _resolve_door_target(door: Dictionary) -> String:
+    var destinations: Array = door.get("destinations", [])
+    for d in destinations:
+        if typeof(d) == TYPE_DICTIONARY and not str(d.get("target", "")).is_empty():
+            return str(d["target"])
+    return str(door.get("target", ""))
+
+
+func _abort_door_transition() -> void:
+    _transitioning = false
+    _pending_door = {}
+    _pending_direction = ""
+    _transition_phase = 0
+    _transition_frame = 0
+    _fade_rect.color = Color(0.0, 0.0, 0.0, 0.0)
+    if _player != null:
+        _player.set_locked(false)
+
+
+static func _find_floor_y(room: Dictionary, col: int) -> float:
+    var collision: Array = room.get("collision", [])
+    if collision.is_empty():
+        return float(room.get("height_px", 0)) / 2.0
+    var rows: int = collision.size()
+    var max_col: int = (collision[0] as Array).size() - 1
+    col = clampi(col, 0, max_col)
+    for r in range(1, rows):
+        if _is_floor_at(int(collision[r][col])) and not _is_floor_at(int(collision[r - 1][col])):
+            return float(r * 16)
+    return float(room.get("height_px", 0)) / 2.0
+
+
+static func _is_floor_at(block_type: int) -> bool:
+    return block_type != MvRoomManager.BT_AIR \
+        and block_type != MvRoomManager.BT_AIR_SPECIAL \
+        and block_type != MvRoomManager.BT_TREADMILL_AIR \
+        and block_type != MvRoomManager.BT_SHOOT_AIR \
+        and block_type != MvRoomManager.BT_BOMB_AIR \
+        and block_type != MvRoomManager.BT_GRAPPLE_AIR \
+        and block_type != MvRoomManager.BT_DOOR
+
+
+# ===== Player death =====
+
+func _on_player_died(_source: String) -> void:
+    if _player == null:
+        return
+    # Default death handler: respawn in the current room with full HP.
+    # A future trigger system can override by also listening to player_died.
+    _player.hp = _player.max_hp
+    _spawn_player_in_room()

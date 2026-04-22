@@ -1,0 +1,23 @@
+[gd_scene load_steps=4 format=3]
+
+[ext_resource type="Script" path="res://MV/scripts/player.gd" id="1_player"]
+[ext_resource type="Texture2D" path="res://Content/demo/Sprites/player_sheet.png" id="2_sheet"]
+
+[sub_resource type="RectangleShape2D" id="standing_shape"]
+size = Vector2(14, 32)
+
+[node name="Player" type="CharacterBody2D"]
+script = ExtResource("1_player")
+
+[node name="Sprite2D" type="Sprite2D" parent="."]
+texture = ExtResource("2_sheet")
+offset = Vector2(0, -16)
+hframes = 10
+vframes = 10
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="."]
+position = Vector2(0, -16)
+shape = SubResource("standing_shape")
+
+[node name="BeamSfx" type="AudioStreamPlayer2D" parent="."]
+max_distance = 400

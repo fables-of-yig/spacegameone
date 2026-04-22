@@ -1,0 +1,10 @@
+[gd_scene format=3]
+
+[ext_resource type="Script" uid="uid://danqb18oon4vq" path="res://Space/scripts/ship/player_ship.gd" id="1"]
+
+[node name="PlayerShip" type="Area2D" unique_id=1537046388]
+script = ExtResource("1")
+
+[node name="Camera2D" type="Camera2D" parent="." unique_id=233231601]
+position_smoothing_enabled = true
+position_smoothing_speed = 8.0
