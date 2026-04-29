@@ -458,9 +458,7 @@ func _process_gamepad_cursor(delta: float):
     if not gamepad_cursor_initialized:
         _init_gamepad_cursor()
 
-    var lx = Input.get_joy_axis(0, JOY_AXIS_LEFT_X)
-    var ly = Input.get_joy_axis(0, JOY_AXIS_LEFT_Y)
-    var stick = Vector2(lx, ly)
+    var stick = GameManager.poll_left_stick()
     if stick.length() > GameManager.STICK_DEADZONE:
         var magnitude = (stick.length() - GameManager.STICK_DEADZONE) / (1.0 - GameManager.STICK_DEADZONE)
         var dir = stick.normalized() * clampf(magnitude, 0, 1)
@@ -469,7 +467,7 @@ func _process_gamepad_cursor(delta: float):
         gamepad_cursor_pos.x = clampf(gamepad_cursor_pos.x, 0, size.x)
         gamepad_cursor_pos.y = clampf(gamepad_cursor_pos.y, 0, size.y)
 
-    var ry = Input.get_joy_axis(0, JOY_AXIS_RIGHT_Y)
+    var ry = GameManager.poll_right_stick().y
     if absf(ry) > GameManager.STICK_DEADZONE:
         if palette_rect.has_point(gamepad_cursor_pos):
             palette_scroll = maxf(palette_scroll + ry * 300.0 * delta, 0)

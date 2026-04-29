@@ -18,6 +18,8 @@ const UIPanels = preload("res://Space/scripts/ui/ui_panels.gd")
 const RegIO = preload("res://Space/scripts/editor/reg/reg_io.gd")
 const EditorUndo = preload("res://Space/scripts/editor/editor_undo.gd")
 
+
+@warning_ignore("unused_signal")
 signal closed
 signal back_to_realm
 signal room_chosen(realm_id: String, region_id: String, room_addr: String)
@@ -358,10 +360,12 @@ func _confirm_pending() -> void:
         var c: Vector2i = cell_key
         mask.append([c.x - min_x, c.y - min_y])
 
-    var addr := _next_addr()
+    var room_identity := _next_room_identity()
+    var addr := str(room_identity.get("id", "room"))
+    var room_name := str(room_identity.get("name", addr))
     var cell_bx := int(region_meta.get("cell_blocks_x", RegIO.DEFAULT_CELL_BLOCKS_X))
     var cell_by := int(region_meta.get("cell_blocks_y", RegIO.DEFAULT_CELL_BLOCKS_Y))
-    var room := RegIO.make_room_from_mask(addr, addr, mask, min_x, min_y,
+    var room := RegIO.make_room_from_mask(addr, room_name, mask, min_x, min_y,
         cell_bx, cell_by, 0)
     (rooms_data["rooms"] as Dictionary)[addr] = room
     if str(rooms_data.get("start_room", "")) == "":
@@ -374,16 +378,23 @@ func _confirm_pending() -> void:
     queue_redraw()
 
 
-func _next_addr() -> String:
+func _next_room_identity() -> Dictionary:
     var rooms_v: Variant = rooms_data.get("rooms", {})
     var used: Dictionary = {}
     if typeof(rooms_v) == TYPE_DICTIONARY:
         for key in (rooms_v as Dictionary).keys():
             used[str(key)] = true
     var idx: int = 1
-    while used.has("A%02d" % idx):
+    var name := "Room %d" % idx
+    var room_id := RegIO.unique_content_id(name, used, "room")
+    while used.has(room_id):
         idx += 1
-    return "A%02d" % idx
+        name = "Room %d" % idx
+        room_id = RegIO.unique_content_id(name, used, "room")
+    return {
+        "id": room_id,
+        "name": name,
+    }
 
 
 func _save_all() -> void:
@@ -719,12 +730,17 @@ func _apply_name_edit(new_name: String) -> void:
         return
     var room: Dictionary = rooms[_selected_room]
     var trimmed := new_name.strip_edges()
-    if trimmed == "" or trimmed == str(room.get("friendly_name", "")):
+    if trimmed == "":
         return
-    if _undo != null: _undo.begin()
-    room["friendly_name"] = trimmed
-    _save_all()
-    if _undo != null: _undo.commit("rename room")
+    var new_addr := RegIO.unique_content_id(trimmed, rooms, "room", _selected_room)
+    var current_name := str(room.get("friendly_name", _selected_room)).strip_edges()
+    if trimmed == current_name and new_addr == _selected_room:
+        return
+    if not RegIO.rename_room(pack_id, realm_id, region_id, _selected_room, new_addr, trimmed):
+        return
+    rooms_data = RegIO.load_region_rooms(pack_id, realm_id, region_id)
+    _selected_room = new_addr
+    _rebuild_cell_index()
     queue_redraw()
 
 

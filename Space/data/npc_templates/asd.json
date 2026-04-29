@@ -1,0 +1,189 @@
+{
+	"colors": {
+		"primary": [
+			0.169679597020149,
+			0.925000011920929,
+			0.0231249779462814
+		],
+		"secondary": [
+			0.550000011920929,
+			0.349999994039536,
+			0.699999988079071
+		]
+	},
+	"combat_style": "standard",
+	"core_id": "core_cruiser",
+	"export_version": 1,
+	"module_count": 21,
+	"modules": [
+		{
+			"deck": 0,
+			"grid_pos": [
+				-7,
+				1
+			],
+			"id": "armor_plate_array_mk2"
+		},
+		{
+			"deck": 0,
+			"grid_pos": [
+				-2,
+				-3
+			],
+			"id": "shield_gen_mk1"
+		},
+		{
+			"deck": 0,
+			"grid_pos": [
+				1,
+				-4
+			],
+			"id": "shield_gen_mk2"
+		},
+		{
+			"deck": 0,
+			"grid_pos": [
+				0,
+				-6
+			],
+			"id": "armor_plate_mk1"
+		},
+		{
+			"deck": 0,
+			"grid_pos": [
+				-5,
+				4
+			],
+			"id": "torpedo_launcher_mk1"
+		},
+		{
+			"deck": 0,
+			"grid_pos": [
+				-8,
+				4
+			],
+			"id": "torpedo_launcher_mk1"
+		},
+		{
+			"deck": 0,
+			"grid_pos": [
+				-9,
+				8
+			],
+			"id": "railgun_mk1"
+		},
+		{
+			"deck": 0,
+			"grid_pos": [
+				-4,
+				2
+			],
+			"id": "pulse_laser_mk2"
+		},
+		{
+			"deck": 0,
+			"grid_pos": [
+				-5,
+				2
+			],
+			"id": "pulse_laser_mk1"
+		},
+		{
+			"deck": 0,
+			"grid_pos": [
+				-3,
+				-2
+			],
+			"id": "point_defense_mk1"
+		},
+		{
+			"deck": 0,
+			"grid_pos": [
+				-8,
+				-1
+			],
+			"id": "missile_rack_mk1"
+		},
+		{
+			"deck": 0,
+			"grid_pos": [
+				-4,
+				-1
+			],
+			"id": "macro_cannon_mk1"
+		},
+		{
+			"deck": 0,
+			"grid_pos": [
+				-2,
+				1
+			],
+			"id": "lance_battery_mk1"
+		},
+		{
+			"deck": 0,
+			"grid_pos": [
+				7,
+				-6
+			],
+			"id": "hornet_battery_mk1"
+		},
+		{
+			"deck": 0,
+			"grid_pos": [
+				2,
+				3
+			],
+			"id": "engine_block_mk1"
+		},
+		{
+			"deck": 0,
+			"grid_pos": [
+				-4,
+				7
+			],
+			"id": "ion_thruster_cluster_mk2"
+		},
+		{
+			"deck": 0,
+			"grid_pos": [
+				-3,
+				7
+			],
+			"id": "ion_thruster_cluster_mk2"
+		},
+		{
+			"deck": 0,
+			"grid_pos": [
+				-1,
+				4
+			],
+			"id": "thruster_mk1"
+		},
+		{
+			"deck": 0,
+			"grid_pos": [
+				0,
+				6
+			],
+			"id": "thruster_mk1"
+		},
+		{
+			"deck": 0,
+			"grid_pos": [
+				-7,
+				9
+			],
+			"id": "warp_thruster_mk1"
+		},
+		{
+			"deck": 0,
+			"grid_pos": [
+				4,
+				4
+			],
+			"id": "warp_thruster_mk2"
+		}
+	],
+	"name": "asd"
+}

@@ -1,6 +1,6 @@
 ﻿{
     "_comment":  "Starter projectile registry aligned to the gun-based default ranged lane. Basic and charged ranged shots use copied bullet PNGs from the Pixel Prototype Player source set.",
-    "seed_version":  2,
+    "seed_version":  3,
     "projectiles":  [
                         {
                             "id":  "beam_basic",
@@ -20,7 +20,7 @@
                             "homing_strength":  0,
                             "hitbox_w":  12,
                             "hitbox_h":  6,
-                            "rotate_to_velocity":  false,
+                            "rotate_to_velocity":  true,
                             "trail_color":  "#ffd27a"
                         },
                         {
@@ -41,7 +41,7 @@
                             "homing_strength":  0,
                             "hitbox_w":  14,
                             "hitbox_h":  8,
-                            "rotate_to_velocity":  false,
+                            "rotate_to_velocity":  true,
                             "trail_color":  "#fff1a0"
                         },
                         {

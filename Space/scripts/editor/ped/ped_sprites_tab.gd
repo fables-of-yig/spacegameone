@@ -2,7 +2,7 @@ extends Control
 
 const PspIO = preload("res://Space/scripts/editor/psp/psp_io.gd")
 const PedUtil = preload("res://Space/scripts/editor/ped/ped_util.gd")
-const EditorUndo = preload("res://Space/scripts/editor/editor_undo.gd")
+const FRAME_ROTATION_STEP_DEG: float = 22.5
 
 # Player editor — Sprites tab. Authors player_sheet.png + player_frames.json +
 # player_poses.json for a content pack. Mounted as a child of player_editor.gd's
@@ -15,7 +15,7 @@ const EditorUndo = preload("res://Space/scripts/editor/editor_undo.gd")
 #                              collision_x,
 #                              collision_width, hurtbox_x/y/w/h,
 #                              weapon_anchor_x/y,
-#                              timing:[int], loop_from, transition_to} }
+#                              timing:[int], anim_speed, loop_from, transition_to} }
 
 var pack_id: String = ""
 var dirty: bool = false
@@ -93,6 +93,7 @@ var _hurt_w_edit: LineEdit = null
 var _hurt_h_edit: LineEdit = null
 var _anchor_x_edit: LineEdit = null
 var _anchor_y_edit: LineEdit = null
+var _anim_speed_edit: LineEdit = null
 var _loop_edit: LineEdit = null
 var _trans_edit: LineEdit = null
 var _prop_labels: Array = []
@@ -281,6 +282,8 @@ func _update_tooltips() -> void:
         EditorTooltip.show_text("Weapon Anchor X -- horizontal attack origin offset from the player's origin for this pose. Used as the base muzzle / shoulder point for aimed attacks.")
     elif _anchor_y_edit != null and Rect2(_anchor_y_edit.position, _anchor_y_edit.size).has_point(mp):
         EditorTooltip.show_text("Weapon Anchor Y -- vertical attack origin offset from the player's origin for this pose. Lets each pose aim from the correct shoulder or hand height.")
+    elif _anim_speed_edit != null and Rect2(_anim_speed_edit.position, _anim_speed_edit.size).has_point(mp):
+        EditorTooltip.show_text("Animation Speed -- playback multiplier for this pose. 1.0 is normal speed, 2.0 is twice as fast, and 0.5 is half speed.")
     elif _mvtype_option != null and Rect2(_mvtype_option.position, _mvtype_option.size).has_point(mp):
         EditorTooltip.show_text("Movement state tag. The controller picks poses by state: Stand / Idle = default grounded pose, Run = ground movement, Jump Rise = ascending, Fall = descending, Turn Around = grounded facing swap, Transition = bridge pose between states, Wall Jump = wall-jump pose, Turn In Air / Turn While Falling = airborne direction changes.")
     elif _loop_edit != null and Rect2(_loop_edit.position, _loop_edit.size).has_point(mp):
@@ -296,9 +299,9 @@ func _update_tooltips() -> void:
     elif _overwrite_preset_btn != null and Rect2(_overwrite_preset_btn.position, _overwrite_preset_btn.size).has_point(mp):
         EditorTooltip.show_text("Overwrite the selected preset with the current editor state so you can fix and reship a preset from this tab.")
     elif _rot_ccw_btn != null and Rect2(_rot_ccw_btn.position, _rot_ccw_btn.size).has_point(mp):
-        EditorTooltip.show_text("Rotate the selected frame 90 degrees counter-clockwise. Useful for spin frames when the source pack doesn't ship a dedicated spin strip.")
+        EditorTooltip.show_text("Rotate the selected frame 22.5 degrees counter-clockwise. Useful for spin frames when the source pack doesn't ship a dedicated spin strip.")
     elif _rot_cw_btn != null and Rect2(_rot_cw_btn.position, _rot_cw_btn.size).has_point(mp):
-        EditorTooltip.show_text("Rotate the selected frame 90 degrees clockwise.")
+        EditorTooltip.show_text("Rotate the selected frame 22.5 degrees clockwise.")
     elif _rot_reset_btn != null and Rect2(_rot_reset_btn.position, _rot_reset_btn.size).has_point(mp):
         EditorTooltip.show_text("Clear any authored frame rotation on the selected strip frame.")
     elif _dir_option != null and Rect2(_dir_option.position, _dir_option.size).has_point(mp):
@@ -424,6 +427,7 @@ func _build_save_payload() -> Dictionary:
             "weapon_anchor_x": int(p.get("weapon_anchor_x", 0)),
             "weapon_anchor_y": int(p.get("weapon_anchor_y", _default_weapon_anchor_y(p))),
             "timing":        _normalized_timing_for_save(int(pose_id), p),
+            "anim_speed":    _normalized_anim_speed(p.get("anim_speed", 1.0)),
             "frame_boxes":   _serialize_frame_boxes(p.get("frame_boxes", [])),
             "loop_from":     int(p.get("loop_from", 0)),
             "transition_to": int(p.get("transition_to", -1)),
@@ -514,12 +518,12 @@ func _build_layout() -> void:
     add_child(_sheet_option)
 
     _remove_sheet_btn = Button.new()
-    _remove_sheet_btn.text = "REMOVE SHEET"
+    _remove_sheet_btn.text = "REMOVE"
     _remove_sheet_btn.pressed.connect(_on_remove_sheet_pressed)
     add_child(_remove_sheet_btn)
 
     _layer_mode_btn = Button.new()
-    _layer_mode_btn.text = "LAYER INTO SELECTED FRAME"
+    _layer_mode_btn.text = "LAYER FRAME"
     _layer_mode_btn.toggle_mode = true
     add_child(_layer_mode_btn)
 
@@ -597,13 +601,13 @@ func _build_layout() -> void:
     add_child(_del_frame_btn)
 
     _rot_ccw_btn = Button.new()
-    _rot_ccw_btn.text = "ROT -90"
-    _rot_ccw_btn.pressed.connect(func(): _rotate_selected_frame(-90.0))
+    _rot_ccw_btn.text = "rot cnt"
+    _rot_ccw_btn.pressed.connect(func(): _rotate_selected_frame(-FRAME_ROTATION_STEP_DEG))
     add_child(_rot_ccw_btn)
 
     _rot_cw_btn = Button.new()
-    _rot_cw_btn.text = "ROT +90"
-    _rot_cw_btn.pressed.connect(func(): _rotate_selected_frame(90.0))
+    _rot_cw_btn.text = "rot cws"
+    _rot_cw_btn.pressed.connect(func(): _rotate_selected_frame(FRAME_ROTATION_STEP_DEG))
     add_child(_rot_cw_btn)
 
     _rot_reset_btn = Button.new()
@@ -645,6 +649,8 @@ func _build_layout() -> void:
     _hurt_h_edit = _make_int_edit(_on_pose_field_changed)
     _anchor_x_edit = _make_int_edit(_on_pose_field_changed)
     _anchor_y_edit = _make_int_edit(_on_pose_field_changed)
+    _anim_speed_edit = _make_float_edit(_on_pose_field_changed)
+    _anim_speed_edit.placeholder_text = "1.0"
     _loop_edit = _make_int_edit(_on_pose_field_changed)
     _trans_edit = _make_int_edit(_on_pose_field_changed)
     add_child(_yrad_edit)
@@ -656,6 +662,7 @@ func _build_layout() -> void:
     add_child(_hurt_h_edit)
     add_child(_anchor_x_edit)
     add_child(_anchor_y_edit)
+    add_child(_anim_speed_edit)
     add_child(_loop_edit)
     add_child(_trans_edit)
 
@@ -666,6 +673,7 @@ func _build_layout() -> void:
         "Y Radius", "Y Offset", "Col Width",
         "Hurtbox X", "Hurtbox Y", "Hurtbox W", "Hurtbox H",
         "Anchor X", "Anchor Y",
+        "Anim Speed",
         "Loop From", "Transition"
     ]
     for lname in label_names:
@@ -713,6 +721,12 @@ func _build_layout() -> void:
 
 
 func _make_int_edit(cb: Callable) -> LineEdit:
+    var le := LineEdit.new()
+    le.text_changed.connect(func(_t): cb.call())
+    return le
+
+
+func _make_float_edit(cb: Callable) -> LineEdit:
     var le := LineEdit.new()
     le.text_changed.connect(func(_t): cb.call())
     return le
@@ -837,6 +851,10 @@ func _frame_rotation_deg(frame_v: Variant) -> float:
     return float(frame_entry.get("rotation_deg", 0.0))
 
 
+func _display_frame_rotation(pose_id: int, rotation_deg: float) -> float:
+    return -rotation_deg if _pose_uses_mirrored_fallback(pose_id) else rotation_deg
+
+
 func _ensure_active_sheet_valid() -> void:
     if _sheet_defs.is_empty():
         _sheet_defs = PspIO.default_sheet_defs()
@@ -948,26 +966,50 @@ func _layout_children() -> void:
     var vw := size.x
     var vh := size.y
 
-    _import_btn.position = Vector2(8, 6)
-    _import_btn.size = Vector2(106, 28)
+    var top_gap: float = 8.0
+    var top_left: float = 8.0
+    var top_right: float = vw - 8.0
+    var import_w: float = 106.0
+    var remove_w: float = 92.0
+    var layer_w: float = 132.0
+    var row1_fixed: float = import_w + remove_w + layer_w + top_gap * 3.0
+    var row1_dropdown_w: float = maxf(170.0, top_right - top_left - row1_fixed)
+    var row1_x: float = top_left
+    _import_btn.position = Vector2(row1_x, 6)
+    _import_btn.size = Vector2(import_w, 28)
+    row1_x += import_w + top_gap
     if _sheet_option != null:
-        _sheet_option.position = Vector2(122, 6)
-        _sheet_option.size = Vector2(150, 28)
+        _sheet_option.position = Vector2(row1_x, 6)
+        _sheet_option.size = Vector2(row1_dropdown_w, 28)
+    row1_x += row1_dropdown_w + top_gap
     if _remove_sheet_btn != null:
-        _remove_sheet_btn.position = Vector2(280, 6)
-        _remove_sheet_btn.size = Vector2(110, 28)
+        _remove_sheet_btn.position = Vector2(row1_x, 6)
+        _remove_sheet_btn.size = Vector2(remove_w, 28)
+    row1_x += remove_w + top_gap
     if _layer_mode_btn != null:
-        _layer_mode_btn.position = Vector2(398, 6)
-        _layer_mode_btn.size = Vector2(210, 28)
+        var row1_layer_w: float = maxf(110.0, top_right - row1_x)
+        _layer_mode_btn.position = Vector2(row1_x, 6)
+        _layer_mode_btn.size = Vector2(row1_layer_w, 28)
+
+    var preset_w: float = 220.0
+    var apply_w: float = 118.0
+    var overwrite_w: float = 152.0
+    var row2_fixed: float = preset_w + apply_w + overwrite_w + top_gap * 2.0
+    if row2_fixed > (top_right - top_left):
+        var shrink: float = row2_fixed - (top_right - top_left)
+        preset_w = maxf(150.0, preset_w - shrink)
+    var row2_x: float = top_left
     if _preset_option != null:
-        _preset_option.position = Vector2(8, 40)
-        _preset_option.size = Vector2(250, 28)
+        _preset_option.position = Vector2(row2_x, 40)
+        _preset_option.size = Vector2(preset_w, 28)
+    row2_x += preset_w + top_gap
     if _apply_preset_btn != null:
-        _apply_preset_btn.position = Vector2(266, 40)
-        _apply_preset_btn.size = Vector2(118, 28)
+        _apply_preset_btn.position = Vector2(row2_x, 40)
+        _apply_preset_btn.size = Vector2(apply_w, 28)
+    row2_x += apply_w + top_gap
     if _overwrite_preset_btn != null:
-        _overwrite_preset_btn.position = Vector2(390, 40)
-        _overwrite_preset_btn.size = Vector2(152, 28)
+        _overwrite_preset_btn.position = Vector2(row2_x, 40)
+        _overwrite_preset_btn.size = Vector2(maxf(120.0, top_right - row2_x), 28)
 
     var content_y: float = TOP_ACTION_H
     var content_h: float = vh - TOP_ACTION_H
@@ -993,6 +1035,7 @@ func _layout_children() -> void:
         _yrad_edit, _yofs_edit, _colw_edit,
         _hurt_x_edit, _hurt_y_edit, _hurt_w_edit, _hurt_h_edit,
         _anchor_x_edit, _anchor_y_edit,
+        _anim_speed_edit,
         _loop_edit, _trans_edit
     ]
     for i in _prop_controls.size():
@@ -1129,6 +1172,7 @@ func _load_pack_data() -> void:
             "weapon_anchor_x": int(p.get("weapon_anchor_x", 0)),
             "weapon_anchor_y": int(p.get("weapon_anchor_y", _default_weapon_anchor_y(p))),
             "timing":        _int_array(p.get("timing", [10])),
+            "anim_speed":    _normalized_anim_speed(p.get("anim_speed", 1.0)),
             "frame_boxes":   _frame_boxes_array(p.get("frame_boxes", [])),
             "loop_from":     int(p.get("loop_from", 0)),
             "transition_to": int(p.get("transition_to", -1)),
@@ -1191,6 +1235,27 @@ static func _serialize_frame_boxes(v: Variant) -> Array:
     return out
 
 
+static func _normalized_anim_speed(value: Variant) -> float:
+    var speed: float = 1.0
+    match typeof(value):
+        TYPE_INT, TYPE_FLOAT:
+            speed = float(value)
+        _:
+            var text := str(value).strip_edges()
+            if not text.is_empty():
+                speed = text.to_float()
+    if is_zero_approx(speed):
+        speed = 1.0
+    return maxf(0.05, speed)
+
+
+static func _format_anim_speed(value: float) -> String:
+    var rounded := snappedf(value, 0.01)
+    if is_equal_approx(rounded, round(rounded)):
+        return str(int(round(rounded)))
+    return String.num(rounded, 2)
+
+
 func _default_collision_width() -> float:
     return _physics_collision_width()
 
@@ -1203,13 +1268,13 @@ func _default_weapon_anchor_y(pose: Dictionary) -> int:
     return -int(pose.get("y_radius", 16)) + DEFAULT_WEAPON_ANCHOR_Y
 
 
-func _find_pose_id_by_name(name: String) -> int:
-    if name.is_empty():
+func _find_pose_id_by_name(pose_name: String) -> int:
+    if pose_name.is_empty():
         return -1
     for pose_id_v in _poses.keys():
         var pose_id: int = int(pose_id_v)
         var pose: Dictionary = _poses[pose_id]
-        if str(pose.get("name", "")) == name:
+        if str(pose.get("name", "")) == pose_name:
             return pose_id
     return -1
 
@@ -1245,12 +1310,13 @@ func _sync_frame_box_counts_for_pose(pose_id: int) -> void:
 
 
 func _resolved_animation_owner_id(pose_id: int) -> int:
-    if _frames.has(pose_id) and not (_frames[pose_id] as Array).is_empty():
+    var local_seq: Array = (_frames[pose_id] as Array) if _frames.has(pose_id) else []
+    if not local_seq.is_empty() and not (_pose_dir_value(_poses.get(pose_id, {})) < 0 and _frame_sequence_is_legacy_placeholder(local_seq)):
         return pose_id
     var mirror_id: int = _mirror_source_pose_id(pose_id)
     if mirror_id >= 0 and _frames.has(mirror_id) and not (_frames[mirror_id] as Array).is_empty():
         return mirror_id
-    return pose_id if _frames.has(pose_id) else -1
+    return -1
 
 
 func _pose_dir_value(pose: Dictionary) -> int:
@@ -1261,6 +1327,22 @@ func _pose_dir_value(pose: Dictionary) -> int:
         return 1
     var raw_dir: int = int(pose.get("dir", 1))
     return -1 if raw_dir < 0 else 1
+
+
+func _frame_sequence_is_legacy_placeholder(seq: Array) -> bool:
+    if seq.is_empty():
+        return false
+    for entry_v in seq:
+        var entry: Dictionary = _normalize_frame_entry(entry_v)
+        var layers: Array = _frame_layers(entry)
+        if layers.size() != 1:
+            return false
+        var layer: Dictionary = layers[0]
+        if str(layer.get("sheet", PspIO.BASE_SHEET_ID)).strip_edges() != PspIO.BASE_SHEET_ID:
+            return false
+        if int(layer.get("index", -1)) != 0:
+            return false
+    return true
 
 
 func _resolved_animation_pose_dict(pose_id: int) -> Dictionary:
@@ -1407,6 +1489,7 @@ func _on_add_pose_pressed() -> void:
         "weapon_anchor_x": 0,
         "weapon_anchor_y": _default_weapon_anchor_y({"y_radius": 16}),
         "timing":        [10],
+        "anim_speed":    1.0,
         "frame_boxes":   [{}],
         "loop_from":     0,
         "transition_to": -1,
@@ -1468,6 +1551,7 @@ func _apply_pose_to_inputs() -> void:
     _hurt_h_edit.editable = have
     _anchor_x_edit.editable = have
     _anchor_y_edit.editable = have
+    _anim_speed_edit.editable = have
     _loop_edit.editable = have
     _trans_edit.editable = have
     if _copy_collision_all_btn != null:
@@ -1487,6 +1571,7 @@ func _apply_pose_to_inputs() -> void:
         _hurt_h_edit.text = ""
         _anchor_x_edit.text = ""
         _anchor_y_edit.text = ""
+        _anim_speed_edit.text = ""
         _loop_edit.text = ""
         _trans_edit.text = ""
         _refresh_frame_edit_controls()
@@ -1506,6 +1591,7 @@ func _apply_pose_to_inputs() -> void:
     _hurt_h_edit.text = str(int(p.get("hurtbox_h", int(p.get("y_radius", 16)) * 2)))
     _anchor_x_edit.text = str(int(pose.get("weapon_anchor_x", 0)))
     _anchor_y_edit.text = str(int(pose.get("weapon_anchor_y", _default_weapon_anchor_y(pose))))
+    _anim_speed_edit.text = _format_anim_speed(float(pose.get("anim_speed", 1.0)))
     _loop_edit.text = str(int(pose.get("loop_from", 0)))
     _trans_edit.text = str(int(pose.get("transition_to", -1)))
     _apply_strip_timing_to_input()
@@ -1644,6 +1730,7 @@ func _on_pose_field_changed() -> void:
     p["mvtype"]        = int(_mvtype_option.get_selected_id()) if _mvtype_option.get_selected_id() != -1 else 0
     p["weapon_anchor_x"] = PedUtil.to_int(_anchor_x_edit.text, 0)
     p["weapon_anchor_y"] = PedUtil.to_int(_anchor_y_edit.text, _default_weapon_anchor_y(p))
+    p["anim_speed"]    = _normalized_anim_speed(PedUtil.to_float(_anim_speed_edit.text, float(p.get("anim_speed", 1.0))))
     p["loop_from"]     = PedUtil.to_int(_loop_edit.text, 0)
     p["transition_to"] = PedUtil.to_int(_trans_edit.text, -1)
     var box_seed: Dictionary = current_values if not current_values.is_empty() else _effective_box_values(p)
@@ -1737,9 +1824,9 @@ func _refresh_frame_edit_controls() -> void:
     var valid: bool = _selected_pose_id >= 0
     var seq: Array = _resolved_frames_for_pose(_selected_pose_id) if valid else []
     valid = valid and _selected_strip_idx >= 0 and _selected_strip_idx < seq.size()
-    var rotation: float = _frame_rotation_deg(seq[_selected_strip_idx]) if valid else 0.0
+    var sprite_rotation: float = _frame_rotation_deg(seq[_selected_strip_idx]) if valid else 0.0
     if _rot_value_label != null:
-        _rot_value_label.text = "ROTATION: %d deg" % int(round(rotation))
+        _rot_value_label.text = "ROTATION: %s deg" % _format_rotation_deg(sprite_rotation)
     if _rot_ccw_btn != null:
         _rot_ccw_btn.disabled = not valid
     if _rot_cw_btn != null:
@@ -1784,6 +1871,13 @@ func _set_selected_frame_rotation(rotation_deg: float) -> void:
     _apply_strip_timing_to_input()
     if _undo != null:
         _undo.commit("rotate frame")
+
+
+func _format_rotation_deg(sprite_rotation: float) -> String:
+    var display_rotation: float = snappedf(sprite_rotation, 0.1)
+    if absf(display_rotation - roundf(display_rotation)) < 0.0001:
+        return str(int(roundf(display_rotation)))
+    return "%.1f" % display_rotation
 
 
 # ─── Sheet viewer draw + click ───────────────────────────────────────────
@@ -2531,7 +2625,8 @@ func _tick_preview(delta: float) -> void:
     if _preview_anim_idx >= seq.size():
         _preview_anim_idx = 0
     var hold_ticks: int = int(timing[_preview_anim_idx]) if _preview_anim_idx < timing.size() else 10
-    var hold_sec: float = float(hold_ticks) / 60.0
+    var anim_speed: float = _normalized_anim_speed(anim_p.get("anim_speed", p.get("anim_speed", 1.0)))
+    var hold_sec: float = (float(hold_ticks) / 60.0) / anim_speed
     _preview_tick += delta
     if _preview_tick >= hold_sec:
         _preview_tick = 0.0
@@ -2547,6 +2642,7 @@ func _tick_preview(delta: float) -> void:
             hidden_sprite.rotation_degrees = 0.0
     var frame_entry: Dictionary = _normalize_frame_entry(seq[_preview_anim_idx])
     var frame_rotation: float = float(frame_entry.get("rotation_deg", 0.0))
+    var display_rotation: float = _display_frame_rotation(_selected_pose_id, frame_rotation)
     for layer_v in _sorted_frame_layers(frame_entry):
         if typeof(layer_v) != TYPE_DICTIONARY:
             continue
@@ -2558,7 +2654,7 @@ func _tick_preview(delta: float) -> void:
         spr.visible = true
         spr.frame = int(layer.get("index", 0))
         spr.flip_h = _pose_uses_mirrored_fallback(_selected_pose_id)
-        spr.rotation_degrees = frame_rotation
+        spr.rotation_degrees = display_rotation
 
 
 # ─── Import sheet ────────────────────────────────────────────────────────

@@ -5,10 +5,7 @@ const PedIO := preload("res://Space/scripts/editor/ped/ped_io.gd")
 const PspIO := preload("res://Space/scripts/editor/psp/psp_io.gd")
 const RegIO := preload("res://Space/scripts/editor/reg/reg_io.gd")
 const SystemIO := preload("res://Space/scripts/editor/system_io.gd")
-const EcaSchema := preload("res://Space/scripts/editor/dlg/eca_schema.gd")
-const TriggerRoot := preload("res://Space/scripts/shared/trigger_root.gd")
 const UIIo := preload("res://Space/scripts/editor/ui/ui_io.gd")
-const UiContract := preload("res://Space/scripts/ui/ui_contract.gd")
 
 # Cross-references all JSON data in a content pack and reports dangling
 # references, missing required fields, and type mismatches.
@@ -551,11 +548,24 @@ static func _validate_attacks(attacks: Array, projectile_ids: Dictionary,
 		if attack_id.is_empty():
 			continue
 		var attack_type := str(attack.get("type", "")).strip_edges()
+		var hold_behavior := str(attack.get("hold_behavior", "")).strip_edges()
+		if hold_behavior.is_empty():
+			hold_behavior = "charge_release" if (not str(attack.get("charged_attack_id", "")).strip_edges().is_empty() and int(attack.get("charge_ticks", 0)) > 0) else "full_auto"
+		var valid_hold_behaviors := ["full_auto", "single_press", "charge_release"]
 		var pose_id := int(attack.get("player_pose", -1))
 		if pose_id >= 0 and not pose_ids.has(pose_id):
 			issues.append(Issue.new("error", "Attack '%s'" % attack_id,
 				"player_pose references unknown pose id %d" % pose_id))
+		if not valid_hold_behaviors.has(hold_behavior):
+			issues.append(Issue.new("error", "Attack '%s'" % attack_id,
+				"hold_behavior '%s' is not supported" % hold_behavior))
 		var charged_attack_id := str(attack.get("charged_attack_id", "")).strip_edges()
+		if hold_behavior == "charge_release" and charged_attack_id.is_empty():
+			issues.append(Issue.new("error", "Attack '%s'" % attack_id,
+				"charge_release hold_behavior requires charged_attack_id"))
+		elif hold_behavior == "charge_release" and int(attack.get("charge_ticks", 0)) < 1:
+			issues.append(Issue.new("error", "Attack '%s'" % attack_id,
+				"charge_release hold_behavior requires charge_ticks >= 1"))
 		if not charged_attack_id.is_empty():
 			if charged_attack_id == attack_id:
 				issues.append(Issue.new("error", "Attack '%s'" % attack_id,
@@ -563,7 +573,7 @@ static func _validate_attacks(attacks: Array, projectile_ids: Dictionary,
 			elif not _has_attack_id(attacks, charged_attack_id):
 				issues.append(Issue.new("error", "Attack '%s'" % attack_id,
 					"charged_attack_id references unknown attack '%s'" % charged_attack_id))
-			elif int(attack.get("charge_ticks", 0)) < 1:
+			elif hold_behavior == "charge_release" and int(attack.get("charge_ticks", 0)) < 1:
 				issues.append(Issue.new("error", "Attack '%s'" % attack_id,
 					"charged attack requires charge_ticks >= 1"))
 		if int(attack.get("charge_fx_frame_width", 1)) < 1 or int(attack.get("charge_fx_frame_height", 1)) < 1:
@@ -1057,8 +1067,23 @@ static func _validate_action_refs(action: Dictionary, src: String,
 				issues.append(Issue.new("error", src, "camera_focus target is required for entity/zone modes"))
 			if float(action.get("duration", 0.0)) < 0.0:
 				issues.append(Issue.new("error", src, "camera_focus duration must be >= 0"))
+			if float(action.get("speed", 0.0)) < 0.0:
+				issues.append(Issue.new("error", src, "camera_focus speed must be >= 0"))
 		"camera_unlock":
 			pass
+		"set_room_weather":
+			var weather_room := str(action.get("room", "")).strip_edges()
+			if not weather_room.is_empty() and not room_addrs.has(weather_room):
+				issues.append(Issue.new("error", src, "set_room_weather action references unknown room '%s'" % weather_room))
+			var preset := str(action.get("preset", "")).strip_edges().to_lower()
+			if preset.is_empty():
+				issues.append(Issue.new("error", src, "set_room_weather action is missing preset"))
+			elif preset != "none" and preset != "rain" and preset != "snow":
+				issues.append(Issue.new("error", src, "set_room_weather preset must be none/rain/snow"))
+			if float(action.get("intensity", 0.7)) < 0.0:
+				issues.append(Issue.new("error", src, "set_room_weather intensity must be >= 0"))
+			if float(action.get("speed", 1.0)) < 0.0:
+				issues.append(Issue.new("error", src, "set_room_weather speed must be >= 0"))
 		"fire_event":
 			if str(action.get("event", "")).strip_edges().is_empty():
 				issues.append(Issue.new("error", src, "fire_event action is missing event"))

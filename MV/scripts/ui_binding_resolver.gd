@@ -1,6 +1,5 @@
 extends RefCounted
 
-const UiContract := preload("res://Space/scripts/ui/ui_contract.gd")
 
 # Resolves dot-path binding strings (e.g. "player.hp", "inventory.items")
 # to current game values by querying PlayerInventory, the MvPlayer node,

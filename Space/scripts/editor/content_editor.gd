@@ -3,6 +3,7 @@ extends Control
 const UIPanels = preload("res://Space/scripts/ui/ui_panels.gd")
 const ContentValidator = preload("res://Space/scripts/editor/content_validator.gd")
 
+
 signal closed
 signal editor_requested(kind: String, pack_id: String)
 signal playtest_requested(pack_id: String)
@@ -127,13 +128,13 @@ const MODE_TILES: Dictionary = {
         {
             "kind": "trigger",
             "label": "TRIGGER EDITOR",
-            "subtitle": "Readable event / condition / action authoring.",
+            "subtitle": "When something happens, run dialogue, flags, cutscenes, spawns, or camera logic.",
             "accent": Color(0.93, 0.63, 0.2),
         },
         {
             "kind": "dialogue",
             "label": "DIALOGUE EVENTS",
-            "subtitle": "Pair dialogue actions with trigger-driven progression.",
+            "subtitle": "Author conversations. NPC `dialogue_id` or trigger `start_dialogue` opens them.",
             "accent": Color(0.42, 0.84, 0.88),
         },
         {
@@ -436,6 +437,7 @@ func _draw_main_panel(font: Font, panel_rect: Rect2, mouse_pos: Vector2) -> void
     for i in range(tiles.size()):
         var tile: Dictionary = tiles[i]
         var col: int = i % cols
+        @warning_ignore("integer_division")
         var row: int = i / cols
         var rect: Rect2 = Rect2(
             start_x + float(col) * (TILE_W + TILE_GAP),
@@ -489,10 +491,12 @@ func _draw_campaign_panel(font: Font, rect: Rect2, mouse_pos: Vector2) -> void:
     var base_x: float = rect.position.x + 18.0
     var base_y: float = rect.position.y + 126.0
     for i in range(labels.size()):
+        @warning_ignore("integer_division")
         var row: int = i / 2
         var col: int = i % 2
         var key_label: Array = labels[i]
         var x: float = base_x + float(col) * (label_w + field_w + 28.0)
+        @warning_ignore("confusable_local_declaration")
         var y: float = base_y + float(row) * 40.0
         draw_string(font, Vector2(x, y + 16.0),
             str(key_label[1]), HORIZONTAL_ALIGNMENT_LEFT, int(label_w - 8.0), 11, Color(0.76, 0.84, 0.94))
@@ -509,6 +513,7 @@ func _draw_campaign_panel(font: Font, rect: Rect2, mouse_pos: Vector2) -> void:
     for i in range(campaign_tiles.size()):
         var tile: Dictionary = campaign_tiles[i]
         var col: int = i % campaign_cols
+        @warning_ignore("integer_division")
         var row: int = i / campaign_cols
         var tile_rect: Rect2 = Rect2(
             rect.position.x + 18.0 + float(col) * (mini_w + mini_gap),
@@ -678,8 +683,9 @@ func _mode_hints(mode_key: String) -> Array:
             ]
         "triggers":
             return [
-                "Trigger Editor is becoming the campaign glue layer.",
-                "Dialogue and shop authoring live nearby because they share the same event/action vocabulary.",
+                "Trigger Editor is the glue layer: event happens, optional checks pass, actions run.",
+                "Dialogue authoring lives here because the most common link is NPC `dialogue_id` or trigger `start_dialogue`.",
+                "Use Trigger Editor for zones, cutscenes, follow-up logic, UI events, and anything more complex than a plain NPC conversation.",
             ]
         "ui":
             return [
@@ -851,12 +857,12 @@ func _on_import_archive_selected(path: String) -> void:
 
     var imported_pack_id: String = str(result.get("pack_id", ""))
     var source_pack_id: String = str(result.get("source_pack_id", imported_pack_id))
-    var renamed: bool = bool(result.get("renamed", false))
+    var was_renamed: bool = bool(result.get("renamed", false))
     pack_id = imported_pack_id
     _mode = "campaign"
     _load_manifest()
     _layout_campaign_controls()
-    if renamed:
+    if was_renamed:
         _validation_summary = "Imported '%s' as '%s' and opened it." % [source_pack_id, imported_pack_id]
     else:
         _validation_summary = "Imported and opened pack '%s'." % imported_pack_id
@@ -879,17 +885,17 @@ func _refresh_manifest_controls() -> void:
 
 
 func _layout_campaign_controls() -> void:
-    var show: bool = visible and _mode == "campaign"
+    var should_show: bool = visible and _mode == "campaign"
     var panel_rect: Rect2 = Rect2(32, 26, size.x - 64, size.y - 52)
     var left_rect: Rect2 = Rect2(panel_rect.position.x + 24, panel_rect.position.y + 150, panel_rect.size.x - 352, panel_rect.size.y - 174)
 
     for key in _manifest_fields.keys():
         var le: LineEdit = _manifest_fields[key]
         if le != null:
-            le.visible = show
+            le.visible = should_show
     if _manifest_desc != null:
-        _manifest_desc.visible = show
-    if not show:
+        _manifest_desc.visible = should_show
+    if not should_show:
         return
 
     var labels: Array = ["name", "author", "version", "entry_room", "start_realm", "start_system", "start_ship_template"]
@@ -899,6 +905,7 @@ func _layout_campaign_controls() -> void:
     var base_y: float = left_rect.position.y + 126.0
     for i in range(labels.size()):
         var key: String = str(labels[i])
+        @warning_ignore("integer_division")
         var row: int = i / 2
         var col: int = i % 2
         var le: LineEdit = _manifest_fields[key]

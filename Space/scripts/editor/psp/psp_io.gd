@@ -19,7 +19,7 @@ extends RefCounted
 #   top-level: {poses: {"<int_id>": {name, dir, mvtype, y_radius, y_offset,
 #                                     collision_width, hurtbox_x/y/w/h,
 #                                     weapon_anchor_x/y,
-#                                     timing: [int], loop_from, transition_to}}}
+#                                     timing: [int], anim_speed, loop_from, transition_to}}}
 #
 # Default seed matches Content/demo/Sprites/* so a fresh pack has a
 # playable baseline movement/combat state set instead of only stand poses,
@@ -843,6 +843,11 @@ static func _timing_is_legacy_placeholder(timing: Array) -> bool:
 static func _pose_should_use_mirrored_frames(pose: Dictionary) -> bool:
     if pose.is_empty():
         return false
+    var pose_name: String = str(pose.get("name", ""))
+    if pose_name.ends_with("_left"):
+        return true
+    if pose_name.ends_with("_right"):
+        return false
     return int(pose.get("dir", 1)) < 0
 
 
@@ -982,6 +987,9 @@ static func _validate_poses_data(data: Dictionary) -> bool:
             if int(frame_ticks) < 1:
                 push_error("PspIO: pose '%s' uses timing values < 1" % pose_id)
                 return false
+        if float(pose.get("anim_speed", 1.0)) <= 0.0:
+            push_error("PspIO: pose '%s' must use anim_speed > 0" % pose_id)
+            return false
         var frame_boxes_v: Variant = pose.get("frame_boxes", [])
         if typeof(frame_boxes_v) != TYPE_ARRAY:
             push_error("PspIO: pose '%s' frame_boxes must be an array" % pose_id)
@@ -1033,6 +1041,7 @@ static func _normalize_poses_data(data: Dictionary) -> Dictionary:
             for tick_v in timing_v:
                 normalized_timing.append(_normalized_int(tick_v, 0))
         pose["timing"] = normalized_timing
+        pose["anim_speed"] = _normalized_float(pose.get("anim_speed", 1.0), 1.0)
 
         var frame_boxes_v: Variant = pose.get("frame_boxes", [])
         var normalized_boxes: Array = []
@@ -1062,6 +1071,17 @@ static func _normalized_int(value: Variant, fallback: int) -> int:
             var text: String = str(value).strip_edges()
             if text.is_valid_int():
                 return int(text)
+    return fallback
+
+
+static func _normalized_float(value: Variant, fallback: float) -> float:
+    match typeof(value):
+        TYPE_INT, TYPE_FLOAT:
+            return float(value)
+        _:
+            var text: String = str(value).strip_edges()
+            if text.is_valid_float():
+                return float(text)
     return fallback
 
 

@@ -183,6 +183,7 @@ func _draw():
     var cols: int = 6
     for i in PALETTE.size():
         var c_i: int = i % cols
+        @warning_ignore("integer_division")
         var r_i: int = i / cols
         var x: float = box.position.x + 24 + float(c_i) * (sw_size + sw_gap)
         var y: float = box.position.y + 152 + float(r_i) * (sw_size + sw_gap)

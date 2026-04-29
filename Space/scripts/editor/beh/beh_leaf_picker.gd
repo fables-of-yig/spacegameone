@@ -6,7 +6,7 @@ extends Control
 # to a free-form text prompt. `cancelled` on Esc or outside click.
 
 const UIPanels = preload("res://Space/scripts/ui/ui_panels.gd")
-const BehLeafSchema = preload("res://Space/scripts/editor/beh/beh_leaf_schema.gd")
+
 
 signal picked(leaf_name: String, is_custom: bool)
 signal cancelled
@@ -124,11 +124,11 @@ func _draw():
 	var y: float = list_y - _scroll
 	for entry_v in schemas:
 		var entry: Dictionary = entry_v
-		var name: String = str(entry.get("name", ""))
-		var label: String = str(entry.get("label", name))
+		var leaf_name: String = str(entry.get("name", ""))
+		var label: String = str(entry.get("label", leaf_name))
 		var help: String = str(entry.get("help", ""))
 		var rect := Rect2(list_x, y, list_w, ROW_H - 2)
-		var is_sel := name == _current
+		var is_sel := leaf_name == _current
 		var hover := rect.has_point(mouse_pos)
 		var bg: Color
 		if is_sel:
@@ -143,9 +143,9 @@ func _draw():
 			label, HORIZONTAL_ALIGNMENT_LEFT, -1, 12,
 			Color(0.95, 1, 0.96, 1) if (hover or is_sel) else Color(0.78, 0.92, 0.84, 1))
 		draw_string(font, rect.position + Vector2(12, 32),
-			name, HORIZONTAL_ALIGNMENT_LEFT, -1, 10,
+			leaf_name, HORIZONTAL_ALIGNMENT_LEFT, -1, 10,
 			Color(0.55, 0.85, 0.7, 1))
-		_rows.append({"name": name, "rect": rect})
+		_rows.append({"name": leaf_name, "rect": rect})
 		if hover and not help.is_empty():
 			EditorTooltip.show_text(help)
 		y += ROW_H

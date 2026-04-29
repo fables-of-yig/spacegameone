@@ -2,7 +2,9 @@ extends Control
 
 const EnvIO = preload("res://Space/scripts/editor/env/env_io.gd")
 const EnvTypes = preload("res://Space/scripts/editor/env/env_types.gd")
+const PackAssetIndex = preload("res://Space/scripts/editor/pack_asset_index.gd")
 const RegIO = preload("res://Space/scripts/editor/reg/reg_io.gd")
+const EntIO = preload("res://Space/scripts/editor/ent/ent_io.gd")
 const _ContentValidator = preload("res://Space/scripts/editor/content_validator.gd")
 const _UndoManager = preload("res://Space/scripts/editor/undo_manager.gd")
 
@@ -45,6 +47,22 @@ var selected_entity_type: String = "npc"
 var selected_door_direction: String = "right"
 var selected_door_target_room: String = ""
 var selected_door_send_to_overworld: bool = false
+var selected_door_overworld_region_id: String = ""
+var selected_door_enabled: bool = true
+var selected_door_locked: bool = false
+var selected_door_required_item_id: String = ""
+var selected_door_required_item_count: int = 1
+var selected_door_required_var_name: String = ""
+var selected_door_required_var_value: Variant = 1
+var selected_door_required_global_tag: String = ""
+var selected_door_blocked_event_name: String = ""
+var selected_door_success_event_name: String = ""
+var selected_door_arrive_event_name: String = ""
+var selected_zone_kind: String = "shader"
+var selected_background_asset: String = ""
+var selected_background_image_id: String = ""
+var selected_zone_id: String = ""
+var selected_shader_region_id: String = ""
 var show_collision: bool = false
 var dirty: bool = false
 
@@ -57,6 +75,8 @@ var _tileset_indices: Array = []
 var _tileset_sizes: Dictionary = {}
 var _tileset_names: Dictionary = {}
 var _backdrop_textures: Dictionary = {}
+var _entity_preview_textures: Dictionary = {}
+var _entity_defs_by_id: Dictionary = {}
 
 # Child panels
 var topbar: Control = null
@@ -96,6 +116,8 @@ var _grid_paste_preview_active: bool = false
 const TOPBAR_H: float = 64.0
 const SIDEBAR_W: float = 220.0
 const RIGHT_PANEL_W: float = 280.0
+const RIGHT_PANEL_W_BG_IMAGES: float = 420.0
+const RIGHT_PANEL_W_SHADERS: float = 520.0
 
 
 func _ready():
@@ -201,14 +223,15 @@ func _layout_children() -> void:
         return
     var vw := size.x
     var vh := size.y
+    var right_panel_w := _current_right_panel_width()
     topbar.position = Vector2.ZERO
     topbar.size = Vector2(vw, TOPBAR_H)
     tool_palette.position = Vector2(0, TOPBAR_H)
     tool_palette.size = Vector2(SIDEBAR_W, vh - TOPBAR_H)
-    tileset_panel.position = Vector2(vw - RIGHT_PANEL_W, TOPBAR_H)
-    tileset_panel.size = Vector2(RIGHT_PANEL_W, vh - TOPBAR_H)
+    tileset_panel.position = Vector2(vw - right_panel_w, TOPBAR_H)
+    tileset_panel.size = Vector2(right_panel_w, vh - TOPBAR_H)
     canvas.position = Vector2(SIDEBAR_W, TOPBAR_H)
-    canvas.size = Vector2(vw - SIDEBAR_W - RIGHT_PANEL_W, vh - TOPBAR_H)
+    canvas.size = Vector2(vw - SIDEBAR_W - right_panel_w, vh - TOPBAR_H)
     if text_modal != null:
         text_modal.position = Vector2.ZERO
         text_modal.size = Vector2(vw, vh)
@@ -237,6 +260,14 @@ func _layout_children() -> void:
         _tutorial_overlay.size = Vector2(vw, vh)
 
 
+func _current_right_panel_width() -> float:
+    if active_mode == EnvTypes.MODE_BG_IMAGES:
+        return RIGHT_PANEL_W_BG_IMAGES
+    if active_mode == EnvTypes.MODE_ZONES:
+        return RIGHT_PANEL_W_SHADERS
+    return RIGHT_PANEL_W
+
+
 func open_editor(p_pack_id: String = "", p_realm_id: String = "", p_region_id: String = "", p_room_addr: String = ""):
     pack_id = p_pack_id
     realm_id = p_realm_id
@@ -244,6 +275,8 @@ func open_editor(p_pack_id: String = "", p_realm_id: String = "", p_region_id: S
     visible = true
     _skip_close_frame = true
     _backdrop_textures.clear()
+    _entity_preview_textures.clear()
+    _entity_defs_by_id.clear()
 
     # Ensure the pack has at least a default tileset seeded on disk.
     EnvIO.load_or_init(pack_id)
@@ -284,6 +317,9 @@ func open_editor(p_pack_id: String = "", p_realm_id: String = "", p_region_id: S
     active_tile_layer_idx = _default_active_tile_layer_idx()
     selected_metatile_idx = _snap_to_metatile(1, selected_tileset_id)
     selected_metatile_span = Vector2i.ONE
+    selected_background_image_id = ""
+    selected_zone_id = ""
+    selected_shader_region_id = ""
     _grid_paste_preview_active = false
     dirty = false
 
@@ -376,7 +412,19 @@ func set_active_tool(t: int) -> void:
     active_tool = t
 
 func set_active_mode(m: int) -> void:
+    if m == EnvTypes.MODE_DOORS:
+        selected_zone_kind = "door"
+        m = EnvTypes.MODE_ZONES
+    elif m == EnvTypes.MODE_SHADERS:
+        selected_zone_kind = "shader"
+        m = EnvTypes.MODE_ZONES
     active_mode = m
+    if active_mode == EnvTypes.MODE_BG_IMAGES and selected_background_asset.is_empty():
+        var backdrops := get_available_backdrop_images()
+        if not backdrops.is_empty():
+            selected_background_asset = str(backdrops[0])
+    if is_inside_tree():
+        _layout_children()
 
 func set_active_tile_layer(idx: int) -> void:
     var layers := _get_tile_layers()
@@ -452,18 +500,67 @@ func set_selected_entity_type(t: String) -> void:
 
 func set_selected_door_direction(d: String) -> void:
     selected_door_direction = d
+    _apply_selected_door_fields_to_zone()
 
 func set_selected_door_target_room(addr: String) -> void:
     selected_door_target_room = addr
     selected_door_send_to_overworld = false
+    _apply_selected_door_fields_to_zone()
 
 func set_selected_door_send_to_overworld(enabled: bool) -> void:
     selected_door_send_to_overworld = enabled
+    _apply_selected_door_fields_to_zone()
+
+
+func _apply_selected_door_fields_to_zone() -> void:
+    if get_selected_zone_kind() != "door":
+        return
+    update_selected_zone({
+        "direction": selected_door_direction,
+        "target_door_id": selected_door_target_room,
+        "target_room": "",
+        "send_to_overworld": selected_door_send_to_overworld,
+        "overworld_region_id": selected_door_overworld_region_id,
+        "enabled": selected_door_enabled,
+        "locked": selected_door_locked,
+        "required_item_id": selected_door_required_item_id,
+        "required_item_count": selected_door_required_item_count,
+        "required_var_name": selected_door_required_var_name,
+        "required_var_value": selected_door_required_var_value,
+        "required_global_tag": selected_door_required_global_tag,
+        "blocked_event_name": selected_door_blocked_event_name,
+        "success_event_name": selected_door_success_event_name,
+        "arrive_event_name": selected_door_arrive_event_name,
+    })
+
+
+func _sync_selected_door_fields(entry: Dictionary) -> void:
+    selected_door_direction = str(entry.get("direction", selected_door_direction))
+    selected_door_target_room = str(entry.get("target_door_id", entry.get("target_room", selected_door_target_room)))
+    selected_door_send_to_overworld = bool(entry.get("send_to_overworld", selected_door_send_to_overworld))
+    selected_door_overworld_region_id = str(entry.get("overworld_region_id", selected_door_overworld_region_id)).strip_edges()
+    selected_door_enabled = bool(entry.get("enabled", selected_door_enabled))
+    selected_door_locked = bool(entry.get("locked", selected_door_locked))
+    selected_door_required_item_id = str(entry.get("required_item_id", selected_door_required_item_id)).strip_edges()
+    selected_door_required_item_count = maxi(1, int(entry.get("required_item_count", selected_door_required_item_count)))
+    selected_door_required_var_name = str(entry.get("required_var_name", selected_door_required_var_name)).strip_edges()
+    selected_door_required_var_value = entry.get("required_var_value", selected_door_required_var_value)
+    selected_door_required_global_tag = str(entry.get("required_global_tag", selected_door_required_global_tag)).strip_edges()
+    selected_door_blocked_event_name = str(entry.get("blocked_event_name", selected_door_blocked_event_name)).strip_edges()
+    selected_door_success_event_name = str(entry.get("success_event_name", selected_door_success_event_name)).strip_edges()
+    selected_door_arrive_event_name = str(entry.get("arrive_event_name", selected_door_arrive_event_name)).strip_edges()
+
+
+func set_selected_zone_kind(kind: String) -> void:
+    selected_zone_kind = _normalize_zone_kind(kind)
 
 func switch_to_room(addr: String) -> void:
     var rooms: Dictionary = rooms_data.get("rooms", {})
     if rooms.has(addr):
         current_room_addr = addr
+        selected_background_image_id = ""
+        selected_zone_id = ""
+        selected_shader_region_id = ""
 
 
 # ─── Queries used by child panels ────────────────────────────────────────
@@ -478,6 +575,11 @@ func get_current_room() -> Dictionary:
         return {}
     var room: Dictionary = room_v
     EnvIO.normalize_parallax_layers(room)
+    EnvIO.normalize_background_images(room)
+    EnvIO.normalize_background_image(room)
+    EnvIO.normalize_shader_regions(room)
+    EnvIO.normalize_zones(room)
+    EnvIO.normalize_weather(room)
     return room
 
 func get_room_addrs() -> Array:
@@ -794,6 +896,8 @@ func _on_tileset_files_selected(paths: PackedStringArray) -> void:
     # Stage the paths on the instance and hand off to the tile-size modal.
     # When the user submits, _finish_tileset_import reads _pending_import_paths.
     _pending_import_paths = paths
+    _show_tileset_import_modal("%d" % EnvIO.BLOCK_SIZE)
+    return
     var prompt := "Pixel size of each logical tile (multiple of %d, ≥ %d). 16 is a plain 16×16 tileset; 32/48/64/… for bigger art. Storage stays 16-px under the hood — large tiles paint as N×N brushes." % [EnvIO.BLOCK_SIZE, EnvIO.BLOCK_SIZE]
     show_text_modal("Tile size",
         "%d" % EnvIO.BLOCK_SIZE,
@@ -806,6 +910,26 @@ func _finish_tileset_import(tile_size_str: String) -> void:
     _pending_import_paths = PackedStringArray()
     if paths.is_empty():
         return
+    var trimmed := tile_size_str.strip_edges()
+    if not trimmed.is_valid_int():
+        _reopen_tileset_import_modal(paths, tile_size_str, "Tile size must be a whole number like 16, 32, or 48.")
+        return
+    var parsed_size := int(trimmed)
+    if parsed_size < EnvIO.BLOCK_SIZE or parsed_size % EnvIO.BLOCK_SIZE != 0:
+        _reopen_tileset_import_modal(paths, trimmed, "Tile size must be at least %d and a multiple of %d." % [EnvIO.BLOCK_SIZE, EnvIO.BLOCK_SIZE])
+        return
+    var imported_idx := EnvIO.import_tileset(pack_id, paths, parsed_size)
+    if imported_idx < 0:
+        _reopen_tileset_import_modal(paths, trimmed, EnvIO.get_last_import_error())
+        return
+    var import_name := str(paths[0]).get_file().get_basename()
+    if not import_name.is_empty():
+        EnvIO.save_tileset_name(pack_id, imported_idx, import_name)
+    _refresh_tileset_cache()
+    selected_tileset_id = imported_idx
+    selected_metatile_idx = 0
+    selected_metatile_span = Vector2i.ONE
+    return
     var tile_size: int = EnvIO.BLOCK_SIZE
     var parsed := int(tile_size_str.strip_edges())
     if parsed >= EnvIO.BLOCK_SIZE and parsed % EnvIO.BLOCK_SIZE == 0:
@@ -825,6 +949,28 @@ func _finish_tileset_import(tile_size_str: String) -> void:
     selected_tileset_id = new_idx
     selected_metatile_idx = 0
     selected_metatile_span = Vector2i.ONE
+
+
+func _show_tileset_import_modal(default_text: String, error_text: String = "") -> void:
+    show_text_modal("Tile size",
+        default_text,
+        _tileset_import_prompt(error_text),
+        Callable(self, "_finish_tileset_import"))
+
+
+func _reopen_tileset_import_modal(paths: PackedStringArray, attempted_text: String, error_text: String) -> void:
+    _pending_import_paths = paths
+    _show_tileset_import_modal(attempted_text, error_text)
+
+
+func _tileset_import_prompt(error_text: String = "") -> String:
+    var lines := PackedStringArray()
+    var trimmed := error_text.strip_edges()
+    if not trimmed.is_empty():
+        lines.append("Error: %s" % trimmed)
+    lines.append("Enter the pixel size of each logical tile.")
+    lines.append("It must be a multiple of %d. Examples: 16, 32, 48, 64." % EnvIO.BLOCK_SIZE)
+    return "\n".join(lines)
 
 
 func request_rename_tileset(tileset_idx: int) -> void:
@@ -991,6 +1137,10 @@ func _snapshot_active_surface() -> Dictionary:
         snap["bts"] = _snapshot_grid_array(_get_bts_grid(room))
     elif active_mode == EnvTypes.MODE_TILE:
         snap["animations"] = get_tile_layer_animations(active_tile_layer_idx).duplicate(true)
+    elif active_mode == EnvTypes.MODE_BG_IMAGES:
+        snap["background_images"] = _snapshot_list(_get_background_images_ref(room))
+    elif active_mode == EnvTypes.MODE_ZONES:
+        snap["zones"] = _snapshot_list(_get_zones_ref(room))
     return snap
 
 
@@ -1038,6 +1188,12 @@ func _restore_surface(room_addr: String, mode: int, layer_idx: int, snapshot: Di
             var layer_v: Variant = layers[layer_idx]
             if typeof(layer_v) == TYPE_DICTIONARY:
                 (layer_v as Dictionary)["animations"] = (snapshot.get("animations", {}) as Dictionary).duplicate(true)
+    elif mode == EnvTypes.MODE_BG_IMAGES and not room.is_empty():
+        room["background_images"] = _snapshot_list(snapshot.get("background_images", []))
+        _sync_legacy_background_image(room)
+    elif mode == EnvTypes.MODE_ZONES and not room.is_empty():
+        room["zones"] = _snapshot_list(snapshot.get("zones", []))
+        _sync_room_zones(room)
     dirty = true
 
 
@@ -1258,6 +1414,8 @@ func _restore_list(room_addr: String, key: String, snapshot: Array) -> void:
     if room.is_empty():
         return
     room[key] = _snapshot_list(snapshot)
+    if key == "background_images":
+        _sync_legacy_background_image(room)
     dirty = true
 
 
@@ -1382,6 +1540,7 @@ func erase_cell(row: int, col: int) -> void:
 
 
 func _paint_metatile_brush(layer: Array, start_row: int, start_col: int) -> void:
+    @warning_ignore("integer_division")
     var brush_n: int = maxi(get_tileset_tile_size(selected_tileset_id) / EnvIO.BLOCK_SIZE, 1)
     var grid_cols := get_tileset_grid_cols(selected_tileset_id)
     var rows := layer.size()
@@ -1416,6 +1575,7 @@ func _erase_metatile_brush(layer: Array, start_row: int, start_col: int) -> void
     var brush_w: int = 1
     var brush_h: int = 1
     if active_mode == EnvTypes.MODE_TILE:
+        @warning_ignore("integer_division")
         var brush_n := maxi(get_tileset_tile_size(selected_tileset_id) / EnvIO.BLOCK_SIZE, 1)
         brush_w = maxi(selected_metatile_span.x, 1) * brush_n
         brush_h = maxi(selected_metatile_span.y, 1) * brush_n
@@ -1444,6 +1604,7 @@ func _erase_metatile_brush(layer: Array, start_row: int, start_col: int) -> void
 # tile sizes the result is always aligned to the tile_size grid so the
 # picker highlight and paint expansion agree on the same anchor.
 func _snap_to_metatile(sub_idx: int, tileset_idx: int) -> int:
+    @warning_ignore("integer_division")
     var brush_n: int = maxi(get_tileset_tile_size(tileset_idx) / EnvIO.BLOCK_SIZE, 1)
     if brush_n == 1:
         return sub_idx
@@ -1488,6 +1649,11 @@ func _flood_fill(layer: Array, start_row: int, start_col: int, target: int, repl
 
 func save_all() -> bool:
     _normalize_main_layer_scrolls()
+    var rooms_v: Variant = rooms_data.get("rooms", {})
+    if typeof(rooms_v) == TYPE_DICTIONARY:
+        for room_v in (rooms_v as Dictionary).values():
+            if typeof(room_v) == TYPE_DICTIONARY:
+                _sync_room_zones(room_v as Dictionary)
     var ok: bool
     if region_id != "":
         ok = RegIO.save_region_rooms(pack_id, realm_id, region_id, rooms_data)
@@ -1508,34 +1674,34 @@ func save_all() -> bool:
 # instead of room loading.
 func _warn_dangling_door_targets() -> void:
     var rooms := _rooms_dict()
-    var known_addrs: Dictionary = {}
-    for addr in rooms.keys():
-        known_addrs[str(addr)] = true
+    var known_door_ids := _door_id_map()
     var bad: int = 0
     for addr in rooms.keys():
         var room_v: Variant = rooms[addr]
         if typeof(room_v) != TYPE_DICTIONARY:
             continue
-        var doors_v: Variant = (room_v as Dictionary).get("doors", [])
-        if typeof(doors_v) != TYPE_ARRAY:
-            continue
-        for d_v in doors_v:
-            if typeof(d_v) != TYPE_DICTIONARY:
+        var room: Dictionary = room_v
+        var zones := _get_zones_ref(room)
+        for zone_v in zones:
+            if typeof(zone_v) != TYPE_DICTIONARY:
                 continue
-            var d: Dictionary = d_v
-            var tags_v: Variant = d.get("tags", [])
-            var is_exit := typeof(tags_v) == TYPE_ARRAY and (tags_v as Array).has("exit_to_space")
-            if is_exit or _door_sends_to_overworld(d):
+            var zone: Dictionary = zone_v
+            if _normalize_zone_kind(str(zone.get("kind", ""))) != "door":
                 continue
-            var target := _door_target_room(d)
-            if target.is_empty():
-                push_warning("[EnvEditor] door in '%s' has no target" % addr)
+            if bool(zone.get("send_to_overworld", false)):
+                continue
+            var target_door_id := str(zone.get("target_door_id", "")).strip_edges()
+            var legacy_target_room := str(zone.get("target_room", "")).strip_edges()
+            if target_door_id.is_empty():
+                if not legacy_target_room.is_empty() and rooms.has(legacy_target_room):
+                    continue
+                push_warning("[EnvEditor] door '%s' in '%s' has no target door id" % [str(zone.get("id", "(unnamed)")), addr])
                 bad += 1
-            elif not known_addrs.has(target):
-                push_warning("[EnvEditor] door in '%s' targets unknown room '%s'" % [addr, target])
+            elif not known_door_ids.has(target_door_id):
+                push_warning("[EnvEditor] door '%s' in '%s' targets unknown door id '%s'" % [str(zone.get("id", "(unnamed)")), addr, target_door_id])
                 bad += 1
     if bad > 0:
-        print("[EnvEditor] save warning: %d door target issue(s) — run Validate for details" % bad)
+        print("[EnvEditor] save warning: %d door link issue(s) — run Validate for details" % bad)
 
 func request_close() -> void:
     visible = false
@@ -1664,7 +1830,13 @@ func request_edit_room_meta() -> void:
         "width_blocks": int(room.get("width_blocks", 30)),
         "height_blocks": int(room.get("height_blocks", 17)),
         "tileset": int(room.get("tileset", 0)),
+        "parallax_enabled": bool(room.get("parallax_enabled", true)),
         "parallax_layers": (room.get("parallax_layers", []) as Array).duplicate(true),
+        "weather": (room.get("weather", EnvIO.default_weather()) as Dictionary).duplicate(true),
+        "background_images": get_room_background_images(),
+        "background_image": (room.get("background_image", EnvIO.default_background_image(
+            int(room.get("width_blocks", 30)),
+            int(room.get("height_blocks", 17)))) as Dictionary).duplicate(true),
     }
     meta_modal.open(current_room_addr, meta, _tileset_indices, pack_id)
 
@@ -1847,7 +2019,11 @@ func apply_room_meta(meta: Dictionary) -> void:
     var new_w := int(meta.get("width_blocks", 30))
     var new_h := int(meta.get("height_blocks", 17))
     var new_tileset := int(meta.get("tileset", 0))
+    var new_parallax_enabled := bool(meta.get("parallax_enabled", true))
     var new_parallax_layers: Array = meta.get("parallax_layers", EnvIO.default_parallax_layers())
+    var new_weather: Dictionary = meta.get("weather", EnvIO.default_weather())
+    var new_background_images: Array = meta.get("background_images", get_room_background_images())
+    var new_background_image: Dictionary = meta.get("background_image", EnvIO.default_background_image(new_w, new_h))
 
     var old_w := int(room.get("width_blocks", 30))
     var old_h := int(room.get("height_blocks", 17))
@@ -1873,7 +2049,11 @@ func apply_room_meta(meta: Dictionary) -> void:
         _cull_doors_outside(room, new_w, new_h)
 
     room["tileset"] = float(new_tileset)
+    room["parallax_enabled"] = new_parallax_enabled
     room["parallax_layers"] = new_parallax_layers.duplicate(true)
+    room["weather"] = new_weather.duplicate(true)
+    room["background_images"] = new_background_images.duplicate(true)
+    room["background_image"] = new_background_image.duplicate(true)
     dirty = true
 
 
@@ -1881,10 +2061,68 @@ func get_room_parallax_layers() -> Array:
     var room := get_current_room()
     if room.is_empty():
         return EnvIO.default_parallax_layers()
+    if not bool(room.get("parallax_enabled", true)):
+        return []
     var layers_v: Variant = room.get("parallax_layers", [])
     if typeof(layers_v) == TYPE_ARRAY:
         return (layers_v as Array).duplicate(true)
     return EnvIO.default_parallax_layers()
+
+
+func get_room_background_image() -> Dictionary:
+    var room := get_current_room()
+    if room.is_empty():
+        return EnvIO.default_background_image()
+    var raw_v: Variant = room.get("background_image", EnvIO.default_background_image(
+        int(room.get("width_blocks", 30)),
+        int(room.get("height_blocks", 17))))
+    if typeof(raw_v) == TYPE_DICTIONARY:
+        return (raw_v as Dictionary).duplicate(true)
+    return EnvIO.default_background_image(
+        int(room.get("width_blocks", 30)),
+        int(room.get("height_blocks", 17)))
+
+
+func get_room_background_images() -> Array:
+    var room := get_current_room()
+    if room.is_empty():
+        return []
+    var raw_v: Variant = room.get("background_images", [])
+    if typeof(raw_v) == TYPE_ARRAY:
+        return (raw_v as Array).duplicate(true)
+    return []
+
+
+func get_available_backdrop_images() -> Array:
+    return PackAssetIndex.list_pack_pngs(pack_id, "Backdrops/Parallax")
+
+
+func get_selected_background_asset() -> String:
+    if not selected_background_asset.is_empty():
+        return selected_background_asset
+    var images := get_available_backdrop_images()
+    if not images.is_empty():
+        selected_background_asset = str(images[0])
+    return selected_background_asset
+
+
+func set_selected_background_asset(path: String) -> void:
+    selected_background_asset = path.strip_edges()
+
+
+func get_selected_background_image_id() -> String:
+    return selected_background_image_id
+
+
+func get_selected_background_image() -> Dictionary:
+    var room := get_current_room()
+    if room.is_empty():
+        return {}
+    var arr := _get_background_images_ref(room)
+    var idx := _find_background_image_index(arr, selected_background_image_id)
+    if idx >= 0 and idx < arr.size() and typeof(arr[idx]) == TYPE_DICTIONARY:
+        return (arr[idx] as Dictionary).duplicate(true)
+    return {}
 
 
 func load_backdrop_texture(rel_path: String) -> Texture2D:
@@ -1897,6 +2135,1024 @@ func load_backdrop_texture(rel_path: String) -> Texture2D:
     if tex != null:
         _backdrop_textures[trimmed] = tex
     return tex
+
+
+func get_room_weather() -> Dictionary:
+    var room := get_current_room()
+    if room.is_empty():
+        return EnvIO.default_weather()
+    var raw_v: Variant = room.get("weather", EnvIO.default_weather())
+    if typeof(raw_v) == TYPE_DICTIONARY:
+        return (raw_v as Dictionary).duplicate(true)
+    return EnvIO.default_weather()
+
+
+func get_room_shader_regions() -> Array:
+    var room := get_current_room()
+    if room.is_empty():
+        return []
+    var raw_v: Variant = room.get("shader_regions", [])
+    if typeof(raw_v) == TYPE_ARRAY:
+        return (raw_v as Array).duplicate(true)
+    return []
+
+
+func get_room_zones() -> Array:
+    var room := get_current_room()
+    if room.is_empty():
+        return []
+    var raw_v: Variant = room.get("zones", [])
+    if typeof(raw_v) == TYPE_ARRAY:
+        return (raw_v as Array).duplicate(true)
+    return []
+
+
+func _get_background_images_ref(room: Dictionary) -> Array:
+    EnvIO.normalize_background_images(room)
+    var arr_v: Variant = room.get("background_images", [])
+    if typeof(arr_v) != TYPE_ARRAY:
+        room["background_images"] = []
+        return room["background_images"]
+    return arr_v as Array
+
+
+func _get_shader_regions_ref(room: Dictionary) -> Array:
+    EnvIO.normalize_shader_regions(room)
+    var arr_v: Variant = room.get("shader_regions", [])
+    if typeof(arr_v) != TYPE_ARRAY:
+        room["shader_regions"] = []
+        return room["shader_regions"]
+    return arr_v as Array
+
+
+func _get_zones_ref(room: Dictionary) -> Array:
+    EnvIO.normalize_zones(room)
+    var arr_v: Variant = room.get("zones", [])
+    if typeof(arr_v) != TYPE_ARRAY:
+        room["zones"] = []
+        return room["zones"]
+    return arr_v as Array
+
+
+func _sync_legacy_background_image(room: Dictionary) -> void:
+    var arr := _get_background_images_ref(room)
+    if not arr.is_empty() and typeof(arr[0]) == TYPE_DICTIONARY:
+        room["background_image"] = (arr[0] as Dictionary).duplicate(true)
+    else:
+        room["background_image"] = EnvIO.default_background_image(
+            int(room.get("width_blocks", 30)),
+            int(room.get("height_blocks", 17)))
+
+
+func _zone_id_map(arr: Array, exclude_id: String = "") -> Dictionary:
+    var ids: Dictionary = {}
+    var excluded := exclude_id.strip_edges()
+    for entry_v in arr:
+        if typeof(entry_v) != TYPE_DICTIONARY:
+            continue
+        var entry: Dictionary = entry_v
+        var zone_id := str(entry.get("id", "")).strip_edges()
+        if zone_id.is_empty() or zone_id == excluded:
+            continue
+        ids[zone_id] = true
+    return ids
+
+
+func _door_id_map(exclude_id: String = "") -> Dictionary:
+    var ids: Dictionary = {}
+    var excluded := exclude_id.strip_edges()
+    var rooms := _rooms_dict()
+    for room_v in rooms.values():
+        if typeof(room_v) != TYPE_DICTIONARY:
+            continue
+        var room: Dictionary = room_v
+        var zones := _get_zones_ref(room)
+        for zone_v in zones:
+            if typeof(zone_v) != TYPE_DICTIONARY:
+                continue
+            var zone: Dictionary = zone_v
+            if _normalize_zone_kind(str(zone.get("kind", ""))) != "door":
+                continue
+            var door_id := str(zone.get("id", "")).strip_edges()
+            if door_id.is_empty() or door_id == excluded:
+                continue
+            ids[door_id] = true
+    return ids
+
+
+func _door_room_prefix(room_addr: String = "") -> String:
+    var raw_addr := room_addr.strip_edges()
+    if raw_addr.is_empty():
+        raw_addr = current_room_addr.strip_edges()
+    return RegIO.sanitize_content_id(raw_addr, "room")
+
+
+func _door_local_name(raw_name: String, room_addr: String = "") -> String:
+    var raw := raw_name.strip_edges()
+    var prefix := _door_room_prefix(room_addr)
+    if not prefix.is_empty():
+        var full_prefix := prefix + "_"
+        if raw == prefix:
+            raw = ""
+        elif raw.begins_with(full_prefix):
+            raw = raw.substr(full_prefix.length())
+    return RegIO.sanitize_content_id(raw, "door")
+
+
+func _door_full_id(room_addr: String, raw_name: String) -> String:
+    var prefix := _door_room_prefix(room_addr)
+    var local_name := _door_local_name(raw_name, room_addr)
+    if local_name.is_empty():
+        local_name = "door"
+    if prefix.is_empty():
+        return local_name
+    return "%s_%s" % [prefix, local_name]
+
+
+func _rebase_room_door_ids(room: Dictionary, room_addr: String) -> Dictionary:
+    var zones := _get_zones_ref(room)
+    var used_ids := _door_id_map()
+    for zone_v in zones:
+        if typeof(zone_v) != TYPE_DICTIONARY:
+            continue
+        var zone: Dictionary = zone_v
+        if _normalize_zone_kind(str(zone.get("kind", ""))) != "door":
+            continue
+        var old_id := str(zone.get("id", "")).strip_edges()
+        if not old_id.is_empty():
+            used_ids.erase(old_id)
+    var remap: Dictionary = {}
+    for i in zones.size():
+        if typeof(zones[i]) != TYPE_DICTIONARY:
+            continue
+        var zone: Dictionary = zones[i]
+        if _normalize_zone_kind(str(zone.get("kind", ""))) != "door":
+            continue
+        var old_id := str(zone.get("id", "")).strip_edges()
+        var seed_name := str(zone.get("name", old_id)).strip_edges()
+        if seed_name.is_empty():
+            seed_name = old_id
+        var desired_id := _door_full_id(room_addr, seed_name)
+        var new_id := RegIO.unique_content_id(desired_id, used_ids, "door")
+        zone["id"] = new_id
+        zone["name"] = new_id
+        zones[i] = zone
+        if not old_id.is_empty() and old_id != new_id:
+            remap[old_id] = new_id
+        used_ids[new_id] = true
+    for i in zones.size():
+        if typeof(zones[i]) != TYPE_DICTIONARY:
+            continue
+        var zone: Dictionary = zones[i]
+        if _normalize_zone_kind(str(zone.get("kind", ""))) != "door":
+            continue
+        var target_id := str(zone.get("target_door_id", "")).strip_edges()
+        if target_id.is_empty() or not remap.has(target_id):
+            continue
+        zone["target_door_id"] = str(remap[target_id])
+        zones[i] = zone
+    room["zones"] = zones
+    _sync_room_zones(room)
+    return remap
+
+
+func _normalize_zone_kind(kind: String) -> String:
+    var normalized := kind.strip_edges().to_lower()
+    if normalized == "door" or normalized == "shader" or normalized == "interact" or normalized == "trigger":
+        return normalized
+    return "shader"
+
+
+func _zone_default_name(kind: String, arr: Array) -> String:
+    var base := "%s zone" % _normalize_zone_kind(kind)
+    var suffix := 1
+    while true:
+        var candidate := "%s %d" % [base.capitalize(), suffix]
+        var candidate_id := RegIO.unique_content_id(candidate, _zone_id_map(arr), "zone")
+        if _find_zone_index(arr, candidate_id) < 0:
+            return candidate
+        suffix += 1
+    return base.capitalize()
+
+
+func _normalize_zone_for_room(entry: Dictionary, room: Dictionary, arr: Array,
+        fallback_name: String = "", exclude_id: String = "") -> Dictionary:
+    var source: Dictionary = entry.duplicate(true)
+    var name := str(source.get("name", fallback_name)).strip_edges()
+    if name.is_empty():
+        name = fallback_name if not fallback_name.is_empty() else str(source.get("id", "Zone")).strip_edges()
+    if name.is_empty():
+        name = "Zone"
+    var kind := _normalize_zone_kind(str(source.get("kind", "")))
+    if kind == "door":
+        var room_addr := str(room.get("addr", current_room_addr)).strip_edges()
+        var desired_id := _door_full_id(room_addr, name if not name.is_empty() else str(source.get("id", "")))
+        source["id"] = RegIO.unique_content_id(desired_id, _door_id_map(exclude_id), "door", exclude_id)
+        source["name"] = str(source["id"])
+    else:
+        source["name"] = name
+        var desired_id := str(source.get("id", name)).strip_edges()
+        if desired_id.is_empty():
+            desired_id = name
+        source["id"] = RegIO.unique_content_id(desired_id, _zone_id_map(arr, exclude_id), "zone", exclude_id)
+    return EnvIO._normalize_zone_entry(
+        source,
+        int(room.get("width_blocks", EnvIO.DEFAULT_ROOM_W_BLOCKS)),
+        int(room.get("height_blocks", EnvIO.DEFAULT_ROOM_H_BLOCKS)),
+        exclude_id)
+
+
+func _zone_rect_from_entry(entry: Dictionary) -> Rect2:
+    return Rect2(
+        Vector2(float(entry.get("x_blocks", 0.0)), float(entry.get("y_blocks", 0.0))),
+        Vector2(float(entry.get("width_blocks", 0.0)), float(entry.get("height_blocks", 0.0))))
+
+
+func _find_zone_index(arr: Array, zone_id: String) -> int:
+    if zone_id.is_empty():
+        return -1
+    for i in arr.size():
+        var entry_v: Variant = arr[i]
+        if typeof(entry_v) != TYPE_DICTIONARY:
+            continue
+        if str((entry_v as Dictionary).get("id", "")).strip_edges() == zone_id:
+            return i
+    return -1
+
+
+func _find_region_door_zone(target_door_id: String) -> Dictionary:
+    var wanted := target_door_id.strip_edges()
+    if wanted.is_empty():
+        return {}
+    var rooms := _rooms_dict()
+    for room_addr_v in rooms.keys():
+        var room_v: Variant = rooms[room_addr_v]
+        if typeof(room_v) != TYPE_DICTIONARY:
+            continue
+        var room: Dictionary = room_v
+        var zones := _get_zones_ref(room)
+        for zone_v in zones:
+            if typeof(zone_v) != TYPE_DICTIONARY:
+                continue
+            var zone: Dictionary = zone_v
+            if _normalize_zone_kind(str(zone.get("kind", ""))) != "door":
+                continue
+            if str(zone.get("id", "")).strip_edges() == wanted:
+                return {
+                    "room_addr": str(room_addr_v),
+                    "room": room,
+                    "zone": zone,
+                }
+    return {}
+
+
+func _door_spawn_pixels_for_zone(zone: Dictionary, room: Dictionary) -> Vector2i:
+    if zone.is_empty() or room.is_empty():
+        return Vector2i.ZERO
+    var rect := _zone_rect_from_entry(zone)
+    var width_px := maxi(16, int(room.get("width_blocks", EnvIO.DEFAULT_ROOM_W_BLOCKS)) * 16)
+    var height_px := maxi(16, int(room.get("height_blocks", EnvIO.DEFAULT_ROOM_H_BLOCKS)) * 16)
+    var left_px := int(round(rect.position.x * 16.0))
+    var top_px := int(round(rect.position.y * 16.0))
+    var right_px := int(round(rect.end.x * 16.0))
+    var bottom_px := int(round(rect.end.y * 16.0))
+    var center_x := int(round((rect.position.x + rect.size.x * 0.5) * 16.0))
+    var center_y := int(round((rect.position.y + rect.size.y * 0.5) * 16.0))
+    var spawn_x := center_x
+    var spawn_y := center_y
+    match str(zone.get("direction", "right")).strip_edges():
+        "left":
+            spawn_x = right_px + 8
+        "right":
+            spawn_x = left_px - 8
+        "up":
+            spawn_y = bottom_px + 8
+        "down":
+            spawn_y = top_px - 8
+    spawn_x = clampi(spawn_x, 24, maxi(24, width_px - 24))
+    spawn_y = clampi(spawn_y, 24, maxi(24, height_px - 24))
+    return Vector2i(spawn_x, spawn_y)
+
+
+func _retarget_door_links(old_id: String, new_id: String, skip_zone_id: String = "") -> void:
+    var old_clean := old_id.strip_edges()
+    var new_clean := new_id.strip_edges()
+    var skipped := skip_zone_id.strip_edges()
+    if old_clean.is_empty() or new_clean.is_empty() or old_clean == new_clean:
+        return
+    var rooms := _rooms_dict()
+    for room_v in rooms.values():
+        if typeof(room_v) != TYPE_DICTIONARY:
+            continue
+        var room: Dictionary = room_v
+        var zones := _get_zones_ref(room)
+        var changed := false
+        for i in zones.size():
+            if typeof(zones[i]) != TYPE_DICTIONARY:
+                continue
+            var zone: Dictionary = zones[i]
+            if _normalize_zone_kind(str(zone.get("kind", ""))) != "door":
+                continue
+            if str(zone.get("id", "")).strip_edges() == skipped:
+                continue
+            if str(zone.get("target_door_id", "")).strip_edges() != old_clean:
+                continue
+            zone["target_door_id"] = new_clean
+            zones[i] = zone
+            changed = true
+        if changed:
+            room["zones"] = zones
+            _sync_room_zones(room)
+
+
+func _is_zone_entity(entity: Dictionary) -> bool:
+    if str(entity.get("type", "")).strip_edges() != "trigger_volume":
+        return false
+    var props_v: Variant = entity.get("properties", {})
+    if typeof(props_v) != TYPE_DICTIONARY:
+        return false
+    var props: Dictionary = props_v
+    return not str(props.get("zone_id", props.get("instance_id", ""))).strip_edges().is_empty()
+
+
+func _sync_room_zones(room: Dictionary) -> void:
+    var zones := _get_zones_ref(room)
+    var shader_regions: Array = []
+    var doors: Array = []
+    var entities_v: Variant = room.get("entities", [])
+    var entities_out: Array = []
+    if typeof(entities_v) == TYPE_ARRAY:
+        for entity_v in entities_v:
+            if typeof(entity_v) != TYPE_DICTIONARY:
+                continue
+            var entity: Dictionary = entity_v
+            if _is_zone_entity(entity):
+                continue
+            entities_out.append(entity.duplicate(true))
+    for zone_v in zones:
+        if typeof(zone_v) != TYPE_DICTIONARY:
+            continue
+        var zone: Dictionary = zone_v
+        var kind := _normalize_zone_kind(str(zone.get("kind", "shader")))
+        if kind == "shader":
+            shader_regions.append({
+                "id": str(zone.get("id", "")),
+                "x_blocks": float(zone.get("x_blocks", 0.0)),
+                "y_blocks": float(zone.get("y_blocks", 0.0)),
+                "width_blocks": float(zone.get("width_blocks", 0.0)),
+                "height_blocks": float(zone.get("height_blocks", 0.0)),
+                "shader_preset": str(zone.get("shader_preset", "flicker")),
+                "shader_tint": str(zone.get("shader_tint", "ffffff")),
+                "shader_strength": float(zone.get("shader_strength", 0.6)),
+                "shader_speed": float(zone.get("shader_speed", 1.0)),
+            })
+            continue
+        if kind == "door":
+            var target_door_id := str(zone.get("target_door_id", "")).strip_edges()
+            var legacy_target_room := str(zone.get("target_room", "")).strip_edges()
+            var target_link := _find_region_door_zone(target_door_id)
+            var target_room_addr := str(target_link.get("room_addr", ""))
+            if target_room_addr.is_empty():
+                target_room_addr = legacy_target_room
+            var target_zone_v: Variant = target_link.get("zone", {})
+            var target_room_v: Variant = target_link.get("room", {})
+            var target_zone: Dictionary = target_zone_v if typeof(target_zone_v) == TYPE_DICTIONARY else {}
+            var target_room: Dictionary = target_room_v if typeof(target_room_v) == TYPE_DICTIONARY else {}
+            var dest_pixels := _door_spawn_pixels_for_zone(target_zone, target_room)
+            var rect := _zone_rect_from_entry(zone)
+            var start_x := floori(rect.position.x)
+            var start_y := floori(rect.position.y)
+            var end_x := maxi(start_x + 1, ceili(rect.end.x))
+            var end_y := maxi(start_y + 1, ceili(rect.end.y))
+            for row in range(start_y, end_y):
+                for col in range(start_x, end_x):
+                    doors.append({
+                        "door_id": str(zone.get("id", "")),
+                        "target_door_id": target_door_id,
+                        "cap_x": col,
+                        "cap_y": row,
+                        "direction": str(zone.get("direction", selected_door_direction)),
+                        "target_room": "" if bool(zone.get("send_to_overworld", false)) else target_room_addr,
+                        "send_to_overworld": bool(zone.get("send_to_overworld", false)),
+                        "overworld_region_id": str(zone.get("overworld_region_id", "")).strip_edges(),
+                        "enabled": bool(zone.get("enabled", true)),
+                        "locked": bool(zone.get("locked", false)),
+                        "required_item_id": str(zone.get("required_item_id", "")).strip_edges(),
+                        "required_item_count": maxi(1, int(zone.get("required_item_count", 1))),
+                        "required_var_name": str(zone.get("required_var_name", "")).strip_edges(),
+                        "required_var_value": zone.get("required_var_value", 1),
+                        "required_global_tag": str(zone.get("required_global_tag", "")).strip_edges(),
+                        "blocked_event_name": str(zone.get("blocked_event_name", "")).strip_edges(),
+                        "success_event_name": str(zone.get("success_event_name", "")).strip_edges(),
+                        "arrive_event_name": str(zone.get("arrive_event_name", "")).strip_edges(),
+                        "dest_x": 0 if target_room_addr.is_empty() else dest_pixels.x,
+                        "dest_y": 0 if target_room_addr.is_empty() else dest_pixels.y,
+                    })
+            continue
+        if kind == "interact" or kind == "trigger":
+            var trigger_props := {
+                "instance_id": str(zone.get("id", "")),
+                "zone_id": str(zone.get("id", "")),
+                "name": str(zone.get("name", "")),
+                "width": maxi(16, int(round(float(zone.get("width_blocks", 1.0)) * 16.0))),
+                "height": maxi(16, int(round(float(zone.get("height_blocks", 1.0)) * 16.0))),
+                "event_name": str(zone.get("event_name", "zone_enter")),
+                "once": bool(zone.get("once", false)),
+                "interaction_mode": "interact" if kind == "interact" else str(zone.get("interaction_mode", "enter")),
+            }
+            if kind == "interact":
+                trigger_props["prompt_text"] = str(zone.get("prompt_text", "Interact"))
+            entities_out.append({
+                "type": "trigger_volume",
+                "x": int(round(float(zone.get("x_blocks", 0.0)) * 16.0)),
+                "y": int(round(float(zone.get("y_blocks", 0.0)) * 16.0)),
+                "properties": trigger_props,
+            })
+    room["shader_regions"] = shader_regions
+    room["doors"] = doors
+    room["entities"] = entities_out
+
+
+func _find_background_image_index(arr: Array, image_id: String) -> int:
+    if image_id.is_empty():
+        return -1
+    for i in arr.size():
+        var entry_v: Variant = arr[i]
+        if typeof(entry_v) != TYPE_DICTIONARY:
+            continue
+        if str((entry_v as Dictionary).get("id", "")).strip_edges() == image_id:
+            return i
+    return -1
+
+
+func _suggest_background_image_id(arr: Array) -> String:
+    var suffix := maxi(arr.size() + 1, 1)
+    while true:
+        var candidate := "bg_%d" % suffix
+        if _find_background_image_index(arr, candidate) < 0:
+            return candidate
+        suffix += 1
+    return "bg_1"
+
+
+func _find_shader_region_index(arr: Array, region_id: String) -> int:
+    if region_id.is_empty():
+        return -1
+    for i in arr.size():
+        var entry_v: Variant = arr[i]
+        if typeof(entry_v) != TYPE_DICTIONARY:
+            continue
+        if str((entry_v as Dictionary).get("id", "")).strip_edges() == region_id:
+            return i
+    return -1
+
+
+func _suggest_shader_region_id(arr: Array) -> String:
+    var suffix := maxi(arr.size() + 1, 1)
+    while true:
+        var candidate := "shader_%d" % suffix
+        if _find_shader_region_index(arr, candidate) < 0:
+            return candidate
+        suffix += 1
+    return "shader_1"
+
+
+func _normalize_background_rect(rect_blocks: Rect2) -> Rect2:
+    var x1 := minf(rect_blocks.position.x, rect_blocks.end.x)
+    var y1 := minf(rect_blocks.position.y, rect_blocks.end.y)
+    var x2 := maxf(rect_blocks.position.x, rect_blocks.end.x)
+    var y2 := maxf(rect_blocks.position.y, rect_blocks.end.y)
+    return Rect2(Vector2(x1, y1), Vector2(maxf(0.0, x2 - x1), maxf(0.0, y2 - y1)))
+
+
+func _background_rect_from_entry(entry: Dictionary) -> Rect2:
+    return Rect2(
+        Vector2(float(entry.get("x_blocks", 0.0)), float(entry.get("y_blocks", 0.0))),
+        Vector2(float(entry.get("width_blocks", 0.0)), float(entry.get("height_blocks", 0.0))))
+
+
+func _shader_region_rect_from_entry(entry: Dictionary) -> Rect2:
+    return Rect2(
+        Vector2(float(entry.get("x_blocks", 0.0)), float(entry.get("y_blocks", 0.0))),
+        Vector2(float(entry.get("width_blocks", 0.0)), float(entry.get("height_blocks", 0.0))))
+
+
+func create_background_image(rect_blocks: Rect2) -> bool:
+    var room := get_current_room()
+    if room.is_empty():
+        return false
+    var rel_path := get_selected_background_asset()
+    if rel_path.is_empty():
+        return false
+    var rect := _normalize_background_rect(rect_blocks)
+    if rect.size.x <= 0.01 or rect.size.y <= 0.01:
+        return false
+    var arr := _get_background_images_ref(room)
+    var entry: Dictionary = EnvIO.default_background_image(
+        int(room.get("width_blocks", 30)),
+        int(room.get("height_blocks", 17)))
+    entry["id"] = _suggest_background_image_id(arr)
+    entry["image"] = rel_path
+    entry["x_blocks"] = rect.position.x
+    entry["y_blocks"] = rect.position.y
+    entry["width_blocks"] = rect.size.x
+    entry["height_blocks"] = rect.size.y
+    arr.append(entry)
+    room["background_images"] = arr
+    _sync_legacy_background_image(room)
+    selected_background_image_id = str(entry.get("id", ""))
+    dirty = true
+    return true
+
+
+func pick_background_image_at(world_x: float, world_y: float) -> bool:
+    var room := get_current_room()
+    if room.is_empty():
+        return false
+    var hit := find_background_image_hit(world_x, world_y)
+    if hit.is_empty():
+        return false
+    selected_background_image_id = str(hit.get("id", "")).strip_edges()
+    selected_background_asset = str(hit.get("image", "")).strip_edges()
+    return true
+
+
+func find_background_image_hit(world_x: float, world_y: float) -> Dictionary:
+    var room := get_current_room()
+    if room.is_empty():
+        return {}
+    var arr := _get_background_images_ref(room)
+    for i in range(arr.size() - 1, -1, -1):
+        var entry_v: Variant = arr[i]
+        if typeof(entry_v) != TYPE_DICTIONARY:
+            continue
+        var entry: Dictionary = entry_v
+        var rect := _background_rect_from_entry(entry)
+        if Rect2(rect.position * 16.0, rect.size * 16.0).has_point(Vector2(world_x, world_y)):
+            return entry.duplicate(true)
+    return {}
+
+
+func delete_background_image_at(world_x: float, world_y: float) -> bool:
+    var room := get_current_room()
+    if room.is_empty():
+        return false
+    var arr := _get_background_images_ref(room)
+    for i in range(arr.size() - 1, -1, -1):
+        var entry_v: Variant = arr[i]
+        if typeof(entry_v) != TYPE_DICTIONARY:
+            continue
+        var entry: Dictionary = entry_v
+        var rect := _background_rect_from_entry(entry)
+        if Rect2(rect.position * 16.0, rect.size * 16.0).has_point(Vector2(world_x, world_y)):
+            arr.remove_at(i)
+            room["background_images"] = arr
+            _sync_legacy_background_image(room)
+            if selected_background_image_id == str(entry.get("id", "")):
+                selected_background_image_id = ""
+            dirty = true
+            return true
+    return false
+
+
+func set_selected_background_image_rect(rect_blocks: Rect2) -> bool:
+    var room := get_current_room()
+    if room.is_empty():
+        return false
+    var arr := _get_background_images_ref(room)
+    var idx := _find_background_image_index(arr, selected_background_image_id)
+    if idx < 0 or idx >= arr.size() or typeof(arr[idx]) != TYPE_DICTIONARY:
+        return false
+    var rect := _normalize_background_rect(rect_blocks)
+    var entry: Dictionary = arr[idx]
+    entry["x_blocks"] = rect.position.x
+    entry["y_blocks"] = rect.position.y
+    entry["width_blocks"] = maxf(0.0, rect.size.x)
+    entry["height_blocks"] = maxf(0.0, rect.size.y)
+    room["background_images"] = arr
+    _sync_legacy_background_image(room)
+    dirty = true
+    return true
+
+
+func update_selected_background_image(data: Dictionary) -> bool:
+    var room := get_current_room()
+    if room.is_empty():
+        return false
+    var arr := _get_background_images_ref(room)
+    var idx := _find_background_image_index(arr, selected_background_image_id)
+    if idx < 0 or idx >= arr.size() or typeof(arr[idx]) != TYPE_DICTIONARY:
+        return false
+    var before := _snapshot_list(arr)
+    var entry: Dictionary = arr[idx]
+    for key_v in data.keys():
+        entry[str(key_v)] = data[key_v]
+    entry = EnvIO._normalize_background_image_entry(
+        entry,
+        int(room.get("width_blocks", 30)),
+        int(room.get("height_blocks", 17)),
+        selected_background_image_id)
+    arr[idx] = entry
+    room["background_images"] = arr
+    _sync_legacy_background_image(room)
+    selected_background_asset = str(entry.get("image", selected_background_asset)).strip_edges()
+    dirty = true
+    _push_list_change(current_room_addr, "background_images",
+        "edit background image", before, _snapshot_list(arr))
+    return true
+
+
+func reorder_selected_background_image(delta: int) -> bool:
+    var room := get_current_room()
+    if room.is_empty():
+        return false
+    var arr := _get_background_images_ref(room)
+    var idx := _find_background_image_index(arr, selected_background_image_id)
+    if idx < 0:
+        return false
+    var new_idx := clampi(idx + delta, 0, arr.size() - 1)
+    if new_idx == idx:
+        return false
+    var before := _snapshot_list(arr)
+    var entry: Variant = arr[idx]
+    arr.remove_at(idx)
+    arr.insert(new_idx, entry)
+    room["background_images"] = arr
+    _sync_legacy_background_image(room)
+    dirty = true
+    _push_list_change(current_room_addr, "background_images",
+        "reorder background image", before, _snapshot_list(arr))
+    return true
+
+
+func delete_selected_background_image() -> bool:
+    var room := get_current_room()
+    if room.is_empty():
+        return false
+    var arr := _get_background_images_ref(room)
+    var idx := _find_background_image_index(arr, selected_background_image_id)
+    if idx < 0:
+        return false
+    var before := _snapshot_list(arr)
+    arr.remove_at(idx)
+    room["background_images"] = arr
+    _sync_legacy_background_image(room)
+    selected_background_image_id = ""
+    dirty = true
+    _push_list_change(current_room_addr, "background_images",
+        "delete background image", before, _snapshot_list(arr))
+    return true
+
+
+func merge_background_images_to_baked() -> bool:
+    var room := get_current_room()
+    if room.is_empty():
+        return false
+    var arr := _get_background_images_ref(room)
+    if arr.is_empty():
+        push_warning("[EnvEditor] no background images to merge")
+        return false
+    var room_w_px := maxi(1, int(room.get("width_blocks", 30)) * EnvIO.BLOCK_SIZE)
+    var room_h_px := maxi(1, int(room.get("height_blocks", 17)) * EnvIO.BLOCK_SIZE)
+    var baked: Image = Image.create_empty(room_w_px, room_h_px, false, Image.FORMAT_RGBA8)
+    baked.fill(Color(0, 0, 0, 0))
+    var before := _snapshot_list(arr)
+    for entry_v in arr:
+        if typeof(entry_v) != TYPE_DICTIONARY:
+            continue
+        var entry: Dictionary = entry_v
+        var rel_path := str(entry.get("image", "")).strip_edges()
+        if rel_path.is_empty():
+            continue
+        var src: Image = EnvIO.load_backdrop_image(pack_id, rel_path)
+        if src == null:
+            continue
+        if src.get_format() != Image.FORMAT_RGBA8:
+            src.convert(Image.FORMAT_RGBA8)
+        var frame_count := maxi(1, int(entry.get("anim_frames", 1)))
+        var frame_w := maxi(1, int(src.get_width() / frame_count))
+        var frame_img: Image = src.get_region(Rect2i(0, 0, frame_w, src.get_height()))
+        var target_w := maxi(1, int(round(float(entry.get("width_blocks", 0.0)) * EnvIO.BLOCK_SIZE)))
+        var target_h := maxi(1, int(round(float(entry.get("height_blocks", 0.0)) * EnvIO.BLOCK_SIZE)))
+        if frame_img.get_width() != target_w or frame_img.get_height() != target_h:
+            frame_img.resize(target_w, target_h, Image.INTERPOLATE_NEAREST)
+        var tint := Color.from_string(str(entry.get("shader_tint", "ffffff")), Color.WHITE)
+        if tint != Color.WHITE:
+            for y in range(frame_img.get_height()):
+                for x in range(frame_img.get_width()):
+                    frame_img.set_pixel(x, y, frame_img.get_pixel(x, y) * tint)
+        var dst_pos := Vector2i(
+            int(round(float(entry.get("x_blocks", 0.0)) * EnvIO.BLOCK_SIZE)),
+            int(round(float(entry.get("y_blocks", 0.0)) * EnvIO.BLOCK_SIZE)))
+        var src_rect := Rect2i(0, 0, frame_img.get_width(), frame_img.get_height())
+        if dst_pos.x < 0:
+            src_rect.position.x = -dst_pos.x
+            src_rect.size.x -= src_rect.position.x
+            dst_pos.x = 0
+        if dst_pos.y < 0:
+            src_rect.position.y = -dst_pos.y
+            src_rect.size.y -= src_rect.position.y
+            dst_pos.y = 0
+        src_rect.size.x = mini(src_rect.size.x, room_w_px - dst_pos.x)
+        src_rect.size.y = mini(src_rect.size.y, room_h_px - dst_pos.y)
+        if src_rect.size.x <= 0 or src_rect.size.y <= 0:
+            continue
+        baked.blend_rect(frame_img, src_rect, dst_pos)
+    var room_name := current_room_addr.strip_edges().to_lower()
+    if room_name.is_empty():
+        room_name = "room"
+    var rel_path := EnvIO.save_baked_backdrop(pack_id, "%s_merged_bg.png" % room_name, baked)
+    if rel_path.is_empty():
+        return false
+    var merged_entry: Dictionary = EnvIO.default_background_image(
+        int(room.get("width_blocks", 30)),
+        int(room.get("height_blocks", 17)))
+    merged_entry["id"] = "bg_merged"
+    merged_entry["image"] = rel_path
+    merged_entry["x_blocks"] = 0.0
+    merged_entry["y_blocks"] = 0.0
+    merged_entry["width_blocks"] = float(room.get("width_blocks", 30))
+    merged_entry["height_blocks"] = float(room.get("height_blocks", 17))
+    merged_entry["scroll_speed_x"] = 1.0
+    merged_entry["scroll_speed_y"] = 1.0
+    room["background_images"] = [merged_entry]
+    _sync_legacy_background_image(room)
+    selected_background_image_id = str(merged_entry.get("id", ""))
+    selected_background_asset = rel_path
+    _backdrop_textures.erase(rel_path)
+    dirty = true
+    _push_list_change(current_room_addr, "background_images",
+        "merge background images", before, _snapshot_list(room["background_images"]))
+    return true
+
+
+func get_selected_zone_id() -> String:
+    return selected_zone_id
+
+
+func get_selected_zone_kind() -> String:
+    var selected := get_selected_zone()
+    if not selected.is_empty():
+        return _normalize_zone_kind(str(selected.get("kind", selected_zone_kind)))
+    return _normalize_zone_kind(selected_zone_kind)
+
+
+func get_selected_zone() -> Dictionary:
+    var room := get_current_room()
+    if room.is_empty():
+        return {}
+    var arr := _get_zones_ref(room)
+    var idx := _find_zone_index(arr, selected_zone_id)
+    if idx >= 0 and idx < arr.size() and typeof(arr[idx]) == TYPE_DICTIONARY:
+        return (arr[idx] as Dictionary).duplicate(true)
+    return {}
+
+
+func get_selected_shader_region_id() -> String:
+    return selected_zone_id
+
+
+func get_selected_shader_region() -> Dictionary:
+    var selected := get_selected_zone()
+    if _normalize_zone_kind(str(selected.get("kind", ""))) == "shader":
+        return selected
+    return {}
+
+
+func create_zone(rect_blocks: Rect2) -> bool:
+    var room := get_current_room()
+    if room.is_empty():
+        return false
+    var rect := _normalize_background_rect(rect_blocks)
+    if rect.size.x <= 0.01 or rect.size.y <= 0.01:
+        return false
+    var arr := _get_zones_ref(room)
+    var entry: Dictionary = EnvIO.default_zone()
+    entry["kind"] = _normalize_zone_kind(selected_zone_kind)
+    entry["name"] = _zone_default_name(str(entry.get("kind", "shader")), arr)
+    entry["x_blocks"] = rect.position.x
+    entry["y_blocks"] = rect.position.y
+    entry["width_blocks"] = rect.size.x
+    entry["height_blocks"] = rect.size.y
+    if str(entry.get("kind", "")) == "door":
+        entry["direction"] = selected_door_direction
+        entry["target_door_id"] = selected_door_target_room
+        entry["target_room"] = ""
+        entry["send_to_overworld"] = selected_door_send_to_overworld
+        entry["overworld_region_id"] = selected_door_overworld_region_id
+        entry["enabled"] = selected_door_enabled
+        entry["locked"] = selected_door_locked
+        entry["required_item_id"] = selected_door_required_item_id
+        entry["required_item_count"] = selected_door_required_item_count
+        entry["required_var_name"] = selected_door_required_var_name
+        entry["required_var_value"] = selected_door_required_var_value
+        entry["required_global_tag"] = selected_door_required_global_tag
+        entry["blocked_event_name"] = selected_door_blocked_event_name
+        entry["success_event_name"] = selected_door_success_event_name
+        entry["arrive_event_name"] = selected_door_arrive_event_name
+    elif str(entry.get("kind", "")) == "interact":
+        entry["interaction_mode"] = "interact"
+        entry["event_name"] = "interact"
+    elif str(entry.get("kind", "")) == "trigger":
+        entry["interaction_mode"] = "enter"
+    var normalized := _normalize_zone_for_room(entry, room, arr, str(entry.get("name", "")))
+    arr.append(normalized)
+    room["zones"] = arr
+    _sync_room_zones(room)
+    selected_zone_id = str(normalized.get("id", ""))
+    selected_zone_kind = str(normalized.get("kind", selected_zone_kind))
+    selected_shader_region_id = selected_zone_id
+    if selected_zone_kind == "door":
+        _sync_selected_door_fields(normalized)
+    dirty = true
+    return true
+
+
+func create_shader_region(rect_blocks: Rect2) -> bool:
+    selected_zone_kind = "shader"
+    return create_zone(rect_blocks)
+
+
+func find_zone_hit(world_x: float, world_y: float) -> Dictionary:
+    var room := get_current_room()
+    if room.is_empty():
+        return {}
+    var arr := _get_zones_ref(room)
+    for i in range(arr.size() - 1, -1, -1):
+        var entry_v: Variant = arr[i]
+        if typeof(entry_v) != TYPE_DICTIONARY:
+            continue
+        var entry: Dictionary = entry_v
+        var rect := _zone_rect_from_entry(entry)
+        if Rect2(rect.position * 16.0, rect.size * 16.0).has_point(Vector2(world_x, world_y)):
+            return entry.duplicate(true)
+    return {}
+
+
+func find_shader_region_hit(world_x: float, world_y: float) -> Dictionary:
+    var hit := find_zone_hit(world_x, world_y)
+    if _normalize_zone_kind(str(hit.get("kind", ""))) == "shader":
+        return hit
+    return {}
+
+
+func pick_zone_at(world_x: float, world_y: float) -> bool:
+    var hit: Dictionary = find_zone_hit(world_x, world_y)
+    if hit.is_empty():
+        return false
+    selected_zone_id = str(hit.get("id", "")).strip_edges()
+    selected_zone_kind = str(hit.get("kind", selected_zone_kind))
+    selected_shader_region_id = selected_zone_id
+    if selected_zone_kind == "door":
+        _sync_selected_door_fields(hit)
+    return true
+
+
+func pick_shader_region_at(world_x: float, world_y: float) -> bool:
+    return pick_zone_at(world_x, world_y)
+
+
+func delete_zone_at(world_x: float, world_y: float) -> bool:
+    var room := get_current_room()
+    if room.is_empty():
+        return false
+    var arr := _get_zones_ref(room)
+    for i in range(arr.size() - 1, -1, -1):
+        var entry_v: Variant = arr[i]
+        if typeof(entry_v) != TYPE_DICTIONARY:
+            continue
+        var entry: Dictionary = entry_v
+        var rect := _zone_rect_from_entry(entry)
+        if Rect2(rect.position * 16.0, rect.size * 16.0).has_point(Vector2(world_x, world_y)):
+            var before := _snapshot_list(arr)
+            arr.remove_at(i)
+            room["zones"] = arr
+            _sync_room_zones(room)
+            if selected_zone_id == str(entry.get("id", "")):
+                selected_zone_id = ""
+                selected_shader_region_id = ""
+            dirty = true
+            _push_list_change(current_room_addr, "zones",
+                "delete zone", before, _snapshot_list(arr))
+            return true
+    return false
+
+
+func delete_shader_region_at(world_x: float, world_y: float) -> bool:
+    return delete_zone_at(world_x, world_y)
+
+
+func set_selected_zone_rect(rect_blocks: Rect2) -> bool:
+    var room := get_current_room()
+    if room.is_empty():
+        return false
+    var arr := _get_zones_ref(room)
+    var idx := _find_zone_index(arr, selected_zone_id)
+    if idx < 0 or idx >= arr.size() or typeof(arr[idx]) != TYPE_DICTIONARY:
+        return false
+    var rect := _normalize_background_rect(rect_blocks)
+    var entry: Dictionary = arr[idx]
+    entry["x_blocks"] = rect.position.x
+    entry["y_blocks"] = rect.position.y
+    entry["width_blocks"] = maxf(0.0, rect.size.x)
+    entry["height_blocks"] = maxf(0.0, rect.size.y)
+    room["zones"] = arr
+    _sync_room_zones(room)
+    dirty = true
+    return true
+
+
+func set_selected_shader_region_rect(rect_blocks: Rect2) -> bool:
+    return set_selected_zone_rect(rect_blocks)
+
+
+func update_selected_zone(data: Dictionary) -> bool:
+    var room := get_current_room()
+    if room.is_empty():
+        return false
+    var arr := _get_zones_ref(room)
+    var idx := _find_zone_index(arr, selected_zone_id)
+    if idx < 0 or idx >= arr.size() or typeof(arr[idx]) != TYPE_DICTIONARY:
+        return false
+    var before := _snapshot_list(arr)
+    var entry: Dictionary = arr[idx]
+    var old_id := str(entry.get("id", "")).strip_edges()
+    var was_door := _normalize_zone_kind(str(entry.get("kind", ""))) == "door"
+    for key_v in data.keys():
+        entry[str(key_v)] = data[key_v]
+    entry = _normalize_zone_for_room(entry, room, arr,
+        str(entry.get("name", "")), selected_zone_id)
+    arr[idx] = entry
+    room["zones"] = arr
+    _sync_room_zones(room)
+    selected_zone_id = str(entry.get("id", selected_zone_id))
+    selected_zone_kind = str(entry.get("kind", selected_zone_kind))
+    selected_shader_region_id = selected_zone_id
+    if selected_zone_kind == "door":
+        _sync_selected_door_fields(entry)
+    if was_door:
+        var new_id := str(entry.get("id", old_id)).strip_edges()
+        if new_id != old_id:
+            _retarget_door_links(old_id, new_id, new_id)
+    dirty = true
+    _push_list_change(current_room_addr, "zones",
+        "edit zone", before, _snapshot_list(arr))
+    return true
+
+
+func update_selected_shader_region(data: Dictionary) -> bool:
+    return update_selected_zone(data)
+
+
+func reorder_selected_zone(delta: int) -> bool:
+    var room := get_current_room()
+    if room.is_empty():
+        return false
+    var arr := _get_zones_ref(room)
+    var idx := _find_zone_index(arr, selected_zone_id)
+    if idx < 0:
+        return false
+    var new_idx := clampi(idx + delta, 0, arr.size() - 1)
+    if new_idx == idx:
+        return false
+    var before := _snapshot_list(arr)
+    var entry_v: Variant = arr[idx]
+    arr.remove_at(idx)
+    arr.insert(new_idx, entry_v)
+    room["zones"] = arr
+    _sync_room_zones(room)
+    dirty = true
+    _push_list_change(current_room_addr, "zones",
+        "reorder zone", before, _snapshot_list(arr))
+    return true
+
+
+func reorder_selected_shader_region(delta: int) -> bool:
+    return reorder_selected_zone(delta)
+
+
+func delete_selected_zone() -> bool:
+    var room := get_current_room()
+    if room.is_empty():
+        return false
+    var arr := _get_zones_ref(room)
+    var idx := _find_zone_index(arr, selected_zone_id)
+    if idx < 0:
+        return false
+    var before := _snapshot_list(arr)
+    arr.remove_at(idx)
+    room["zones"] = arr
+    _sync_room_zones(room)
+    selected_zone_id = ""
+    selected_shader_region_id = ""
+    dirty = true
+    _push_list_change(current_room_addr, "zones",
+        "delete zone", before, _snapshot_list(arr))
+    return true
+
+
+func delete_selected_shader_region() -> bool:
+    return delete_selected_zone()
 
 func _resize_grid_in_place(host: Dictionary, key: String, new_rows: int, new_cols: int) -> void:
     var old_v: Variant = host.get(key)
@@ -1974,7 +3230,7 @@ func move_tile_layer(idx: int, delta: int) -> void:
         active_tile_layer_idx = idx
     dirty = true
 
-func set_tile_layer_scroll(idx: int, sx: float, sy: float) -> void:
+func set_tile_layer_scroll(idx: int, _sx: float, _sy: float) -> void:
     var layers := _get_tile_layers()
     if idx < 0 or idx >= layers.size():
         return
@@ -2088,35 +3344,41 @@ func _cull_doors_outside(room: Dictionary, new_w: int, new_h: int) -> void:
 # ─── Room CRUD ───────────────────────────────────────────────────────────
 
 func request_new_room() -> void:
-    show_text_modal("New room", _suggest_new_room_addr(),
-        "Address (identifier). Friendly name can be edited later.",
+    show_text_modal("New room", _suggest_new_room_name(),
+        "Room name. The room id will be generated from it.",
         Callable(self, "_create_new_room"))
 
 func request_rename_room(addr: String) -> void:
-    show_text_modal("Rename room", addr,
-        "New address for \"%s\" (must be unique)." % addr,
+    var room_name := addr
+    var rooms: Dictionary = rooms_data.get("rooms", {})
+    if rooms.has(addr):
+        room_name = str((rooms[addr] as Dictionary).get("friendly_name", addr))
+    show_text_modal("Rename room", room_name,
+        "Room name for \"%s\". The room id updates to match." % addr,
         Callable(self, "_rename_room_to").bind(addr))
 
-func _suggest_new_room_addr() -> String:
+func _suggest_new_room_name() -> String:
     var rooms: Dictionary = rooms_data.get("rooms", {})
     var i := 1
     while true:
-        var candidate := "room_%d" % i
-        if not rooms.has(candidate):
-            return candidate
+        var candidate_name := "Room %d" % i
+        var candidate_id := RegIO.unique_content_id(candidate_name, rooms, "room")
+        if not rooms.has(candidate_id):
+            return candidate_name
         i += 1
-    return "room_new"
+    return "Room"
 
-func _create_new_room(addr: String) -> void:
-    addr = addr.strip_edges()
-    if addr.is_empty():
+func _create_new_room(room_name: String) -> void:
+    var trimmed_name := room_name.strip_edges()
+    if trimmed_name.is_empty():
         push_warning("[EnvEditor] empty room address ignored")
         return
     var rooms: Dictionary = rooms_data.get("rooms", {})
+    var addr := RegIO.unique_content_id(trimmed_name, rooms, "room")
     if rooms.has(addr):
         push_warning("[EnvEditor] room '%s' already exists" % addr)
         return
-    var new_room := EnvIO.default_room(addr, addr,
+    var new_room := EnvIO.default_room(addr, trimmed_name,
         EnvIO.DEFAULT_ROOM_W_BLOCKS, EnvIO.DEFAULT_ROOM_H_BLOCKS, selected_tileset_id)
     rooms[addr] = new_room
     rooms_data["rooms"] = rooms
@@ -2125,30 +3387,52 @@ func _create_new_room(addr: String) -> void:
     current_room_addr = addr
     dirty = true
 
-func _rename_room_to(new_addr: String, old_addr: String) -> void:
-    new_addr = new_addr.strip_edges()
-    if new_addr.is_empty() or new_addr == old_addr:
+func _rename_room_to(new_name: String, old_addr: String) -> void:
+    var trimmed_name := new_name.strip_edges()
+    if trimmed_name.is_empty():
         return
     var rooms: Dictionary = rooms_data.get("rooms", {})
     if not rooms.has(old_addr):
         return
-    if rooms.has(new_addr):
+    var new_addr := RegIO.unique_content_id(trimmed_name, rooms, "room", old_addr)
+    if new_addr == old_addr and trimmed_name == str((rooms[old_addr] as Dictionary).get("friendly_name", old_addr)).strip_edges():
+        return
+    if new_addr != old_addr and rooms.has(new_addr):
         push_warning("[EnvEditor] room '%s' already exists" % new_addr)
         return
-    var room: Dictionary = rooms[old_addr]
+    var room: Dictionary = (rooms[old_addr] as Dictionary).duplicate(true)
     room["addr"] = new_addr
-    rooms[new_addr] = room
-    rooms.erase(old_addr)
+    room["friendly_name"] = trimmed_name
+    var door_id_remap := _rebase_room_door_ids(room, new_addr)
+    if new_addr == old_addr:
+        rooms[old_addr] = room
+    else:
+        rooms[new_addr] = room
+        rooms.erase(old_addr)
     if str(rooms_data.get("start_room", "")) == old_addr:
         rooms_data["start_room"] = new_addr
     if current_room_addr == old_addr:
         current_room_addr = new_addr
+    if door_id_remap.has(selected_zone_id):
+        selected_zone_id = str(door_id_remap[selected_zone_id])
+        selected_shader_region_id = selected_zone_id
     # Fix up door targets that point at this room.
     for key in rooms.keys():
         var other: Variant = rooms[key]
         if typeof(other) != TYPE_DICTIONARY:
             continue
-        var doors_v: Variant = (other as Dictionary).get("doors", [])
+        var other_room := other as Dictionary
+        var zones_v: Variant = other_room.get("zones", [])
+        if typeof(zones_v) == TYPE_ARRAY:
+            for zone_v in zones_v:
+                if typeof(zone_v) != TYPE_DICTIONARY:
+                    continue
+                var zone: Dictionary = zone_v
+                if _normalize_zone_kind(str(zone.get("kind", ""))) == "door" \
+                        and str(zone.get("target_room", "")).strip_edges() == old_addr:
+                    zone["target_room"] = new_addr
+            _sync_room_zones(other_room)
+        var doors_v: Variant = other_room.get("doors", [])
         if typeof(doors_v) != TYPE_ARRAY:
             continue
         for d_v in doors_v:
@@ -2156,6 +3440,9 @@ func _rename_room_to(new_addr: String, old_addr: String) -> void:
                 continue
             if str((d_v as Dictionary).get("target_room", "")) == old_addr:
                 (d_v as Dictionary)["target_room"] = new_addr
+    for old_door_id_v in door_id_remap.keys():
+        var old_door_id := str(old_door_id_v)
+        _retarget_door_links(old_door_id, str(door_id_remap[old_door_id]))
     dirty = true
 
 func delete_room(addr: String) -> void:
@@ -2198,6 +3485,7 @@ func _duplicate_room(new_addr: String, src_addr: String) -> void:
     var copy: Dictionary = _deep_copy_dict(src)
     copy["addr"] = new_addr
     copy["name"] = new_addr
+    _rebase_room_door_ids(copy, new_addr)
     rooms[new_addr] = copy
     rooms_data["rooms"] = rooms
     current_room_addr = new_addr
@@ -2299,7 +3587,9 @@ func _suggest_zone_id(world_x: float, world_y: float, arr: Array) -> String:
 
 func _default_entity_properties(type_id: String, world_x: float, world_y: float, arr: Array) -> Dictionary:
     if type_id == "player_spawn":
-        return {}
+        return {
+            "facing": "right",
+        }
     var props: Dictionary = {
         "instance_id": _suggest_entity_instance_id(type_id, world_x, world_y, arr),
     }
@@ -2310,6 +3600,119 @@ func _default_entity_properties(type_id: String, world_x: float, world_y: float,
         props["event_name"] = "zone_enter"
         props["once"] = false
     return props
+
+
+func _entity_palette_kind_for_type(type_id: String) -> String:
+    var trimmed := type_id.strip_edges()
+    if EnvTypes.ENTITY_TYPES.has(trimmed):
+        return trimmed
+    var data: Dictionary = EntIO.load_or_init(pack_id)
+    var arr_v: Variant = data.get("entities", [])
+    if typeof(arr_v) != TYPE_ARRAY:
+        return trimmed
+    for entity_v in arr_v:
+        if typeof(entity_v) != TYPE_DICTIONARY:
+            continue
+        var entity: Dictionary = entity_v
+        if str(entity.get("id", "")).strip_edges() != trimmed:
+            continue
+        var category := str(entity.get("category", "")).strip_edges().to_lower()
+        if category == "interactable":
+            return "npc"
+        if category == "pickup":
+            return "pickup"
+        if category == "logic":
+            return "trigger_volume"
+        if category == "enemy" or category == "boss":
+            return "enemy"
+    return trimmed
+
+
+func _entity_type_uses_authored_picker(type_id: String) -> bool:
+    return type_id == "npc" or type_id == "sign" or type_id == "pickup" \
+        or type_id == "patroller" or type_id == "enemy"
+
+
+func _ensure_entity_def_cache() -> void:
+    if not _entity_defs_by_id.is_empty():
+        return
+    var data: Dictionary = EntIO.load_or_init(pack_id)
+    var arr_v: Variant = data.get("entities", [])
+    if typeof(arr_v) != TYPE_ARRAY:
+        return
+    var arr: Array = arr_v
+    for entity_v in arr:
+        if typeof(entity_v) != TYPE_DICTIONARY:
+            continue
+        var entity: Dictionary = entity_v
+        var entity_id := str(entity.get("id", "")).strip_edges()
+        if not entity_id.is_empty():
+            _entity_defs_by_id[entity_id] = entity
+
+
+func _entity_def_for_type(type_id: String) -> Dictionary:
+    _ensure_entity_def_cache()
+    var entity_v: Variant = _entity_defs_by_id.get(type_id, {})
+    if typeof(entity_v) == TYPE_DICTIONARY:
+        return entity_v
+    return {}
+
+
+func _pick_entity_preview_png(pngs: Array) -> String:
+    if pngs.is_empty():
+        return ""
+    for name_v in pngs:
+        var name := str(name_v).to_lower()
+        if name.contains("idle"):
+            return str(name_v)
+    for name_v in pngs:
+        var name := str(name_v).to_lower()
+        if name.contains("walk"):
+            return str(name_v)
+    for name_v in pngs:
+        var name := str(name_v).to_lower()
+        if name.contains("default"):
+            return str(name_v)
+    return str(pngs[0])
+
+
+func get_entity_preview_texture(type_id: String) -> Texture2D:
+    var clean := type_id.strip_edges()
+    if clean.is_empty():
+        return null
+    if _entity_preview_textures.has(clean):
+        var cached: Variant = _entity_preview_textures.get(clean)
+        if cached is Texture2D:
+            return cached
+        return null
+    var entity := _entity_def_for_type(clean)
+    if entity.is_empty():
+        _entity_preview_textures[clean] = null
+        return null
+    var sprite_set_rel := str(entity.get("sprite_set", "")).strip_edges()
+    if sprite_set_rel.is_empty():
+        _entity_preview_textures[clean] = null
+        return null
+    var pngs := EntIO.list_sprite_pngs(pack_id, sprite_set_rel)
+    if pngs.is_empty():
+        _entity_preview_textures[clean] = null
+        return null
+    var preview_png := _pick_entity_preview_png(pngs)
+    if preview_png.is_empty():
+        _entity_preview_textures[clean] = null
+        return null
+    var tex := EntIO.load_sprite_png(pack_id, sprite_set_rel, preview_png)
+    _entity_preview_textures[clean] = tex
+    return tex
+
+
+func get_entity_preview_label(type_id: String) -> String:
+    var entity := _entity_def_for_type(type_id.strip_edges())
+    if not entity.is_empty():
+        var name := str(entity.get("name", "")).strip_edges()
+        if not name.is_empty():
+            return name
+    return EnvTypes.entity_label(type_id)
 
 
 func place_entity_at(world_x: float, world_y: float) -> void:
@@ -2354,6 +3757,8 @@ func place_entity_at(world_x: float, world_y: float) -> void:
     dirty = true
     _push_list_change(current_room_addr, "entities",
         "place %s" % selected_entity_type, before, _snapshot_list(arr))
+    if _entity_type_uses_authored_picker(selected_entity_type):
+        request_edit_entity(arr.size() - 1, true)
 
 func delete_entity_near(world_x: float, world_y: float, radius_px: float = 10.0) -> bool:
     var room := get_current_room()
@@ -2389,88 +3794,19 @@ func delete_entity_near(world_x: float, world_y: float, radius_px: float = 10.0)
 # ─── Door placement ──────────────────────────────────────────────────────
 
 func place_door_at(row: int, col: int) -> void:
-    var room := get_current_room()
-    if room.is_empty():
-        return
-    var rows := int(room.get("height_blocks", 0))
-    var cols := int(room.get("width_blocks", 0))
-    if row < 0 or row >= rows or col < 0 or col >= cols:
-        return
-    var arr_v: Variant = room.get("doors", [])
-    if typeof(arr_v) != TYPE_ARRAY:
-        arr_v = []
-    var arr: Array = arr_v
-    var before := _snapshot_list(arr)
-    # If a door already exists at this cell, update it in place rather than
-    # appending a duplicate (otherwise drag-to-paint leaves dead entries).
-    for d_v in arr:
-        if typeof(d_v) != TYPE_DICTIONARY:
-            continue
-        var d: Dictionary = d_v
-        if int(d.get("cap_x", -1)) == col and int(d.get("cap_y", -1)) == row:
-            d["direction"] = selected_door_direction
-            d["send_to_overworld"] = selected_door_send_to_overworld
-            d["target_room"] = "" if selected_door_send_to_overworld else selected_door_target_room
-            room["doors"] = arr
-            dirty = true
-            _push_list_change(current_room_addr, "doors",
-                "update door", before, _snapshot_list(arr))
-            return
-    var door := {
-        "cap_x": col,
-        "cap_y": row,
-        "direction": selected_door_direction,
-        "target_room": "" if selected_door_send_to_overworld else selected_door_target_room,
-        "send_to_overworld": selected_door_send_to_overworld,
-        "dest_x": 0,
-        "dest_y": 0,
-    }
-    arr.append(door)
-    room["doors"] = arr
-    dirty = true
-    _push_list_change(current_room_addr, "doors",
-        "place door", before, _snapshot_list(arr))
+    selected_zone_kind = "door"
+    create_zone(Rect2(Vector2(float(col), float(row)), Vector2.ONE))
 
 func delete_door_at(row: int, col: int) -> bool:
-    var room := get_current_room()
-    if room.is_empty():
-        return false
-    var arr_v: Variant = room.get("doors", [])
-    if typeof(arr_v) != TYPE_ARRAY:
-        return false
-    var arr: Array = arr_v
-    for i in arr.size():
-        var d_v: Variant = arr[i]
-        if typeof(d_v) != TYPE_DICTIONARY:
-            continue
-        var d: Dictionary = d_v
-        if int(d.get("cap_x", -1)) == col and int(d.get("cap_y", -1)) == row:
-            var before := _snapshot_list(arr)
-            arr.remove_at(i)
-            room["doors"] = arr
-            dirty = true
-            _push_list_change(current_room_addr, "doors",
-                "delete door", before, _snapshot_list(arr))
-            return true
-    return false
+    return delete_zone_at(float(col * 16 + 8), float(row * 16 + 8))
 
 func pick_door_at(row: int, col: int) -> bool:
-    var room := get_current_room()
-    if room.is_empty():
-        return false
-    var arr_v: Variant = room.get("doors", [])
-    if typeof(arr_v) != TYPE_ARRAY:
-        return false
-    for d_v in arr_v:
-        if typeof(d_v) != TYPE_DICTIONARY:
-            continue
-        var d: Dictionary = d_v
-        if int(d.get("cap_x", -1)) == col and int(d.get("cap_y", -1)) == row:
-            selected_door_direction = str(d.get("direction", selected_door_direction))
-            selected_door_target_room = str(d.get("target_room", selected_door_target_room))
-            selected_door_send_to_overworld = _door_sends_to_overworld(d)
-            return true
-    return false
+    var picked := pick_zone_at(float(col * 16 + 8), float(row * 16 + 8))
+    var selected := get_selected_zone()
+    if picked and _normalize_zone_kind(str(selected.get("kind", ""))) == "door":
+        _sync_selected_door_fields(selected)
+        return true
+    return picked
 
 
 func pick_entity_at(world_x: float, world_y: float, radius_px: float = 10.0) -> bool:
@@ -2497,7 +3833,7 @@ func pick_entity_at(world_x: float, world_y: float, radius_px: float = 10.0) -> 
     if best_idx < 0:
         return false
     var hit: Dictionary = arr[best_idx]
-    selected_entity_type = str(hit.get("type", selected_entity_type))
+    selected_entity_type = _entity_palette_kind_for_type(str(hit.get("type", selected_entity_type)))
     request_edit_entity(best_idx)
     return true
 
@@ -2507,10 +3843,11 @@ func pick_entity_at(world_x: float, world_y: float, radius_px: float = 10.0) -> 
 # Pending cell coordinates for the spike modal — set before opening, read
 # on submit to know which BTS cell to write the profile id into.
 var _entity_pending_idx: int = -1
+var _entity_pending_new_placement: bool = false
 var _spike_pending_row: int = -1
 var _spike_pending_col: int = -1
 
-func request_edit_entity(index: int) -> void:
+func request_edit_entity(index: int, from_new_placement: bool = false) -> void:
     if entity_modal == null:
         return
     var room := get_current_room()
@@ -2531,7 +3868,9 @@ func request_edit_entity(index: int) -> void:
     if typeof(props_v) == TYPE_DICTIONARY:
         props = props_v
     _entity_pending_idx = index
+    _entity_pending_new_placement = from_new_placement
     entity_modal.open(
+        pack_id,
         str(entity.get("type", "")),
         float(entity.get("x", 0)),
         float(entity.get("y", 0)),
@@ -2556,22 +3895,50 @@ func _on_entity_modal_submit(data: Dictionary) -> void:
         return
     var before := _snapshot_list(arr)
     var entity: Dictionary = entity_v
+    var type_override := str(data.get("type_id", "")).strip_edges()
+    if not type_override.is_empty():
+        entity["type"] = type_override
     var merged_props: Dictionary = {}
     var props_v: Variant = entity.get("properties", {})
     if typeof(props_v) == TYPE_DICTIONARY:
         merged_props = (props_v as Dictionary).duplicate(true)
+    var clear_keys_v: Variant = data.get("clear_keys", [])
+    if typeof(clear_keys_v) == TYPE_ARRAY:
+        for key_v in clear_keys_v:
+            merged_props.erase(str(key_v))
     for key_v in data.keys():
-        merged_props[str(key_v)] = data[key_v]
-    entity["properties"] = merged_props
+        var key := str(key_v)
+        if key == "type_id" or key == "clear_keys":
+            continue
+        merged_props[key] = data[key_v]
+    if merged_props.is_empty():
+        entity.erase("properties")
+    else:
+        entity["properties"] = merged_props
     room["entities"] = arr
     dirty = true
     _push_list_change(current_room_addr, "entities",
         "edit entity properties", before, _snapshot_list(arr))
     _entity_pending_idx = -1
+    _entity_pending_new_placement = false
 
 
 func _on_entity_modal_cancel() -> void:
+    if _entity_pending_new_placement and _entity_pending_idx >= 0:
+        var room := get_current_room()
+        if not room.is_empty():
+            var arr_v: Variant = room.get("entities", [])
+            if typeof(arr_v) == TYPE_ARRAY:
+                var arr: Array = arr_v
+                if _entity_pending_idx >= 0 and _entity_pending_idx < arr.size():
+                    var before := _snapshot_list(arr)
+                    arr.remove_at(_entity_pending_idx)
+                    room["entities"] = arr
+                    dirty = true
+                    _push_list_change(current_room_addr, "entities",
+                        "cancel new entity placement", before, _snapshot_list(arr))
     _entity_pending_idx = -1
+    _entity_pending_new_placement = false
 
 func request_edit_spike(row: int, col: int) -> void:
     if spike_modal == null:

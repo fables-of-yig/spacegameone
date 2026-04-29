@@ -12,7 +12,7 @@ const EcaSchemaLib := preload("res://Space/scripts/editor/dlg/eca_schema.gd")
 var _rows_box: VBoxContainer = null
 var _add_option: OptionButton = null
 var _suppress_emit: bool = false
-var _rows: Array = []  # each: {"box": HBoxContainer, "type": String, "fields": {key -> Control}}
+var _rows: Array = []  # each: {"box": VBoxContainer, "type": String, "fields": {key -> Control}}
 var _last_errors: Array = []
 
 
@@ -27,18 +27,18 @@ func _build_ui() -> void:
     var add_row := HBoxContainer.new()
     add_child(add_row)
     var lbl := Label.new()
-    lbl.text = "Add action:"
-    lbl.tooltip_text = "Append a new action to the selected rule. Actions run top-to-bottom."
+    lbl.text = "Add effect:"
+    lbl.tooltip_text = "Add something that should happen automatically. Effects run from top to bottom."
     add_row.add_child(lbl)
     _add_option = OptionButton.new()
     _add_option.add_item("(pick type)")
     for label in EcaSchemaLib.action_labels():
         _add_option.add_item(str(label))
-    _add_option.tooltip_text = "Choose which action type to append to this rule."
+    _add_option.tooltip_text = "Choose what kind of effect to add."
     add_row.add_child(_add_option)
     var add_btn := Button.new()
     add_btn.text = "+ Add"
-    add_btn.tooltip_text = "Add the selected action type to the bottom of the action list."
+    add_btn.tooltip_text = "Add the selected effect to the bottom of the list."
     add_btn.pressed.connect(_on_add_pressed)
     add_row.add_child(add_btn)
 
@@ -111,8 +111,12 @@ func _on_add_pressed() -> void:
 
 func _append_row(seed_data: Dictionary) -> void:
     var type_name: String = str(seed_data.get("type", ""))
+    var row_box := VBoxContainer.new()
+    row_box.add_theme_constant_override("separation", 3)
+    _rows_box.add_child(row_box)
+
     var box := HBoxContainer.new()
-    _rows_box.add_child(box)
+    row_box.add_child(box)
 
     var type_lbl := Label.new()
     var schema := EcaSchemaLib.find_action_schema(type_name)
@@ -138,7 +142,7 @@ func _append_row(seed_data: Dictionary) -> void:
         var field_tip := _field_tooltip(action_label, action_help, label, kind)
         sub_lbl.tooltip_text = field_tip
         fields_box.add_child(sub_lbl)
-        var control := _make_field(kind, seed_data.get(key, null))
+        var control := _make_field(kind, seed_data.get(key, null), type_name, key)
         control.tooltip_text = field_tip
         fields_box.add_child(control)
         field_controls[key] = control
@@ -146,13 +150,23 @@ func _append_row(seed_data: Dictionary) -> void:
     var del_btn := Button.new()
     del_btn.text = "X"
     del_btn.tooltip_text = "Delete this action row."
-    del_btn.pressed.connect(_on_delete_row.bind(box))
+    del_btn.pressed.connect(_on_delete_row.bind(row_box))
     box.add_child(del_btn)
 
-    _rows.append({"box": box, "type": type_name, "fields": field_controls})
+    var help_lbl := Label.new()
+    help_lbl.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+    help_lbl.add_theme_font_size_override("font_size", 10)
+    help_lbl.add_theme_color_override("font_color", Color(0.62, 0.72, 0.84))
+    help_lbl.text = _action_summary_text(type_name)
+    row_box.add_child(help_lbl)
+
+    var sep := HSeparator.new()
+    row_box.add_child(sep)
+
+    _rows.append({"box": row_box, "type": type_name, "fields": field_controls})
 
 
-func _on_delete_row(row_box: HBoxContainer) -> void:
+func _on_delete_row(row_box: VBoxContainer) -> void:
     for i in _rows.size():
         if (_rows[i] as Dictionary).get("box") == row_box:
             _rows.remove_at(i)
@@ -161,7 +175,7 @@ func _on_delete_row(row_box: HBoxContainer) -> void:
     _emit_changed()
 
 
-func _make_field(kind: String, initial: Variant) -> Control:
+func _make_field(kind: String, initial: Variant, action_type: String = "", field_key: String = "") -> Control:
     match kind:
         "bool":
             var cb := CheckBox.new()
@@ -178,6 +192,7 @@ func _make_field(kind: String, initial: Variant) -> Control:
                     le.text = "%f" % float(initial)
                 else:
                     le.text = str(initial)
+            le.placeholder_text = _field_placeholder(action_type, field_key, kind)
             le.text_changed.connect(func(_t): _emit_changed())
             return le
 
@@ -303,3 +318,163 @@ func _field_tooltip(action_label: String, action_help: String, field_label: Stri
         _:
             tip += " Enter text."
     return tip
+
+
+func _action_summary_text(action_type: String) -> String:
+    var help_text: String = EcaSchemaLib.action_help(action_type)
+    var example_text: String = _action_example(action_type)
+    if help_text.is_empty():
+        return example_text
+    if example_text.is_empty():
+        return help_text
+    return "%s Example: %s" % [help_text, example_text]
+
+
+func _action_example(action_type: String) -> String:
+    match action_type:
+        "start_dialogue":
+            return "id = shopkeep_intro"
+        "set_trigger_enabled":
+            return "id = boss_gate_intro, enabled = false"
+        "set_door_enabled":
+            return "id = startingregion_startingsceneleftdoor, enabled = false"
+        "set_door_locked":
+            return "id = startingregion_startingsceneleftdoor, locked = true"
+        "fire_event":
+            return "event = cutscene_done"
+        "wait_for_event":
+            return "event = bridge_lowered, timeout = 3"
+        "wait_for_dialogue":
+            return "timeout = 3, result_local = dialogue_finished"
+        "spawn_player":
+            return "room = town/plaza, zone_id = front_gate, facing = right"
+        "spawn_entity":
+            return "id = drone_guard, x = 320, y = 96"
+        "spawn_entity_at_zone":
+            return "id = drone_guard, zone_id = ambush_spawn"
+        "move_entity_to_zone":
+            return "entity = player, zone_id = exit_left, speed = 80"
+        "play_entity_anim":
+            return "entity = guard_01, anim = wave"
+        "set_entity_facing":
+            return "entity = player, direction = toward_zone, zone_id = mayor_desk"
+        "camera_focus":
+            return "mode = zone, target = boss_arena, speed = 160"
+        "teleport_player":
+            return "room = town/plaza, x = 128, y = 96"
+        "set_flag":
+            return "name = met_mayor, value = true"
+        "set_var":
+            return "name = gold, value = 100"
+        "add_var":
+            return "name = gold, delta = 25"
+        "give_item":
+            return "id = medkit_small, count = 1"
+        "give_ability":
+            return "id = double_jump"
+        "play_sfx":
+            return "name = ui_confirm"
+        "log":
+            return "message = reached_intro_gate"
+        _:
+            return ""
+
+
+func _field_placeholder(action_type: String, field_key: String, kind: String) -> String:
+    if kind == "opt_string":
+        match field_key:
+            "key":
+                return "entity_id"
+            "value":
+                return "mayor_npc"
+            "result_local":
+                return "wait_succeeded"
+            "anim":
+                return "wave"
+            "room":
+                return "town/plaza"
+            "zone_id":
+                return "front_gate" if action_type == "spawn_player" else "entrance_zone"
+            "entry_direction":
+                return "left / right / up / down"
+            "facing":
+                return "left / right / up / down"
+            "region_id":
+                return "capital"
+            "x":
+                return "leave blank to reuse current"
+            "y":
+                return "leave blank to reuse current"
+            _:
+                return ""
+    match field_key:
+        "id":
+            match action_type:
+                "start_dialogue":
+                    return "shopkeep_intro"
+                "set_trigger_enabled":
+                    return "boss_gate_intro"
+                "set_door_enabled", "set_door_locked":
+                    return "startingregion_startingsceneleftdoor"
+                "spawn_entity", "spawn_entity_at_zone", "despawn_entity":
+                    return "drone_guard"
+                "give_item", "take_item":
+                    return "medkit_small"
+                "give_ability", "revoke_ability":
+                    return "double_jump"
+                "start_shop":
+                    return "armorer_shop"
+                _:
+                    return "snake_case_id"
+        "event":
+            return "cutscene_done"
+        "entity":
+            return "player or guard_01"
+        "mode":
+            return "player / entity / zone / position"
+        "target":
+            return "player, guard_01, or boss_arena"
+        "speed":
+            if action_type == "camera_focus":
+                return "160"
+            if action_type == "move_entity_to_zone":
+                return "80"
+            if action_type == "play_entity_anim":
+                return "1.0"
+            return ""
+        "direction":
+            return "left / right / toward_zone / away_from_zone"
+        "enabled":
+            return "true / false"
+        "locked":
+            return "true / false"
+        "anchor":
+            return "player / world / system"
+        "room":
+            return "town/plaza"
+        "name":
+            if action_type == "play_sfx":
+                return "ui_confirm"
+            if action_type == "set_flag":
+                return "met_mayor"
+            if action_type == "set_var" or action_type == "add_var":
+                return "gold"
+            if action_type == "set_local_var" or action_type == "add_local_var":
+                return "intro_step"
+            return "name"
+        "message":
+            return "Reached intro gate"
+        "tag":
+            return "met_shopkeep"
+        "key":
+            return "entity_id"
+        "value":
+            return "mayor_npc"
+        "class":
+            return "pirate_raider"
+        "anim":
+            return "wave"
+        "result_local":
+            return "wait_succeeded"
+        _:
+            return ""

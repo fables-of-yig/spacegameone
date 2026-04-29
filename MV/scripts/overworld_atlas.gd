@@ -99,6 +99,7 @@ static func bake_ground_atlas(pack_id: String, realm_data: Dictionary) -> ImageT
 			var frame_coords: Array = []
 			for fidx in (frames_v as Array):
 				var mi := int(fidx)
+				@warning_ignore("integer_division")
 				frame_coords.append({
 					"atlas_x": mi % ts_cols,
 					"atlas_y": mi / ts_cols,

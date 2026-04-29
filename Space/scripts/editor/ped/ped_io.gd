@@ -11,9 +11,7 @@ extends RefCounted
 # All saves write to the user layer so the shipped packs stay read-only.
 
 const SHIPPED_SEED_PACK: String = "demo"
-const EcaSchema = preload("res://Space/scripts/editor/dlg/eca_schema.gd")
 const PspIO = preload("res://Space/scripts/editor/psp/psp_io.gd")
-const TriggerRoot = preload("res://Space/scripts/shared/trigger_root.gd")
 
 
 # ── Path helpers ─────────────────────────────────────────────────────────
@@ -338,8 +336,9 @@ static func _starter_attack_defs() -> Array:
             "cooldown_ticks": 10,
             "cost_mp": 0,
             "player_pose": 207,
-            "charge_ticks": 24,
-            "charged_attack_id": "beam_burst",
+            "hold_behavior": "full_auto",
+            "charge_ticks": 0,
+            "charged_attack_id": "",
             "combo_next_id": "",
             "hit_frames": [],
             "hitbox_x": 0,
@@ -365,6 +364,7 @@ static func _starter_attack_defs() -> Array:
             "cooldown_ticks": 20,
             "cost_mp": 0,
             "player_pose": 209,
+            "hold_behavior": "full_auto",
             "charge_ticks": 0,
             "charged_attack_id": "",
             "combo_next_id": "",
@@ -392,6 +392,7 @@ static func _starter_attack_defs() -> Array:
             "cooldown_ticks": 12,
             "cost_mp": 0,
             "player_pose": 201,
+            "hold_behavior": "single_press",
             "charge_ticks": 0,
             "charged_attack_id": "",
             "combo_next_id": "combo_slash_2",
@@ -419,6 +420,7 @@ static func _starter_attack_defs() -> Array:
             "cooldown_ticks": 12,
             "cost_mp": 0,
             "player_pose": 203,
+            "hold_behavior": "single_press",
             "charge_ticks": 0,
             "charged_attack_id": "",
             "combo_next_id": "combo_slash_3",
@@ -446,6 +448,7 @@ static func _starter_attack_defs() -> Array:
             "cooldown_ticks": 18,
             "cost_mp": 0,
             "player_pose": 205,
+            "hold_behavior": "single_press",
             "charge_ticks": 0,
             "charged_attack_id": "",
             "combo_next_id": "",
@@ -473,6 +476,7 @@ static func _starter_attack_defs() -> Array:
             "cooldown_ticks": 18,
             "cost_mp": 0,
             "player_pose": 207,
+            "hold_behavior": "full_auto",
             "charge_ticks": 0,
             "charged_attack_id": "",
             "combo_next_id": "",
@@ -599,11 +603,14 @@ static func _ensure_starter_attacks(pack_id: String, data: Dictionary) -> Dictio
             if str(entry.get("projectile_id", "")).strip_edges().is_empty():
                 entry["projectile_id"] = "beam_basic"
                 changed = true
-            if str(entry.get("charged_attack_id", "")).strip_edges().is_empty():
-                entry["charged_attack_id"] = "beam_burst"
+            if str(entry.get("hold_behavior", "")).strip_edges() != "full_auto":
+                entry["hold_behavior"] = "full_auto"
                 changed = true
-            if int(entry.get("charge_ticks", 0)) < 1:
-                entry["charge_ticks"] = 24
+            if not str(entry.get("charged_attack_id", "")).strip_edges().is_empty():
+                entry["charged_attack_id"] = ""
+                changed = true
+            if int(entry.get("charge_ticks", 0)) != 0:
+                entry["charge_ticks"] = 0
                 changed = true
         elif attack_id == "sword_slash":
             if int(entry.get("player_pose", -1)) == 40:
@@ -917,8 +924,15 @@ static func _validate_attacks(pack_id: String, data: Dictionary) -> bool:
             return false
 
         var attack_type := str(entry.get("type", "")).strip_edges()
+        var hold_behavior := str(entry.get("hold_behavior", "")).strip_edges()
+        if hold_behavior.is_empty():
+            hold_behavior = "charge_release" if (not str(entry.get("charged_attack_id", "")).strip_edges().is_empty() and int(entry.get("charge_ticks", 0)) > 0) else "full_auto"
+        var valid_hold_behaviors := ["full_auto", "single_press", "charge_release"]
         if not valid_types.has(attack_type):
             push_error("PedIO: attack '%s' uses invalid type '%s'" % [attack_id, attack_type])
+            return false
+        if not valid_hold_behaviors.has(hold_behavior):
+            push_error("PedIO: attack '%s' uses invalid hold_behavior '%s'" % [attack_id, hold_behavior])
             return false
         if int(entry.get("cooldown_ticks", 0)) < 0:
             push_error("PedIO: attack '%s' has negative cooldown_ticks" % attack_id)
@@ -964,6 +978,12 @@ static func _validate_attacks(pack_id: String, data: Dictionary) -> bool:
             push_error("PedIO: attack '%s' must have charge_fx_frame_tick >= 1" % attack_id)
             return false
         var charged_attack_id := str(entry.get("charged_attack_id", "")).strip_edges()
+        if hold_behavior == "charge_release" and charged_attack_id.is_empty():
+            push_error("PedIO: attack '%s' must set charged_attack_id when hold_behavior is charge_release" % attack_id)
+            return false
+        if hold_behavior == "charge_release" and int(entry.get("charge_ticks", 0)) < 1:
+            push_error("PedIO: attack '%s' must use charge_ticks >= 1 when hold_behavior is charge_release" % attack_id)
+            return false
         if not charged_attack_id.is_empty():
             if charged_attack_id == attack_id:
                 push_error("PedIO: attack '%s' cannot charge into itself" % attack_id)
@@ -971,7 +991,7 @@ static func _validate_attacks(pack_id: String, data: Dictionary) -> bool:
             if not attack_ids.has(charged_attack_id):
                 push_error("PedIO: attack '%s' references unknown charged_attack_id '%s'" % [attack_id, charged_attack_id])
                 return false
-            if int(entry.get("charge_ticks", 0)) < 1:
+            if hold_behavior == "charge_release" and int(entry.get("charge_ticks", 0)) < 1:
                 push_error("PedIO: attack '%s' must use charge_ticks >= 1 when charged_attack_id is set" % attack_id)
                 return false
         var combo_next_id := str(entry.get("combo_next_id", "")).strip_edges()

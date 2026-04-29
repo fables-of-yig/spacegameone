@@ -1,9 +1,10 @@
 {
   "poses": {
     "0": {
+      "anim_speed": 1.0,
       "collision_width": 11,
       "collision_x": 1,
-      "dir": 1,
+      "dir": -1,
       "frame_boxes": [
         {
           "collision_width": 11,
@@ -14,6 +15,27 @@
           "hurtbox_y": -11,
           "y_offset": -1,
           "y_radius": 11
+        },
+        {
+
+        },
+        {
+
+        },
+        {
+
+        },
+        {
+
+        },
+        {
+
+        },
+        {
+
+        },
+        {
+
         }
       ],
       "hurtbox_h": 22,
@@ -24,7 +46,14 @@
       "mvtype": 0,
       "name": "forward",
       "timing": [
-        60
+        60,
+        10,
+        10,
+        10,
+        10,
+        10,
+        10,
+        10
       ],
       "transition_to": -1,
       "weapon_anchor_x": 9,
@@ -33,6 +62,7 @@
       "y_radius": 11
     },
     "1": {
+      "anim_speed": 1.0,
       "collision_width": 11,
       "collision_x": 1,
       "dir": -1,
@@ -120,6 +150,7 @@
       "y_radius": 11
     },
     "10": {
+      "anim_speed": 1.0,
       "collision_width": 11,
       "collision_x": -1,
       "dir": -1,
@@ -207,10 +238,14 @@
       "y_radius": 11
     },
     "135": {
+      "anim_speed": 1.0,
       "collision_width": 11,
       "collision_x": 1,
-      "dir": 1,
+      "dir": -1,
       "frame_boxes": [
+        {
+
+        },
         {
 
         },
@@ -231,6 +266,7 @@
       "timing": [
         10,
         10,
+        10,
         10
       ],
       "transition_to": 42,
@@ -240,6 +276,7 @@
       "y_radius": 11
     },
     "136": {
+      "anim_speed": 1.0,
       "collision_width": 11,
       "collision_x": -1,
       "dir": -1,
@@ -254,6 +291,7 @@
       "timing": [
         10,
         10,
+        10,
         10
       ],
       "transition_to": 41,
@@ -263,6 +301,7 @@
       "y_radius": 11
     },
     "164": {
+      "anim_speed": 1.0,
       "collision_width": 11,
       "collision_x": 1,
       "dir": 1,
@@ -296,6 +335,7 @@
       "y_radius": 11
     },
     "165": {
+      "anim_speed": 1.0,
       "collision_width": 11,
       "collision_x": -1,
       "dir": -1,
@@ -319,6 +359,7 @@
       "y_radius": 11
     },
     "166": {
+      "anim_speed": 1.0,
       "collision_width": 11,
       "collision_x": 1,
       "dir": 1,
@@ -352,6 +393,7 @@
       "y_radius": 11
     },
     "167": {
+      "anim_speed": 1.0,
       "collision_width": 11,
       "collision_x": -1,
       "dir": -1,
@@ -375,6 +417,7 @@
       "y_radius": 11
     },
     "2": {
+      "anim_speed": 1.0,
       "collision_width": 11,
       "collision_x": -1,
       "dir": -1,
@@ -462,6 +505,7 @@
       "y_radius": 11
     },
     "201": {
+      "anim_speed": 1.0,
       "collision_width": 11,
       "collision_x": 1,
       "dir": 1,
@@ -549,71 +593,11 @@
       "y_radius": 11
     },
     "202": {
+      "anim_speed": 1.0,
       "collision_width": 11,
       "collision_x": -1,
       "dir": -1,
-      "frame_boxes": [
-        {
-          "collision_width": 11,
-          "collision_x": -1,
-          "hurtbox_h": 22,
-          "hurtbox_w": 11,
-          "hurtbox_x": -1,
-          "hurtbox_y": -11,
-          "y_offset": -1,
-          "y_radius": 11
-        },
-        {
-          "collision_width": 11,
-          "collision_x": -1,
-          "hurtbox_h": 22,
-          "hurtbox_w": 11,
-          "hurtbox_x": -1,
-          "hurtbox_y": -11,
-          "y_offset": -1,
-          "y_radius": 11
-        },
-        {
-          "collision_width": 11,
-          "collision_x": -1,
-          "hurtbox_h": 22,
-          "hurtbox_w": 11,
-          "hurtbox_x": -1,
-          "hurtbox_y": -11,
-          "y_offset": -1,
-          "y_radius": 11
-        },
-        {
-          "collision_width": 11,
-          "collision_x": -1,
-          "hurtbox_h": 22,
-          "hurtbox_w": 11,
-          "hurtbox_x": -1,
-          "hurtbox_y": -11,
-          "y_offset": -1,
-          "y_radius": 11
-        },
-        {
-          "collision_width": 11,
-          "collision_x": -1,
-          "hurtbox_h": 22,
-          "hurtbox_w": 11,
-          "hurtbox_x": -1,
-          "hurtbox_y": -11,
-          "y_offset": -1,
-          "y_radius": 11
-        },
-        {
-          "collision_width": 11,
-          "collision_x": -1,
-          "hurtbox_h": 22,
-          "hurtbox_w": 11,
-          "hurtbox_x": -1,
-          "hurtbox_y": -11,
-          "y_offset": -1,
-          "y_radius": 11
-        }
-      ],
+      "frame_boxes": [],
       "hurtbox_h": 22,
       "hurtbox_w": 11,
       "hurtbox_x": -1,
@@ -636,69 +620,22 @@
       "y_radius": 11
     },
     "203": {
+      "anim_speed": 1.0,
       "collision_width": 11,
       "collision_x": 1,
       "dir": 1,
       "frame_boxes": [
         {
-          "collision_width": 11,
-          "collision_x": 1,
-          "hurtbox_h": 22,
-          "hurtbox_w": 11,
-          "hurtbox_x": 1,
-          "hurtbox_y": -11,
-          "y_offset": -1,
-          "y_radius": 11
+
         },
         {
-          "collision_width": 11,
-          "collision_x": 1,
-          "hurtbox_h": 22,
-          "hurtbox_w": 11,
-          "hurtbox_x": 1,
-          "hurtbox_y": -11,
-          "y_offset": -1,
-          "y_radius": 11
+
         },
         {
-          "collision_width": 11,
-          "collision_x": 1,
-          "hurtbox_h": 22,
-          "hurtbox_w": 11,
-          "hurtbox_x": 1,
-          "hurtbox_y": -11,
-          "y_offset": -1,
-          "y_radius": 11
+
         },
         {
-          "collision_width": 11,
-          "collision_x": 1,
-          "hurtbox_h": 22,
-          "hurtbox_w": 11,
-          "hurtbox_x": 1,
-          "hurtbox_y": -11,
-          "y_offset": -1,
-          "y_radius": 11
-        },
-        {
-          "collision_width": 11,
-          "collision_x": 1,
-          "hurtbox_h": 22,
-          "hurtbox_w": 11,
-          "hurtbox_x": 1,
-          "hurtbox_y": -11,
-          "y_offset": -1,
-          "y_radius": 11
-        },
-        {
-          "collision_width": 11,
-          "collision_x": 1,
-          "hurtbox_h": 22,
-          "hurtbox_w": 11,
-          "hurtbox_x": 1,
-          "hurtbox_y": -11,
-          "y_offset": -1,
-          "y_radius": 11
+
         }
       ],
       "hurtbox_h": 22,
@@ -709,12 +646,10 @@
       "mvtype": 15,
       "name": "melee_2_right",
       "timing": [
-        4,
-        4,
-        4,
-        4,
-        4,
-        4
+        10,
+        10,
+        10,
+        10
       ],
       "transition_to": 1,
       "weapon_anchor_x": 0,
@@ -723,6 +658,7 @@
       "y_radius": 11
     },
     "204": {
+      "anim_speed": 1.0,
       "collision_width": 11,
       "collision_x": -1,
       "dir": -1,
@@ -810,69 +746,40 @@
       "y_radius": 11
     },
     "205": {
+      "anim_speed": 1.0,
       "collision_width": 11,
       "collision_x": 1,
       "dir": 1,
       "frame_boxes": [
         {
-          "collision_width": 11,
-          "collision_x": 1,
-          "hurtbox_h": 22,
-          "hurtbox_w": 11,
-          "hurtbox_x": 1,
-          "hurtbox_y": -11,
-          "y_offset": -1,
-          "y_radius": 11
+
         },
         {
-          "collision_width": 11,
-          "collision_x": 1,
-          "hurtbox_h": 22,
-          "hurtbox_w": 11,
-          "hurtbox_x": 1,
-          "hurtbox_y": -11,
-          "y_offset": -1,
-          "y_radius": 11
+
         },
         {
-          "collision_width": 11,
-          "collision_x": 1,
-          "hurtbox_h": 22,
-          "hurtbox_w": 11,
-          "hurtbox_x": 1,
-          "hurtbox_y": -11,
-          "y_offset": -1,
-          "y_radius": 11
+
         },
         {
-          "collision_width": 11,
-          "collision_x": 1,
-          "hurtbox_h": 22,
-          "hurtbox_w": 11,
-          "hurtbox_x": 1,
-          "hurtbox_y": -11,
-          "y_offset": -1,
-          "y_radius": 11
+
         },
         {
-          "collision_width": 11,
-          "collision_x": 1,
-          "hurtbox_h": 22,
-          "hurtbox_w": 11,
-          "hurtbox_x": 1,
-          "hurtbox_y": -11,
-          "y_offset": -1,
-          "y_radius": 11
+
         },
         {
-          "collision_width": 11,
-          "collision_x": 1,
-          "hurtbox_h": 22,
-          "hurtbox_w": 11,
-          "hurtbox_x": 1,
-          "hurtbox_y": -11,
-          "y_offset": -1,
-          "y_radius": 11
+
+        },
+        {
+
+        },
+        {
+
+        },
+        {
+
+        },
+        {
+
         }
       ],
       "hurtbox_h": 22,
@@ -883,12 +790,16 @@
       "mvtype": 15,
       "name": "melee_3_right",
       "timing": [
-        4,
-        4,
-        4,
-        4,
-        4,
-        4
+        10,
+        10,
+        10,
+        10,
+        10,
+        10,
+        10,
+        10,
+        10,
+        10
       ],
       "transition_to": 1,
       "weapon_anchor_x": 0,
@@ -897,71 +808,11 @@
       "y_radius": 11
     },
     "206": {
+      "anim_speed": 1.0,
       "collision_width": 11,
       "collision_x": -1,
       "dir": -1,
-      "frame_boxes": [
-        {
-          "collision_width": 11,
-          "collision_x": -1,
-          "hurtbox_h": 22,
-          "hurtbox_w": 11,
-          "hurtbox_x": -1,
-          "hurtbox_y": -11,
-          "y_offset": -1,
-          "y_radius": 11
-        },
-        {
-          "collision_width": 11,
-          "collision_x": -1,
-          "hurtbox_h": 22,
-          "hurtbox_w": 11,
-          "hurtbox_x": -1,
-          "hurtbox_y": -11,
-          "y_offset": -1,
-          "y_radius": 11
-        },
-        {
-          "collision_width": 11,
-          "collision_x": -1,
-          "hurtbox_h": 22,
-          "hurtbox_w": 11,
-          "hurtbox_x": -1,
-          "hurtbox_y": -11,
-          "y_offset": -1,
-          "y_radius": 11
-        },
-        {
-          "collision_width": 11,
-          "collision_x": -1,
-          "hurtbox_h": 22,
-          "hurtbox_w": 11,
-          "hurtbox_x": -1,
-          "hurtbox_y": -11,
-          "y_offset": -1,
-          "y_radius": 11
-        },
-        {
-          "collision_width": 11,
-          "collision_x": -1,
-          "hurtbox_h": 22,
-          "hurtbox_w": 11,
-          "hurtbox_x": -1,
-          "hurtbox_y": -11,
-          "y_offset": -1,
-          "y_radius": 11
-        },
-        {
-          "collision_width": 11,
-          "collision_x": -1,
-          "hurtbox_h": 22,
-          "hurtbox_w": 11,
-          "hurtbox_x": -1,
-          "hurtbox_y": -11,
-          "y_offset": -1,
-          "y_radius": 11
-        }
-      ],
+      "frame_boxes": [],
       "hurtbox_h": 22,
       "hurtbox_w": 11,
       "hurtbox_x": -1,
@@ -970,12 +821,16 @@
       "mvtype": 15,
       "name": "melee_3_left",
       "timing": [
-        4,
-        4,
-        4,
-        4,
-        4,
-        4
+        10,
+        10,
+        10,
+        10,
+        10,
+        10,
+        10,
+        10,
+        10,
+        10
       ],
       "transition_to": 2,
       "weapon_anchor_x": 0,
@@ -984,69 +839,31 @@
       "y_radius": 11
     },
     "207": {
+      "anim_speed": 1.0,
       "collision_width": 11,
       "collision_x": 1,
       "dir": 1,
       "frame_boxes": [
         {
-          "collision_width": 11,
-          "collision_x": 1,
-          "hurtbox_h": 22,
-          "hurtbox_w": 11,
-          "hurtbox_x": 1,
-          "hurtbox_y": -11,
-          "y_offset": -1,
-          "y_radius": 11
+
         },
         {
-          "collision_width": 11,
-          "collision_x": 1,
-          "hurtbox_h": 22,
-          "hurtbox_w": 11,
-          "hurtbox_x": 1,
-          "hurtbox_y": -11,
-          "y_offset": -1,
-          "y_radius": 11
+
         },
         {
-          "collision_width": 11,
-          "collision_x": 1,
-          "hurtbox_h": 22,
-          "hurtbox_w": 11,
-          "hurtbox_x": 1,
-          "hurtbox_y": -11,
-          "y_offset": -1,
-          "y_radius": 11
+
         },
         {
-          "collision_width": 11,
-          "collision_x": 1,
-          "hurtbox_h": 22,
-          "hurtbox_w": 11,
-          "hurtbox_x": 1,
-          "hurtbox_y": -11,
-          "y_offset": -1,
-          "y_radius": 11
+
         },
         {
-          "collision_width": 11,
-          "collision_x": 1,
-          "hurtbox_h": 22,
-          "hurtbox_w": 11,
-          "hurtbox_x": 1,
-          "hurtbox_y": -11,
-          "y_offset": -1,
-          "y_radius": 11
+
         },
         {
-          "collision_width": 11,
-          "collision_x": 1,
-          "hurtbox_h": 22,
-          "hurtbox_w": 11,
-          "hurtbox_x": 1,
-          "hurtbox_y": -11,
-          "y_offset": -1,
-          "y_radius": 11
+
+        },
+        {
+
         }
       ],
       "hurtbox_h": 22,
@@ -1057,12 +874,13 @@
       "mvtype": 15,
       "name": "ranged_right",
       "timing": [
-        4,
-        4,
-        4,
-        4,
-        4,
-        4
+        10,
+        10,
+        10,
+        10,
+        10,
+        10,
+        10
       ],
       "transition_to": 1,
       "weapon_anchor_x": 15,
@@ -1071,71 +889,11 @@
       "y_radius": 11
     },
     "208": {
+      "anim_speed": 1.0,
       "collision_width": 11,
       "collision_x": -1,
       "dir": -1,
-      "frame_boxes": [
-        {
-          "collision_width": 11,
-          "collision_x": -1,
-          "hurtbox_h": 22,
-          "hurtbox_w": 11,
-          "hurtbox_x": -1,
-          "hurtbox_y": -11,
-          "y_offset": -1,
-          "y_radius": 11
-        },
-        {
-          "collision_width": 11,
-          "collision_x": -1,
-          "hurtbox_h": 22,
-          "hurtbox_w": 11,
-          "hurtbox_x": -1,
-          "hurtbox_y": -11,
-          "y_offset": -1,
-          "y_radius": 11
-        },
-        {
-          "collision_width": 11,
-          "collision_x": -1,
-          "hurtbox_h": 22,
-          "hurtbox_w": 11,
-          "hurtbox_x": -1,
-          "hurtbox_y": -11,
-          "y_offset": -1,
-          "y_radius": 11
-        },
-        {
-          "collision_width": 11,
-          "collision_x": -1,
-          "hurtbox_h": 22,
-          "hurtbox_w": 11,
-          "hurtbox_x": -1,
-          "hurtbox_y": -11,
-          "y_offset": -1,
-          "y_radius": 11
-        },
-        {
-          "collision_width": 11,
-          "collision_x": -1,
-          "hurtbox_h": 22,
-          "hurtbox_w": 11,
-          "hurtbox_x": -1,
-          "hurtbox_y": -11,
-          "y_offset": -1,
-          "y_radius": 11
-        },
-        {
-          "collision_width": 11,
-          "collision_x": -1,
-          "hurtbox_h": 22,
-          "hurtbox_w": 11,
-          "hurtbox_x": -1,
-          "hurtbox_y": -11,
-          "y_offset": -1,
-          "y_radius": 11
-        }
-      ],
+      "frame_boxes": [],
       "hurtbox_h": 22,
       "hurtbox_w": 11,
       "hurtbox_x": -1,
@@ -1144,12 +902,13 @@
       "mvtype": 15,
       "name": "ranged_left",
       "timing": [
-        4,
-        4,
-        4,
-        4,
-        4,
-        4
+        10,
+        10,
+        10,
+        10,
+        10,
+        10,
+        10
       ],
       "transition_to": 2,
       "weapon_anchor_x": -15,
@@ -1158,6 +917,7 @@
       "y_radius": 11
     },
     "209": {
+      "anim_speed": 1.0,
       "collision_width": 11,
       "collision_x": 1,
       "dir": 1,
@@ -1173,54 +933,25 @@
           "y_radius": 11
         },
         {
-          "collision_width": 11,
-          "collision_x": 1,
-          "hurtbox_h": 22,
-          "hurtbox_w": 11,
-          "hurtbox_x": 1,
-          "hurtbox_y": -11,
-          "y_offset": -1,
-          "y_radius": 11
+
         },
         {
-          "collision_width": 11,
-          "collision_x": 1,
-          "hurtbox_h": 22,
-          "hurtbox_w": 11,
-          "hurtbox_x": 1,
-          "hurtbox_y": -11,
-          "y_offset": -1,
-          "y_radius": 11
+
         },
         {
-          "collision_width": 11,
-          "collision_x": 1,
-          "hurtbox_h": 22,
-          "hurtbox_w": 11,
-          "hurtbox_x": 1,
-          "hurtbox_y": -11,
-          "y_offset": -1,
-          "y_radius": 11
+
         },
         {
-          "collision_width": 11,
-          "collision_x": 1,
-          "hurtbox_h": 22,
-          "hurtbox_w": 11,
-          "hurtbox_x": 1,
-          "hurtbox_y": -11,
-          "y_offset": -1,
-          "y_radius": 11
+
         },
         {
-          "collision_width": 11,
-          "collision_x": 1,
-          "hurtbox_h": 22,
-          "hurtbox_w": 11,
-          "hurtbox_x": 1,
-          "hurtbox_y": -11,
-          "y_offset": -1,
-          "y_radius": 11
+
+        },
+        {
+
+        },
+        {
+
         }
       ],
       "hurtbox_h": 22,
@@ -1236,80 +967,22 @@
         10,
         10,
         10,
+        10,
+        10,
         10
       ],
       "transition_to": -1,
-      "weapon_anchor_x": 0,
-      "weapon_anchor_y": -24,
+      "weapon_anchor_x": 15,
+      "weapon_anchor_y": -12,
       "y_offset": -1,
       "y_radius": 11
     },
     "210": {
+      "anim_speed": 1.0,
       "collision_width": 11,
       "collision_x": -1,
       "dir": -1,
-      "frame_boxes": [
-        {
-          "collision_width": 11,
-          "collision_x": -1,
-          "hurtbox_h": 22,
-          "hurtbox_w": 11,
-          "hurtbox_x": -1,
-          "hurtbox_y": -11,
-          "y_offset": -1,
-          "y_radius": 11
-        },
-        {
-          "collision_width": 11,
-          "collision_x": -1,
-          "hurtbox_h": 22,
-          "hurtbox_w": 11,
-          "hurtbox_x": -1,
-          "hurtbox_y": -11,
-          "y_offset": -1,
-          "y_radius": 11
-        },
-        {
-          "collision_width": 11,
-          "collision_x": -1,
-          "hurtbox_h": 22,
-          "hurtbox_w": 11,
-          "hurtbox_x": -1,
-          "hurtbox_y": -11,
-          "y_offset": -1,
-          "y_radius": 11
-        },
-        {
-          "collision_width": 11,
-          "collision_x": -1,
-          "hurtbox_h": 22,
-          "hurtbox_w": 11,
-          "hurtbox_x": -1,
-          "hurtbox_y": -11,
-          "y_offset": -1,
-          "y_radius": 11
-        },
-        {
-          "collision_width": 11,
-          "collision_x": -1,
-          "hurtbox_h": 22,
-          "hurtbox_w": 11,
-          "hurtbox_x": -1,
-          "hurtbox_y": -11,
-          "y_offset": -1,
-          "y_radius": 11
-        },
-        {
-          "collision_width": 11,
-          "collision_x": -1,
-          "hurtbox_h": 22,
-          "hurtbox_w": 11,
-          "hurtbox_x": -1,
-          "hurtbox_y": -11,
-          "y_offset": -1,
-          "y_radius": 11
-        }
-      ],
+      "frame_boxes": [],
       "hurtbox_h": 22,
       "hurtbox_w": 11,
       "hurtbox_x": -1,
@@ -1323,15 +996,18 @@
         10,
         10,
         10,
+        10,
+        10,
         10
       ],
       "transition_to": -1,
-      "weapon_anchor_x": 0,
-      "weapon_anchor_y": -24,
+      "weapon_anchor_x": -15,
+      "weapon_anchor_y": -12,
       "y_offset": -1,
       "y_radius": 11
     },
     "211": {
+      "anim_speed": 8.0,
       "collision_width": 11,
       "collision_x": 1,
       "dir": 1,
@@ -1347,34 +1023,49 @@
           "y_radius": 11
         },
         {
-          "collision_width": 11,
-          "collision_x": 1,
-          "hurtbox_h": 22,
-          "hurtbox_w": 11,
-          "hurtbox_x": 1,
-          "hurtbox_y": -11,
-          "y_offset": -1,
-          "y_radius": 11
+
         },
         {
-          "collision_width": 11,
-          "collision_x": 1,
-          "hurtbox_h": 22,
-          "hurtbox_w": 11,
-          "hurtbox_x": 1,
-          "hurtbox_y": -11,
-          "y_offset": -1,
-          "y_radius": 11
+
         },
         {
-          "collision_width": 11,
-          "collision_x": 1,
-          "hurtbox_h": 22,
-          "hurtbox_w": 11,
-          "hurtbox_x": 1,
-          "hurtbox_y": -11,
-          "y_offset": -1,
-          "y_radius": 11
+
+        },
+        {
+
+        },
+        {
+
+        },
+        {
+
+        },
+        {
+
+        },
+        {
+
+        },
+        {
+
+        },
+        {
+
+        },
+        {
+
+        },
+        {
+
+        },
+        {
+
+        },
+        {
+
+        },
+        {
+
         },
         {
           "collision_width": 11,
@@ -1396,10 +1087,22 @@
       "name": "dodge_roll_right",
       "timing": [
         4,
-        4,
-        4,
-        4,
-        4
+        10,
+        10,
+        10,
+        10,
+        10,
+        10,
+        10,
+        10,
+        10,
+        10,
+        10,
+        10,
+        10,
+        10,
+        10,
+        10
       ],
       "transition_to": 1,
       "weapon_anchor_x": 0,
@@ -1408,61 +1111,11 @@
       "y_radius": 11
     },
     "212": {
+      "anim_speed": 8.0,
       "collision_width": 11,
       "collision_x": -1,
       "dir": -1,
-      "frame_boxes": [
-        {
-          "collision_width": 11,
-          "collision_x": -1,
-          "hurtbox_h": 22,
-          "hurtbox_w": 11,
-          "hurtbox_x": -1,
-          "hurtbox_y": -11,
-          "y_offset": -1,
-          "y_radius": 11
-        },
-        {
-          "collision_width": 11,
-          "collision_x": -1,
-          "hurtbox_h": 22,
-          "hurtbox_w": 11,
-          "hurtbox_x": -1,
-          "hurtbox_y": -11,
-          "y_offset": -1,
-          "y_radius": 11
-        },
-        {
-          "collision_width": 11,
-          "collision_x": -1,
-          "hurtbox_h": 22,
-          "hurtbox_w": 11,
-          "hurtbox_x": -1,
-          "hurtbox_y": -11,
-          "y_offset": -1,
-          "y_radius": 11
-        },
-        {
-          "collision_width": 11,
-          "collision_x": -1,
-          "hurtbox_h": 22,
-          "hurtbox_w": 11,
-          "hurtbox_x": -1,
-          "hurtbox_y": -11,
-          "y_offset": -1,
-          "y_radius": 11
-        },
-        {
-          "collision_width": 11,
-          "collision_x": -1,
-          "hurtbox_h": 22,
-          "hurtbox_w": 11,
-          "hurtbox_x": -1,
-          "hurtbox_y": -11,
-          "y_offset": -1,
-          "y_radius": 11
-        }
-      ],
+      "frame_boxes": [],
       "hurtbox_h": 22,
       "hurtbox_w": 11,
       "hurtbox_x": -1,
@@ -1471,11 +1124,7 @@
       "mvtype": 15,
       "name": "dodge_roll_left",
       "timing": [
-        4,
-        4,
-        4,
-        4,
-        4
+        10
       ],
       "transition_to": 2,
       "weapon_anchor_x": 0,
@@ -1484,6 +1133,7 @@
       "y_radius": 11
     },
     "25": {
+      "anim_speed": 6.0,
       "collision_width": 11,
       "collision_x": 1,
       "dir": 1,
@@ -1499,34 +1149,49 @@
           "y_radius": 11
         },
         {
-          "collision_width": 11,
-          "collision_x": 1,
-          "hurtbox_h": 22,
-          "hurtbox_w": 11,
-          "hurtbox_x": 1,
-          "hurtbox_y": -11,
-          "y_offset": -1,
-          "y_radius": 11
+
         },
         {
-          "collision_width": 11,
-          "collision_x": 1,
-          "hurtbox_h": 22,
-          "hurtbox_w": 11,
-          "hurtbox_x": 1,
-          "hurtbox_y": -11,
-          "y_offset": -1,
-          "y_radius": 11
+
         },
         {
-          "collision_width": 11,
-          "collision_x": 1,
-          "hurtbox_h": 22,
-          "hurtbox_w": 11,
-          "hurtbox_x": 1,
-          "hurtbox_y": -11,
-          "y_offset": -1,
-          "y_radius": 11
+
+        },
+        {
+
+        },
+        {
+
+        },
+        {
+
+        },
+        {
+
+        },
+        {
+
+        },
+        {
+
+        },
+        {
+
+        },
+        {
+
+        },
+        {
+
+        },
+        {
+
+        },
+        {
+
+        },
+        {
+
         }
       ],
       "hurtbox_h": 22,
@@ -1540,6 +1205,18 @@
         10,
         10,
         10,
+        10,
+        10,
+        10,
+        10,
+        10,
+        10,
+        10,
+        10,
+        10,
+        10,
+        10,
+        10,
         10
       ],
       "transition_to": -1,
@@ -1549,51 +1226,11 @@
       "y_radius": 11
     },
     "26": {
+      "anim_speed": 1.0,
       "collision_width": 11,
       "collision_x": -1,
       "dir": -1,
-      "frame_boxes": [
-        {
-          "collision_width": 11,
-          "collision_x": -1,
-          "hurtbox_h": 22,
-          "hurtbox_w": 11,
-          "hurtbox_x": -1,
-          "hurtbox_y": -11,
-          "y_offset": -1,
-          "y_radius": 11
-        },
-        {
-          "collision_width": 11,
-          "collision_x": -1,
-          "hurtbox_h": 22,
-          "hurtbox_w": 11,
-          "hurtbox_x": -1,
-          "hurtbox_y": -11,
-          "y_offset": -1,
-          "y_radius": 11
-        },
-        {
-          "collision_width": 11,
-          "collision_x": -1,
-          "hurtbox_h": 22,
-          "hurtbox_w": 11,
-          "hurtbox_x": -1,
-          "hurtbox_y": -11,
-          "y_offset": -1,
-          "y_radius": 11
-        },
-        {
-          "collision_width": 11,
-          "collision_x": -1,
-          "hurtbox_h": 22,
-          "hurtbox_w": 11,
-          "hurtbox_x": -1,
-          "hurtbox_y": -11,
-          "y_offset": -1,
-          "y_radius": 11
-        }
-      ],
+      "frame_boxes": [],
       "hurtbox_h": 22,
       "hurtbox_w": 11,
       "hurtbox_x": -1,
@@ -1602,6 +1239,18 @@
       "mvtype": 3,
       "name": "spin_left",
       "timing": [
+        10,
+        10,
+        10,
+        10,
+        10,
+        10,
+        10,
+        10,
+        10,
+        10,
+        10,
+        10,
         10,
         10,
         10,
@@ -1614,6 +1263,7 @@
       "y_radius": 11
     },
     "37": {
+      "anim_speed": 1.0,
       "collision_width": 11,
       "collision_x": 1,
       "dir": 1,
@@ -1679,6 +1329,7 @@
       "y_radius": 11
     },
     "38": {
+      "anim_speed": 1.0,
       "collision_width": 11,
       "collision_x": -1,
       "dir": -1,
@@ -1703,6 +1354,7 @@
       "y_radius": 11
     },
     "41": {
+      "anim_speed": 1.0,
       "collision_width": 11,
       "collision_x": 1,
       "dir": 1,
@@ -1757,6 +1409,7 @@
       "y_radius": 11
     },
     "42": {
+      "anim_speed": 1.0,
       "collision_width": 11,
       "collision_x": -1,
       "dir": -1,
@@ -1780,6 +1433,7 @@
       "y_radius": 11
     },
     "47": {
+      "anim_speed": 1.0,
       "collision_width": 11,
       "collision_x": 1,
       "dir": 1,
@@ -1812,6 +1466,7 @@
       "y_radius": 11
     },
     "48": {
+      "anim_speed": 1.0,
       "collision_width": 11,
       "collision_x": -1,
       "dir": -1,
@@ -1844,6 +1499,7 @@
       "y_radius": 11
     },
     "53": {
+      "anim_speed": 1.0,
       "collision_width": 11,
       "collision_x": 1,
       "dir": 1,
@@ -1887,6 +1543,7 @@
       "y_radius": 11
     },
     "54": {
+      "anim_speed": 1.0,
       "collision_width": 11,
       "collision_x": -1,
       "dir": -1,
@@ -1909,6 +1566,7 @@
       "y_radius": 11
     },
     "59": {
+      "anim_speed": 1.0,
       "collision_width": 11,
       "collision_x": 1,
       "dir": 1,
@@ -1996,6 +1654,7 @@
       "y_radius": 11
     },
     "60": {
+      "anim_speed": 1.0,
       "collision_width": 11,
       "collision_x": -1,
       "dir": -1,
@@ -2083,6 +1742,7 @@
       "y_radius": 11
     },
     "67": {
+      "anim_speed": 1.0,
       "collision_width": 11,
       "collision_x": 1,
       "dir": 1,
@@ -2137,6 +1797,7 @@
       "y_radius": 11
     },
     "68": {
+      "anim_speed": 1.0,
       "collision_width": 11,
       "collision_x": -1,
       "dir": -1,
@@ -2191,49 +1852,22 @@
       "y_radius": 11
     },
     "75": {
+      "anim_speed": 1.0,
       "collision_width": 11,
       "collision_x": 1,
       "dir": 1,
       "frame_boxes": [
         {
-          "collision_width": 11,
-          "collision_x": 1,
-          "hurtbox_h": 22,
-          "hurtbox_w": 11,
-          "hurtbox_x": 1,
-          "hurtbox_y": -11,
-          "y_offset": -1,
-          "y_radius": 11
+
         },
         {
-          "collision_width": 11,
-          "collision_x": 1,
-          "hurtbox_h": 22,
-          "hurtbox_w": 11,
-          "hurtbox_x": 1,
-          "hurtbox_y": -11,
-          "y_offset": -1,
-          "y_radius": 11
+
         },
         {
-          "collision_width": 11,
-          "collision_x": 1,
-          "hurtbox_h": 22,
-          "hurtbox_w": 11,
-          "hurtbox_x": 1,
-          "hurtbox_y": -11,
-          "y_offset": -1,
-          "y_radius": 11
+
         },
         {
-          "collision_width": 11,
-          "collision_x": 1,
-          "hurtbox_h": 22,
-          "hurtbox_w": 11,
-          "hurtbox_x": 1,
-          "hurtbox_y": -11,
-          "y_offset": -1,
-          "y_radius": 11
+
         }
       ],
       "hurtbox_h": 22,
@@ -2244,10 +1878,10 @@
       "mvtype": 2,
       "name": "jump_rise_right",
       "timing": [
-        5,
-        5,
-        5,
-        5
+        10,
+        10,
+        10,
+        10
       ],
       "transition_to": -1,
       "weapon_anchor_x": 0,
@@ -2256,51 +1890,11 @@
       "y_radius": 11
     },
     "76": {
+      "anim_speed": 1.0,
       "collision_width": 11,
       "collision_x": -1,
       "dir": -1,
-      "frame_boxes": [
-        {
-          "collision_width": 11,
-          "collision_x": -1,
-          "hurtbox_h": 22,
-          "hurtbox_w": 11,
-          "hurtbox_x": -1,
-          "hurtbox_y": -11,
-          "y_offset": -1,
-          "y_radius": 11
-        },
-        {
-          "collision_width": 11,
-          "collision_x": -1,
-          "hurtbox_h": 22,
-          "hurtbox_w": 11,
-          "hurtbox_x": -1,
-          "hurtbox_y": -11,
-          "y_offset": -1,
-          "y_radius": 11
-        },
-        {
-          "collision_width": 11,
-          "collision_x": -1,
-          "hurtbox_h": 22,
-          "hurtbox_w": 11,
-          "hurtbox_x": -1,
-          "hurtbox_y": -11,
-          "y_offset": -1,
-          "y_radius": 11
-        },
-        {
-          "collision_width": 11,
-          "collision_x": -1,
-          "hurtbox_h": 22,
-          "hurtbox_w": 11,
-          "hurtbox_x": -1,
-          "hurtbox_y": -11,
-          "y_offset": -1,
-          "y_radius": 11
-        }
-      ],
+      "frame_boxes": [],
       "hurtbox_h": 22,
       "hurtbox_w": 11,
       "hurtbox_x": -1,
@@ -2309,10 +1903,10 @@
       "mvtype": 2,
       "name": "jump_rise_left",
       "timing": [
-        5,
-        5,
-        5,
-        5
+        10,
+        10,
+        10,
+        10
       ],
       "transition_to": -1,
       "weapon_anchor_x": 0,
@@ -2321,6 +1915,7 @@
       "y_radius": 11
     },
     "9": {
+      "anim_speed": 1.0,
       "collision_width": 11,
       "collision_x": 1,
       "dir": 1,

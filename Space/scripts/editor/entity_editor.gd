@@ -2,7 +2,7 @@ extends Control
 
 const EntIO = preload("res://Space/scripts/editor/ent/ent_io.gd")
 const EntTypes = preload("res://Space/scripts/editor/ent/ent_types.gd")
-const EditorUndo = preload("res://Space/scripts/editor/editor_undo.gd")
+
 const BehIO = preload("res://Space/scripts/editor/beh/beh_io.gd")
 
 # Entity sprite editor main controller. Owns the entities.json tree for
@@ -201,7 +201,7 @@ func _layout_children() -> void:
         import_conflict_modal.position = Vector2.ZERO
         import_conflict_modal.size = Vector2(vw, vh)
     if _tutorial_btn != null:
-        _tutorial_btn.position = Vector2(vw - 240, 16)
+        _tutorial_btn.position = Vector2(SIDEBAR_W + DETAIL_W + 16, TOPBAR_H + 12)
         _tutorial_btn.size = Vector2(100, 32)
     if _tutorial_overlay != null:
         _tutorial_overlay.position = Vector2.ZERO
@@ -258,6 +258,10 @@ func _input(event):
         return
     if event is InputEventKey and event.pressed and not event.echo:
         if _undo != null and _undo.handle_key(event):
+            get_viewport().set_input_as_handled()
+            return
+        if event.keycode == KEY_S and event.ctrl_pressed and not event.shift_pressed and not event.alt_pressed:
+            save_all()
             get_viewport().set_input_as_handled()
             return
         if event.keycode == KEY_ESCAPE:
@@ -488,10 +492,10 @@ func _on_import_cancelled() -> void:
     _reopen_set_picker()
 
 
-func _commit_import(set_name: String) -> void:
+func _commit_import(set_entry_name: String) -> void:
     var files := _pending_import_files
     _pending_import_files = PackedStringArray()
-    var clean := set_name.strip_edges()
+    var clean := set_entry_name.strip_edges()
     if clean == "" or files.is_empty():
         _clear_import_state()
         _reopen_set_picker()

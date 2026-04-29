@@ -9,7 +9,7 @@ extends Control
 # validated by ContentValidator, not here.
 
 const PedIO := preload("res://Space/scripts/editor/ped/ped_io.gd")
-const EditorUndo = preload("res://Space/scripts/editor/editor_undo.gd")
+
 
 signal status_changed(text: String)
 signal closed

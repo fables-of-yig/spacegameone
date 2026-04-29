@@ -74,21 +74,7 @@ static func list_sprite_sets(pack_id: String) -> Array:
     var seen: Dictionary = {}
     var out: Array = []
     for base in [user_pack_dir(pack_id), shipped_pack_dir(pack_id)]:
-        var sprites_dir: String = base + "Sprites"
-        var d := DirAccess.open(sprites_dir)
-        if d == null:
-            continue
-        d.list_dir_begin()
-        var fn := d.get_next()
-        while fn != "":
-            if d.current_is_dir() and not fn.begins_with("."):
-                var rel := "Sprites/" + fn
-                if not seen.has(rel):
-                    if _folder_has_png(base + rel):
-                        seen[rel] = true
-                        out.append(rel)
-            fn = d.get_next()
-        d.list_dir_end()
+        _collect_sprite_sets_recursive(base, "Sprites", seen, out)
     out.sort()
     return out
 
@@ -97,7 +83,10 @@ static func list_sprite_sets(pack_id: String) -> Array:
 # preferring the user layer then falling back to the shipped layer.
 static func list_sprite_pngs(pack_id: String, sprite_set_rel: String) -> Array:
     for base in [user_pack_dir(pack_id), shipped_pack_dir(pack_id)]:
-        var full: String = base + sprite_set_rel
+        var resolved_rel := _resolve_sprite_set_rel(base, sprite_set_rel)
+        if resolved_rel.is_empty():
+            continue
+        var full: String = base + resolved_rel
         var d := DirAccess.open(full)
         if d == null:
             continue
@@ -118,7 +107,10 @@ static func list_sprite_pngs(pack_id: String, sprite_set_rel: String) -> Array:
 # Loads a PNG from a sprite set into a Texture2D. Prefers user override.
 static func load_sprite_png(pack_id: String, sprite_set_rel: String, filename: String) -> Texture2D:
     for base in [user_pack_dir(pack_id), shipped_pack_dir(pack_id)]:
-        var path: String = base + sprite_set_rel + "/" + filename
+        var resolved_rel := _resolve_sprite_set_rel(base, sprite_set_rel)
+        if resolved_rel.is_empty():
+            continue
+        var path: String = base + resolved_rel + "/" + filename
         if not FileAccess.file_exists(path):
             continue
         var f := FileAccess.open(path, FileAccess.READ)
@@ -140,8 +132,12 @@ static func load_sprite_png(pack_id: String, sprite_set_rel: String, filename: S
 static func load_poses(pack_id: String, sprite_set_rel: String) -> Dictionary:
     if sprite_set_rel == "":
         return {"poses": {}}
-    for base_path in [user_poses_json_path(pack_id, sprite_set_rel),
-            shipped_poses_json_path(pack_id, sprite_set_rel)]:
+    for base_v in [user_pack_dir(pack_id), shipped_pack_dir(pack_id)]:
+        var base: String = str(base_v)
+        var resolved_rel: String = _resolve_sprite_set_rel(base, sprite_set_rel)
+        if resolved_rel.is_empty():
+            continue
+        var base_path: String = base + resolved_rel + "/poses.json"
         if not FileAccess.file_exists(base_path):
             continue
         var f := FileAccess.open(base_path, FileAccess.READ)
@@ -186,6 +182,7 @@ static func autodetect_frame_count(tex: Texture2D) -> int:
         return 1
     if w < h:
         return 1
+    @warning_ignore("integer_division")
     return max(1, int(w / h))
 
 
@@ -248,6 +245,69 @@ static func import_sprite_png(pack_id: String, sprite_set_rel: String,
     dst.store_buffer(bytes)
     dst.close()
     return true
+
+
+static func _collect_sprite_sets_recursive(base: String, rel_dir: String,
+        seen: Dictionary, out: Array) -> void:
+    var abs_dir := base + rel_dir
+    var d := DirAccess.open(abs_dir)
+    if d == null:
+        return
+    var subdirs: Array = []
+    d.list_dir_begin()
+    var fn := d.get_next()
+    while fn != "":
+        if d.current_is_dir() and not fn.begins_with("."):
+            subdirs.append(fn)
+        fn = d.get_next()
+    d.list_dir_end()
+    subdirs.sort()
+    for subdir_v in subdirs:
+        var subdir := str(subdir_v)
+        var child_rel := rel_dir + "/" + subdir
+        var child_abs := base + child_rel
+        if _folder_has_png(child_abs) and not seen.has(child_rel):
+            seen[child_rel] = true
+            out.append(child_rel)
+        _collect_sprite_sets_recursive(base, child_rel, seen, out)
+
+
+static func _resolve_sprite_set_rel(base: String, sprite_set_rel: String) -> String:
+    var normalized := sprite_set_rel.replace("\\", "/").strip_edges()
+    if normalized.is_empty():
+        return ""
+    if DirAccess.open(base + normalized) != null:
+        return normalized
+    var leaf := normalized.get_file().strip_edges()
+    if leaf.is_empty():
+        return ""
+    return _find_sprite_set_rel_recursive(base, "Sprites", leaf)
+
+
+static func _find_sprite_set_rel_recursive(base: String, rel_dir: String, leaf: String) -> String:
+    var abs_dir := base + rel_dir
+    var d := DirAccess.open(abs_dir)
+    if d == null:
+        return ""
+    var subdirs: Array = []
+    d.list_dir_begin()
+    var fn := d.get_next()
+    while fn != "":
+        if d.current_is_dir() and not fn.begins_with("."):
+            subdirs.append(fn)
+        fn = d.get_next()
+    d.list_dir_end()
+    subdirs.sort()
+    for subdir_v in subdirs:
+        var subdir := str(subdir_v)
+        var child_rel := rel_dir + "/" + subdir
+        var child_abs := base + child_rel
+        if subdir == leaf and _folder_has_png(child_abs):
+            return child_rel
+        var nested := _find_sprite_set_rel_recursive(base, child_rel, leaf)
+        if not nested.is_empty():
+            return nested
+    return ""
 
 
 static func _folder_has_png(path: String) -> bool:

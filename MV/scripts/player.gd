@@ -1,7 +1,6 @@
 class_name MvPlayer
 extends CharacterBody2D
 
-const MvAbilityParams := preload("res://MV/scripts/ability_params.gd")
 
 # Player character controller. Ported from MVMania's C# Player (diortem
 # Samus.cs lineage) with the same three structural changes:
@@ -65,7 +64,7 @@ var _charge_fx_anim_frame: int = 0
 # ===== Pose + frame data (loaded from JSON at _ready) =====
 # Poses: int → Dictionary { dir, mvtype, y_radius, y_offset, collision_width,
 #                           hurtbox_x/y/w/h, weapon_anchor_x/y,
-#                           timing, frame_boxes, loop_from, transition_to }
+#                           timing, anim_speed, frame_boxes, loop_from, transition_to }
 # Frames: int → Array[int]  (sheet frame indices)
 var _poses: Dictionary = {}
 var _frames: Dictionary = {}
@@ -76,7 +75,6 @@ var _yr: int = 16              # current collision Y-radius
 var _right: bool = true        # current facing
 var _was_jump_held: bool = false
 var _was_on_floor: bool = true
-var _on_slope: bool = false
 var _locked: bool = false      # true while a script/cutscene owns the player
 var _script_move_active: bool = false
 var _script_move_target: Vector2 = Vector2.ZERO
@@ -184,8 +182,9 @@ var _active_effects: Array = []
 const STICK_DEADZONE: float = 0.3
 const BARREL_RADIUS: float  = 10.0   # muzzle offset from shoulder
 const SHOULDER_Y: float     = -8.0   # pixels above Position.Y - _yr
+const SLOPE_STEP_UP_MAX: float = 16.0
 
-signal entered_door(direction: String)
+signal entered_door(door_id: String)
 signal player_damaged(amount: int, hp_remaining: int, source: String)
 signal player_died(source: String)
 signal player_spawned(spawn_pos: Vector2)
@@ -201,6 +200,10 @@ func _ready() -> void:
     _sprite_layers["base"] = _sprite
     _col = $CollisionShape2D
     _rect = _col.shape
+    # Keep the body attached to authored slope geometry when walking across
+    # room collision. The smooth ramp collider fixed the old stair-step
+    # sticking, so we can use a stronger snap again for uphill walking.
+    floor_snap_length = 8.0
     _beam_scene = load("res://MV/scenes/beam.tscn")
     _beam_sfx = get_node_or_null("BeamSfx")
     _build_hurtbox()
@@ -225,6 +228,7 @@ func _ready() -> void:
     _yr = -1
     _set_collision(16)
     _set_pose(1)
+    _show_frame()
 
 
 func _normalize_sheet_defs(v: Variant) -> Array:
@@ -375,7 +379,11 @@ func _set_sprite_offset_all(offset: Vector2) -> void:
     for spr_v in _sprite_layers.values():
         var spr: Sprite2D = spr_v
         if is_instance_valid(spr):
-            spr.offset = offset
+            # Keep the sprite pivot at its visual center so authored per-frame
+            # rotations match the sprite editor preview instead of orbiting
+            # around the player root.
+            spr.position = offset
+            spr.offset = Vector2.ZERO
 
 
 func _set_sprite_modulate_all(color: Color) -> void:
@@ -383,6 +391,12 @@ func _set_sprite_modulate_all(color: Color) -> void:
         var spr: Sprite2D = spr_v
         if is_instance_valid(spr):
             spr.modulate = color
+
+
+func _sprite_offset_for_pose(base_info: Dictionary, effective_info: Dictionary = {}) -> Vector2:
+    var sprite_base_radius := int(base_info.get("y_radius", _yr))
+    var y_off := int(effective_info.get("y_offset", base_info.get("y_offset", 0)))
+    return Vector2(0, -sprite_base_radius - y_off)
 
 
 func _build_charge_fx_sprite() -> void:
@@ -457,6 +471,7 @@ func _load_poses(path: String) -> void:
             "weapon_anchor_x": int(p.get("weapon_anchor_x", 0)),
             "weapon_anchor_y": int(p.get("weapon_anchor_y", -int(p.get("y_radius", 16)) + int(SHOULDER_Y))),
             "timing":        timing,
+            "anim_speed":    maxf(0.05, float(p.get("anim_speed", 1.0))),
             "frame_boxes":   frame_boxes,
             "loop_from":     int(p.get("loop_from", -1)),
             "transition_to": int(p.get("transition_to", -1)),
@@ -519,10 +534,7 @@ func _set_pose(p: int) -> void:
     _apply_pose_sprite_flip(p)
 
     _set_collision(int(info["y_radius"]), _collision_width_for_pose(info), _collision_x_for_pose(info))
-    # Sprite offset: author y_offset=0 for frames whose feet sit at the
-    # bottom with yr = frame_h/2. Positive y_offset shifts the visual up.
-    var y_off: int = int(info["y_offset"])
-    _set_sprite_offset_all(Vector2(0, -int(info["y_radius"]) - y_off))
+    _set_sprite_offset_all(_sprite_offset_for_pose(info, info))
     _apply_pose_hurtbox(info)
 
     _anim_idx = 0
@@ -538,6 +550,9 @@ func _set_pose(p: int) -> void:
 # Lets packs with minimal pose coverage still face the correct direction
 # instead of freezing on one pose forever.
 func _try_set_pose(preferred: int, fallback: int = -1) -> bool:
+    var melee_locked_pose: int = int(_authored_melee_attack.get("pose", -1))
+    if melee_locked_pose >= 0 and preferred != melee_locked_pose and fallback != melee_locked_pose:
+        return false
     if _poses.has(preferred) and _resolved_animation_owner(preferred) >= 0:
         _set_pose(preferred)
         return true
@@ -547,13 +562,13 @@ func _try_set_pose(preferred: int, fallback: int = -1) -> bool:
     return false
 
 
-func _find_pose_id_by_name(name: String) -> int:
-    if name.is_empty():
+func _find_pose_id_by_name(pose_name: String) -> int:
+    if pose_name.is_empty():
         return -1
     for pose_id_v in _poses.keys():
         var pose_id: int = int(pose_id_v)
         var info: Dictionary = _poses[pose_id]
-        if str(info.get("name", "")) == name:
+        if str(info.get("name", "")) == pose_name:
             return pose_id
     return -1
 
@@ -615,7 +630,8 @@ func _matching_pose_id_for_dir(pose_id: int, desired_dir: int) -> int:
 
 
 func _resolved_animation_owner(pose_id: int) -> int:
-    if _frames.has(pose_id) and not (_frames[pose_id] as Array).is_empty():
+    var local_seq: Array = (_frames[pose_id] as Array) if _frames.has(pose_id) else []
+    if not local_seq.is_empty() and not (_pose_dir_value(_poses.get(pose_id, {})) < 0 and _frame_sequence_is_legacy_placeholder(local_seq)):
         return pose_id
     var mirror_id: int = _mirror_source_pose_id(pose_id)
     if mirror_id >= 0 and _frames.has(mirror_id) and not (_frames[mirror_id] as Array).is_empty():
@@ -633,8 +649,31 @@ func _pose_uses_mirrored_fallback(pose_id: int) -> bool:
     return _pose_dir_value(pose_info) < 0
 
 
+func _frame_sequence_is_legacy_placeholder(seq: Array) -> bool:
+    if seq.is_empty():
+        return false
+    for entry_v in seq:
+        var entry: Dictionary = _normalize_frame_entry(entry_v)
+        var layers_v: Variant = entry.get("layers", [])
+        if typeof(layers_v) != TYPE_ARRAY:
+            return false
+        var layers: Array = layers_v
+        if layers.size() != 1:
+            return false
+        var layer: Dictionary = layers[0] if typeof(layers[0]) == TYPE_DICTIONARY else {}
+        if str(layer.get("sheet", "base")).strip_edges() != "base":
+            return false
+        if int(layer.get("index", -1)) != 0:
+            return false
+    return true
+
+
 func _apply_pose_sprite_flip(pose_id: int) -> void:
     _set_sprite_flip_all(_pose_uses_mirrored_fallback(pose_id))
+
+
+func _display_frame_rotation(pose_id: int, rotation_deg: float) -> float:
+    return -rotation_deg if _pose_uses_mirrored_fallback(pose_id) else rotation_deg
 
 
 func _resolved_attack_pose_id(pose_id: int) -> int:
@@ -663,6 +702,7 @@ func _apply_attack_facing_from_aim(aim: Vector2) -> void:
 
 func _set_collision(yr: int, width: float = -1.0, offset_x: float = 0.0) -> void:
     if width < 0.0:
+        @warning_ignore("incompatible_ternary")
         width = _profile.collision_width if _profile != null else 24.0
     if yr == _yr and is_equal_approx(_rect.size.x, width) and is_equal_approx(_col.position.x, offset_x):
         return
@@ -745,6 +785,21 @@ func _hurtbox_world_center() -> Vector2:
     return global_position + _hurtbox_col.position
 
 
+func combat_origin() -> Vector2:
+    return _hurtbox_world_center()
+
+
+func hurtbox_world_rect() -> Rect2:
+    var center := _hurtbox_world_center()
+    var half_w := (_hurtbox_rect.size.x * 0.5) if _hurtbox_rect != null else (_rect.size.x * 0.5 if _rect != null else 5.0)
+    var half_h := (_hurtbox_rect.size.y * 0.5) if _hurtbox_rect != null else float(_yr)
+    return Rect2(center - Vector2(half_w, half_h), Vector2(half_w * 2.0, half_h * 2.0))
+
+
+func hurtbox_intersects_rect(world_rect: Rect2) -> bool:
+    return hurtbox_world_rect().intersects(world_rect)
+
+
 func _hurtbox_sample_points() -> Array:
     var center := _hurtbox_world_center()
     var half_w := (_hurtbox_rect.size.x * 0.5) if _hurtbox_rect != null else (_rect.size.x * 0.5 if _rect != null else 5.0)
@@ -770,6 +825,52 @@ func _foot_contact_points() -> Array:
     ]
 
 
+func _step_up_slope_ahead(move_dir: float) -> void:
+    if move_dir == 0.0:
+        return
+    var room_mgr: Node = MvGame.room_manager
+    if room_mgr == null or not room_mgr.has_method("try_get_slope_floor"):
+        return
+    var half_w := (_rect.size.x * 0.5) if _rect != null else 6.0
+    var foot_y := global_position.y
+    var probe_points := [
+        global_position.x + signf(move_dir) * (half_w + 1.0),
+        global_position.x + signf(move_dir) * (half_w + 4.0),
+    ]
+    var best_floor_y := INF
+    for probe_x_v in probe_points:
+        var probe_x: float = float(probe_x_v)
+        var floor_y := _find_reachable_slope_floor(room_mgr, probe_x, foot_y)
+        if floor_y < best_floor_y:
+            best_floor_y = floor_y
+    if is_inf(best_floor_y):
+        return
+    global_position.y = best_floor_y
+    if velocity.y > 0.0:
+        velocity.y = 0.0
+
+
+func _find_reachable_slope_floor(room_mgr: Node, probe_x: float, foot_y: float) -> float:
+    var best_rise := INF
+    var best_floor_y := INF
+    for step in range(int(SLOPE_STEP_UP_MAX) + 2):
+        var sample_y := foot_y - float(step)
+        var slope_v: Variant = room_mgr.call("try_get_slope_floor", probe_x, sample_y)
+        if typeof(slope_v) != TYPE_DICTIONARY:
+            continue
+        var slope: Dictionary = slope_v
+        if not bool(slope.get("hit", false)):
+            continue
+        var floor_y := float(slope.get("floor_y", foot_y))
+        var rise := foot_y - floor_y
+        if rise < 0.5 or rise > SLOPE_STEP_UP_MAX:
+            continue
+        if rise < best_rise:
+            best_rise = rise
+            best_floor_y = floor_y
+    return best_floor_y
+
+
 func _show_frame() -> void:
     var anim_owner: int = _resolved_animation_owner(_pose)
     if anim_owner < 0 or not _frames.has(anim_owner):
@@ -784,6 +885,7 @@ func _show_frame() -> void:
                 hidden_sprite.rotation_degrees = 0.0
         var frame_entry: Dictionary = _normalize_frame_entry(fl[_anim_idx])
         var frame_rotation: float = float(frame_entry.get("rotation_deg", 0.0))
+        var display_rotation: float = _display_frame_rotation(_pose, frame_rotation)
         var layers_v: Variant = frame_entry.get("layers", [])
         if typeof(layers_v) == TYPE_ARRAY:
             var layers: Array = layers_v
@@ -802,7 +904,7 @@ func _show_frame() -> void:
                 spr.hframes = maxi(1, _sheet_cols)
                 spr.vframes = maxi(1, int(ceil(tex.get_size().y / float(maxi(1, _frame_height)))))
                 spr.frame = int(layer.get("index", 0))
-                spr.rotation_degrees = frame_rotation
+                spr.rotation_degrees = display_rotation
                 spr.visible = true
         _apply_frame_box_overrides(_pose, _anim_idx)
 
@@ -821,8 +923,9 @@ func _apply_frame_box_overrides(pose_id: int, frame_idx: int) -> void:
                 if box.has(key):
                     effective[key] = int(box.get(key, effective.get(key, 0)))
     _set_collision(int(effective["y_radius"]), _collision_width_for_pose(effective), _collision_x_for_pose(effective))
-    var y_off: int = int(effective.get("y_offset", 0))
-    _set_sprite_offset_all(Vector2(0, -int(effective["y_radius"]) - y_off))
+    # Frame-box collision overrides should not drag the art around; only the
+    # authored sprite offset should move the sprite baseline.
+    _set_sprite_offset_all(_sprite_offset_for_pose(info, effective))
     _apply_pose_hurtbox(effective)
 
 
@@ -890,41 +993,18 @@ func _physics_process(delta: float) -> void:
             scripted_move_finished.emit()
         return
 
-    # Locked (cutscene / elevator descent): skip physics so the controlling
-    # script can move the player by position directly. Animation still ticks
-    # so held frames breathe correctly.
-    if _locked:
-        velocity = Vector2.ZERO
-        _advance_animation(dt)
-        return
-
     if _dodge_roll_timer > 0.0:
         _tick_dodge_roll(dt)
         return
 
     var vel := velocity
 
-    # Slope ground sample BEFORE the on-floor check. If the player's feet
-    # are at or below a slope surface in her current column, snap her up to
-    # that surface and treat it as floor contact.
-    _on_slope = false
-    var room_mgr: Node = MvGame.room_manager
-    if room_mgr != null and vel.y >= 0.0:
-        var r: Dictionary = room_mgr.try_get_slope_floor(position.x, position.y + 1.0)
-        if r.get("hit", false):
-            var slope_y: float = float(r["floor_y"])
-            if position.y >= slope_y - 1.0:
-                position = Vector2(position.x, slope_y)
-                if vel.y > 0.0:
-                    vel.y = 0.0
-                _on_slope = true
-
-    var on_floor := is_on_floor() or _on_slope
+    var on_floor := is_on_floor()
     var jump_held := Input.is_action_pressed("jump")
     var jump_pressed := Input.is_action_just_pressed("jump")
     var down_pressed := Input.is_action_just_pressed("crouch")
     var dodge_pressed := Input.is_action_just_pressed("dodge_roll")
-    if _melee_input_locked:
+    if _melee_input_locked or _locked:
         jump_held = false
         jump_pressed = false
         down_pressed = false
@@ -935,7 +1015,7 @@ func _physics_process(delta: float) -> void:
     # velocity (knockback keeps its impulse; door-entry gently pushes
     # inward). Jump/down/shoot all stay live so the player isn't completely
     # frozen — matches SM's "reeling but still reactive" state.
-    var input_locked := _knockback_timer > 0.0 or _door_lock_timer > 0.0 or _melee_input_locked
+    var input_locked := _locked or _knockback_timer > 0.0 or _door_lock_timer > 0.0 or _melee_input_locked
 
     var dir := 0.0
     if not input_locked:
@@ -1002,6 +1082,19 @@ func _physics_process(delta: float) -> void:
         if mv_air != MV_JUMP and mv_air != MV_SPIN and mv_air != MV_FALL \
                 and mv_air != MV_WALLJUMP and mv_air != MV_TRANS and mv_air != MV_TURN_AIR:
             _try_set_pose(41 if _right else 42, 1 if _right else 2)  # fall (ROM $29/$2A)
+
+    # Ground transition poses (turn / land / stand-up) should stay
+    # jump-cancellable so they don't feel like hard input locks.
+    if on_floor and jump_pressed and _poses.has(_pose) and _is_transition():
+        var transition_pi: Dictionary = _poses[_pose]
+        var transition_mv: int = int(transition_pi.get("mvtype", MV_STAND))
+        var should_spin_jump := transition_mv == MV_TURN \
+            or (absf(vel.x) >= 10.0 and transition_mv != MV_CROUCH)
+        vel.y = -_jump_speed_with_run_bonus(vel.x) if should_spin_jump else -_effective_jump_speed()
+        if should_spin_jump:
+            _try_set_pose(25 if _right else 26, 75 if _right else 76)
+        else:
+            _try_set_pose(75 if _right else 76)
 
     # ---- State transitions ----
     # When the pack lacks jump/fall/run poses, the "became airborne"
@@ -1081,12 +1174,17 @@ func _physics_process(delta: float) -> void:
     if _poses.has(_pose):
         var cur_pi: Dictionary = _poses[_pose]
         var cur_mv: int = int(cur_pi["mvtype"])
+        var ground_transition_control := on_floor and cur_mv != MV_CROUCH and _is_transition()
+        var ground_accel_scale := 0.62 if ground_transition_control else 1.0
+        var ground_decel_scale := 0.38 if ground_transition_control else 1.0
         if on_floor and cur_mv != MV_CROUCH:
-            if dir != 0.0 and not _is_transition():
-                vel.x += dir * _profile.run_accel * dt
+            if dir != 0.0:
+                if ground_transition_control and absf(vel.x) > 0.01 and signf(vel.x) != signf(dir):
+                    vel.x = move_toward(vel.x, 0.0, _profile.run_decel * dt * 0.55)
+                vel.x += dir * _profile.run_accel * dt * ground_accel_scale
                 vel.x = clampf(vel.x, -run_max, run_max)
             else:
-                vel.x = move_toward(vel.x, 0.0, _profile.run_decel * dt)
+                vel.x = move_toward(vel.x, 0.0, _profile.run_decel * dt * ground_decel_scale)
         elif not on_floor:
             if dir != 0.0 and not _is_transition():
                 vel.x += dir * _profile.air_accel * dt
@@ -1118,9 +1216,14 @@ func _physics_process(delta: float) -> void:
         _door_lock_timer -= dt
 
     velocity = vel
+    if (_was_on_floor or on_floor) and dir != 0.0 and vel.y >= 0.0:
+        _step_up_slope_ahead(dir)
+        vel = velocity
+    if (_was_on_floor or on_floor) and vel.y >= 0.0 and not jump_pressed:
+        apply_floor_snap()
     move_and_slide()
 
-    if is_on_floor() or _on_slope:
+    if is_on_floor():
         var room_mgr_after_move: Node = MvGame.room_manager
         if room_mgr_after_move != null and room_mgr_after_move.has_method("notify_crumble_contacts"):
             room_mgr_after_move.notify_crumble_contacts(_foot_contact_points())
@@ -1134,19 +1237,31 @@ func _physics_process(delta: float) -> void:
     # ---- Shooting ($90:B887) ----
     if _shoot_cooldown > 0.0:
         _shoot_cooldown -= dt
-    var melee_pressed := Input.is_action_just_pressed("melee_attack") and not _melee_input_locked
-    var ranged_held := Input.is_action_pressed("ranged_attack") and not _melee_input_locked
-    var ranged_pressed := Input.is_action_just_pressed("ranged_attack") and not _melee_input_locked
-    var authored_charge := _active_ranged_attack_supports_charge()
+    var melee_pressed := Input.is_action_just_pressed("melee_attack") and not _locked
+    var ranged_held := Input.is_action_pressed("ranged_attack") and not _melee_input_locked and not _locked
+    var ranged_pressed := Input.is_action_just_pressed("ranged_attack") and not _melee_input_locked and not _locked
+    var active_ranged_attack := _active_ranged_attack()
+    var has_authored_ranged_attack := not active_ranged_attack.is_empty()
+    var authored_hold_behavior := _active_ranged_attack_hold_behavior(active_ranged_attack)
+    var authored_charge := authored_hold_behavior == "charge_release"
+    var authored_full_auto := authored_hold_behavior == "full_auto"
+    var charge_feedback_active := authored_charge or not has_authored_ranged_attack
 
     if melee_pressed:
         _try_melee_attack()
 
-    if ranged_pressed and not authored_charge:
+    if has_authored_ranged_attack:
+        if authored_full_auto:
+            if ranged_held:
+                _apply_full_auto_hold_pose(active_ranged_attack)
+                _try_ranged_attack()
+        elif ranged_pressed:
+            _try_ranged_attack()
+    elif ranged_pressed:
         _try_ranged_attack()
 
     var released_charge_timer: float = _beam_charge_timer
-    if ranged_held:
+    if charge_feedback_active and ranged_held:
         _beam_charge_timer += dt
         released_charge_timer = _beam_charge_timer
     else:
@@ -1159,7 +1274,7 @@ func _physics_process(delta: float) -> void:
         var target_color: Color = Color.WHITE
         if _shine_active:
             target_color = Color(1.0, 0.7, 0.3, 1.0)    # shine orange
-        elif _beam_charge_timer >= _ranged_charge_threshold_seconds():
+        elif charge_feedback_active and _beam_charge_timer >= _ranged_charge_threshold_seconds():
             target_color = Color(0.65, 1.0, 1.0, 1.0)   # charge cyan
         if _sprite.modulate != target_color:
             _set_sprite_modulate_all(target_color)
@@ -1174,13 +1289,18 @@ func _physics_process(delta: float) -> void:
                 _try_fire_authored_ranged_charged()
             elif released_charge_timer > 0.0:
                 _try_ranged_attack()
-        elif released_charge_timer >= _ranged_charge_threshold_seconds():
+        elif not has_authored_ranged_attack and released_charge_timer >= _ranged_charge_threshold_seconds():
             _try_fire_charged()
+        _beam_charge_timer = 0.0
+    elif not charge_feedback_active:
         _beam_charge_timer = 0.0
     _was_shoot_held = ranged_held
 
+    if has_authored_ranged_attack and authored_full_auto and not ranged_held:
+        _restore_after_full_auto_hold(on_floor, dir, vel)
+
     # ---- Grapple ----
-    if not _melee_input_locked and Input.is_action_just_pressed("grapple"):
+    if not _melee_input_locked and not _locked and Input.is_action_just_pressed("grapple"):
         if _grapple_swinging:
             _end_grapple_swing(true)
         else:
@@ -1213,6 +1333,17 @@ func set_scripted_facing(dir: float) -> void:
         _set_pose(matched_pose)
         return
     _apply_pose_sprite_flip(_pose)
+
+
+func _apply_spawn_facing(direction: String) -> void:
+    var trimmed: String = direction.strip_edges().to_lower()
+    match trimmed:
+        "left":
+            set_scripted_facing(-1.0)
+        "right":
+            set_scripted_facing(1.0)
+        _:
+            pass
 
 
 func begin_scripted_move(target_pos: Vector2, speed: float = 64.0) -> void:
@@ -1294,8 +1425,6 @@ func _start_dodge_roll(input_dir: float) -> void:
     if _dodge_roll_dir == 0:
         _dodge_roll_dir = 1 if _right else -1
     _right = _dodge_roll_dir > 0
-    if _sprite != null:
-        _apply_pose_sprite_flip(_pose)
     _dodge_roll_timer = DODGE_ROLL_SEC
     _beam_charge_timer = 0.0
     _was_shoot_held = false
@@ -1331,15 +1460,9 @@ func _find_dodge_roll_pose_id() -> int:
 
 
 func _tick_dodge_roll(dt: float) -> void:
-    var roll_vel: Vector2 = velocity
-    if not is_on_floor():
-        roll_vel.y += _profile.gravity * dt
-        if roll_vel.y > _profile.max_fall:
-            roll_vel.y = _profile.max_fall
-    else:
-        roll_vel.y = minf(roll_vel.y, 0.0)
-    roll_vel.x = float(_dodge_roll_dir) * maxf(_profile.run_max * DODGE_ROLL_SPEED_MULT, 280.0)
-    velocity = roll_vel
+    velocity.x = float(_dodge_roll_dir) * maxf(_profile.run_max * DODGE_ROLL_SPEED_MULT, 280.0)
+    if is_on_floor():
+        velocity.y = 0.0
     move_and_slide()
     _was_on_floor = is_on_floor()
     if _invuln_timer > 0.0:
@@ -1354,7 +1477,7 @@ func _tick_dodge_roll(dt: float) -> void:
     _advance_animation(dt)
     _check_door_edges()
     if _dodge_roll_timer <= 0.0:
-        velocity = Vector2(move_toward(velocity.x, 0.0, _profile.run_decel * dt), velocity.y)
+        velocity.x = move_toward(velocity.x, 0.0, _profile.run_decel * dt)
         _try_set_pose(1 if _right else 2)
 
 
@@ -1561,6 +1684,7 @@ func _advance_animation(dt: float) -> void:
         return
 
     var speed_scale := _script_anim_speed_scale if _script_anim_active and _pose == _script_anim_pose_id else 1.0
+    speed_scale *= _pose_anim_speed_scale(_pose, anim_owner)
     var mvtype: int = int(pi.get("mvtype", MV_STAND))
     if mvtype == MV_TURN:
         speed_scale *= 2.0
@@ -1613,6 +1737,14 @@ func _advance_animation(dt: float) -> void:
         frame_dur = float(timing[frame_idx])
 
 
+func _pose_anim_speed_scale(pose_id: int, anim_owner: int = -1) -> float:
+    if _poses.has(pose_id):
+        return maxf(0.05, float((_poses[pose_id] as Dictionary).get("anim_speed", 1.0)))
+    if anim_owner >= 0 and _poses.has(anim_owner):
+        return maxf(0.05, float((_poses[anim_owner] as Dictionary).get("anim_speed", 1.0)))
+    return 1.0
+
+
 # ===== Shooting =====
 
 func _can_shoot() -> bool:
@@ -1637,9 +1769,8 @@ func _active_ranged_attack() -> Dictionary:
 func _ranged_charge_threshold_seconds() -> float:
     var attack := _active_ranged_attack()
     if not attack.is_empty():
-        var charged_attack_id := str(attack.get("charged_attack_id", "")).strip_edges()
-        var charge_ticks := int(attack.get("charge_ticks", 0))
-        if not charged_attack_id.is_empty() and charge_ticks > 0:
+        if _active_ranged_attack_hold_behavior(attack) == "charge_release":
+            var charge_ticks := int(attack.get("charge_ticks", 0))
             return float(charge_ticks) / 60.0
     return _profile.beam_charge_seconds
 
@@ -1648,7 +1779,78 @@ func _active_ranged_attack_supports_charge() -> bool:
     var attack := _active_ranged_attack()
     if attack.is_empty():
         return false
-    return not str(attack.get("charged_attack_id", "")).strip_edges().is_empty() and int(attack.get("charge_ticks", 0)) > 0
+    return _active_ranged_attack_hold_behavior(attack) == "charge_release"
+
+
+func _active_ranged_attack_hold_behavior(attack: Dictionary = {}) -> String:
+    var resolved_attack: Dictionary = attack
+    if resolved_attack.is_empty():
+        resolved_attack = _active_ranged_attack()
+    if resolved_attack.is_empty():
+        return ""
+    var hold_behavior := str(resolved_attack.get("hold_behavior", "")).strip_edges()
+    if hold_behavior == "full_auto" or hold_behavior == "single_press" or hold_behavior == "charge_release":
+        return hold_behavior
+    var charged_attack_id := str(resolved_attack.get("charged_attack_id", "")).strip_edges()
+    var charge_ticks := int(resolved_attack.get("charge_ticks", 0))
+    if not charged_attack_id.is_empty() and charge_ticks > 0:
+        return "charge_release"
+    return "full_auto"
+
+
+func _full_auto_hold_pose_id(attack: Dictionary = {}) -> int:
+    var resolved_attack: Dictionary = attack
+    if resolved_attack.is_empty():
+        resolved_attack = _active_ranged_attack()
+    if resolved_attack.is_empty():
+        return -1
+
+    var charged_attack_id := str(resolved_attack.get("charged_attack_id", "")).strip_edges()
+    if not charged_attack_id.is_empty():
+        var charged_attack: Dictionary = _attack_definition_by_id(charged_attack_id)
+        if not charged_attack.is_empty():
+            var charged_pose_id := _resolved_attack_pose_id(int(charged_attack.get("player_pose", -1)))
+            if charged_pose_id >= 0:
+                return charged_pose_id
+
+    var pose_names: Array = []
+    if _right:
+        pose_names = ["ranged_charge_right", "charged_right", "charge_right"]
+    else:
+        pose_names = ["ranged_charge_left", "charged_left", "charge_left"]
+    for pose_name_v in pose_names:
+        var pose_id := _find_pose_id_by_name(str(pose_name_v))
+        if pose_id >= 0 and _resolved_animation_owner(pose_id) >= 0:
+            return pose_id
+    return -1
+
+
+func _apply_full_auto_hold_pose(attack: Dictionary = {}) -> void:
+    var hold_pose_id := _full_auto_hold_pose_id(attack)
+    if hold_pose_id < 0:
+        return
+    if _pose == hold_pose_id:
+        return
+    _try_set_pose(hold_pose_id)
+
+
+func _restore_after_full_auto_hold(on_floor: bool, dir: float, vel: Vector2) -> void:
+    var hold_pose_id := _full_auto_hold_pose_id()
+    if hold_pose_id < 0 or _pose != hold_pose_id:
+        return
+    if not on_floor:
+        if vel.y < 0.0:
+            _try_set_pose(75 if _right else 76, 41 if _right else 42)
+        else:
+            _try_set_pose(41 if _right else 42)
+        return
+    if Input.is_action_pressed("crouch"):
+        _try_set_pose(53 if _right else 54, 67 if _right else 68)
+        return
+    if dir != 0.0:
+        _try_set_pose(9 if _right else 10, 1 if _right else 2)
+        return
+    _try_set_pose(1 if _right else 2)
 
 
 func _update_charge_fx(ranged_held: bool, delta: float) -> void:
@@ -1680,15 +1882,14 @@ func _update_charge_fx(ranged_held: bool, delta: float) -> void:
 
     var threshold := maxf(_ranged_charge_threshold_seconds(), 0.001)
     var charge_ratio := clampf(_beam_charge_timer / threshold, 0.0, 1.0)
-    var scale := 0.85 + charge_ratio * 0.35
-    _charge_fx_sprite.scale = Vector2.ONE * scale
+    var sprite_scale := 0.85 + charge_ratio * 0.35
+    _charge_fx_sprite.scale = Vector2.ONE * sprite_scale
     _charge_fx_sprite.modulate = Color(1.0, 1.0, 1.0, 0.4 + charge_ratio * 0.6)
 
 
 func _attack_supports_charge_fx(attack: Dictionary) -> bool:
     return not str(attack.get("charge_fx_sheet", "")).strip_edges().is_empty() \
-        and not str(attack.get("charged_attack_id", "")).strip_edges().is_empty() \
-        and int(attack.get("charge_ticks", 0)) > 0
+        and _active_ranged_attack_hold_behavior(attack) == "charge_release"
 
 
 func _ensure_charge_fx_loaded(attack: Dictionary) -> void:
@@ -1772,6 +1973,9 @@ func get_aim_direction() -> Vector2:
 
 
 func _try_melee_attack() -> void:
+    if not _authored_melee_attack.is_empty():
+        _consume_authored_combo_input()
+        return
     if not _can_shoot():
         return
     var melee_attack_id: String = PlayerInventory.get_melee_attack_id()
@@ -1829,16 +2033,23 @@ func _try_fire_authored_attack(attack_id: String, ignore_cooldown: bool = false)
     if attack.is_empty():
         return
 
-    _apply_attack_facing_from_aim(get_aim_direction())
+    var aim := get_aim_direction()
+    _apply_attack_facing_from_aim(aim)
 
     var pose_id := _resolved_attack_pose_id(int(attack.get("player_pose", -1)))
-    if pose_id >= 0:
+    var attack_type := str(attack.get("type", "")).strip_edges()
+    var hold_behavior := _active_ranged_attack_hold_behavior(attack)
+    var should_reset_pose := pose_id >= 0
+    if should_reset_pose and attack_type == "projectile" and hold_behavior == "full_auto":
+        var hold_pose_id := _full_auto_hold_pose_id(attack)
+        if hold_pose_id >= 0 or _pose == pose_id:
+            should_reset_pose = false
+    if should_reset_pose:
         _try_set_pose(pose_id)
 
-    var attack_type := str(attack.get("type", "")).strip_edges()
     match attack_type:
         "projectile":
-            _spawn_authored_projectile_attack(attack, pose_id)
+            _spawn_authored_projectile_attack(attack, aim, pose_id)
         "melee":
             _begin_authored_melee_attack(attack, pose_id)
         _:
@@ -1861,7 +2072,7 @@ func _try_fire_authored_ranged_charged() -> void:
     _try_fire_authored_attack(charged_attack_id)
 
 
-func _spawn_authored_projectile_attack(attack: Dictionary, pose_id: int = -1) -> void:
+func _spawn_authored_projectile_attack(attack: Dictionary, aim: Vector2, pose_id: int = -1) -> void:
     var projectile_id := str(attack.get("projectile_id", "")).strip_edges()
     if projectile_id.is_empty():
         return
@@ -1869,10 +2080,8 @@ func _spawn_authored_projectile_attack(attack: Dictionary, pose_id: int = -1) ->
     if projectile_def.is_empty():
         return
 
-    var aim := get_aim_direction()
     if aim.length_squared() < 0.0001:
         aim = Vector2(1.0 if _right else -1.0, 0.0)
-    _apply_attack_facing_from_aim(aim)
     var spread_deg := float(PlayerInventory.get_var("mv_projectile_spread", 0.0))
     if absf(spread_deg) > 0.001:
         aim = aim.rotated(deg_to_rad(spread_deg))
@@ -1884,15 +2093,17 @@ func _spawn_authored_projectile_attack(attack: Dictionary, pose_id: int = -1) ->
 
 
 func _begin_authored_melee_attack(attack: Dictionary, pose_id: int) -> void:
-    var hit_frames_v: Variant = attack.get("hit_frames", [])
-    if typeof(hit_frames_v) != TYPE_ARRAY or (hit_frames_v as Array).is_empty():
+    var hit_frames: Array = _normalized_attack_hit_frames(attack)
+    if hit_frames.is_empty():
         return
     _authored_melee_attack = {
         "pose": pose_id,
         "def": attack.duplicate(true),
         "spawned_frames": {},
-        "max_frame": _max_hit_frame(hit_frames_v as Array),
-        "combo_open_frame": _min_hit_frame(hit_frames_v as Array),
+        "hit_targets": {},
+        "min_frame": _min_hit_frame(hit_frames),
+        "max_frame": _max_hit_frame(hit_frames),
+        "combo_open_frame": _min_hit_frame(hit_frames),
         "queued_next_id": "",
     }
     _melee_input_locked = true
@@ -1912,13 +2123,20 @@ func _tick_authored_melee_attack() -> void:
         _authored_melee_attack.clear()
         _melee_input_locked = false
         return
-    var hit_frames: Array = attack.get("hit_frames", [])
+    var hit_frames: Array = _normalized_attack_hit_frames(attack)
     var spawned: Dictionary = _authored_melee_attack.get("spawned_frames", {})
-    if hit_frames.has(_anim_idx) and not spawned.has(_anim_idx):
+    var hit_targets: Dictionary = _authored_melee_attack.get("hit_targets", {})
+    var min_frame: int = int(_authored_melee_attack.get("min_frame", 0))
+    var max_frame: int = int(_authored_melee_attack.get("max_frame", -1))
+    var hit_active: bool = _anim_idx >= min_frame and _anim_idx <= max_frame
+    if hit_active:
+        _apply_authored_melee_geometry_hits(attack, hit_targets)
+        _authored_melee_attack["hit_targets"] = hit_targets
+    if hit_active and not spawned.has(_anim_idx):
         _spawn_authored_melee_hitbox(attack)
         spawned[_anim_idx] = true
         _authored_melee_attack["spawned_frames"] = spawned
-    if _anim_idx > int(_authored_melee_attack.get("max_frame", -1)):
+    if _anim_idx > max_frame:
         var queued_next_id: String = str(_authored_melee_attack.get("queued_next_id", "")).strip_edges()
         _authored_melee_attack.clear()
         _melee_input_locked = false
@@ -1938,8 +2156,41 @@ func _spawn_authored_melee_hitbox(attack: Dictionary) -> void:
         maxf(1.0, float(int(attack.get("hitbox_h", 1))) * range_mult)
     )
     var hitbox := _MvAuthoredMeleeHitbox.new()
-    hitbox.configure(position + Vector2(offset_x, offset_y), size, int(round(float(attack.get("damage", 0)) * damage_mult)))
+    hitbox.configure(combat_origin() + Vector2(offset_x, offset_y), size, int(round(float(attack.get("damage", 0)) * damage_mult)))
     get_parent().add_child(hitbox)
+
+
+func _apply_authored_melee_geometry_hits(attack: Dictionary, hit_targets: Dictionary) -> void:
+    var range_mult := maxf(0.1, float(PlayerInventory.get_var("mv_melee_range_mult", 1.0)))
+    var damage_mult := float(PlayerInventory.get_var("mv_melee_damage_mult", 1.0))
+    var offset_x := float(int(attack.get("hitbox_x", 0))) * range_mult
+    if not _right:
+        offset_x = -offset_x
+    var offset_y := float(int(attack.get("hitbox_y", 0))) * range_mult
+    var size := Vector2(
+        maxf(1.0, float(int(attack.get("hitbox_w", 1))) * range_mult),
+        maxf(1.0, float(int(attack.get("hitbox_h", 1))) * range_mult)
+    )
+    var world_rect := Rect2(combat_origin() + Vector2(offset_x, offset_y) - size * 0.5, size)
+    var damage := int(round(float(attack.get("damage", 0)) * damage_mult))
+    if damage <= 0:
+        return
+    for enemy in get_tree().get_nodes_in_group("mv_enemy"):
+        if not is_instance_valid(enemy):
+            continue
+        var enemy_id := enemy.get_instance_id()
+        if hit_targets.has(enemy_id):
+            continue
+        var intersects := false
+        if enemy.has_method("hurtbox_intersects_rect"):
+            intersects = bool(enemy.call("hurtbox_intersects_rect", world_rect))
+        elif enemy is Node2D:
+            intersects = world_rect.has_point((enemy as Node2D).global_position)
+        if not intersects:
+            continue
+        hit_targets[enemy_id] = true
+        if enemy.has_method("take_damage"):
+            enemy.call("take_damage", damage, combat_origin())
 
 
 func _attack_spawn_position(attack: Dictionary, aim: Vector2, pose_id: int = -1) -> Vector2:
@@ -1978,6 +2229,16 @@ func _min_hit_frame(frames: Array) -> int:
     return min_frame
 
 
+func _normalized_attack_hit_frames(attack: Dictionary) -> Array:
+    var out: Array = []
+    var hit_frames_v: Variant = attack.get("hit_frames", [])
+    if typeof(hit_frames_v) != TYPE_ARRAY:
+        return out
+    for frame_v in hit_frames_v as Array:
+        out.append(int(frame_v))
+    return out
+
+
 func _consume_authored_combo_input() -> bool:
     if _authored_melee_attack.is_empty():
         return false
@@ -1988,9 +2249,6 @@ func _consume_authored_combo_input() -> bool:
     if combo_next_id.is_empty():
         return true
     if not str(_authored_melee_attack.get("queued_next_id", "")).strip_edges().is_empty():
-        return true
-    var combo_open_frame: int = int(_authored_melee_attack.get("combo_open_frame", 0))
-    if _anim_idx < combo_open_frame:
         return true
     _authored_melee_attack["queued_next_id"] = combo_next_id
     return true
@@ -2239,6 +2497,18 @@ func current_authored_door(preferred_direction: String = "") -> Dictionary:
     return room_mgr.find_door_for_points(sample_points, preferred_direction)
 
 
+func cleanup_room_transition_transients() -> void:
+    _authored_melee_attack.clear()
+    _melee_input_locked = false
+    _beam_count = 0
+    _bomb_count = 0
+    _grapple_swinging = false
+    _grapple_ang_vel = 0.0
+    if _grapple_projectile != null and is_instance_valid(_grapple_projectile):
+        _grapple_projectile.despawn()
+    _grapple_projectile = null
+
+
 func _check_door_edges() -> void:
     if _door_lock_timer > 0.0:
         return
@@ -2247,26 +2517,20 @@ func _check_door_edges() -> void:
         return
     var authored_door := current_authored_door()
     if not authored_door.is_empty():
-        var authored_direction := str(authored_door.get("direction", "")).strip_edges()
-        if not authored_direction.is_empty():
-            entered_door.emit(authored_direction)
+        var authored_door_id := str(authored_door.get("id", "")).strip_edges()
+        if not authored_door_id.is_empty():
+            entered_door.emit(authored_door_id)
             return
-    var info: Dictionary = room_mgr.current_room() if room_mgr.has_method("current_room") else {}
-    if info.is_empty():
-        return
-    var width_px: int = int(info.get("width_px", 0))
-    if position.x <= 4.0:
-        entered_door.emit("left")
-    elif position.x >= float(width_px) - 4.0:
-        entered_door.emit("right")
 
 
-func spawn_at(pos: Vector2, entry_direction: String = "") -> void:
+func spawn_at(pos: Vector2, entry_direction: String = "", facing_direction: String = "") -> void:
     position = pos
     velocity = Vector2.ZERO
     _was_jump_held = false
     _was_on_floor = true
     _set_pose(1)
+    _show_frame()
+    _apply_spawn_facing(facing_direction)
     _invuln_timer = 0.0
     _knockback_timer = 0.0
 

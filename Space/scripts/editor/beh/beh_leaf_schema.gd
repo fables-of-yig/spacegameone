@@ -42,6 +42,12 @@ const ACTIONS: Array = [
 	{"name": "pursue", "label": "Pursue Player",
 	 "fields": [["speed", "speed (px/s)", "float", 80.0]],
 	 "help": "Chase nearest mv_player. FAILURE if no player."},
+	{"name": "flee_fly", "label": "Flee Fly",
+	 "fields": [["speed", "speed (px/s)", "float", 60.0]],
+	 "help": "Fly away from the nearest mv_player in both axes. Intended for hover/fly enemies."},
+	{"name": "pursue_fly", "label": "Pursue Fly",
+	 "fields": [["speed", "speed (px/s)", "float", 80.0]],
+	 "help": "Fly toward the nearest mv_player in both axes. Intended for hover/fly enemies."},
 	{"name": "patrol_point", "label": "Patrol to X",
 	 "fields": [
 		["target_x", "target world-x (px)", "float", 0.0],

@@ -4,7 +4,6 @@ const UIIo := preload("res://Space/scripts/editor/ui/ui_io.gd")
 const AuthoredScreenRuntime := preload("res://Space/scripts/ui/authored_screen_runtime.gd")
 const HudDataSource := preload("res://Space/scripts/ui/hud_data_source.gd")
 const UIPanels := preload("res://Space/scripts/ui/ui_panels.gd")
-const UiHostActions := preload("res://Space/scripts/ui/ui_host_actions.gd")
 
 static var _singleton: CanvasLayer = null
 

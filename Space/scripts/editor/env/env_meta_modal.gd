@@ -12,7 +12,7 @@ const EnvIO = preload("res://Space/scripts/editor/env/env_io.gd")
 const PackAssetIndex = preload("res://Space/scripts/editor/pack_asset_index.gd")
 
 const BOX_W: float = 860.0
-const BOX_H: float = 620.0
+const BOX_H: float = 760.0
 
 const PARALLAX_ROWS := [
     {"name": "far", "label": "Far"},
@@ -48,6 +48,11 @@ const PARALLAX_SPEED_PRESETS := [
         ],
     },
 ]
+const WEATHER_PRESETS := [
+    {"id": "none", "label": "NONE"},
+    {"id": "rain", "label": "RAIN"},
+    {"id": "snow", "label": "SNOW"},
+]
 
 var _title: String = ""
 var _pack_id: String = "demo"
@@ -59,8 +64,24 @@ var _available_backdrops: Array = []
 var _error_text: String = ""
 var _parallax_rows: Array = []
 var _parallax_preset_rects: Array = []
+var _parallax_toggle_btn: Button = null
 var _import_parallax_btn: Button = null
 var _import_parallax_dialog: FileDialog = null
+var _parallax_enabled: bool = true
+var _bg_image_path_edit: LineEdit = null
+var _bg_image_picker: OptionButton = null
+var _bg_image_x_edit: LineEdit = null
+var _bg_image_y_edit: LineEdit = null
+var _bg_image_w_edit: LineEdit = null
+var _bg_image_h_edit: LineEdit = null
+var _bg_image_sx_edit: LineEdit = null
+var _bg_image_sy_edit: LineEdit = null
+var _weather_preset_picker: OptionButton = null
+var _weather_color_btn: ColorPickerButton = null
+var _weather_intensity_edit: LineEdit = null
+var _weather_speed_edit: LineEdit = null
+var _preserved_background_images: Array = []
+var _preserved_background_image: Dictionary = {}
 
 var _ok_rect: Rect2 = Rect2()
 var _cancel_rect: Rect2 = Rect2()
@@ -77,12 +98,17 @@ func _ready():
     add_child(_width_edit)
     add_child(_height_edit)
 
+    _parallax_toggle_btn = Button.new()
+    _parallax_toggle_btn.pressed.connect(_on_parallax_toggle_pressed)
+    add_child(_parallax_toggle_btn)
+
     _import_parallax_btn = Button.new()
     _import_parallax_btn.text = "IMPORT PARALLAX"
     _import_parallax_btn.pressed.connect(_on_import_parallax_pressed)
     add_child(_import_parallax_btn)
 
     _import_parallax_dialog = FileDialog.new()
+    _import_parallax_dialog.use_native_dialog = true
     _import_parallax_dialog.access = FileDialog.ACCESS_FILESYSTEM
     _import_parallax_dialog.file_mode = FileDialog.FILE_MODE_OPEN_FILES
     _import_parallax_dialog.filters = PackedStringArray(["*.png ; PNG images"])
@@ -112,6 +138,45 @@ func _ready():
             "sx_edit": sx_edit,
             "sy_edit": sy_edit,
         })
+
+    _bg_image_path_edit = _make_line_edit("Backdrops/Parallax/background.png")
+    add_child(_bg_image_path_edit)
+    _bg_image_picker = OptionButton.new()
+    _bg_image_picker.custom_minimum_size = Vector2(170, 0)
+    _bg_image_picker.item_selected.connect(_on_background_image_picked)
+    add_child(_bg_image_picker)
+    _bg_image_x_edit = _make_line_edit("0")
+    _bg_image_y_edit = _make_line_edit("0")
+    _bg_image_w_edit = _make_line_edit("30")
+    _bg_image_h_edit = _make_line_edit("17")
+    _bg_image_sx_edit = _make_line_edit("1.00")
+    _bg_image_sy_edit = _make_line_edit("1.00")
+    for le in [_bg_image_x_edit, _bg_image_y_edit, _bg_image_w_edit, _bg_image_h_edit, _bg_image_sx_edit, _bg_image_sy_edit]:
+        le.alignment = HORIZONTAL_ALIGNMENT_CENTER
+        add_child(le)
+        le.visible = false
+    if _bg_image_path_edit != null:
+        _bg_image_path_edit.visible = false
+    if _bg_image_picker != null:
+        _bg_image_picker.visible = false
+
+    _weather_preset_picker = OptionButton.new()
+    for preset_v in WEATHER_PRESETS:
+        var preset: Dictionary = preset_v
+        _weather_preset_picker.add_item(str(preset.get("label", "")))
+        _weather_preset_picker.set_item_metadata(_weather_preset_picker.get_item_count() - 1, str(preset.get("id", "")))
+    add_child(_weather_preset_picker)
+
+    _weather_color_btn = ColorPickerButton.new()
+    _weather_color_btn.custom_minimum_size = Vector2(120, 28)
+    add_child(_weather_color_btn)
+
+    _weather_intensity_edit = _make_line_edit("0.70")
+    _weather_intensity_edit.alignment = HORIZONTAL_ALIGNMENT_CENTER
+    add_child(_weather_intensity_edit)
+    _weather_speed_edit = _make_line_edit("1.00")
+    _weather_speed_edit.alignment = HORIZONTAL_ALIGNMENT_CENTER
+    add_child(_weather_speed_edit)
     _layout_fields()
 
 
@@ -150,6 +215,9 @@ func open(room_addr: String, meta: Dictionary, available_tilesets: Array, pack_i
     if _height_edit != null:
         _height_edit.text = str(int(meta.get("height_blocks", 17)))
 
+    _parallax_enabled = bool(meta.get("parallax_enabled", true))
+    _sync_parallax_toggle_text()
+
     var defaults := EnvIO.default_parallax_layers()
     var layers_v: Variant = meta.get("parallax_layers", defaults)
     var layers: Array = defaults
@@ -166,6 +234,33 @@ func open(room_addr: String, meta: Dictionary, available_tilesets: Array, pack_i
         (row["sx_edit"] as LineEdit).text = "%.2f" % float(src.get("scroll_speed_x", fallback.get("scroll_speed_x", 1.0)))
         (row["sy_edit"] as LineEdit).text = "%.2f" % float(src.get("scroll_speed_y", fallback.get("scroll_speed_y", 1.0)))
         _refresh_backdrop_picker(row, image_path)
+    _preserved_background_images = []
+    var bg_images_v: Variant = meta.get("background_images", [])
+    if typeof(bg_images_v) == TYPE_ARRAY:
+        _preserved_background_images = (bg_images_v as Array).duplicate(true)
+    var bg_defaults := EnvIO.default_background_image(
+        int(meta.get("width_blocks", 30)),
+        int(meta.get("height_blocks", 17)))
+    _preserved_background_image = bg_defaults.duplicate(true)
+    var bg_v: Variant = meta.get("background_image", bg_defaults)
+    if typeof(bg_v) == TYPE_DICTIONARY:
+        _preserved_background_image = (bg_v as Dictionary).duplicate(true)
+
+    var weather_defaults := EnvIO.default_weather()
+    var weather_v: Variant = meta.get("weather", weather_defaults)
+    var weather: Dictionary = weather_defaults
+    if typeof(weather_v) == TYPE_DICTIONARY:
+        weather = (weather_v as Dictionary).duplicate(true)
+    var preset_id := str(weather.get("preset", "none")).strip_edges().to_lower()
+    var selected_idx := 0
+    for i in range(_weather_preset_picker.get_item_count()):
+        if str(_weather_preset_picker.get_item_metadata(i)) == preset_id:
+            selected_idx = i
+            break
+    _weather_preset_picker.select(selected_idx)
+    _weather_color_btn.color = Color.from_string(str(weather.get("color", "cfe8ffff")), Color(0.81, 0.91, 1.0, 1.0))
+    _weather_intensity_edit.text = "%.2f" % float(weather.get("intensity", 0.7))
+    _weather_speed_edit.text = "%.2f" % float(weather.get("speed", 1.0))
 
     _layout_fields()
     queue_redraw()
@@ -189,6 +284,9 @@ func _layout_fields() -> void:
     _width_edit.size = Vector2(field_w, field_h)
     _height_edit.position = Vector2(box.position.x + 160, box.position.y + 110)
     _height_edit.size = Vector2(field_w, field_h)
+    if _parallax_toggle_btn != null:
+        _parallax_toggle_btn.position = Vector2(box.position.x + 160.0, box.position.y + 150.0)
+        _parallax_toggle_btn.size = Vector2(132.0, 30.0)
     if _import_parallax_btn != null:
         _import_parallax_btn.position = Vector2(box.position.x + box.size.x - 172.0, box.position.y + 150.0)
         _import_parallax_btn.size = Vector2(148.0, 30.0)
@@ -209,6 +307,20 @@ func _layout_fields() -> void:
         sx_edit.size = Vector2(74.0, field_h)
         sy_edit.position = Vector2(box.position.x + 754.0, y)
         sy_edit.size = Vector2(74.0, field_h)
+
+    var weather_y := box.position.y + 574.0
+    if _weather_preset_picker != null:
+        _weather_preset_picker.position = Vector2(box.position.x + 160.0, weather_y)
+        _weather_preset_picker.size = Vector2(170.0, field_h)
+    if _weather_color_btn != null:
+        _weather_color_btn.position = Vector2(box.position.x + 352.0, weather_y)
+        _weather_color_btn.size = Vector2(138.0, field_h)
+    if _weather_intensity_edit != null:
+        _weather_intensity_edit.position = Vector2(box.position.x + 666.0, weather_y)
+        _weather_intensity_edit.size = Vector2(74.0, field_h)
+    if _weather_speed_edit != null:
+        _weather_speed_edit.position = Vector2(box.position.x + 754.0, weather_y)
+        _weather_speed_edit.size = Vector2(74.0, field_h)
 
 
 func _gui_input(event):
@@ -258,6 +370,18 @@ func _on_import_parallax_pressed() -> void:
         return
     _error_text = ""
     _import_parallax_dialog.popup_centered_ratio(0.72)
+
+
+func _on_parallax_toggle_pressed() -> void:
+    _parallax_enabled = not _parallax_enabled
+    _sync_parallax_toggle_text()
+    queue_redraw()
+
+
+func _sync_parallax_toggle_text() -> void:
+    if _parallax_toggle_btn == null:
+        return
+    _parallax_toggle_btn.text = "PARALLAX ON" if _parallax_enabled else "PARALLAX OFF"
 
 
 func _on_import_parallax_files_selected(paths: PackedStringArray) -> void:
@@ -375,12 +499,31 @@ func _confirm() -> void:
             "scroll_speed_y": clampf(float(sy_str), 0.0, 2.0),
         })
 
+    var weather_intensity: Variant = _parse_meta_float(_weather_intensity_edit, "Weather intensity")
+    if weather_intensity == null:
+        return
+    var weather_speed: Variant = _parse_meta_float(_weather_speed_edit, "Weather speed")
+    if weather_speed == null:
+        return
+    var weather_preset := "none"
+    if _weather_preset_picker != null and _weather_preset_picker.selected >= 0:
+        weather_preset = str(_weather_preset_picker.get_item_metadata(_weather_preset_picker.selected))
+
     _error_text = ""
     var meta := {
         "width_blocks": w,
         "height_blocks": h,
         "tileset": _selected_tileset,
+        "parallax_enabled": _parallax_enabled,
         "parallax_layers": layers,
+        "weather": {
+            "preset": weather_preset,
+            "color": _weather_color_btn.color.to_html(true) if _weather_color_btn != null else "cfe8ffff",
+            "intensity": clampf(float(weather_intensity), 0.0, 2.0),
+            "speed": clampf(float(weather_speed), 0.0, 4.0),
+        },
+        "background_images": _preserved_background_images.duplicate(true),
+        "background_image": _preserved_background_image.duplicate(true),
     }
     visible = false
     submitted.emit(meta)
@@ -389,6 +532,19 @@ func _confirm() -> void:
 func _cancel() -> void:
     visible = false
     cancelled.emit()
+
+
+func _parse_meta_float(edit: LineEdit, label: String) -> Variant:
+    if edit == null:
+        return 0.0
+    var raw := edit.text.strip_edges()
+    if raw.is_empty():
+        return 0.0
+    if not raw.is_valid_float() and not raw.is_valid_int():
+        _error_text = "%s must be a number." % label
+        queue_redraw()
+        return null
+    return float(raw)
 
 
 func _draw():
@@ -406,7 +562,7 @@ func _draw():
     draw_string(font, box.position + Vector2(24, 36),
         _title, HORIZONTAL_ALIGNMENT_LEFT, -1, 16, UIPanels.TEXT_PANEL)
     draw_string(font, box.position + Vector2(24, 56),
-        "Leave image paths blank to disable a layer. Relative paths resolve inside the pack folder.",
+        "Leave parallax image paths blank to disable a layer. Use BG IMAGES mode for placed PNG backgrounds.",
         HORIZONTAL_ALIGNMENT_LEFT, -1, 10, UIPanels.TEXT_PANEL_DIM)
 
     draw_string(font, box.position + Vector2(24, 90),
@@ -418,8 +574,10 @@ func _draw():
         EditorTooltip.show_text("Room width in 16px blocks (4-256). Resizing preserves cells inside the new bounds.")
     if _height_edit != null and Rect2(_height_edit.position, _height_edit.size).has_point(mouse_pos):
         EditorTooltip.show_text("Room height in 16px blocks (4-256). Resizing preserves cells inside the new bounds.")
+    if _parallax_toggle_btn != null and Rect2(_parallax_toggle_btn.position, _parallax_toggle_btn.size).has_point(mouse_pos):
+        EditorTooltip.show_text("Turn the fullscreen far/mid/near parallax stack on or off for this room. Painted BG layers and the stretched background image below are unaffected.")
     if _import_parallax_btn != null and Rect2(_import_parallax_btn.position, _import_parallax_btn.size).has_point(mouse_pos):
-        EditorTooltip.show_text("Import up to 3 PNGs into this pack's Backdrops/Parallax folder and auto-fill Far, Mid, and Near.")
+        EditorTooltip.show_text("Import PNGs into this pack's Backdrops/Parallax folder. You can use them for far/mid/near parallax or for the stretched background image below.")
 
     draw_string(font, box.position + Vector2(24, 170),
         "Tileset", HORIZONTAL_ALIGNMENT_LEFT, -1, 12, UIPanels.TEXT_PANEL)
@@ -452,6 +610,9 @@ func _draw():
     draw_rect(panel_rect, Color(0.36, 0.48, 0.62, 0.9), false, 1.5)
     draw_string(font, Vector2(panel_rect.position.x + 12.0, panel_rect.position.y + 22.0),
         "Parallax Layers", HORIZONTAL_ALIGNMENT_LEFT, -1, 13, UIPanels.TEXT_PANEL)
+    draw_string(font, Vector2(panel_rect.position.x + 12.0, panel_rect.position.y + 40.0),
+        "When OFF, these layers are ignored and only painted BG tiles / the stretched background image render behind the room.",
+        HORIZONTAL_ALIGNMENT_LEFT, -1, 10, UIPanels.TEXT_PANEL_DIM)
     _parallax_preset_rects.clear()
     var preset_btn_w: float = 88.0
     var preset_btn_h: float = 24.0
@@ -513,6 +674,31 @@ func _draw():
         elif Rect2(sy_edit.position, sy_edit.size).has_point(mouse_pos):
             EditorTooltip.show_text("%s Y parallax speed. Use values below 1.0 for depth; 1.0 locks to the room." % str(row["label"]))
 
+    var weather_panel_rect := Rect2(box.position.x + 16.0, box.position.y + 548.0, box.size.x - 32.0, 126.0)
+    draw_rect(weather_panel_rect, Color(0.08, 0.1, 0.15, 0.92))
+    draw_rect(weather_panel_rect, Color(0.36, 0.48, 0.62, 0.9), false, 1.5)
+    draw_string(font, Vector2(weather_panel_rect.position.x + 12.0, weather_panel_rect.position.y + 22.0),
+        "Room Weather", HORIZONTAL_ALIGNMENT_LEFT, -1, 13, UIPanels.TEXT_PANEL)
+    draw_string(font, Vector2(weather_panel_rect.position.x + 12.0, weather_panel_rect.position.y + 40.0),
+        "Simple room-wide overlay. Triggers can override this at runtime with set_room_weather.",
+        HORIZONTAL_ALIGNMENT_LEFT, -1, 10, UIPanels.TEXT_PANEL_DIM)
+    draw_string(font, Vector2(weather_panel_rect.position.x + 145.0, weather_panel_rect.position.y + 70.0),
+        "Preset", HORIZONTAL_ALIGNMENT_LEFT, -1, 11, UIPanels.TEXT_PANEL_DIM)
+    draw_string(font, Vector2(weather_panel_rect.position.x + 337.0, weather_panel_rect.position.y + 70.0),
+        "Color", HORIZONTAL_ALIGNMENT_LEFT, -1, 11, UIPanels.TEXT_PANEL_DIM)
+    draw_string(font, Vector2(weather_panel_rect.position.x + 651.0, weather_panel_rect.position.y + 70.0),
+        "INTENSITY", HORIZONTAL_ALIGNMENT_LEFT, -1, 11, UIPanels.TEXT_PANEL_DIM)
+    draw_string(font, Vector2(weather_panel_rect.position.x + 739.0, weather_panel_rect.position.y + 70.0),
+        "SPEED", HORIZONTAL_ALIGNMENT_LEFT, -1, 11, UIPanels.TEXT_PANEL_DIM)
+    if _weather_preset_picker != null and Rect2(_weather_preset_picker.position, _weather_preset_picker.size).has_point(mouse_pos):
+        EditorTooltip.show_text("Pick a simple built-in room weather preset. NONE disables the overlay.")
+    elif _weather_color_btn != null and Rect2(_weather_color_btn.position, _weather_color_btn.size).has_point(mouse_pos):
+        EditorTooltip.show_text("Tint color for rain or snow particles.")
+    elif _weather_intensity_edit != null and Rect2(_weather_intensity_edit.position, _weather_intensity_edit.size).has_point(mouse_pos):
+        EditorTooltip.show_text("Weather density. Higher values spawn more drops/flakes.")
+    elif _weather_speed_edit != null and Rect2(_weather_speed_edit.position, _weather_speed_edit.size).has_point(mouse_pos):
+        EditorTooltip.show_text("Weather movement speed multiplier.")
+
     if not _error_text.is_empty():
         draw_string(font, box.position + Vector2(24, box.size.y - 54),
             _error_text, HORIZONTAL_ALIGNMENT_LEFT, -1, 11, Color(1.0, 0.55, 0.4, 1.0))
@@ -536,7 +722,7 @@ func _draw():
         Color(1, 0.95, 0.95, 1) if cancel_hover else Color(0.8, 0.55, 0.55, 1))
 
     draw_string(font, box.position + Vector2(24, box.size.y - 12),
-        "Transparent cells stay transparent. Any visible room gaps will reveal the authored parallax stack behind them.",
+        "Placed PNG backgrounds live in BG IMAGES mode. This modal handles room size, parallax, and default room weather.",
         HORIZONTAL_ALIGNMENT_LEFT, -1, 10, UIPanels.TEXT_PANEL_DIM)
 
 
@@ -558,6 +744,23 @@ func _refresh_backdrop_picker(row: Dictionary, selected_path: String) -> void:
     picker.select(selected_idx)
 
 
+func _refresh_background_image_picker(selected_path: String) -> void:
+    if _bg_image_picker == null:
+        return
+    _bg_image_picker.clear()
+    _bg_image_picker.add_item("Imported...")
+    _bg_image_picker.set_item_disabled(0, true)
+    var selected_idx := 0
+    for rel_path_v in _available_backdrops:
+        var rel_path := str(rel_path_v)
+        _bg_image_picker.add_item(rel_path)
+        var item_idx := _bg_image_picker.get_item_count() - 1
+        _bg_image_picker.set_item_metadata(item_idx, rel_path)
+        if rel_path == selected_path:
+            selected_idx = item_idx
+    _bg_image_picker.select(selected_idx)
+
+
 func _on_backdrop_picked(idx: int, row_name: String) -> void:
     if idx <= 0:
         return
@@ -571,6 +774,12 @@ func _on_backdrop_picked(idx: int, row_name: String) -> void:
             return
         path_edit.text = str(picker.get_item_metadata(idx))
         return
+
+
+func _on_background_image_picked(idx: int) -> void:
+    if _bg_image_picker == null or _bg_image_path_edit == null or idx <= 0:
+        return
+    _bg_image_path_edit.text = str(_bg_image_picker.get_item_metadata(idx))
 
 
 func _apply_parallax_speed_preset(preset_id: String) -> void:

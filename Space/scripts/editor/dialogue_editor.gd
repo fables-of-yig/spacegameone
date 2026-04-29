@@ -5,6 +5,7 @@ extends Control
 
 const PedIO := preload("res://Space/scripts/editor/ped/ped_io.gd")
 const EditorUndo = preload("res://Space/scripts/editor/editor_undo.gd")
+
 const PackAssetIndex = preload("res://Space/scripts/editor/pack_asset_index.gd")
 signal status_changed(text: String)
 
@@ -18,6 +19,7 @@ var _suppress: bool = false
 
 var _tutorial_btn: Button = null
 var _tutorial_overlay: Control = null
+var _import_dialogue_dialog: FileDialog = null
 
 var _undo: RefCounted = null
 
@@ -27,6 +29,7 @@ var _empty_warning: Label = null
 var _speaker_edit: LineEdit = null
 var _speaker_pick: OptionButton = null
 var _text_edit: TextEdit = null
+var _link_help: Label = null
 var _cond_form: DlgConditionForm = null
 var _action_form: DlgActionsForm = null
 var _choices_box: VBoxContainer = null
@@ -111,14 +114,22 @@ func _build_ui() -> void:
     left.add_child(file_btns)
     var back_btn := Button.new()
     back_btn.text = "Back"
+    back_btn.tooltip_text = "Close the dialogue editor and return to the previous screen."
     back_btn.pressed.connect(request_close)
     file_btns.add_child(back_btn)
     var save_btn := Button.new()
     save_btn.text = "Save"
+    save_btn.tooltip_text = "Save the currently selected conversation."
     save_btn.pressed.connect(save)
     file_btns.add_child(save_btn)
+    var import_btn := Button.new()
+    import_btn.text = "Import JSON"
+    import_btn.tooltip_text = "Import a compatible dialogue JSON file or exported dialogue bundle into this pack."
+    import_btn.pressed.connect(_on_import_dialogue_pressed)
+    file_btns.add_child(import_btn)
     var new_btn := Button.new()
     new_btn.text = "+ New"
+    new_btn.tooltip_text = "Create a new empty conversation file in this pack."
     new_btn.pressed.connect(_on_new_dialogue)
     file_btns.add_child(new_btn)
 
@@ -132,6 +143,7 @@ func _build_ui() -> void:
 
     _tutorial_btn = Button.new()
     _tutorial_btn.text = "TUTORIAL"
+    _tutorial_btn.tooltip_text = "Open a plain-language walkthrough for building conversations."
     _tutorial_btn.pressed.connect(_on_tutorial_pressed)
     file_btns.add_child(_tutorial_btn)
 
@@ -141,8 +153,16 @@ func _build_ui() -> void:
     _tutorial_overlay.set_anchors_preset(PRESET_FULL_RECT)
     add_child(_tutorial_overlay)
 
+    _import_dialogue_dialog = FileDialog.new()
+    _import_dialogue_dialog.file_mode = FileDialog.FILE_MODE_OPEN_FILE
+    _import_dialogue_dialog.access = FileDialog.ACCESS_FILESYSTEM
+    _import_dialogue_dialog.filters = PackedStringArray(["*.json ; JSON Files"])
+    _import_dialogue_dialog.file_selected.connect(_on_import_dialogue_file_selected)
+    add_child(_import_dialogue_dialog)
+
     _file_list = ItemList.new()
     _file_list.size_flags_vertical = Control.SIZE_EXPAND_FILL
+    _file_list.tooltip_text = "List of conversation files in this pack. Select one to edit its lines."
     _file_list.item_selected.connect(_on_file_select)
     left.add_child(_file_list)
 
@@ -160,15 +180,18 @@ func _build_ui() -> void:
     mid.add_child(line_btns)
     var add_line := Button.new()
     add_line.text = "+ Line"
+    add_line.tooltip_text = "Add a new line to the current conversation."
     add_line.pressed.connect(_on_add_line)
     line_btns.add_child(add_line)
     var del_line := Button.new()
     del_line.text = "Delete"
+    del_line.tooltip_text = "Delete the currently selected line."
     del_line.pressed.connect(_on_delete_line)
     line_btns.add_child(del_line)
 
     _line_list = ItemList.new()
     _line_list.size_flags_vertical = Control.SIZE_EXPAND_FILL
+    _line_list.tooltip_text = "Lines in this conversation. Select a line to edit who says it, what it says, and what happens next."
     _line_list.item_selected.connect(_on_line_select)
     mid.add_child(_line_list)
 
@@ -189,11 +212,20 @@ func _build_ui() -> void:
     detail.size_flags_horizontal = Control.SIZE_EXPAND_FILL
     detail_scroll.add_child(detail)
 
-    _add_label(detail, "Speaker")
+    _link_help = Label.new()
+    _link_help.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+    _link_help.add_theme_font_size_override("font_size", 10)
+    _link_help.add_theme_color_override("font_color", Color(0.65, 0.78, 0.9))
+    detail.add_child(_link_help)
+    _refresh_link_help()
+
+    _add_label(detail, "Who is speaking?", "Name or portrait id shown for this line. Leave blank for narration or system text.")
     var speaker_row := HBoxContainer.new()
     detail.add_child(speaker_row)
     _speaker_edit = LineEdit.new()
     _speaker_edit.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+    _speaker_edit.placeholder_text = "Example: Captain Mira"
+    _speaker_edit.tooltip_text = "Type the speaker name exactly how you want it shown in the dialogue box."
     _speaker_edit.text_changed.connect(func(t):
         _sync_speaker_pick(t)
         _mark_dirty()
@@ -201,30 +233,34 @@ func _build_ui() -> void:
     speaker_row.add_child(_speaker_edit)
     _speaker_pick = OptionButton.new()
     _speaker_pick.custom_minimum_size = Vector2(180, 0)
+    _speaker_pick.tooltip_text = "Quick-pick from portrait ids already authored in this pack."
     _speaker_pick.item_selected.connect(_on_speaker_pick_selected)
     speaker_row.add_child(_speaker_pick)
 
-    _add_label(detail, "Text")
+    _add_label(detail, "What does this line say?", "The actual dialogue text shown to the player for this line.")
     _text_edit = TextEdit.new()
     _text_edit.custom_minimum_size = Vector2(0, 60)
+    _text_edit.placeholder_text = "Type the line the player will read here."
+    _text_edit.tooltip_text = "Write the text for this line. If the line has choices, this text appears before the player picks one."
     _text_edit.text_changed.connect(func(): _mark_dirty())
     detail.add_child(_text_edit)
 
-    _add_label(detail, "Condition (gates whether this line shows)")
+    _add_label(detail, "When should this line be allowed?", "Optional requirement. Leave this empty if the line should always play.")
     _cond_form = DlgConditionForm.new()
     _cond_form.changed.connect(_mark_dirty)
     detail.add_child(_cond_form)
 
-    _add_label(detail, "Actions (fire when line displays)")
+    _add_label(detail, "What happens as soon as this line appears?", "Optional side effects such as setting a flag, giving an item, or playing a sound.")
     _action_form = DlgActionsForm.new()
     _action_form.changed.connect(_mark_dirty)
     detail.add_child(_action_form)
 
-    _add_label(detail, "Choices (if present, line waits for pick)")
+    _add_label(detail, "Player choices", "If you add choices here, the conversation pauses on this line and waits for the player to pick one.")
     var choices_btns := HBoxContainer.new()
     detail.add_child(choices_btns)
     var add_choice_btn := Button.new()
     add_choice_btn.text = "+ Choice"
+    add_choice_btn.tooltip_text = "Add a player response option under this line."
     add_choice_btn.pressed.connect(_on_add_choice)
     choices_btns.add_child(add_choice_btn)
     _choices_box = VBoxContainer.new()
@@ -232,9 +268,10 @@ func _build_ui() -> void:
     detail.add_child(_choices_box)
 
 
-func _add_label(parent: VBoxContainer, text: String) -> void:
+func _add_label(parent: VBoxContainer, text: String, tip: String = "") -> void:
     var lbl := Label.new()
     lbl.text = text
+    lbl.tooltip_text = tip
     lbl.add_theme_font_size_override("font_size", 11)
     parent.add_child(lbl)
 
@@ -268,6 +305,7 @@ func _on_file_select(idx: int) -> void:
     _selected_line = -1
     _rebuild_line_list()
     _dirty = false
+    _refresh_link_help()
     if _undo != null:
         _undo.clear()
 
@@ -276,7 +314,7 @@ func _rebuild_line_list() -> void:
     _line_list.clear()
     for i in _lines.size():
         var line: Dictionary = _lines[i]
-        var preview := "%s: %s" % [str(line.get("speaker", "")), str(line.get("text", "")).substr(0, 30)]
+        var preview := "#%d  %s: %s" % [i, str(line.get("speaker", "")), str(line.get("text", "")).substr(0, 30)]
         _line_list.add_item(preview)
     if _selected_line >= 0 and _selected_line < _lines.size():
         _line_list.select(_selected_line)
@@ -287,7 +325,7 @@ func _rebuild_line_list() -> void:
             _empty_warning.text = ""
         else:
             _empty_warning.visible = true
-            _empty_warning.text = "Dialogue '%s' has no lines. Interacting with an NPC using this dialogue silently fails at runtime. Add at least one line." % _current_id
+            _empty_warning.text = "This conversation is empty right now. If something tries to play it in-game, the player will see nothing. Add at least one line before using it."
 
 
 func _on_line_select(idx: int) -> void:
@@ -343,6 +381,7 @@ func _flush_line() -> bool:
         line.erase("actions")
     else:
         line["actions"] = act_val
+    line.erase("next_line")
 
     var choices_out: Array = []
     for row_v in _choice_rows:
@@ -364,6 +403,8 @@ func _flush_line() -> bool:
         var c_acts: Array = acts_node.get_value() if acts_node != null else []
         if not c_acts.is_empty():
             entry["actions"] = c_acts
+        if not _apply_next_line_field(entry, row.get("next"), "Choice"):
+            return false
         choices_out.append(entry)
     if choices_out.is_empty():
         line.erase("choices")
@@ -376,7 +417,7 @@ func _refresh_speaker_picker() -> void:
     if _speaker_pick == null:
         return
     _speaker_pick.clear()
-    _speaker_pick.add_item("Portrait Id...")
+    _speaker_pick.add_item("Pick portrait id...")
     _speaker_pick.set_item_disabled(0, true)
     for portrait_id_v in PackAssetIndex.list_portrait_ids(_pack_id):
         _speaker_pick.add_item(str(portrait_id_v))
@@ -424,20 +465,40 @@ func _append_choice_row(seed_data: Dictionary) -> void:
     row.add_child(header)
 
     var text_lbl := Label.new()
-    text_lbl.text = "Text:"
+    text_lbl.text = "Choice text:"
+    text_lbl.tooltip_text = "What the player sees as this response option."
     header.add_child(text_lbl)
     var text_edit := LineEdit.new()
     text_edit.text = str(seed_data.get("text", ""))
     text_edit.custom_minimum_size = Vector2(260, 0)
+    text_edit.placeholder_text = "Example: Tell me more."
+    text_edit.tooltip_text = "Write the player-facing text for this response option."
     text_edit.text_changed.connect(func(_t): _mark_dirty())
     header.add_child(text_edit)
     var del_btn := Button.new()
     del_btn.text = "X"
+    del_btn.tooltip_text = "Delete this response option."
     del_btn.pressed.connect(_on_delete_choice.bind(row))
     header.add_child(del_btn)
 
+    var next_row := HBoxContainer.new()
+    row.add_child(next_row)
+    var next_lbl := Label.new()
+    next_lbl.text = "  Next:"
+    next_lbl.tooltip_text = "Optional branch target after this choice is picked. Leave blank for the next numbered line, or use `end` to close the conversation."
+    next_lbl.add_theme_font_size_override("font_size", 10)
+    next_row.add_child(next_lbl)
+    var next_edit := LineEdit.new()
+    next_edit.text = _format_next_line_value(seed_data.get("next_line", null))
+    next_edit.custom_minimum_size = Vector2(180, 0)
+    next_edit.placeholder_text = "Blank / #4 / end"
+    next_edit.tooltip_text = "Branch target for this choice. Use a zero-based line number like `4` or `#4`, matching the # labels in the line list."
+    next_edit.text_changed.connect(func(_t): _mark_dirty())
+    next_row.add_child(next_edit)
+
     var cond_lbl := Label.new()
-    cond_lbl.text = "  Condition:"
+    cond_lbl.text = "  Show this choice only if:"
+    cond_lbl.tooltip_text = "Optional requirement for whether this response should be visible."
     cond_lbl.add_theme_font_size_override("font_size", 10)
     row.add_child(cond_lbl)
     var cond_form := DlgConditionForm.new()
@@ -450,7 +511,8 @@ func _append_choice_row(seed_data: Dictionary) -> void:
         cond_form.open({})
 
     var act_lbl := Label.new()
-    act_lbl.text = "  Actions:"
+    act_lbl.text = "  When this choice is picked:"
+    act_lbl.tooltip_text = "Optional effects that fire after the player chooses this response."
     act_lbl.add_theme_font_size_override("font_size", 10)
     row.add_child(act_lbl)
     var act_form := DlgActionsForm.new()
@@ -468,6 +530,7 @@ func _append_choice_row(seed_data: Dictionary) -> void:
     _choice_rows.append({
         "row": row,
         "text": text_edit,
+        "next": next_edit,
         "cond": cond_form,
         "actions": act_form,
     })
@@ -492,7 +555,7 @@ func _on_add_line() -> void:
         return
     if _undo != null:
         _undo.begin()
-    _lines.append({ "speaker": "", "text": "..." })
+    _lines.append({ "speaker": "", "text": "New line..." })
     _selected_line = _lines.size() - 1
     _rebuild_line_list()
     _mark_dirty()
@@ -517,15 +580,115 @@ func _on_new_dialogue() -> void:
     var new_id := "new_dialogue_%d" % _dialogue_ids.size()
     if PedIO.save_dialogue(_pack_id, new_id, { "id": new_id, "lines": [] }):
         _load_file_list()
-        status_changed.emit("Created dialogue '%s'" % new_id)
+        _refresh_link_help()
+        status_changed.emit("Created new conversation '%s'" % new_id)
     else:
-        status_changed.emit("Could not create dialogue '%s'" % new_id)
+        status_changed.emit("Could not create conversation '%s'" % new_id)
+
+
+func _on_import_dialogue_pressed() -> void:
+    if _import_dialogue_dialog == null:
+        return
+    _import_dialogue_dialog.popup_centered_ratio(0.75)
+
+
+func _on_import_dialogue_file_selected(path: String) -> void:
+    var file := FileAccess.open(path, FileAccess.READ)
+    if file == null:
+        status_changed.emit("Could not open import file")
+        return
+    var text := file.get_as_text()
+    var parsed: Variant = JSON.parse_string(text)
+    if typeof(parsed) != TYPE_DICTIONARY:
+        status_changed.emit("Imported file must contain a JSON object")
+        return
+    var payload: Dictionary = parsed
+    var imported_ids := _import_dialogue_payload(payload)
+    if imported_ids.is_empty():
+        return
+    _load_file_list()
+    var first_id := str(imported_ids[0])
+    var first_idx := _dialogue_ids.find(first_id)
+    if first_idx >= 0:
+        _file_list.select(first_idx)
+        _on_file_select(first_idx)
+    status_changed.emit("Imported %d conversation file(s)" % imported_ids.size())
+
+
+func _import_dialogue_payload(payload: Dictionary) -> Array:
+    var imported_ids: Array = []
+    if payload.has("dialogues"):
+        var dialogues_v: Variant = payload.get("dialogues", [])
+        if typeof(dialogues_v) != TYPE_ARRAY:
+            status_changed.emit("Dialogue bundle must contain a 'dialogues' array")
+            return []
+        for entry_v in dialogues_v:
+            if typeof(entry_v) != TYPE_DICTIONARY:
+                continue
+            var entry: Dictionary = entry_v.duplicate(true)
+            var dialogue_id := str(entry.get("id", "")).strip_edges()
+            if dialogue_id.is_empty():
+                continue
+            if PedIO.save_dialogue(_pack_id, dialogue_id, entry):
+                imported_ids.append(dialogue_id)
+        if imported_ids.is_empty():
+            status_changed.emit("No valid dialogue files were imported from the bundle")
+        return imported_ids
+
+    var dialogue_id := str(payload.get("id", "")).strip_edges()
+    if dialogue_id.is_empty():
+        status_changed.emit("Imported dialogue JSON is missing an 'id'")
+        return []
+    var single: Dictionary = payload.duplicate(true)
+    if not PedIO.save_dialogue(_pack_id, dialogue_id, single):
+        status_changed.emit("Imported dialogue '%s' failed validation" % dialogue_id)
+        return []
+    imported_ids.append(dialogue_id)
+    return imported_ids
 
 
 func _mark_dirty() -> void:
     if _suppress:
         return
     _dirty = true
+
+
+func _format_next_line_value(value: Variant) -> String:
+    if value == null:
+        return ""
+    match typeof(value):
+        TYPE_INT:
+            return str(int(value))
+        TYPE_FLOAT:
+            return str(int(value))
+        TYPE_STRING:
+            return str(value).strip_edges()
+        _:
+            return ""
+
+
+func _apply_next_line_field(target: Dictionary, field: LineEdit, label: String) -> bool:
+    if field == null:
+        target.erase("next_line")
+        return true
+    var raw := field.text.strip_edges()
+    if raw.is_empty():
+        target.erase("next_line")
+        return true
+    if raw.is_valid_int():
+        target["next_line"] = int(raw)
+        return true
+    if raw.begins_with("#"):
+        var trimmed := raw.substr(1).strip_edges()
+        if trimmed.is_valid_int():
+            target["next_line"] = int(trimmed)
+            return true
+    var lower := raw.to_lower()
+    if lower == "end" or lower == "stop" or lower == "close":
+        target["next_line"] = "end"
+        return true
+    status_changed.emit("%s next line must be blank, a number like 4 or #4, or 'end'" % label)
+    return false
 
 
 func _input(event: InputEvent) -> void:
@@ -557,3 +720,10 @@ func _on_tutorial_pressed() -> void:
     var EditorTutorial := preload("res://Space/scripts/editor/editor_tutorial.gd")
     var tut: Dictionary = EditorTutorial.get_tutorial("dialogue")
     _tutorial_overlay.show_tutorial(str(tut["title"]), tut["steps"])
+
+
+func _refresh_link_help() -> void:
+    if _link_help == null:
+        return
+    var dialogue_ref: String = _current_id if not _current_id.is_empty() else "shopkeep_intro"
+    _link_help.text = "How this conversation connects: the simplest NPC path is an interactable entity with `dialogue_id = %s`, which opens automatically on interact. If you need extra logic, use a trigger action `Start Dialogue` with id `%s`. Branching lives on choices only: each choice can jump to a zero-based `#` line number from the list, or use `end` to stop. Lines without choices just continue sequentially. Dialogue choices also emit `dialogue_choice` with `dialogue_id`, `line_index`, and `choice_index`, so triggers can react to specific answers." % [dialogue_ref, dialogue_ref]

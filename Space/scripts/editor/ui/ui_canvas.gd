@@ -10,6 +10,8 @@ extends Control
 #     "anchor": "top_left", "properties": {...}, "children": [...] }
 
 const UITypes = preload("res://Space/scripts/editor/ui/ui_types.gd")
+const UIIo = preload("res://Space/scripts/editor/ui/ui_io.gd")
+const UIPanels = preload("res://Space/scripts/ui/ui_panels.gd")
 
 signal element_selected(element_id: String)
 signal element_moved(element_id: String)
@@ -189,16 +191,27 @@ func _screen_to_world(screen_pos: Vector2) -> Vector2:
 	return (screen_pos - cam_offset) / zoom
 
 
-func _element_world_rect(elem: Dictionary) -> Rect2:
-	var r: Dictionary = elem.get("rect", {})
-	return Rect2(
-		float(r.get("x", 0)), float(r.get("y", 0)),
-		float(r.get("w", 50)), float(r.get("h", 20)))
-
-
-func _element_screen_rect(elem: Dictionary) -> Rect2:
-	var wr := _element_world_rect(elem)
+func _resolved_screen_rect(elem: Dictionary, parent_origin: Vector2) -> Rect2:
+	var wr := _resolved_world_rect(elem, parent_origin)
 	return Rect2(_world_to_screen(wr.position), wr.size * zoom)
+
+
+func _resolved_world_rect(elem: Dictionary, parent_origin: Vector2) -> Rect2:
+	var r: Dictionary = elem.get("rect", {})
+	var pos := Vector2(float(r.get("x", 0)), float(r.get("y", 0)))
+	var rect := Rect2(pos, Vector2(float(r.get("w", 50)), float(r.get("h", 20))))
+	if _is_root_element(elem):
+		return rect
+	if parent_origin != Vector2.ZERO:
+		rect.position += parent_origin
+		return rect
+	var offs_v: Variant = elem.get("anchor_offset", {})
+	var anchor_offset := Vector2.ZERO
+	if typeof(offs_v) == TYPE_DICTIONARY:
+		var offs: Dictionary = offs_v
+		anchor_offset = Vector2(float(offs.get("x", 0)), float(offs.get("y", 0)))
+	rect.position += _anchor_origin(str(elem.get("anchor", "top_left"))) + anchor_offset
+	return rect
 
 
 # ─── Hit testing ───────────────────────────────────────────────────────
@@ -209,14 +222,15 @@ func _element_screen_rect(elem: Dictionary) -> Rect2:
 func _hit_test(screen_pos: Vector2) -> String:
 	if screen_data.is_empty():
 		return ""
+	_rebuild_element_rects()
 	var result := ""
 	_hit_test_recursive(screen_data, screen_pos, result)
 	return result
 
 
 func _hit_test_recursive(elem: Dictionary, screen_pos: Vector2, result: String) -> String:
-	var sr := _element_screen_rect(elem)
 	var eid := str(elem.get("id", ""))
+	var sr: Rect2 = _element_rects.get(eid, Rect2())
 	if sr.has_point(screen_pos) and eid != "":
 		result = eid
 	var children_v: Variant = elem.get("children", [])
@@ -261,16 +275,17 @@ func _apply_move(eid: String, delta: Vector2) -> void:
 	var elem := _find_element(screen_data, eid)
 	if elem.is_empty() or _drag_start_rect.is_empty():
 		return
-	var r: Dictionary = elem["rect"]
+	var r: Dictionary = elem.get("rect", {}).duplicate()
 	r["x"] = snapped(_drag_start_rect["x"] + delta.x, 1.0)
 	r["y"] = snapped(_drag_start_rect["y"] + delta.y, 1.0)
+	elem["rect"] = r
 
 
 func _apply_resize(eid: String, delta: Vector2) -> void:
 	var elem := _find_element(screen_data, eid)
 	if elem.is_empty() or _drag_start_rect.is_empty():
 		return
-	var r: Dictionary = elem["rect"]
+	var r: Dictionary = elem.get("rect", {}).duplicate()
 	var sx: float = _drag_start_rect["x"]
 	var sy: float = _drag_start_rect["y"]
 	var sw: float = _drag_start_rect["w"]
@@ -298,6 +313,7 @@ func _apply_resize(eid: String, delta: Vector2) -> void:
 			r["x"] = snapped(sx + sw - new_w, 1.0)
 			r["w"] = new_w
 			r["h"] = maxf(min_dim, snapped(sh + delta.y, 1.0))
+	elem["rect"] = r
 
 
 # ─── Element tree search ──────────────────────────────────────────────
@@ -334,7 +350,7 @@ func _draw() -> void:
 		return
 
 	# Rebuild the flat rect cache, then draw elements.
-	_element_rects.clear()
+	_rebuild_element_rects()
 	_draw_element_recursive(screen_data)
 
 	# Hover outline (below selection handles so handles stay on top)
@@ -371,15 +387,47 @@ func _draw_empty_hint() -> void:
 func _draw_element_recursive(elem: Dictionary) -> void:
 	var eid := str(elem.get("id", ""))
 	var etype := str(elem.get("type", ""))
-	var sr := _element_screen_rect(elem)
+	var sr: Rect2 = _element_rects.get(eid, Rect2())
+	var props: Dictionary = elem.get("properties", {})
+	var opacity := clampf(float(props.get("opacity", 1.0)), 0.0, 1.0)
 
-	# Cache for hit testing and selection drawing.
-	if eid != "":
-		_element_rects[eid] = sr
-
-	# Colored rectangle fill.
 	var fill_color: Color = UITypes.ELEMENT_COLORS.get(etype, Color(0.5, 0.5, 0.5, 0.5))
-	draw_rect(sr, fill_color)
+	if etype == UITypes.ELEM_PANEL:
+		var sprite_path := str(props.get("sprite_source", "")).strip_edges()
+		var drew_panel_art := false
+		if not sprite_path.is_empty():
+			var tex := UIIo.load_texture(sprite_path)
+			if tex != null:
+				var tint := Color.from_string(str(props.get("sprite_tint", "#ffffff")), Color.WHITE)
+				tint.a *= opacity
+				UIPanels.draw_authored_panel_sprite(self, sr, tex, props, tint, zoom)
+				drew_panel_art = true
+		if not drew_panel_art:
+			var variant_key := str(props.get("variant", "main")).strip_edges()
+			if not variant_key.is_empty() and variant_key != "none":
+				var variant := UIPanels.PanelVariant.MAIN
+				if variant_key == "alt":
+					variant = UIPanels.PanelVariant.ALT
+				elif variant_key == "dark":
+					variant = UIPanels.PanelVariant.DARK
+				UIPanels.draw_panel(self, sr, Color(1.0, 1.0, 1.0, opacity), variant)
+				drew_panel_art = true
+		if not drew_panel_art:
+			fill_color.a *= opacity
+			draw_rect(sr, fill_color)
+	elif etype == UITypes.ELEM_ICON:
+		var source := str(props.get("sprite_source", "")).strip_edges()
+		var tex := UIIo.load_texture(source)
+		if tex != null:
+			var tint := Color.from_string(str(props.get("tint", "#ffffff")), Color.WHITE)
+			tint.a *= opacity
+			UIPanels.draw_icon(self, sr, tex, Rect2(), tint)
+		else:
+			fill_color.a *= opacity
+			draw_rect(sr, fill_color)
+	else:
+		fill_color.a *= opacity
+		draw_rect(sr, fill_color)
 
 	# Thin border so overlapping elements are distinguishable.
 	var border_color := fill_color
@@ -405,3 +453,51 @@ func _draw_element_recursive(elem: Dictionary) -> void:
 		for child_v in (children_v as Array):
 			if typeof(child_v) == TYPE_DICTIONARY:
 				_draw_element_recursive(child_v as Dictionary)
+
+
+func _rebuild_element_rects() -> void:
+	_element_rects.clear()
+	if screen_data.is_empty():
+		return
+	_cache_element_rects_recursive(screen_data, Vector2.ZERO)
+
+
+func _cache_element_rects_recursive(elem: Dictionary, parent_origin: Vector2) -> void:
+	var world_rect := _resolved_world_rect(elem, parent_origin)
+	var rect := Rect2(_world_to_screen(world_rect.position), world_rect.size * zoom)
+	var eid := str(elem.get("id", ""))
+	if eid != "":
+		_element_rects[eid] = rect
+	var children_v: Variant = elem.get("children", [])
+	if typeof(children_v) != TYPE_ARRAY:
+		return
+	for child_v in (children_v as Array):
+		if typeof(child_v) == TYPE_DICTIONARY:
+			_cache_element_rects_recursive(child_v as Dictionary, world_rect.position)
+
+
+func _is_root_element(elem: Dictionary) -> bool:
+	return elem == screen_data
+
+
+func _anchor_origin(anchor: String) -> Vector2:
+	match anchor:
+		"top_left":
+			return Vector2.ZERO
+		"top_center":
+			return Vector2(VIEWPORT_W * 0.5, 0.0)
+		"top_right":
+			return Vector2(VIEWPORT_W, 0.0)
+		"center_left":
+			return Vector2(0.0, VIEWPORT_H * 0.5)
+		"center":
+			return Vector2(VIEWPORT_W * 0.5, VIEWPORT_H * 0.5)
+		"center_right":
+			return Vector2(VIEWPORT_W, VIEWPORT_H * 0.5)
+		"bottom_left":
+			return Vector2(0.0, VIEWPORT_H)
+		"bottom_center":
+			return Vector2(VIEWPORT_W * 0.5, VIEWPORT_H)
+		"bottom_right":
+			return Vector2(VIEWPORT_W, VIEWPORT_H)
+	return Vector2.ZERO

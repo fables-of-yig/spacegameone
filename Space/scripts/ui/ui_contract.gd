@@ -15,7 +15,8 @@ const ELEMENT_TYPES: Array = [
 ]
 
 const SCREEN_ORDER: Array = [
-	"hud",
+	"hud_space",
+	"hud_mv",
 	"pause",
 	"main_menu",
 	"inventory",
@@ -27,11 +28,23 @@ const SCREEN_ORDER: Array = [
 ]
 
 const SCREEN_DEFS: Dictionary = {
-	"hud": {
-		"label": "HUD (in-game overlay)",
-		"doc_description": "Used by `Space/scripts/ui/ui_coordinator.gd` as an overlay on the hardcoded Space HUD.",
+	"hud_space": {
+		"label": "HUD (Space)",
+		"doc_description": "Used by `Space/scripts/ui/ui_coordinator.gd` as an overlay on the hardcoded space HUD.",
 		"mounted": true,
-		"host_id": "hud_overlay",
+		"host_id": "space_hud_overlay",
+	},
+	"hud_mv": {
+		"label": "HUD (MV)",
+		"doc_description": "Used by `MV/scripts/hud.gd` while a hosted MV session is active.",
+		"mounted": true,
+		"host_id": "mv_hud_overlay",
+	},
+	"hud": {
+		"label": "HUD (Legacy Shared)",
+		"doc_description": "Legacy fallback shared HUD screen. New packs should author `hud_space` and `hud_mv` instead.",
+		"mounted": true,
+		"host_id": "space_hud_overlay",
 	},
 	"pause": {
 		"label": "Pause Menu",
@@ -171,6 +184,7 @@ const ACTION_IDS: Array = [
 	"resume",
 	"end_dialogue",
 	"play_sfx",
+	"open_settings",
 	"new_game",
 	"quit_game",
 	"creative_mode",
@@ -197,9 +211,16 @@ const ACTION_ARG_RULES: Dictionary = {
 }
 
 const HOSTS: Dictionary = {
-	"hud_overlay": {
-		"screen_id": "hud",
-		"display_name": "HUD Overlay",
+	"space_hud_overlay": {
+		"screen_id": "hud_space",
+		"display_name": "Space HUD Overlay",
+		"actions": [],
+		"open_targets": [],
+		"open_prefixes": [],
+	},
+	"mv_hud_overlay": {
+		"screen_id": "hud_mv",
+		"display_name": "MV HUD Overlay",
 		"actions": [],
 		"open_targets": [],
 		"open_prefixes": [],
@@ -207,15 +228,15 @@ const HOSTS: Dictionary = {
 	"pause_menu": {
 		"screen_id": "pause",
 		"display_name": "Pause Menu",
-		"actions": ["resume", "close_screen", "open_screen", "fire_event", "save_game", "load_game", "quit_to_menu", "play_sfx"],
-		"open_targets": ["pause", "main_menu", "inventory", "map", "shop", "dialogue_box", "game_over", "boss_intro", "cinematic"],
+		"actions": ["resume", "close_screen", "open_screen", "fire_event", "save_game", "load_game", "quit_to_menu", "play_sfx", "open_settings"],
+		"open_targets": ["pause", "boss_intro", "cinematic"],
 		"open_prefixes": [],
 	},
 	"main_menu": {
 		"screen_id": "main_menu",
 		"display_name": "Main Menu",
-		"actions": ["open_screen", "new_game", "creative_mode", "test_fly", "test_planet", "open_editor", "update_game", "load_slot", "load_game", "fire_event", "quit_to_menu", "quit_game", "play_sfx"],
-		"open_targets": ["pause", "main_menu", "inventory", "map", "shop", "dialogue_box", "game_over", "boss_intro", "cinematic"],
+		"actions": ["open_screen", "new_game", "creative_mode", "test_fly", "test_planet", "open_editor", "update_game", "load_slot", "load_game", "fire_event", "quit_to_menu", "quit_game", "play_sfx", "open_settings"],
+		"open_targets": ["main_menu", "boss_intro", "cinematic"],
 		"open_prefixes": [],
 	},
 	"inventory_screen": {
@@ -274,7 +295,7 @@ const KNOWN_GAPS: Array = [
 	"Spike hazard contact samples the authored hurtbox instead of the raw body rectangle.",
 	"More complex consumable logic still needs a broader effect system.",
 	"Generic enemy body-contact damage runs through the player's authored hurtbox area. Entity defs can author `hp`, `attack_damage`, `contact_damage`, `contact_cooldown`, `move_speed`, `projectile_damage`, and `projectile_speed`, and common AI leaves use those as defaults when their params omit overrides.",
-	"The `hud` screen is display-only today. Buttons and item actions on authored HUD screens are rejected at validation time.",
+	"The `hud_space`, `hud_mv`, and legacy `hud` screens are display-only today. Buttons and item actions on authored HUD screens are rejected at validation time.",
 ]
 
 

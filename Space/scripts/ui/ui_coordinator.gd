@@ -50,9 +50,14 @@ func _mount_hud_screen_overlay(hud_root: Control, player: Node2D) -> void:
         pack_id = MvPackLoader.current_pack.pack_id
     if pack_id.is_empty():
         return
-    if not UIIo.screen_exists(pack_id, "hud"):
+    var screen_id := ""
+    if UIIo.screen_exists(pack_id, "hud_space"):
+        screen_id = "hud_space"
+    elif UIIo.screen_exists(pack_id, "hud"):
+        screen_id = "hud"
+    if screen_id.is_empty():
         return
-    var screen_data: Dictionary = UIIo.load_screen(pack_id, "hud")
+    var screen_data: Dictionary = UIIo.load_screen(pack_id, screen_id)
     if screen_data.is_empty():
         return
 
@@ -61,7 +66,7 @@ func _mount_hud_screen_overlay(hud_root: Control, player: Node2D) -> void:
     renderer.set_script(AuthoredScreenRuntime)
     renderer.name = "HudScreenOverlay"
     hud_root.add_child(renderer)
-    renderer.call("load_screen", "hud", screen_data, HudDataSource.new(player, GameManager))
+    renderer.call("load_screen", screen_id, screen_data, HudDataSource.new(player, GameManager))
 
 func setup_builder(host: Node) -> Control:
     var builder_layer = _make_layer(20)

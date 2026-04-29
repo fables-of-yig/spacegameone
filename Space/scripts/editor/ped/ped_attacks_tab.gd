@@ -2,7 +2,7 @@ extends Control
 
 const PedIO = preload("res://Space/scripts/editor/ped/ped_io.gd")
 const PedUtil = preload("res://Space/scripts/editor/ped/ped_util.gd")
-const EditorUndo = preload("res://Space/scripts/editor/editor_undo.gd")
+const PspIO = preload("res://Space/scripts/editor/psp/psp_io.gd")
 
 signal edit_projectile_requested(projectile_id: String)
 
@@ -19,6 +19,11 @@ var _projectile_defs: Dictionary = {}
 var _selected_idx: int = -1
 
 const ATTACK_TYPES: Array = ["melee", "projectile"]
+const HOLD_BEHAVIOR_OPTIONS: Array = [
+    {"id": "full_auto", "label": "Full Auto"},
+    {"id": "single_press", "label": "Single Press"},
+    {"id": "charge_release", "label": "Charge + Release"},
+]
 
 # Left column
 var _list: ItemList = null
@@ -45,12 +50,14 @@ var _label_type: Label = null
 var _cooldown_edit: LineEdit = null
 var _cost_edit: LineEdit = null
 var _pose_edit: LineEdit = null
+var _hold_behavior_option: OptionButton = null
 var _charge_ticks_edit: LineEdit = null
 var _charged_attack_edit: LineEdit = null
 var _combo_next_edit: LineEdit = null
 var _label_cooldown: Label = null
 var _label_cost: Label = null
 var _label_pose: Label = null
+var _label_hold_behavior: Label = null
 var _label_charge_ticks: Label = null
 var _label_charged_attack: Label = null
 var _label_combo_next: Label = null
@@ -120,6 +127,9 @@ var _charge_fx_preview: Control = null
 
 var _suppress_events: bool = false
 var _undo: RefCounted = null
+var _player_frames_data: Dictionary = {}
+var _player_poses_data: Dictionary = {}
+var _player_sheet_defs: Array = []
 
 const LEFT_W: float = 220.0
 
@@ -189,10 +199,12 @@ func _update_tooltips() -> void:
         EditorTooltip.show_text("MP cost per use. The attack fails silently if the player lacks enough MP.")
     elif _pose_edit != null and Rect2(_pose_edit.position, _pose_edit.size).has_point(mp):
         EditorTooltip.show_text("Player pose ID to display during the attack animation. Use the seeded right-facing combat poses from the Sprites tab; the runtime automatically picks the matching left-facing pose when needed.")
+    elif _hold_behavior_option != null and Rect2(_hold_behavior_option.position, _hold_behavior_option.size).has_point(mp):
+        EditorTooltip.show_text("What happens if the ranged attack button stays held. Full Auto repeats on cooldown while held, Single Press only fires on the initial press, and Charge + Release keeps the old held-charge behavior.")
     elif _charge_ticks_edit != null and Rect2(_charge_ticks_edit.position, _charge_ticks_edit.size).has_point(mp):
-        EditorTooltip.show_text("Optional hold time in physics ticks before this attack can release its charged variant. 0 disables charge behavior.")
+        EditorTooltip.show_text("Hold time in physics ticks before a Charge + Release attack swaps to its charged follow-up. Ignored for Full Auto and Single Press.")
     elif _charged_attack_edit != null and Rect2(_charged_attack_edit.position, _charged_attack_edit.size).has_point(mp):
-        EditorTooltip.show_text("Optional charged follow-up attack id. When set with Charge Ticks, tapping fires this attack and holding/releasing after the threshold fires the charged variant instead.")
+        EditorTooltip.show_text("Charged follow-up attack id used by Charge + Release mode after the hold threshold is reached. Ignored by Full Auto and Single Press.")
     elif _combo_next_edit != null and Rect2(_combo_next_edit.position, _combo_next_edit.size).has_point(mp):
         EditorTooltip.show_text("Optional melee combo follow-up attack id. While this attack is playing, pressing shoot again after its first hit frame queues the follow-up instead of restarting the chain.")
     elif _hit_frames_edit != null and Rect2(_hit_frames_edit.position, _hit_frames_edit.size).has_point(mp):
@@ -231,6 +243,7 @@ func open(p_pack_id: String) -> void:
     pack_id = p_pack_id
     _load_data()
     _load_projectile_pool()
+    _load_player_preview_data()
     _populate_projectile_option()
     _populate_list()
     if _attacks.size() > 0:
@@ -295,6 +308,12 @@ func _build_layout() -> void:
     _label_pose = _make_label("Player pose")
     _pose_edit = _make_line_edit("player_pose", "int")
     _pose_edit.placeholder_text = "201 (melee_1_right)"
+    _label_hold_behavior = _make_label("Hold button")
+    _hold_behavior_option = OptionButton.new()
+    for entry in HOLD_BEHAVIOR_OPTIONS:
+        _hold_behavior_option.add_item(str(entry.get("label", "")))
+    _hold_behavior_option.item_selected.connect(func(_i): _on_hold_behavior_selected())
+    add_child(_hold_behavior_option)
     _label_charge_ticks = _make_label("Charge (t)")
     _charge_ticks_edit = _make_line_edit("charge_ticks", "int")
     _label_charged_attack = _make_label("Charged id")
@@ -456,11 +475,11 @@ func _layout_children() -> void:
 
     var right_x: float = LEFT_W + 8
     var right_w: float = vw - right_x - 12
-    var visual_gap: float = 18.0
-    var min_visual_w: float = 300.0
-    var detail_w: float = clampf(right_w * 0.5, 320.0, right_w - min_visual_w - visual_gap)
+    var visual_gap: float = 20.0
+    var min_visual_w: float = 360.0
+    var detail_w: float = clampf(right_w * 0.42, 300.0, right_w - min_visual_w - visual_gap)
     if right_w < detail_w + min_visual_w + visual_gap:
-        detail_w = maxf(280.0, right_w - min_visual_w - visual_gap)
+        detail_w = maxf(260.0, right_w - min_visual_w - visual_gap)
     var visual_x: float = right_x + detail_w + visual_gap
     var visual_w: float = maxf(220.0, right_w - detail_w - visual_gap)
     var label_w: float = 110.0
@@ -474,6 +493,7 @@ func _layout_children() -> void:
     var row_h: float = 28.0
     var field_h: float = 22.0
     var section_gap: float = 10.0
+    var preview_h: float = clampf(vh * 0.18, 96.0, 150.0)
 
     _detail_header.position = Vector2(right_x, row_y)
     _detail_header.size = Vector2(detail_w, 20)
@@ -494,6 +514,7 @@ func _layout_children() -> void:
     _place_row(_label_cooldown, _cooldown_edit, right_x, field_x, row_y, label_w, field_w, row_h, field_h); row_y += row_h
     _place_row(_label_cost, _cost_edit, right_x, field_x, row_y, label_w, field_w, row_h, field_h); row_y += row_h
     _place_row(_label_pose, _pose_edit, right_x, field_x, row_y, label_w, field_w, row_h, field_h); row_y += row_h
+    _place_row(_label_hold_behavior, _hold_behavior_option, right_x, field_x, row_y, label_w, field_w, row_h, field_h); row_y += row_h
     _place_row(_label_charge_ticks, _charge_ticks_edit, right_x, field_x, row_y, label_w, field_w, row_h, field_h); row_y += row_h
     _place_row(_label_charged_attack, _charged_attack_edit, right_x, field_x, row_y, label_w, field_w, row_h, field_h); row_y += row_h
     _place_row(_label_combo_next, _combo_next_edit, right_x, field_x, row_y, label_w, field_w, row_h, field_h); row_y += row_h
@@ -531,8 +552,8 @@ func _layout_children() -> void:
     _edit_projectile_btn.size = Vector2(minf(150.0, visual_w), 24)
     visual_y += 30.0
     _linked_projectile_preview.position = Vector2(visual_x, visual_y)
-    _linked_projectile_preview.size = Vector2(visual_w, 76)
-    visual_y += 84.0
+    _linked_projectile_preview.size = Vector2(visual_w, preview_h)
+    visual_y += preview_h + 8.0
 
     # Sprite FX + hitbox preview
     visual_y += section_gap
@@ -546,8 +567,8 @@ func _layout_children() -> void:
     _place_row(_label_fcount, _fcount_edit, visual_x, visual_field_x, visual_y, visual_label_w, visual_field_w, row_h, field_h); visual_y += row_h
     _place_row(_label_ftick, _ftick_edit, visual_x, visual_field_x, visual_y, visual_label_w, visual_field_w, row_h, field_h); visual_y += row_h + 2.0
     _sprite_preview.position = Vector2(visual_x, visual_y)
-    _sprite_preview.size = Vector2(visual_w, 76)
-    visual_y += 84.0
+    _sprite_preview.size = Vector2(visual_w, preview_h)
+    visual_y += preview_h + 8.0
 
     # Charge FX preview
     visual_y += section_gap
@@ -592,6 +613,7 @@ static func _normalize_entry(src: Dictionary) -> Dictionary:
     var type_str: String = str(src.get("type", "melee"))
     if not ATTACK_TYPES.has(type_str):
         type_str = "melee"
+    var hold_behavior: String = _normalize_hold_behavior_value(src)
     var frames_raw = src.get("hit_frames", [])
     var frames: Array = []
     if typeof(frames_raw) == TYPE_ARRAY:
@@ -605,6 +627,7 @@ static func _normalize_entry(src: Dictionary) -> Dictionary:
         "cooldown_ticks": int(src.get("cooldown_ticks", 10)),
         "cost_mp":        int(src.get("cost_mp", 0)),
         "player_pose":    int(src.get("player_pose", 0)),
+        "hold_behavior":  hold_behavior,
         "charge_ticks":   int(src.get("charge_ticks", 0)),
         "charged_attack_id": str(src.get("charged_attack_id", "")),
         "combo_next_id":  str(src.get("combo_next_id", "")),
@@ -649,6 +672,22 @@ func _load_projectile_pool() -> void:
                     _projectile_defs[id_str] = projectile_def.duplicate(true)
 
 
+func _load_player_preview_data() -> void:
+    _player_frames_data.clear()
+    _player_poses_data.clear()
+    _player_sheet_defs.clear()
+    if pack_id.is_empty():
+        return
+    var sprite_data := PspIO.load_or_init(pack_id)
+    var frames_v: Variant = sprite_data.get("frames", {})
+    if typeof(frames_v) == TYPE_DICTIONARY:
+        _player_frames_data = (frames_v as Dictionary).duplicate(true)
+    var poses_v: Variant = sprite_data.get("poses", {})
+    if typeof(poses_v) == TYPE_DICTIONARY:
+        _player_poses_data = (poses_v as Dictionary).duplicate(true)
+    _player_sheet_defs = PspIO.normalize_sheet_defs(_player_frames_data.get("sheets", []))
+
+
 func _populate_projectile_option() -> void:
     _projectile_option.clear()
     for p in _projectile_pool:
@@ -685,6 +724,7 @@ func _on_add_pressed() -> void:
         "cooldown_ticks": 20,
         "cost_mp": 0,
         "player_pose": 0,
+        "hold_behavior": "full_auto",
         "charge_ticks": 0,
         "charged_attack_id": "",
         "combo_next_id": "",
@@ -767,12 +807,14 @@ func _apply_to_inputs() -> void:
     for e in edits:
         (e as LineEdit).editable = have
     _type_option.disabled = not have
+    _hold_behavior_option.disabled = not have
     _projectile_option.disabled = not have
 
     if not have:
         for e in edits:
             (e as LineEdit).text = ""
         _type_option.select(0)
+        _select_hold_behavior("full_auto")
         _projectile_option.select(0)
         _linked_projectile_meta.text = "Pick a projectile attack to preview its sprite."
         _edit_projectile_btn.disabled = true
@@ -788,6 +830,7 @@ func _apply_to_inputs() -> void:
     _cooldown_edit.text = str(int(a.get("cooldown_ticks", 0)))
     _cost_edit.text = str(int(a.get("cost_mp", 0)))
     _pose_edit.text = str(int(a.get("player_pose", 0)))
+    _select_hold_behavior(str(a.get("hold_behavior", "full_auto")))
     _charge_ticks_edit.text = str(int(a.get("charge_ticks", 0)))
     _charged_attack_edit.text = str(a.get("charged_attack_id", ""))
     _combo_next_edit.text = str(a.get("combo_next_id", ""))
@@ -892,6 +935,7 @@ func _refresh_preview() -> void:
     _sprite_preview.hitbox_y = int(a.get("hitbox_y", 0))
     _sprite_preview.hitbox_w = int(a.get("hitbox_w", 0))
     _sprite_preview.hitbox_h = int(a.get("hitbox_h", 0))
+    _apply_player_pose_reference(_sprite_preview, a)
     _sprite_preview.reload_texture()
 
 
@@ -961,6 +1005,13 @@ func _clear_preview(preview: Control, folder: String = "Sprites") -> void:
     preview.hitbox_y = 0
     preview.hitbox_w = 0
     preview.hitbox_h = 0
+    preview.reference_sheet_name = ""
+    preview.reference_content_folder = "Sprites"
+    preview.reference_frame_width = 16
+    preview.reference_frame_height = 16
+    preview.reference_frame_index = 0
+    preview.reference_alpha = 0.4
+    preview.reference_label = ""
     preview.reload_texture()
 
 
@@ -1004,6 +1055,20 @@ func _on_projectile_selected() -> void:
     _refresh_linked_projectile_preview()
 
 
+func _on_hold_behavior_selected() -> void:
+    if _suppress_events:
+        return
+    if _selected_idx < 0 or _selected_idx >= _attacks.size():
+        return
+    var idx := _hold_behavior_option.selected
+    if idx < 0 or idx >= HOLD_BEHAVIOR_OPTIONS.size():
+        return
+    var a: Dictionary = _attacks[_selected_idx]
+    a["hold_behavior"] = str(HOLD_BEHAVIOR_OPTIONS[idx].get("id", "full_auto"))
+    _attacks[_selected_idx] = a
+    dirty = true
+
+
 func _on_edit_projectile_pressed() -> void:
     var projectile_def := _linked_projectile_def()
     var projectile_id := str(projectile_def.get("id", "")).strip_edges()
@@ -1014,10 +1079,103 @@ func _on_edit_projectile_pressed() -> void:
 
 func refresh_external_refs() -> void:
     _load_projectile_pool()
+    _load_player_preview_data()
     _populate_projectile_option()
     _refresh_linked_projectile_preview()
     if _selected_idx >= 0 and _selected_idx < _attacks.size():
         _apply_to_inputs()
+
+
+func _apply_player_pose_reference(preview: Control, attack: Dictionary) -> void:
+    if preview == null:
+        return
+    preview.reference_sheet_name = ""
+    preview.reference_content_folder = "Sprites"
+    preview.reference_frame_width = 16
+    preview.reference_frame_height = 16
+    preview.reference_frame_index = 0
+    preview.reference_alpha = 0.42
+    preview.reference_label = ""
+    if _player_frames_data.is_empty():
+        return
+    var pose_id := int(attack.get("player_pose", -1))
+    if pose_id < 0:
+        return
+    var seq := _player_pose_sequence(pose_id)
+    if seq.is_empty():
+        return
+    var ref_idx := 0
+    var hit_frames_v: Variant = attack.get("hit_frames", [])
+    if typeof(hit_frames_v) == TYPE_ARRAY and not (hit_frames_v as Array).is_empty():
+        ref_idx = maxi(0, int((hit_frames_v as Array)[0]))
+    ref_idx = clampi(ref_idx, 0, seq.size() - 1)
+    var frame_entry: Dictionary = seq[ref_idx]
+    var layers := _player_frame_layers(frame_entry)
+    if layers.is_empty():
+        return
+    var primary: Dictionary = layers[0]
+    var sheet_id := str(primary.get("sheet", PspIO.BASE_SHEET_ID)).strip_edges()
+    var file_name := _player_sheet_file(sheet_id)
+    if file_name.is_empty():
+        return
+    preview.reference_sheet_name = file_name
+    preview.reference_frame_width = maxi(1, int(_player_frames_data.get("frame_width", 16)))
+    preview.reference_frame_height = maxi(1, int(_player_frames_data.get("frame_height", 16)))
+    preview.reference_frame_index = maxi(0, int(primary.get("index", 0)))
+    var pose_name := _player_pose_name(pose_id)
+    preview.reference_label = "Player %s f%d" % [
+        str(pose_id) if pose_name.is_empty() else pose_name,
+        ref_idx,
+    ]
+
+
+func _player_pose_sequence(pose_id: int) -> Array:
+    var out: Array = []
+    var frames_v: Variant = _player_frames_data.get("frames", [])
+    if typeof(frames_v) != TYPE_ARRAY:
+        return out
+    for entry_v in frames_v as Array:
+        if typeof(entry_v) != TYPE_DICTIONARY:
+            continue
+        var entry: Dictionary = entry_v
+        if int(entry.get("pose", -1)) == pose_id:
+            out.append(entry.duplicate(true))
+    return out
+
+
+func _player_frame_layers(frame_entry: Dictionary) -> Array:
+    var layers_v: Variant = frame_entry.get("layers", [])
+    if typeof(layers_v) == TYPE_ARRAY and not (layers_v as Array).is_empty():
+        return (layers_v as Array)
+    if frame_entry.has("index"):
+        return [{
+            "sheet": PspIO.BASE_SHEET_ID,
+            "index": int(frame_entry.get("index", 0)),
+        }]
+    return []
+
+
+func _player_sheet_file(sheet_id: String) -> String:
+    var normalized_id := sheet_id if not sheet_id.is_empty() else PspIO.BASE_SHEET_ID
+    for sheet_def_v in _player_sheet_defs:
+        if typeof(sheet_def_v) != TYPE_DICTIONARY:
+            continue
+        var sheet_def: Dictionary = sheet_def_v
+        if str(sheet_def.get("id", "")).strip_edges() == normalized_id:
+            return str(sheet_def.get("file", "")).strip_edges()
+    if normalized_id == PspIO.BASE_SHEET_ID:
+        return PspIO.BASE_SHEET_FILE
+    return ""
+
+
+func _player_pose_name(pose_id: int) -> String:
+    var poses_v: Variant = _player_poses_data.get("poses", {})
+    if typeof(poses_v) != TYPE_DICTIONARY:
+        return ""
+    var pose_entry_v: Variant = (poses_v as Dictionary).get(str(pose_id), {})
+    if typeof(pose_entry_v) != TYPE_DICTIONARY:
+        return ""
+    return str((pose_entry_v as Dictionary).get("name", "")).strip_edges()
 
 
 func _on_hit_frames_changed(text: String) -> void:
@@ -1059,3 +1217,28 @@ static func _text_to_hit_frames(text: String) -> Array:
             continue
         out.append(s.to_int())
     return out
+
+
+static func _normalize_hold_behavior_value(src: Dictionary) -> String:
+    var hold_behavior: String = str(src.get("hold_behavior", "")).strip_edges()
+    for entry in HOLD_BEHAVIOR_OPTIONS:
+        if hold_behavior == str(entry.get("id", "")):
+            return hold_behavior
+    var charged_attack_id := str(src.get("charged_attack_id", "")).strip_edges()
+    var charge_ticks := int(src.get("charge_ticks", 0))
+    if not charged_attack_id.is_empty() and charge_ticks > 0:
+        return "charge_release"
+    return "full_auto"
+
+
+func _select_hold_behavior(hold_behavior: String) -> void:
+    var resolved: String = hold_behavior
+    var found_idx: int = -1
+    for i in range(HOLD_BEHAVIOR_OPTIONS.size()):
+        if str(HOLD_BEHAVIOR_OPTIONS[i].get("id", "")) == resolved:
+            found_idx = i
+            break
+    if found_idx < 0:
+        found_idx = 0
+    if _hold_behavior_option != null:
+        _hold_behavior_option.select(found_idx)

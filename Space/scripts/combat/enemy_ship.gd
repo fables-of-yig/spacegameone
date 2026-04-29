@@ -765,6 +765,7 @@ func _bake_hull_texture():
     if static_hull_path != "":
         var loaded = load(static_hull_path)
         if loaded is Texture2D:
+            @warning_ignore("confusable_local_declaration")
             var img = (loaded as Texture2D).get_image()
             if img != null:
                 _hull_texture = ImageTexture.create_from_image(img)

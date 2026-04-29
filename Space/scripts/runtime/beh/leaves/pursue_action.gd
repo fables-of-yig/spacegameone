@@ -19,7 +19,7 @@ func tick(actor: Node, _blackboard: Blackboard) -> int:
         return FAILURE
     var speed_default: float = float(actor.move_speed) if "move_speed" in actor else 80.0
     var speed: float = float(_params().get("speed", speed_default))
-    var dx: float = best.global_position.x - (actor as Node2D).global_position.x
+    var dx: float = _combat_origin(best).x - _combat_origin(actor).x
     var dir: float = 1.0 if dx >= 0.0 else -1.0
     (actor as CharacterBody2D).velocity.x = dir * speed
     if actor.has_method("ai_face_dir"):
@@ -32,13 +32,13 @@ func tick(actor: Node, _blackboard: Blackboard) -> int:
 
 
 func _nearest_player(actor: Node, tree: SceneTree) -> Node2D:
-    var a_pos: Vector2 = (actor as Node2D).global_position
+    var a_pos: Vector2 = _combat_origin(actor)
     var best: Node2D = null
     var best_d: float = INF
     for p in tree.get_nodes_in_group("mv_player"):
         if not (p is Node2D):
             continue
-        var d: float = (p as Node2D).global_position.distance_to(a_pos)
+        var d: float = _combat_origin(p).distance_to(a_pos)
         if d < best_d:
             best_d = d
             best = p
@@ -50,3 +50,11 @@ func _params() -> Dictionary:
     if typeof(p) != TYPE_DICTIONARY:
         return {}
     return p
+
+
+func _combat_origin(node: Node) -> Vector2:
+    if node != null and node.has_method("combat_origin"):
+        var origin_v: Variant = node.call("combat_origin")
+        if typeof(origin_v) == TYPE_VECTOR2:
+            return origin_v
+    return (node as Node2D).global_position if node is Node2D else Vector2.ZERO

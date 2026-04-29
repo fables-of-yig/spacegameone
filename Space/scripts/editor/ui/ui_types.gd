@@ -49,6 +49,7 @@ const SECTION_BUTTONS: String = "BUTTON ART"
 const SECTION_TEXT: String    = "TEXT COLORS"
 const SECTION_FONTS: String   = "FONT SIZES"
 const SECTION_MISC: String    = "MISC"
+const FRAME_MODES: Array = ["9slice", "stretch"]
 
 
 static func default_theme() -> Dictionary:
@@ -109,6 +110,16 @@ static func get_button_entry(theme_dict: Dictionary, key: String) -> Dictionary:
     return entry_v
 
 
+static func get_panel_mode(theme_dict: Dictionary, key: String) -> String:
+    var entry := get_panel_entry(theme_dict, key)
+    return _normalize_frame_mode(str(entry.get("mode", "9slice")))
+
+
+static func get_button_mode(theme_dict: Dictionary, key: String) -> String:
+    var entry := get_button_entry(theme_dict, key)
+    return _normalize_frame_mode(str(entry.get("mode", "9slice")))
+
+
 # Reads the `text.<role>` hex string out of a theme dict, falling back
 # to the hardcoded fallback color if the key is missing.
 static func get_text_hex(theme_dict: Dictionary, role: String) -> String:
@@ -147,6 +158,12 @@ static func set_panel_margin(theme_dict: Dictionary, key: String, margin: Vector
     (theme_dict["panels"] as Dictionary)[key]["margin"] = [margin.x, margin.y]
 
 
+static func set_panel_mode(theme_dict: Dictionary, key: String, mode: String) -> void:
+    _ensure_subdict(theme_dict, "panels")
+    _ensure_subdict(theme_dict["panels"], key)
+    (theme_dict["panels"] as Dictionary)[key]["mode"] = _normalize_frame_mode(mode)
+
+
 static func set_button_frame(theme_dict: Dictionary, key: String, frame_path: String) -> void:
     _ensure_subdict(theme_dict, "buttons")
     _ensure_subdict(theme_dict["buttons"], key)
@@ -157,6 +174,12 @@ static func set_button_margin(theme_dict: Dictionary, key: String, margin: Vecto
     _ensure_subdict(theme_dict, "buttons")
     _ensure_subdict(theme_dict["buttons"], key)
     (theme_dict["buttons"] as Dictionary)[key]["margin"] = [margin.x, margin.y]
+
+
+static func set_button_mode(theme_dict: Dictionary, key: String, mode: String) -> void:
+    _ensure_subdict(theme_dict, "buttons")
+    _ensure_subdict(theme_dict["buttons"], key)
+    (theme_dict["buttons"] as Dictionary)[key]["mode"] = _normalize_frame_mode(mode)
 
 
 static func set_text_hex(theme_dict: Dictionary, role: String, hex: String) -> void:
@@ -190,6 +213,13 @@ static func _fallback_panel_entry(key: String) -> Dictionary:
 static func _fallback_button_entry(key: String) -> Dictionary:
     var fb: Dictionary = UIPanels.FALLBACK_THEME["buttons"].get(key, {})
     return fb.duplicate(true)
+
+
+static func _normalize_frame_mode(mode: String) -> String:
+    var clean := mode.strip_edges().to_lower()
+    if clean == "stretch":
+        return "stretch"
+    return "9slice"
 
 
 # ─── UI Screen Builder element types ────────────────────────────────────
@@ -241,7 +271,8 @@ const ANCHOR_OPTIONS: Array = [
 
 # Named screen IDs that the runtime knows about.
 const SCREEN_IDS: Array = [
-    "hud",
+    "hud_space",
+    "hud_mv",
     "pause",
     "main_menu",
     "inventory",
@@ -253,7 +284,8 @@ const SCREEN_IDS: Array = [
 ]
 
 const SCREEN_LABELS: Dictionary = {
-    "hud": "HUD (in-game overlay)",
+    "hud_space": "HUD (Space)",
+    "hud_mv": "HUD (MV)",
     "pause": "Pause Menu",
     "main_menu": "Main Menu",
     "inventory": "Inventory / Pause Screen",
@@ -286,10 +318,23 @@ static func default_element(type: String) -> Dictionary:
 static func _default_properties_for(type: String) -> Dictionary:
     match type:
         ELEM_PANEL:
-            return {"variant": "main", "padding": 8, "scroll": "none", "tab_id": "", "tab_group": "default"}
+            return {
+                "variant": "main",
+                "opacity": 1.0,
+                "padding": 8,
+                "scroll": "none",
+                "sprite_source": "",
+                "sprite_mode": "9slice",
+                "sprite_slice_x": 0,
+                "sprite_slice_y": 0,
+                "sprite_tint": "#ffffff",
+                "tab_id": "",
+                "tab_group": "default",
+            }
         ELEM_LABEL:
             return {
                 "text_role": "body", "static_text": "Label",
+                "opacity": 1.0,
                 "bind_var": "", "format": "{value}",
                 "decimal_places": 0,
                 "alignment": "left", "wrap": false,

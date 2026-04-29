@@ -145,18 +145,17 @@ func _process(delta: float):
 
 
     if GameManager.using_controller:
-        var lx = Input.get_joy_axis(0, JOY_AXIS_LEFT_X)
-        var ly = Input.get_joy_axis(0, JOY_AXIS_LEFT_Y)
-        if absf(lx) > GameManager.STICK_DEADZONE or absf(ly) > GameManager.STICK_DEADZONE:
-            map_offset += Vector2(lx, ly) * -400.0 * delta
+        var left_stick := GameManager.poll_left_stick()
+        if left_stick.length() > GameManager.STICK_DEADZONE:
+            map_offset += left_stick * -400.0 * delta
 
-        var ry = Input.get_joy_axis(0, JOY_AXIS_RIGHT_Y)
+        var ry = GameManager.poll_right_stick().y
         if absf(ry) > GameManager.STICK_DEADZONE:
             var center = Vector2((size.x - 300.0) * 0.5, size.y * 0.5)
             _zoom_at(center, - ry * ZOOM_STEP * delta * 6.0)
 
-        var lt = Input.get_joy_axis(0, JOY_AXIS_TRIGGER_LEFT)
-        var rt = Input.get_joy_axis(0, JOY_AXIS_TRIGGER_RIGHT)
+        var lt = Input.get_action_strength("fire_secondary")
+        var rt = Input.get_action_strength("fire_primary")
         if lt > 0.1:
             var center = Vector2((size.x - 300.0) * 0.5, size.y * 0.5)
             _zoom_at(center, - lt * ZOOM_STEP * delta * 4.0)

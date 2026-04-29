@@ -7,7 +7,6 @@ const UIPanels := preload("res://Space/scripts/ui/ui_panels.gd")
 const UIIo := preload("res://Space/scripts/editor/ui/ui_io.gd")
 const AuthoredScreenRuntime := preload("res://Space/scripts/ui/authored_screen_runtime.gd")
 const HudDataSource := preload("res://Space/scripts/ui/hud_data_source.gd")
-const UiHostActions := preload("res://Space/scripts/ui/ui_host_actions.gd")
 
 var _panel: Control = null
 var _active: bool = false
@@ -91,6 +90,11 @@ func _on_quit() -> void:
 	visible = false
 	MvGame.simulation_paused = false
 	if PlanetaryInterface.hosted:
+		if PlanetaryInterface.has_method("reset_runtime_state"):
+			PlanetaryInterface.reset_runtime_state(true, true)
+		MvPackLoader.clear_runtime_state()
+		MvGame.main = null
+		MvGame.room_manager = null
 		GameManager.skip_main_menu = false
 		GameManager.auto_test_fly = false
 		GameManager.reset_to_new_game()

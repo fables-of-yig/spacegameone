@@ -256,7 +256,9 @@ func _commit_drag_selection() -> void:
 	var tile_px: int = int(editor.get_tileset_tile_size(editor.selected_realm_tileset))
 	if tile_px < BLOCK_SIZE:
 		tile_px = BLOCK_SIZE
+	@warning_ignore("integer_division")
 	var n_subs: int = maxi(tile_px / BLOCK_SIZE, 1)
+	@warning_ignore("integer_division")
 	var grid_cols: int = maxi(tex.get_width() / BLOCK_SIZE, 1)
 	var a := _logical_coord_for_idx(_tile_drag_start_idx, n_subs, grid_cols)
 	var b := _logical_coord_for_idx(_tile_drag_current_idx if _tile_drag_current_idx >= 0 else _tile_drag_start_idx, n_subs, grid_cols)
@@ -272,7 +274,9 @@ func _commit_drag_selection() -> void:
 
 func _logical_coord_for_idx(idx: int, n_subs: int, grid_cols: int) -> Vector2i:
 	var sub_col := idx % grid_cols
+	@warning_ignore("integer_division")
 	var sub_row := idx / grid_cols
+	@warning_ignore("integer_division", "integer_division")
 	return Vector2i(sub_col / n_subs, sub_row / n_subs)
 
 

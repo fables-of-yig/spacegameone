@@ -5,8 +5,8 @@ const UITypes  = preload("res://Space/scripts/editor/ui/ui_types.gd")
 
 # Left pane for the theme editor. Renders a scrollable list of every
 # editable field grouped into sections:
-#   PANEL ART      — frame + margin per panel variant
-#   BUTTON ART     — frame + margin per button state
+#   PANEL ART      — frame + mode + margin per panel variant
+#   BUTTON ART     — frame + mode + margin per button state
 #   TEXT COLORS    — hex color per text role
 #   FONT SIZES     — int per font role
 #   MISC           — modal_dim_alpha + frame_stroke
@@ -62,8 +62,10 @@ func _dispatch(row: Dictionary) -> void:
     var k := str(row.get("key", ""))
     match t:
         "panel_frame":   editor.request_pick_panel_frame(k)
+        "panel_mode":    editor.cycle_panel_mode(k)
         "panel_margin":  editor.request_edit_panel_margin(k)
         "button_frame":  editor.request_pick_button_frame(k)
+        "button_mode":   editor.cycle_button_mode(k)
         "button_margin": editor.request_edit_button_margin(k)
         "text_color":    editor.request_edit_text_color(k)
         "font_size":     editor.request_edit_font_size(k)
@@ -89,9 +91,12 @@ func _draw():
         var k := str(k_v)
         var entry := UITypes.get_panel_entry(theme_dict, k)
         var frame := str(entry.get("frame", ""))
+        var mode := UITypes.get_panel_mode(theme_dict, k)
         var margin_v: Variant = entry.get("margin", [12, 12])
         y = _draw_field_row(font, mouse_pos, y, "panel_frame", k,
             UITypes.panel_label(k), _short_path(frame))
+        y = _draw_field_row(font, mouse_pos, y, "panel_mode", k,
+            "  mode", mode)
         y = _draw_field_row(font, mouse_pos, y, "panel_margin", k,
             "  margin", _margin_str(margin_v))
 
@@ -101,9 +106,12 @@ func _draw():
         var k := str(k_v)
         var entry := UITypes.get_button_entry(theme_dict, k)
         var frame := str(entry.get("frame", ""))
+        var mode := UITypes.get_button_mode(theme_dict, k)
         var margin_v: Variant = entry.get("margin", [14, 14])
         y = _draw_field_row(font, mouse_pos, y, "button_frame", k,
             UITypes.button_label(k), _short_path(frame))
+        y = _draw_field_row(font, mouse_pos, y, "button_mode", k,
+            "  mode", mode)
         y = _draw_field_row(font, mouse_pos, y, "button_margin", k,
             "  margin", _margin_str(margin_v))
 
@@ -236,13 +244,17 @@ func _margin_str(m_v: Variant) -> String:
 func _tooltip_for(target: String, key: String, label: String, value: String) -> String:
     match target:
         "panel_frame":
-            return "Pick the 9-slice frame texture for the \"%s\" panel variant. Opens a texture picker that lists every PNG under res://Space/UI/. Currently: %s" % [key, value]
+            return "Pick the frame texture for the \"%s\" panel variant. Use `mode` to choose whether it draws as `9slice` or `stretch`. Currently: %s" % [key, value]
+        "panel_mode":
+            return "Toggle how the \"%s\" panel texture is drawn. `9slice` keeps corners and edges, `stretch` scales the full texture to the panel rect. Currently: %s" % [key, value]
         "panel_margin":
-            return "Edit the inner margin (x, y) for the \"%s\" panel variant in pixels. Controls how far panel content is inset from the frame edges. Currently: %s" % [key, value]
+            return "Edit the inner margin (x, y) for the \"%s\" panel variant in pixels. Used only when mode is `9slice`. Currently: %s" % [key, value]
         "button_frame":
-            return "Pick the 9-slice frame texture for the \"%s\" button state. Opens a texture picker. Currently: %s" % [key, value]
+            return "Pick the frame texture for the \"%s\" button state. Use `mode` to choose whether it draws as `9slice` or `stretch`. Currently: %s" % [key, value]
+        "button_mode":
+            return "Toggle how the \"%s\" button texture is drawn. `9slice` keeps corners and edges, `stretch` scales the full texture to the button rect. Currently: %s" % [key, value]
         "button_margin":
-            return "Edit the inner margin (x, y) for the \"%s\" button state in pixels. Controls how far the button label is inset from the frame edges. Currently: %s" % [key, value]
+            return "Edit the inner margin (x, y) for the \"%s\" button state in pixels. Used only when mode is `9slice`. Currently: %s" % [key, value]
         "text_color":
             return "Edit the color used for \"%s\" text. Opens a color picker modal. Hex with optional alpha (e.g. #aabbccff). Currently: %s" % [key, value]
         "font_size":

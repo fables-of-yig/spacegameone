@@ -1,7 +1,7 @@
 extends Control
 
 const UIPanels = preload("res://Space/scripts/ui/ui_panels.gd")
-const EditorUndo = preload("res://Space/scripts/editor/editor_undo.gd")
+
 
 # Flag inspector tab for the SSB content editor. Reads the unified flag bridge
 # (PlanetaryInterface autoload) so it sees state set by either MVMania

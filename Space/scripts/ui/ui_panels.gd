@@ -39,14 +39,14 @@ const FONT_ROLES := ["title_size", "body_size", "hint_size", "button_size"]
 # are present on disk. Shape matches the theme editor's JSON schema exactly.
 const FALLBACK_THEME := {
     "panels": {
-        "main": {"frame": "res://Assets/UI/ui_frame.png", "margin": [12, 12]},
-        "alt":  {"frame": "res://Assets/UI/ui_frame.png", "margin": [12, 12]},
-        "dark": {"frame": "res://Assets/UI/ui_frame.png", "margin": [12, 12]},
+        "main": {"frame": "res://Assets/UI/ui_frame.png", "margin": [12, 12], "mode": "9slice"},
+        "alt":  {"frame": "res://Assets/UI/ui_frame.png", "margin": [12, 12], "mode": "9slice"},
+        "dark": {"frame": "res://Assets/UI/ui_frame.png", "margin": [12, 12], "mode": "9slice"},
     },
     "buttons": {
-        "normal":  {"frame": "res://Space/art/ui/button_normal.png",  "margin": [14, 14]},
-        "hover":   {"frame": "res://Space/art/ui/button_hover.png",   "margin": [14, 14]},
-        "pressed": {"frame": "res://Space/art/ui/button_pressed.png", "margin": [14, 14]},
+        "normal":  {"frame": "res://Space/art/ui/button_normal.png",  "margin": [14, 14], "mode": "9slice"},
+        "hover":   {"frame": "res://Space/art/ui/button_hover.png",   "margin": [14, 14], "mode": "9slice"},
+        "pressed": {"frame": "res://Space/art/ui/button_pressed.png", "margin": [14, 14], "mode": "9slice"},
     },
     "text": {
         "title":        "#ffeb40",
@@ -69,7 +69,7 @@ const FALLBACK_THEME := {
 
 # Resolved runtime state. Keys match the FALLBACK_THEME shape exactly.
 # Each panels[key] / buttons[key] entry is a Dictionary:
-#   {"frame": String, "margin": Vector2i, "texture": Texture2D}
+#   {"frame": String, "margin": Vector2i, "mode": String, "texture": Texture2D}
 static var panels: Dictionary = {}
 static var buttons: Dictionary = {}
 static var text_colors: Dictionary = {}  # role -> Color
@@ -139,8 +139,9 @@ static func apply_theme_dict(theme_dict: Dictionary) -> void:
         var entry: Dictionary = entry_v if typeof(entry_v) == TYPE_DICTIONARY else {}
         var frame_path := str(entry.get("frame", FALLBACK_THEME["panels"][k]["frame"]))
         var margin := _as_vec2i(entry.get("margin", Vector2i(12, 12)))
-        var tex: Texture2D = load(frame_path) as Texture2D
-        panels[k] = {"frame": frame_path, "margin": margin, "texture": tex}
+        var mode := _normalize_frame_mode(str(entry.get("mode", FALLBACK_THEME["panels"][k]["mode"])))
+        var tex: Texture2D = _load_texture_path(frame_path)
+        panels[k] = {"frame": frame_path, "margin": margin, "mode": mode, "texture": tex}
 
     buttons.clear()
     var buttons_raw: Dictionary = merged.get("buttons", {})
@@ -149,8 +150,9 @@ static func apply_theme_dict(theme_dict: Dictionary) -> void:
         var entry: Dictionary = entry_v if typeof(entry_v) == TYPE_DICTIONARY else {}
         var frame_path := str(entry.get("frame", FALLBACK_THEME["buttons"][k]["frame"]))
         var margin := _as_vec2i(entry.get("margin", Vector2i(14, 14)))
-        var tex: Texture2D = load(frame_path) as Texture2D
-        buttons[k] = {"frame": frame_path, "margin": margin, "texture": tex}
+        var mode := _normalize_frame_mode(str(entry.get("mode", FALLBACK_THEME["buttons"][k]["mode"])))
+        var tex: Texture2D = _load_texture_path(frame_path)
+        buttons[k] = {"frame": frame_path, "margin": margin, "mode": mode, "texture": tex}
 
     text_colors.clear()
     var text_raw: Dictionary = merged.get("text", {})
@@ -214,8 +216,7 @@ static func draw_panel(canvas: CanvasItem, rect: Rect2,
         canvas.draw_rect(rect, modulate * Color(0.06, 0.07, 0.11, 0.9))
         canvas.draw_rect(rect, modulate * Color(0.25, 0.3, 0.45, 0.6), false, 1.0)
         return
-    var margin: Vector2i = entry.get("margin", Vector2i(12, 12))
-    _draw_9slice(canvas, tex, rect, margin, modulate)
+    _draw_framed_texture(canvas, rect, entry, tex, modulate, Vector2i(12, 12))
 
 # Draws a 9-slice button with a centered label.
 static func draw_button(canvas: CanvasItem, rect: Rect2, label: String, font: Font,
@@ -231,8 +232,7 @@ static func draw_button(canvas: CanvasItem, rect: Rect2, label: String, font: Fo
         canvas.draw_rect(rect, bg)
         canvas.draw_rect(rect, modulate * Color(0.4, 0.6, 0.85, 0.7), false, 1.5)
     else:
-        var margin: Vector2i = entry.get("margin", Vector2i(14, 14))
-        _draw_9slice(canvas, tex, rect, margin, modulate)
+        _draw_framed_texture(canvas, rect, entry, tex, modulate, Vector2i(14, 14))
     # Center the label
     var text_w := float(label.length()) * 6.0
     var text_x := rect.position.x + (rect.size.x - text_w) * 0.5
@@ -256,8 +256,7 @@ static func draw_button_bg(canvas: CanvasItem, rect: Rect2,
         canvas.draw_rect(rect, bg)
         canvas.draw_rect(rect, modulate * Color(0.4, 0.6, 0.85, 0.7), false, 1.5)
         return
-    var margin: Vector2i = entry.get("margin", Vector2i(14, 14))
-    _draw_9slice(canvas, tex, rect, margin, modulate)
+    _draw_framed_texture(canvas, rect, entry, tex, modulate, Vector2i(14, 14))
 
 # Just a frame stroke around `rect`, used for grouping headers / dividers.
 static func draw_frame(canvas: CanvasItem, rect: Rect2, color: Color = Color(0, 0, 0, 0), thickness: float = 1.0) -> void:
@@ -307,6 +306,33 @@ static func _write_json_file(path: String, data: Dictionary) -> bool:
     f.store_string(text)
     f.close()
     return true
+
+
+static func _load_texture_path(path: String) -> Texture2D:
+    if path.is_empty():
+        return null
+    if path.begins_with("res://"):
+        return load(path) as Texture2D
+    if path.begins_with("user://") or path.contains(":/") or path.begins_with("/"):
+        if not FileAccess.file_exists(path):
+            return null
+        var file := FileAccess.open(path, FileAccess.READ)
+        if file == null:
+            return null
+        var bytes := file.get_buffer(file.get_length())
+        file.close()
+        var image := Image.new()
+        if image.load_png_from_buffer(bytes) != OK:
+            return null
+        return ImageTexture.create_from_image(image)
+    return null
+
+
+static func _normalize_frame_mode(mode: String) -> String:
+    var clean := mode.strip_edges().to_lower()
+    if clean == "stretch":
+        return "stretch"
+    return "9slice"
 
 # Deep-merges `theme_dict` on top of FALLBACK_THEME so missing keys
 # (e.g. the user only set panels.main.frame) are filled from fallback.
@@ -416,6 +442,110 @@ static func _draw_9slice(canvas: CanvasItem, tex: Texture2D, rect: Rect2,
         canvas.draw_texture_rect_region(tex,
             Rect2(rp + Vector2(mx, my), Vector2(inner_w, inner_h)),
             Rect2(mx, my, src_inner_w, src_inner_h), modulate)
+
+
+static func _draw_framed_texture(canvas: CanvasItem, rect: Rect2, entry: Dictionary,
+        tex: Texture2D, modulate: Color, fallback_margin: Vector2i) -> void:
+    var mode := _normalize_frame_mode(str(entry.get("mode", "9slice")))
+    if mode == "stretch":
+        canvas.draw_texture_rect(tex, rect, false, modulate)
+        return
+    var margin: Vector2i = entry.get("margin", fallback_margin)
+    _draw_9slice(canvas, tex, rect, margin, modulate)
+
+
+static func draw_authored_panel_sprite(canvas: CanvasItem, rect: Rect2, tex: Texture2D,
+        props: Dictionary, modulate: Color = Color.WHITE, scale: float = 1.0) -> void:
+    if tex == null:
+        return
+    var mode := _normalize_frame_mode(str(props.get("sprite_mode", "9slice")))
+    if mode == "stretch":
+        canvas.draw_texture_rect(tex, rect, false, modulate)
+        return
+    var raw_slice_x := float(props.get("sprite_slice_x", 0.0))
+    var raw_slice_y := float(props.get("sprite_slice_y", 0.0))
+    if raw_slice_x <= 0.0:
+        raw_slice_x = floor(tex.get_width() / 3.0)
+    if raw_slice_y <= 0.0:
+        raw_slice_y = floor(tex.get_height() / 3.0)
+    var src_margin := Vector2(
+        maxf(raw_slice_x, 0.0),
+        maxf(raw_slice_y, 0.0))
+    _draw_tiled_9slice(canvas, tex, rect, src_margin, maxf(scale, 0.001), modulate)
+
+
+static func _draw_tiled_9slice(canvas: CanvasItem, tex: Texture2D, rect: Rect2,
+        src_margin: Vector2, scale: float, modulate: Color) -> void:
+    var ts: Vector2 = tex.get_size()
+    if ts.x <= 0.0 or ts.y <= 0.0:
+        canvas.draw_rect(rect, modulate * Color(0.1, 0.1, 0.15, 0.9))
+        return
+    var src_mx := clampf(src_margin.x, 0.0, ts.x * 0.5)
+    var src_my := clampf(src_margin.y, 0.0, ts.y * 0.5)
+    var dst_mx := minf(src_mx * scale, rect.size.x * 0.5)
+    var dst_my := minf(src_my * scale, rect.size.y * 0.5)
+    var src_inner_w := maxf(0.0, ts.x - src_mx * 2.0)
+    var src_inner_h := maxf(0.0, ts.y - src_my * 2.0)
+    var dst_inner_w := maxf(0.0, rect.size.x - dst_mx * 2.0)
+    var dst_inner_h := maxf(0.0, rect.size.y - dst_my * 2.0)
+    var rp := rect.position
+
+    if dst_mx > 0.0 and dst_my > 0.0:
+        canvas.draw_texture_rect_region(tex,
+            Rect2(rp, Vector2(dst_mx, dst_my)),
+            Rect2(0.0, 0.0, src_mx, src_my), modulate)
+        canvas.draw_texture_rect_region(tex,
+            Rect2(rp + Vector2(rect.size.x - dst_mx, 0.0), Vector2(dst_mx, dst_my)),
+            Rect2(ts.x - src_mx, 0.0, src_mx, src_my), modulate)
+        canvas.draw_texture_rect_region(tex,
+            Rect2(rp + Vector2(0.0, rect.size.y - dst_my), Vector2(dst_mx, dst_my)),
+            Rect2(0.0, ts.y - src_my, src_mx, src_my), modulate)
+        canvas.draw_texture_rect_region(tex,
+            Rect2(rp + Vector2(rect.size.x - dst_mx, rect.size.y - dst_my), Vector2(dst_mx, dst_my)),
+            Rect2(ts.x - src_mx, ts.y - src_my, src_mx, src_my), modulate)
+
+    if dst_inner_w > 0.0 and dst_my > 0.0 and src_inner_w > 0.0 and src_my > 0.0:
+        _tile_region(canvas, tex,
+            Rect2(rp + Vector2(dst_mx, 0.0), Vector2(dst_inner_w, dst_my)),
+            Rect2(src_mx, 0.0, src_inner_w, src_my),
+            Vector2(src_inner_w * scale, dst_my), modulate)
+        _tile_region(canvas, tex,
+            Rect2(rp + Vector2(dst_mx, rect.size.y - dst_my), Vector2(dst_inner_w, dst_my)),
+            Rect2(src_mx, ts.y - src_my, src_inner_w, src_my),
+            Vector2(src_inner_w * scale, dst_my), modulate)
+    if dst_inner_h > 0.0 and dst_mx > 0.0 and src_inner_h > 0.0 and src_mx > 0.0:
+        _tile_region(canvas, tex,
+            Rect2(rp + Vector2(0.0, dst_my), Vector2(dst_mx, dst_inner_h)),
+            Rect2(0.0, src_my, src_mx, src_inner_h),
+            Vector2(dst_mx, src_inner_h * scale), modulate)
+        _tile_region(canvas, tex,
+            Rect2(rp + Vector2(rect.size.x - dst_mx, dst_my), Vector2(dst_mx, dst_inner_h)),
+            Rect2(ts.x - src_mx, src_my, src_mx, src_inner_h),
+            Vector2(dst_mx, src_inner_h * scale), modulate)
+    if dst_inner_w > 0.0 and dst_inner_h > 0.0 and src_inner_w > 0.0 and src_inner_h > 0.0:
+        _tile_region(canvas, tex,
+            Rect2(rp + Vector2(dst_mx, dst_my), Vector2(dst_inner_w, dst_inner_h)),
+            Rect2(src_mx, src_my, src_inner_w, src_inner_h),
+            Vector2(src_inner_w * scale, src_inner_h * scale), modulate)
+
+
+static func _tile_region(canvas: CanvasItem, tex: Texture2D, dest_rect: Rect2,
+        src_rect: Rect2, tile_size: Vector2, modulate: Color) -> void:
+    var step_x := maxf(tile_size.x, 1.0)
+    var step_y := maxf(tile_size.y, 1.0)
+    var dx := 0.0
+    while dx < dest_rect.size.x - 0.001:
+        var draw_w := minf(step_x, dest_rect.size.x - dx)
+        var src_w := src_rect.size.x * (draw_w / step_x)
+        var dy := 0.0
+        while dy < dest_rect.size.y - 0.001:
+            var draw_h := minf(step_y, dest_rect.size.y - dy)
+            var src_h := src_rect.size.y * (draw_h / step_y)
+            canvas.draw_texture_rect_region(tex,
+                Rect2(dest_rect.position + Vector2(dx, dy), Vector2(draw_w, draw_h)),
+                Rect2(src_rect.position + Vector2.ZERO, Vector2(src_w, src_h)), modulate)
+            dy += draw_h
+        dx += draw_w
 
 
 # ─── UI Builder draw helpers ────────────────────────────────────────────

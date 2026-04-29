@@ -3,7 +3,7 @@ extends Control
 const UIIo = preload("res://Space/scripts/editor/ui/ui_io.gd")
 const AuthoredScreenRuntime = preload("res://Space/scripts/ui/authored_screen_runtime.gd")
 const HudDataSource = preload("res://Space/scripts/ui/hud_data_source.gd")
-const UiHostActions = preload("res://Space/scripts/ui/ui_host_actions.gd")
+const SettingsMenuScript = preload("res://Space/scripts/ui/settings_menu.gd")
 
 
 
@@ -18,6 +18,7 @@ signal quit_to_menu
 
 var _authored_screen: Control = null
 var _authored_pack_id: String = ""
+var _settings_menu: Control = null
 
 func _ready():
     size = get_viewport_rect().size
@@ -28,12 +29,18 @@ func _ready():
     _authored_screen.visible = false
     add_child(_authored_screen)
     _authored_screen.action_requested.connect(_on_authored_action)
+    _settings_menu = Control.new()
+    _settings_menu.set_script(SettingsMenuScript)
+    _settings_menu.visible = false
+    add_child(_settings_menu)
 
 func open_menu():
     visible = true
     _skip_close_frame = true
     _selected = -1
     _save_flash = 0.0
+    if _settings_menu != null:
+        _settings_menu.visible = false
     _refresh_authored_screen()
 
 func _process(delta):
@@ -48,6 +55,8 @@ func _process(delta):
 
 func _input(event):
     if not visible or not is_inside_tree():
+        return
+    if _settings_menu != null and _settings_menu.visible:
         return
     if _has_authored_screen():
         if event is InputEventKey and event.pressed and event.keycode == KEY_ESCAPE:
@@ -70,14 +79,14 @@ func _input(event):
             if _selected == -1:
                 _selected = 0
             else:
-                _selected = (_selected - 1 + 4) % 4
+                _selected = (_selected - 1 + 5) % 5
             get_viewport().set_input_as_handled()
             return
         elif event.button_index == JOY_BUTTON_DPAD_DOWN:
             if _selected == -1:
                 _selected = 0
             else:
-                _selected = (_selected + 1) % 4
+                _selected = (_selected + 1) % 5
             get_viewport().set_input_as_handled()
             return
         elif event.button_index == JOY_BUTTON_A:
@@ -114,16 +123,20 @@ func _handle_click(pos: Vector2):
                 0: _do_resume()
                 1: _do_save()
                 2: _do_load()
-                3: _do_quit_to_menu()
+                3: _open_settings_menu()
+                4: _do_quit_to_menu()
 
 func _activate_selected():
     match _selected:
         0: _do_resume()
         1: _do_save()
         2: _do_load()
-        3: _do_quit_to_menu()
+        3: _open_settings_menu()
+        4: _do_quit_to_menu()
 
 func _do_resume():
+    if _settings_menu != null:
+        _settings_menu.visible = false
     visible = false
     resumed.emit()
 
@@ -136,21 +149,25 @@ func _do_save():
         _save_flash_color = Color(0.9, 0.3, 0.2)
 
 func _do_load():
+    if _settings_menu != null:
+        _settings_menu.visible = false
     visible = false
     load_requested.emit()
 
 func _do_quit_to_menu():
+    if _settings_menu != null:
+        _settings_menu.visible = false
     visible = false
     quit_to_menu.emit()
 
 func _get_button_rects() -> Array:
     var cx = size.x * 0.5
-    var base_y = size.y * 0.38
+    var base_y = size.y * 0.34
     var btn_w = 220.0
     var btn_h = 40.0
     var gap = 10.0
     var rects: Array = []
-    for i in 4:
+    for i in 5:
         var bx = cx - btn_w * 0.5
         var by = base_y + float(i) * (btn_h + gap)
         rects.append(Rect2(bx, by, btn_w, btn_h))
@@ -169,7 +186,7 @@ func _draw():
     UIPanels.draw_dim(self, Rect2(Vector2.ZERO, size), 0.85)
 
     var pw = 300.0
-    var ph = 340.0
+    var ph = 390.0
     var px = (size.x - pw) * 0.5
     var py = (size.y - ph) * 0.5 - 20
     var panel = Rect2(px, py, pw, ph)
@@ -178,7 +195,7 @@ func _draw():
     draw_string(font, Vector2(size.x * 0.5 - 30, py + 30), "PAUSED", HORIZONTAL_ALIGNMENT_LEFT, -1, 20, Color(0.78, 0.88, 1.0))
     draw_line(Vector2(px + 20, py + 40), Vector2(px + pw - 20, py + 40), Color(0.25, 0.35, 0.5, 0.6), 1.0)
 
-    var labels = ["RESUME", "SAVE GAME", "LOAD GAME", "QUIT TO MENU"]
+    var labels = ["RESUME", "SAVE GAME", "LOAD GAME", "SETTINGS", "QUIT TO MENU"]
     var buttons = _get_button_rects()
 
     for i in buttons.size():
@@ -237,7 +254,9 @@ func _on_authored_action(action_id: String, action_args: String, _element_id: St
         "open_screen":
             if _open_special_screen(action_args):
                 return
-            if not action_args.is_empty() and UIIo.screen_exists(_current_pack_id(), action_args):
+            if not UiContract.host_supports_open_target("pause_menu", action_args):
+                push_warning("pause_menu: open_screen target '%s' is not supported by host" % action_args)
+            elif not action_args.is_empty() and UIIo.screen_exists(_current_pack_id(), action_args):
                 _authored_pack_id = _current_pack_id()
                 var data: Dictionary = UIIo.load_screen(_authored_pack_id, action_args)
                 _authored_screen.call("load_screen", action_args, data, HudDataSource.new(null, GameManager))
@@ -249,6 +268,8 @@ func _on_authored_action(action_id: String, action_args: String, _element_id: St
             _do_save()
         "load_game":
             _do_load()
+        "open_settings":
+            _open_settings_menu()
         "quit_to_menu":
             _do_quit_to_menu()
         "play_sfx":
@@ -263,3 +284,8 @@ func _emit_ui_button_event(action_id: String, action_args: String, element_id: S
 
 func _open_special_screen(target: String) -> bool:
     return UiHostActions.open_cinematic(_current_pack_id(), "pause_menu", target)
+
+
+func _open_settings_menu() -> void:
+    if _settings_menu != null and _settings_menu.has_method("open_menu"):
+        _settings_menu.call("open_menu", "pause_menu")

@@ -4,7 +4,7 @@ const UIPanels = preload("res://Space/scripts/ui/ui_panels.gd")
 const UIIo = preload("res://Space/scripts/editor/ui/ui_io.gd")
 const AuthoredScreenRuntime = preload("res://Space/scripts/ui/authored_screen_runtime.gd")
 const HudDataSource = preload("res://Space/scripts/ui/hud_data_source.gd")
-const UiHostActions = preload("res://Space/scripts/ui/ui_host_actions.gd")
+const SettingsMenuScript = preload("res://Space/scripts/ui/settings_menu.gd")
 
 
 var _stars: Array = []
@@ -36,6 +36,7 @@ var _delete_rects: Array = []
 
 var _authored_screen: Control = null
 var _authored_pack_id: String = ""
+var _settings_menu: Control = null
 
 @warning_ignore("unused_signal")
 signal new_game_pressed(galaxy_size: int)
@@ -106,6 +107,11 @@ func _ready():
     add_child(_authored_screen)
     _authored_screen.action_requested.connect(_on_authored_action)
 
+    _settings_menu = Control.new()
+    _settings_menu.set_script(SettingsMenuScript)
+    _settings_menu.visible = false
+    add_child(_settings_menu)
+
     _campaign_name_input = LineEdit.new()
     _campaign_name_input.placeholder_text = "Campaign name..."
     _campaign_name_input.visible = false
@@ -154,6 +160,8 @@ func _layout_runtime_controls() -> void:
 func _input(event):
     if not visible:
         return
+    if _settings_menu != null and _settings_menu.visible:
+        return
     # Editor modal eats keyboard: ESC steps back (or closes); all other
     # keys are ignored so hitting N/C/F in the modal doesn't accidentally
     # start a new game.
@@ -188,6 +196,8 @@ func _input(event):
             _start_update()
         elif event.keycode == KEY_P or event.keycode == KEY_ENTER:
             _open_play_pack_picker()
+        elif event.keycode == KEY_S:
+            _open_settings_menu()
         elif event.keycode == KEY_Q or event.keycode == KEY_ESCAPE:
             get_tree().quit()
 
@@ -362,6 +372,8 @@ func _handle_click_by_index(idx: int):
     elif idx == 2:
         _open_play_pack_picker()
     elif idx == 3:
+        _open_settings_menu()
+    elif idx == 4:
         get_tree().quit()
 
 func _start_test_planet():
@@ -512,7 +524,12 @@ func _return_to_launcher() -> void:
     _editor_modal = EditorModal.CLOSED
     _campaign_picker_mode = "editor"
     _selected_pack_id = ""
-    MvPackLoader.current_pack = null
+    if PlanetaryInterface.has_method("reset_runtime_state"):
+        PlanetaryInterface.reset_runtime_state(true, true)
+    MvPackLoader.clear_runtime_state()
+    MvGame.main = null
+    MvGame.room_manager = null
+    MvGame.simulation_paused = false
     UIPanels.load_pack_theme("demo")
     if _authored_screen != null:
         _authored_screen.call("clear_screen")
@@ -547,6 +564,7 @@ func _get_button_rects() -> Array:
     rects.append(Rect2(cx - btn_w * 0.5, base_y + btn_h + gap, btn_w, btn_h))
     rects.append(Rect2(cx - btn_w * 0.5, base_y + (btn_h + gap) * 2, btn_w, btn_h))
     rects.append(Rect2(cx - btn_w * 0.5, base_y + (btn_h + gap) * 3, btn_w, btn_h))
+    rects.append(Rect2(cx - btn_w * 0.5, base_y + (btn_h + gap) * 4, btn_w, btn_h))
     return rects
 
 func _draw():
@@ -599,8 +617,9 @@ func _draw():
         update_label = "UPDATE FAILED"
     _draw_button_update(font, buttons[1], update_label, 1, alpha)
     _draw_button_test_planet(font, buttons[2], "PLAY PACK", 2, alpha)
+    _draw_button(font, buttons[3], "SETTINGS", 3, alpha, false)
     if _editor_modal == EditorModal.CLOSED:
-        _draw_button(font, buttons[3], "QUIT", 3, alpha, false)
+        _draw_button(font, buttons[4], "QUIT", 4, alpha, false)
 
 
     if _editor_modal == EditorModal.CLOSED:
@@ -608,7 +627,7 @@ func _draw():
         if GameManager.using_controller:
             draw_string(font, Vector2(size.x * 0.5 - 160, size.y - 14), "D-Pad Navigate   A Select   B Back", HORIZONTAL_ALIGNMENT_LEFT, -1, 10, Color(0.3, 0.33, 0.4, alpha * 0.5))
         else:
-            draw_string(font, Vector2(size.x * 0.5 - 190, size.y - 14), "[E] Editor  [U] Update  [P/Enter] Play Pack  [Q] Quit", HORIZONTAL_ALIGNMENT_LEFT, -1, 10, Color(0.3, 0.33, 0.4, alpha * 0.5))
+            draw_string(font, Vector2(size.x * 0.5 - 230, size.y - 14), "[E] Editor  [U] Update  [P/Enter] Play Pack  [S] Settings  [Q] Quit", HORIZONTAL_ALIGNMENT_LEFT, -1, 10, Color(0.3, 0.33, 0.4, alpha * 0.5))
 
     # Editor modal renders on top of everything else.
     if _editor_modal == EditorModal.CAMPAIGN_PICKER:
@@ -1161,7 +1180,9 @@ func _on_authored_action(action_id: String, action_args: String, _element_id: St
         "open_screen":
             if _open_special_screen(action_args):
                 return
-            if not action_args.is_empty() and UIIo.screen_exists(_current_pack_id(), action_args):
+            if not UiContract.host_supports_open_target("main_menu", action_args):
+                push_warning("main_menu: open_screen target '%s' is not supported by host" % action_args)
+            elif not action_args.is_empty() and UIIo.screen_exists(_current_pack_id(), action_args):
                 _authored_pack_id = _current_pack_id()
                 var data: Dictionary = UIIo.load_screen(_authored_pack_id, action_args)
                 _authored_screen.call("load_screen", action_args, data, HudDataSource.new(null, GameManager))
@@ -1196,6 +1217,8 @@ func _on_authored_action(action_id: String, action_args: String, _element_id: St
             UiHostActions.fire_authored_event("main_menu", "main_menu", action_args, _element_id, {
                 "pack_id": _current_pack_id(),
             })
+        "open_settings":
+            _open_settings_menu()
         "quit_to_menu":
             _return_to_launcher()
         "quit_game":
@@ -1214,3 +1237,8 @@ func _emit_ui_button_event(action_id: String, action_args: String, element_id: S
 
 func _open_special_screen(target: String) -> bool:
     return UiHostActions.open_cinematic(_current_pack_id(), "main_menu", target)
+
+
+func _open_settings_menu() -> void:
+    if _settings_menu != null and _settings_menu.has_method("open_menu"):
+        _settings_menu.call("open_menu", "main_menu")

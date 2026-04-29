@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Space Dialogue Bridge Editor</title>
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body { font-family: "Segoe UI", Consolas, monospace; background: #0a0c14; color: #c0c4d0; display: flex; height: 100vh; overflow: hidden; }
+#editor { width: 55%; display: flex; flex-direction: column; border-right: 2px solid #1a1e2e; }
+#toolbar { display: flex; gap: 6px; padding: 8px 12px; background: #0e1018; border-bottom: 1px solid #1a1e2e; flex-wrap: wrap; align-items: center; }
+#toolbar button { background: #1a2040; color: #8090c0; border: 1px solid #2a3060; padding: 5px 12px; border-radius: 4px; cursor: pointer; font-size: 12px; }
+#toolbar button.accent { background: #1a4030; color: #60c090; border-color: #2a6050; }
+#toolbar button.warn { background: #401a1a; color: #c06060; border-color: #602a2a; }
+#toolbar .sep { width: 1px; height: 24px; background: #1a1e2e; }
+#toolbar input { background: #12141e; border: 1px solid #2a3060; color: #d0d4e0; padding: 4px 8px; border-radius: 3px; font-size: 13px; width: 180px; }
+.toolbar-note { font-size: 11px; color: #607090; }
+#editor-body { display: flex; flex: 1; overflow: hidden; }
+#node-list { width: 180px; min-width: 140px; background: #0c0e16; border-right: 1px solid #1a1e2e; overflow-y: auto; }
+#node-list .node-item { padding: 8px 12px; cursor: pointer; font-size: 13px; border-bottom: 1px solid #12141e; display: flex; justify-content: space-between; align-items: center; }
+#node-list .node-item.active { background: #1a2550; color: #90a0e0; }
+#node-list .node-item .start-badge { font-size: 9px; background: #2a4040; color: #60c0a0; padding: 1px 5px; border-radius: 3px; }
+#node-list .node-item .end-badge { font-size: 9px; background: #402a2a; color: #c08060; padding: 1px 5px; border-radius: 3px; }
+#add-node-btn { width: 100%; padding: 8px; background: #0e1018; border: none; border-bottom: 1px solid #1a1e2e; color: #506090; cursor: pointer; font-size: 18px; }
+#node-editor { flex: 1; padding: 16px; overflow-y: auto; }
+#node-editor .field { margin-bottom: 12px; }
+#node-editor label { display: block; font-size: 11px; color: #607090; margin-bottom: 3px; text-transform: uppercase; letter-spacing: 0.5px; }
+#node-editor input[type="text"], #node-editor textarea, #node-editor select { width: 100%; background: #12141e; border: 1px solid #1e2236; color: #c0c4d0; padding: 6px 8px; border-radius: 3px; font-family: inherit; font-size: 13px; }
+#node-editor textarea { resize: vertical; min-height: 60px; }
+.field-help { margin-top: 4px; font-size: 11px; color: #607090; line-height: 1.4; }
+.choice-block { background: #10121c; border: 1px solid #1e2236; border-radius: 4px; padding: 10px; margin-bottom: 8px; }
+.choice-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px; }
+.choice-row { display: flex; gap: 6px; margin-bottom: 4px; }
+.choice-row input { flex: 1; }
+.choice-row select { width: 120px; }
+.remove-choice, .remove-effect { background: none; border: none; color: #604040; cursor: pointer; font-size: 14px; padding: 2px 6px; }
+.effect-row { display: flex; gap: 4px; align-items: center; margin-top: 4px; font-size: 12px; }
+.effect-row select, .effect-row input { background: #12141e; border: 1px solid #1e2236; color: #c0c4d0; padding: 3px 5px; border-radius: 3px; font-size: 12px; }
+.effect-row select { width: 140px; }
+.effect-row input { width: 80px; }
+.add-effect-btn, .add-choice-btn { background: none; border: 1px dashed #1e2236; color: #506090; padding: 4px 10px; border-radius: 3px; cursor: pointer; font-size: 12px; width: 100%; margin-top: 4px; }
+#simulator { width: 45%; display: flex; flex-direction: column; background: #08090f; }
+#sim-header { padding: 10px 16px; background: #0c0e16; border-bottom: 1px solid #1a1e2e; display: flex; justify-content: space-between; align-items: center; }
+#sim-display { flex: 1; display: flex; align-items: center; justify-content: center; padding: 20px; overflow-y: auto; }
+#sim-panel { width: 100%; max-width: 500px; background: #0c0e18; border: 1px solid #2a3060; border-radius: 6px; padding: 20px; }
+#sim-title { font-size: 16px; color: #7080b0; margin-bottom: 12px; padding-bottom: 8px; border-bottom: 1px solid #1a1e2e; }
+#sim-speaker { font-size: 13px; color: #5080c0; margin-bottom: 6px; }
+#sim-text { font-size: 14px; color: #b0b4c0; line-height: 1.6; margin-bottom: 20px; white-space: pre-wrap; }
+#sim-choices { display: flex; flex-direction: column; gap: 6px; }
+.sim-choice { background: #10121e; border: 1px solid #1e2236; padding: 10px 14px; border-radius: 4px; cursor: pointer; font-size: 13px; color: #8090b0; text-align: left; }
+#sim-effects-log { padding: 8px 16px; background: #0a0b12; border-top: 1px solid #1a1e2e; max-height: 120px; overflow-y: auto; font-size: 11px; color: #508050; }
+</style>
+</head>
+<body>
+<div id="editor">
+  <div id="toolbar">
+    <input type="text" id="title-input" placeholder="Conversation Title..." value="New Dialogue">
+    <input type="text" id="base-id-input" placeholder="Root Dialogue Id..." value="new_dialogue">
+    <div class="sep"></div>
+    <button onclick="importJSON()">Import JSON</button>
+    <button class="accent" onclick="exportJSON()">Export Bundle</button>
+    <button class="accent" id="copy-btn" onclick="copyJSON()">Copy Bundle</button>
+    <div class="sep"></div>
+    <button class="warn" onclick="clearAll()">Clear All</button>
+    <div class="sep"></div>
+    <span class="toolbar-note">Speaker text doubles as the in-game portrait id lookup.</span>
+  </div>
+  <div id="editor-body">
+    <div id="node-list"><button id="add-node-btn" onclick="addNode()">+</button></div>
+    <div id="node-editor"></div>
+  </div>
+</div>
+<div id="simulator">
+  <div id="sim-header"><h3>Dialogue Simulator</h3><button onclick="simRestart()">Restart</button></div>
+  <div id="sim-display"><div id="sim-panel"><div id="sim-title"></div><div id="sim-speaker"></div><div id="sim-text"></div><div id="sim-choices"></div></div></div>
+  <div id="sim-effects-log"></div>
+</div>
+<input type="file" id="file-input" accept=".json" style="display:none" onchange="handleFileImport(event)">
+<script>
+const ACTION_TYPES = [
+  { value: "comment", label: "Comment", fields: ["text"] },
+  { value: "give_item", label: "Give Item", fields: ["id", "count"] },
+  { value: "take_item", label: "Take Item", fields: ["id", "count"] },
+  { value: "set_flag", label: "Set Flag", fields: ["name", "value"] },
+  { value: "set_var", label: "Set Var", fields: ["name", "value"] },
+  { value: "add_var", label: "Add To Var", fields: ["name", "delta"] },
+  { value: "start_dialogue", label: "Start Dialogue", fields: ["id"] },
+  { value: "start_shop", label: "Open Shop", fields: ["id"] },
+  { value: "play_sfx", label: "Play SFX", fields: ["name"] },
+  { value: "save_checkpoint", label: "Save Checkpoint", fields: ["slot"] },
+  { value: "return_to_overworld", label: "Return To Overworld", fields: ["region_id", "x", "y"] },
+  { value: "end_dialogue", label: "End Dialogue", fields: [] },
+  { value: "log", label: "Log Message", fields: ["message"] }
+];
+let tree = { title: "New Dialogue", nodes: { start: { speaker: "", text: "Opening dialogue here.", next: "", choices: [] } } };
+let selectedNode = "start";
+let simNode = "start";
+let simEffects = [];
+let lastAutoBaseId = "new_dialogue";
+const supportedTypeSet = new Set(ACTION_TYPES.map(t => t.value));
+function esc(v) { return String(v).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;"); }
+function clone(v) { return JSON.parse(JSON.stringify(v)); }
+function slugifyId(v) { const s = String(v || "").trim().toLowerCase().replace(/[^a-z0-9]+/g, "_").replace(/^_+|_+$/g, ""); return s || "dialogue"; }
+function nodeId(v) { return String(v || "").trim().replace(/[^a-zA-Z0-9_]/g, "_"); }
+function inputBaseId() { return document.getElementById("base-id-input"); }
+function currentBaseId() { return slugifyId(inputBaseId().value || tree.title); }
+function syncBaseId(force) { const next = slugifyId(tree.title || "dialogue"); const cur = inputBaseId().value.trim(); if (force || !cur || cur === lastAutoBaseId) inputBaseId().value = next; lastAutoBaseId = next; }
+function normalizeChoice(raw) { const c = { label: String(raw && (raw.label !== undefined ? raw.label : raw.text) || ""), next: String(raw && raw.next || ""), effects: Array.isArray(raw && (raw.effects || raw.actions)) ? clone(raw.effects || raw.actions) : [] }; if (!c.next) delete c.next; if (!c.effects.length) delete c.effects; return c; }
+function normalizeGraph(raw) { const out = { title: String(raw && raw.title || "Imported Dialogue"), nodes: {} }; const nodes = raw && raw.nodes && typeof raw.nodes === "object" ? raw.nodes : {}; for (const [id, node] of Object.entries(nodes)) out.nodes[nodeId(id) || id] = { speaker: String(node && node.speaker || ""), text: String(node && node.text || ""), next: String(node && node.next || ""), effects: Array.isArray(node && node.effects) ? clone(node.effects) : [], choices: Array.isArray(node && node.choices) ? node.choices.map(normalizeChoice) : [] }; if (!out.nodes.start) { const first = Object.keys(out.nodes)[0]; out.nodes.start = first ? out.nodes[first] : { speaker: "", text: "", choices: [] }; if (first && first !== "start") delete out.nodes[first]; } return out; }
+function actionDef(eff) { const found = ACTION_TYPES.find(t => t.value === eff.type); return found || { value: String(eff && eff.type || ""), label: "Unsupported: " + String(eff && eff.type || "unknown"), fields: Object.keys(eff || {}).filter(k => k !== "type"), unsupported: true }; }
+function actionSkeleton(type) { const def = ACTION_TYPES.find(t => t.value === type) || ACTION_TYPES[0]; const out = { type: def.value }; def.fields.forEach(f => out[f] = ""); return out; }
+function parseValue(v) { if (v === "true") return true; if (v === "false") return false; if (v !== "" && !Number.isNaN(Number(v))) return Number(v); return v; }
+function cleanActions(actions) { return Array.isArray(actions) ? actions.map(a => { const def = actionDef(a); const out = { type: String(a.type || "") }; def.fields.forEach(f => { if (a[f] !== undefined && a[f] !== "") out[f] = a[f]; }); return out; }) : []; }
+function nodeDialogueId(id, baseId) { return id === "start" ? baseId : baseId + "__" + slugifyId(id); }
+function renderNodeList() { const list = document.getElementById("node-list"); const btn = document.getElementById("add-node-btn"); list.innerHTML = ""; list.appendChild(btn); Object.keys(tree.nodes).forEach(id => { const node = tree.nodes[id]; const div = document.createElement("div"); let badges = id === "start" ? '<span class="start-badge">START</span>' : ""; const ends = (!node.next && !(node.choices || []).length) || (node.choices || []).some(c => !(c.next || node.next)); if (ends && id !== "start") badges += '<span class="end-badge">END</span>'; div.className = "node-item" + (id === selectedNode ? " active" : ""); div.innerHTML = "<span>" + esc(id) + "</span><span>" + badges + "</span>"; div.onclick = () => { selectedNode = id; renderAll(); }; list.appendChild(div); }); }
+function renderEffectRow(eff, updateExpr, removeExpr) { const def = actionDef(eff); const options = (def.unsupported ? ['<option value="' + esc(def.value) + '" selected>' + esc(def.label) + '</option>'] : []).concat(ACTION_TYPES.map(t => '<option value="' + esc(t.value) + '"' + (t.value === eff.type ? " selected" : "") + ">" + esc(t.label) + "</option>")).join(""); let html = '<div class="effect-row"><select onchange="(' + updateExpr + ')(' + "'type'" + ', this.value)">' + options + "</select>"; def.fields.forEach(f => { const val = eff[f] !== undefined ? eff[f] : ""; html += '<input type="text" placeholder="' + esc(f) + '" value="' + esc(String(val)) + '" onchange="(' + updateExpr + ')(' + "'" + f + "'" + ', this.value)">'; }); html += '<button class="remove-effect" onclick="' + removeExpr + '">x</button></div>'; return html; }
+function renderNodeEditor() { const panel = document.getElementById("node-editor"); const node = tree.nodes[selectedNode]; if (!node) { panel.innerHTML = ""; return; } const ids = Object.keys(tree.nodes); let html = ""; html += '<div class="field"><label>Node ID</label><div class="choice-row"><input type="text" value="' + esc(selectedNode) + '" onchange="renameNode(' + "'" + selectedNode + "'" + ', this.value)"' + (selectedNode === "start" ? " disabled" : "") + '>' + (selectedNode === "start" ? "" : '<button class="remove-choice" onclick="deleteNode(' + "'" + selectedNode + "'" + ')">x</button>') + "</div></div>"; html += '<div class="field"><label>Speaker / Portrait Id</label><input type="text" value="' + esc(node.speaker || "") + '" oninput="tree.nodes[' + "'" + selectedNode + "'" + '].speaker=this.value; simRender();"><div class="field-help">Use the same portrait id from your pack if you want a portrait to appear in-game.</div></div>'; html += '<div class="field"><label>Text</label><textarea oninput="tree.nodes[' + "'" + selectedNode + "'" + '].text=this.value; simRender();">' + esc(node.text || "") + "</textarea></div>"; html += '<div class="field"><label>Continue To</label><select onchange="setNodeNext(' + "'" + selectedNode + "'" + ', this.value)"><option value=""' + (!node.next ? " selected" : "") + ">(end after this line)</option>" + ids.map(id => '<option value="' + esc(id) + '"' + (node.next === id ? " selected" : "") + ">" + esc(id) + "</option>").join("") + '</select><div class="field-help">If this line has no choices, Continue goes here. Blank choice targets also fall back here.</div></div>'; html += '<div class="field"><label>Line Effects</label>' + (node.effects || []).map((eff, i) => renderEffectRow(eff, "updateNodeEffect('" + selectedNode + "'," + i + ")", "removeNodeEffect('" + selectedNode + "'," + i + ")")).join("") + '<button class="add-effect-btn" onclick="addNodeEffect(' + "'" + selectedNode + "'" + ')">+ Add Effect</button></div>'; html += '<div class="field"><label>Choices</label><div class="field-help">Leave a choice target blank if it should just continue to the node target above.</div></div>'; (node.choices || []).forEach((choice, ci) => { html += '<div class="choice-block"><div class="choice-header"><span>Choice ' + (ci + 1) + '</span><button class="remove-choice" onclick="removeChoice(' + "'" + selectedNode + "'" + "," + ci + ')">x</button></div><div class="choice-row"><input type="text" placeholder="Choice text..." value="' + esc(choice.label || "") + '" oninput="tree.nodes[' + "'" + selectedNode + "'" + "].choices[" + ci + '].label=this.value; simRender();"></div><div class="choice-row"><select onchange="tree.nodes[' + "'" + selectedNode + "'" + "].choices[" + ci + '].next=this.value; renderNodeList(); simRender();"><option value=""' + (!choice.next ? " selected" : "") + ">(use Continue To / end)</option>" + ids.map(id => '<option value="' + esc(id) + '"' + (choice.next === id ? " selected" : "") + ">" + esc(id) + "</option>").join("") + "</select></div>" + (choice.effects || []).map((eff, i) => renderEffectRow(eff, "updateChoiceEffect('" + selectedNode + "'," + ci + "," + i + ")", "removeChoiceEffect('" + selectedNode + "'," + ci + "," + i + ")")).join("") + '<button class="add-effect-btn" onclick="addChoiceEffect(' + "'" + selectedNode + "'" + "," + ci + ')">+ Add Effect</button></div>'; }); html += '<button class="add-choice-btn" onclick="addChoice(' + "'" + selectedNode + "'" + ')">+ Add Choice</button>'; panel.innerHTML = html; }
+function addNode() { let id = "node_" + Object.keys(tree.nodes).length, n = 1; while (tree.nodes[id]) { id = "node_" + (Object.keys(tree.nodes).length + n); n += 1; } tree.nodes[id] = { speaker: "", text: "", next: "", choices: [] }; selectedNode = id; renderAll(); }
+function deleteNode(id) { if (id === "start" || !confirm('Delete node "' + id + '"?')) return; delete tree.nodes[id]; Object.values(tree.nodes).forEach(node => { if (node.next === id) delete node.next; (node.choices || []).forEach(choice => { if (choice.next === id) delete choice.next; }); }); if (!tree.nodes[selectedNode]) selectedNode = "start"; renderAll(); }
+function renameNode(oldId, nextId) { const clean = nodeId(nextId); if (!clean || clean === oldId || tree.nodes[clean]) { renderNodeEditor(); return; } tree.nodes[clean] = tree.nodes[oldId]; delete tree.nodes[oldId]; Object.values(tree.nodes).forEach(node => { if (node.next === oldId) node.next = clean; (node.choices || []).forEach(choice => { if (choice.next === oldId) choice.next = clean; }); }); selectedNode = clean; if (simNode === oldId) simNode = clean; renderAll(); }
+function setNodeNext(id, nextId) { if (!nextId) delete tree.nodes[id].next; else tree.nodes[id].next = nextId; renderNodeList(); simRender(); }
+function addChoice(id) { tree.nodes[id].choices = tree.nodes[id].choices || []; tree.nodes[id].choices.push({ label: "", next: "" }); renderNodeEditor(); }
+function removeChoice(id, ci) { tree.nodes[id].choices.splice(ci, 1); renderAll(); }
+function addNodeEffect(id) { tree.nodes[id].effects = tree.nodes[id].effects || []; tree.nodes[id].effects.push(actionSkeleton("comment")); renderNodeEditor(); }
+function removeNodeEffect(id, i) { tree.nodes[id].effects.splice(i, 1); if (!tree.nodes[id].effects.length) delete tree.nodes[id].effects; renderNodeEditor(); }
+function updateNodeEffect(id, i) { return (field, value) => { const eff = tree.nodes[id].effects[i]; if (field === "type") { tree.nodes[id].effects[i] = actionSkeleton(value); renderNodeEditor(); return; } eff[field] = parseValue(value); }; }
+function addChoiceEffect(id, ci) { tree.nodes[id].choices[ci].effects = tree.nodes[id].choices[ci].effects || []; tree.nodes[id].choices[ci].effects.push(actionSkeleton("comment")); renderNodeEditor(); }
+function removeChoiceEffect(id, ci, i) { tree.nodes[id].choices[ci].effects.splice(i, 1); if (!tree.nodes[id].choices[ci].effects.length) delete tree.nodes[id].choices[ci].effects; renderNodeEditor(); }
+function updateChoiceEffect(id, ci, i) { return (field, value) => { const eff = tree.nodes[id].choices[ci].effects[i]; if (field === "type") { tree.nodes[id].choices[ci].effects[i] = actionSkeleton(value); renderNodeEditor(); return; } eff[field] = parseValue(value); }; }
+function unsupportedTypes() { const bad = new Set(); Object.values(tree.nodes).forEach(node => { (node.effects || []).forEach(eff => { if (eff.type && !supportedTypeSet.has(eff.type)) bad.add(eff.type); }); (node.choices || []).forEach(choice => { (choice.effects || []).forEach(eff => { if (eff.type && !supportedTypeSet.has(eff.type)) bad.add(eff.type); }); }); }); return Array.from(bad).sort(); }
+function trySingleDialogue(baseId) { const order = []; const seen = new Set(); let current = "start"; while (current) { if (!tree.nodes[current] || seen.has(current)) return null; const node = tree.nodes[current]; const next = node.next || ""; if ((node.choices || []).some(choice => choice.next && choice.next !== next)) return null; order.push(current); seen.add(current); current = next; } if (order.length !== Object.keys(tree.nodes).length) return null; return { id: baseId, title: tree.title || "", lines: order.map(id => { const node = tree.nodes[id]; const line = { speaker: node.speaker || "", text: node.text || "" }; if (node.effects && node.effects.length) line.actions = cleanActions(node.effects); if ((node.choices || []).length) line.choices = node.choices.map(choice => { const out = { text: choice.label || "..." }; if (choice.effects && choice.effects.length) out.actions = cleanActions(choice.effects); return out; }); return line; }) }; }
+function buildBundlePayload() { const bad = unsupportedTypes(); if (bad.length) { alert("Replace or remove these unsupported action types before exporting:\n\n" + bad.join("\n")); return null; } const baseId = currentBaseId(); const single = trySingleDialogue(baseId); const dialogues = single ? [single] : Object.keys(tree.nodes).map(id => { const node = tree.nodes[id]; const line = { speaker: node.speaker || "", text: node.text || "" }; if (node.effects && node.effects.length) line.actions = cleanActions(node.effects); let choices = (node.choices || []).map(choice => { const out = { text: choice.label || "..." }; const acts = cleanActions(choice.effects); const target = choice.next || node.next || ""; if (target) acts.push({ type: "start_dialogue", id: nodeDialogueId(target, baseId) }); if (acts.length) out.actions = acts; return out; }); if (!choices.length && node.next) choices = [{ text: "Continue", actions: [{ type: "start_dialogue", id: nodeDialogueId(node.next, baseId) }] }]; if (choices.length) line.choices = choices; return { id: nodeDialogueId(id, baseId), title: tree.title || "", lines: [line] }; }); const graph = { title: tree.title || "", nodes: {} }; Object.entries(tree.nodes).forEach(([id, node]) => { const entry = { speaker: node.speaker || "", text: node.text || "", choices: (node.choices || []).map(choice => { const out = { label: choice.label || "" }; if (choice.next) out.next = choice.next; if (choice.effects && choice.effects.length) out.effects = cleanActions(choice.effects); return out; }) }; if (node.next) entry.next = node.next; if (node.effects && node.effects.length) entry.effects = cleanActions(node.effects); graph.nodes[id] = entry; }); return { format: "space_dialogue_bundle_v1", title: tree.title || "", base_id: baseId, export_mode: single ? "single_dialogue" : "bundle_per_node", graph, dialogues }; }
+function exportJSON() { const payload = buildBundlePayload(); if (!payload) return; const json = JSON.stringify(payload, null, "\t"); const blob = new Blob([json], { type: "application/json" }); const a = document.createElement("a"); a.href = URL.createObjectURL(blob); a.download = currentBaseId() + ".json"; a.click(); URL.revokeObjectURL(a.href); }
+function copyJSON() { const payload = buildBundlePayload(); if (!payload) return; navigator.clipboard.writeText(JSON.stringify(payload, null, "\t")).then(() => { const btn = document.getElementById("copy-btn"); const prev = btn.textContent; btn.textContent = "Copied!"; setTimeout(() => btn.textContent = prev, 1200); }); }
+function loadSingleDialogue(data) { const lines = Array.isArray(data.lines) ? data.lines : []; const graph = { title: data.title || data.id || "Imported Dialogue", nodes: {} }; if (!lines.length) graph.nodes.start = { speaker: "", text: "", choices: [] }; lines.forEach((line, i) => { const id = i === 0 ? "start" : "line_" + (i + 1); graph.nodes[id] = { speaker: String(line.speaker || ""), text: String(line.text || ""), next: i < lines.length - 1 ? "line_" + (i + 2) : "", effects: Array.isArray(line.actions) ? clone(line.actions) : [], choices: Array.isArray(line.choices) ? line.choices.map(choice => ({ label: String(choice.text || choice.label || ""), effects: Array.isArray(choice.actions) ? clone(choice.actions) : [] })) : [] }; }); tree = normalizeGraph(graph); selectedNode = "start"; simNode = "start"; simEffects = []; inputBaseId().value = slugifyId(data.id || tree.title); renderAll(); }
+function loadTreeFromJSON(data) { if (data && data.graph && data.graph.nodes) { tree = normalizeGraph(data.graph); inputBaseId().value = slugifyId(data.base_id || tree.title); selectedNode = "start"; simNode = "start"; simEffects = []; renderAll(); return; } if (data && Array.isArray(data.dialogues) && data.dialogues.length === 1) { loadSingleDialogue(data.dialogues[0]); return; } if (data && Array.isArray(data.lines) && typeof data.id === "string") { loadSingleDialogue(data); return; } if (data && data.nodes) { tree = normalizeGraph(data); inputBaseId().value = slugifyId(data.base_id || tree.title); selectedNode = "start"; simNode = "start"; simEffects = []; renderAll(); return; } alert("This JSON did not look like a supported graph, single dialogue file, or exported bundle with graph metadata."); }
+function importJSON() { document.getElementById("file-input").click(); }
+function handleFileImport(event) { const file = event.target.files[0]; if (!file) return; const reader = new FileReader(); reader.onload = e => { try { loadTreeFromJSON(JSON.parse(e.target.result)); } catch (err) { alert("Invalid JSON: " + err.message); } }; reader.readAsText(file); event.target.value = ""; }
+function clearAll() { if (!confirm("Clear everything and start fresh?")) return; tree = { title: "New Dialogue", nodes: { start: { speaker: "", text: "Opening dialogue here.", next: "", choices: [] } } }; selectedNode = "start"; simNode = "start"; simEffects = []; inputBaseId().value = "new_dialogue"; renderAll(); }
+function effectSummary(eff) { if (!eff || !eff.type) return ""; if (eff.type === "start_dialogue") return "Start dialogue " + eff.id; if (eff.type === "play_sfx") return "Play sfx " + eff.name; if (eff.type === "set_flag") return "Set flag " + eff.name + " = " + eff.value; return eff.type; }
+function simRestart() { simNode = "start"; simEffects = []; simRender(); }
+function simChoose(index) { const node = tree.nodes[simNode]; if (!node) return; const choices = node.choices || []; if (!choices.length) { const next = node.next || ""; simNode = next && tree.nodes[next] ? next : null; simRender(); return; } const choice = choices[index]; if (!choice) return; (choice.effects || []).forEach(eff => simEffects.push(effectSummary(eff))); const next = choice.next || node.next || ""; simNode = next && tree.nodes[next] ? next : null; simRender(); }
+function simRender() { const title = document.getElementById("sim-title"); const speaker = document.getElementById("sim-speaker"); const text = document.getElementById("sim-text"); const choices = document.getElementById("sim-choices"); const log = document.getElementById("sim-effects-log"); title.textContent = tree.title || "Untitled"; log.innerHTML = simEffects.map(e => '<div class="effect-log-item">' + esc(e) + "</div>").join(""); if (!simNode || !tree.nodes[simNode]) { speaker.textContent = ""; text.textContent = "End of dialogue"; choices.innerHTML = '<button class="sim-choice" onclick="simRestart()">Restart</button>'; return; } const node = tree.nodes[simNode]; speaker.textContent = node.speaker ? node.speaker + ":" : ""; text.textContent = node.text || ""; if (!(node.choices || []).length) { choices.innerHTML = '<button class="sim-choice" onclick="simChoose(-1)">' + (node.next ? "Continue" : "End") + "</button>"; return; } choices.innerHTML = node.choices.map((choice, i) => '<button class="sim-choice" onclick="simChoose(' + i + ')">' + esc(choice.label || "...") + "</button>").join(""); }
+function renderAll() { renderNodeList(); renderNodeEditor(); simRender(); }
+document.getElementById("title-input").addEventListener("input", function() { tree.title = this.value; syncBaseId(false); simRender(); });
+document.getElementById("base-id-input").addEventListener("change", function() { this.value = slugifyId(this.value || tree.title); });
+document.addEventListener("keydown", function(e) { if (e.ctrlKey && e.key === "s") { e.preventDefault(); if (e.shiftKey) copyJSON(); else exportJSON(); } });
+syncBaseId(true);
+renderAll();
+</script>
+</body>
+</html>

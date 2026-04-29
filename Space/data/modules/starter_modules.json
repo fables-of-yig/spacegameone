@@ -43,9 +43,28 @@
 	"animal_pen_mk2": {
 		"buy_price": 120.0,
 		"description": "Spacious livestock facility with climate control and auto-feeding. Houses a proper herd.",
+		"hex_shape": [
+			[
+				0.0,
+				0.0
+			],
+			[
+				0.0,
+				-1.0
+			],
+			[
+				-1.0,
+				0.0
+			],
+			[
+				1.0,
+				-1.0
+			]
+		],
 		"hex_size": 4.0,
 		"name": "Large Animal Pen",
 		"sell_price": 55.0,
+		"sprite": "animalpen",
 		"stats": {
 			"animal_capacity": 10.0,
 			"power_draw": 2.0
@@ -57,6 +76,16 @@
 	"aquaculture_tank": {
 		"buy_price": 60.0,
 		"description": "Pressurized water tanks for fish farming. Low maintenance protein source.",
+		"hex_shape": [
+			[
+				0.0,
+				0.0
+			],
+			[
+				1.0,
+				-1.0
+			]
+		],
 		"hex_size": 2.0,
 		"name": "Aquaculture Tank",
 		"sell_price": 30.0,
@@ -75,6 +104,7 @@
 		"hex_size": 1.0,
 		"name": "Armor Plating Mk1",
 		"sell_price": 25.0,
+		"sprite": "armorplatingmk1",
 		"stats": {
 			"damage_resist": 0.05,
 			"hull_bonus": 25.0
@@ -91,6 +121,34 @@
 		"stats": {
 			"damage_resist": 0.1,
 			"hull_bonus": 45.0
+		},
+		"tier": "advanced",
+		"type": "armor"
+	},
+	"armor_plate_array_mk2": {
+		"buy_price": 220.0,
+		"description": "Interlocking armor strip that reinforces an entire flank instead of a single hardpoint.",
+		"hex_shape": [
+			[
+				0.0,
+				0.0
+			],
+			[
+				-1.0,
+				1.0
+			],
+			[
+				1.0,
+				0.0
+			]
+		],
+		"hex_size": 3.0,
+		"name": "Armor Array Mk2",
+		"sell_price": 110.0,
+		"sprite": "armorplatingmk2",
+		"stats": {
+			"damage_resist": 0.14,
+			"hull_bonus": 90.0
 		},
 		"tier": "advanced",
 		"type": "armor"
@@ -155,6 +213,7 @@
 		"hex_size": 2.0,
 		"name": "Basic Workshop",
 		"sell_price": 60.0,
+		"sprite": "basicworkshop",
 		"stats": {
 			"crew_slots": 1.0,
 			"power_draw": 3.0
@@ -271,7 +330,7 @@
 			],
 			[
 				0.0,
-				1.0
+				-1.0
 			]
 		],
 		"hex_size": 2.0,
@@ -284,12 +343,36 @@
 		"tier": "standard",
 		"type": "cargo"
 	},
+	"cargo_bay_wide_mk1": {
+		"buy_price": 90.0,
+		"description": "Broadside cargo hold laid out sideways for flatter hulls and deck plans.",
+		"hex_shape": [
+			[
+				0.0,
+				0.0
+			],
+			[
+				1.0,
+				-1.0
+			]
+		],
+		"hex_size": 2.0,
+		"name": "Cargo Bay Wide Mk1",
+		"sell_price": 45.0,
+		"sprite": "cargobaymk1wide",
+		"stats": {
+			"cargo_capacity": 4.0
+		},
+		"tier": "standard",
+		"type": "cargo"
+	},
 	"cargo_bay_mk2": {
 		"buy_price": 200.0,
 		"description": "Expanded cargo hold. Serious hauling capacity.",
 		"hex_size": 4.0,
 		"name": "Cargo Bay Mk2",
 		"sell_price": 100.0,
+		"sprite": "cargobaymk2",
 		"stats": {
 			"cargo_capacity": 10.0
 		},
@@ -341,6 +424,7 @@
 		"min_hull": "cruiser",
 		"name": "Construction Hangar",
 		"sell_price": 250.0,
+		"sprite": "constructionhangar",
 		"stats": {
 			"build_speed": 1.0,
 			"power_draw": 5.0
@@ -371,6 +455,7 @@
 		"hull_radius": 7.0,
 		"name": "Corvette Frame",
 		"sell_price": 0.0,
+		"sprite": "corvetteframe",
 		"stats": {
 			"base_acceleration": 550.0,
 			"base_max_speed": 400.0,
@@ -388,6 +473,7 @@
 		"hull_radius": 12.0,
 		"name": "Cruiser Platform",
 		"sell_price": 0.0,
+		"sprite": "cruiserframe",
 		"stats": {
 			"base_acceleration": 350.0,
 			"base_max_speed": 300.0,
@@ -441,7 +527,7 @@
 		"hull_radius": 3.0,
 		"name": "Damaged Frame",
 		"sell_price": 0.0,
-		"sprite": "escapepodcore",
+		"sprite": "damagedcoreupdated",
 		"stats": {
 			"base_acceleration": 800.0,
 			"base_max_speed": 450.0,
@@ -469,6 +555,7 @@
 		"hull_radius": 5.0,
 		"name": "Scout Frame",
 		"sell_price": 0.0,
+		"sprite": "scoutframe",
 		"stats": {
 			"base_acceleration": 700.0,
 			"base_max_speed": 500.0,
@@ -481,9 +568,20 @@
 	"crew_quarters_mk1": {
 		"buy_price": 60.0,
 		"description": "Basic crew bunks. Houses up to four crew members.",
+		"hex_shape": [
+			[
+				0.0,
+				0.0
+			],
+			[
+				1.0,
+				-1.0
+			]
+		],
 		"hex_size": 2.0,
 		"name": "Crew Quarters Mk1",
 		"sell_price": 30.0,
+		"sprite": "crewquartersmk1",
 		"stats": {
 			"crew_capacity": 4.0,
 			"power_draw": 2.0
@@ -498,6 +596,7 @@
 		"hex_size": 4.0,
 		"name": "Crew Quarters Mk2",
 		"sell_price": 75.0,
+		"sprite": "crewquartersmk2",
 		"stats": {
 			"crew_capacity": 8.0,
 			"power_draw": 3.0
@@ -590,6 +689,7 @@
 		"hex_size": 1.0,
 		"name": "Engine Block",
 		"sell_price": 50.0,
+		"sprite": "engineblockmk1",
 		"stats": {
 			"power_draw": 2.0,
 			"thrust": 0.0
@@ -598,15 +698,69 @@
 		"tier": "standard",
 		"type": "engine"
 	},
+	"engine_block_mk2": {
+		"buy_price": 180.0,
+		"description": "Reinforced engine housing for bigger drives. Covers more hull and multiplies adjacent thrusters across a broader footprint.",
+		"hex_shape": [
+			[
+				0.0,
+				0.0
+			],
+			[
+				1.0,
+				-1.0
+			]
+		],
+		"hex_size": 2.0,
+		"name": "Engine Block Mk2",
+		"sell_price": 90.0,
+		"sprite": "engineblockmk2",
+		"stats": {
+			"power_draw": 3.0,
+			"thrust": 0.0
+		},
+		"subtype": "engine_block",
+		"tier": "advanced",
+		"type": "engine"
+	},
 	"fabricator_mk1": {
 		"buy_price": 350.0,
 		"description": "Precision manufacturing bench. Gunsmiths craft weapon components here.",
 		"hex_size": 2.0,
 		"name": "Fabricator",
 		"sell_price": 175.0,
+		"sprite": "ammofabricatormk1",
 		"stats": {
 			"crew_slots": 1.0,
 			"power_draw": 10.0
+		},
+		"tier": "advanced",
+		"type": "fabricator"
+	},
+	"fabricator_mk2": {
+		"buy_price": 520.0,
+		"description": "Expanded fabrication suite with dedicated ammo presses and precision tooling. Handles heavier manufacturing throughput.",
+		"hex_shape": [
+			[
+				0.0,
+				0.0
+			],
+			[
+				1.0,
+				-1.0
+			],
+			[
+				1.0,
+				0.0
+			]
+		],
+		"hex_size": 3.0,
+		"name": "Fabricator Mk2",
+		"sell_price": 260.0,
+		"sprite": "ammofabricatormk2",
+		"stats": {
+			"crew_slots": 2.0,
+			"power_draw": 14.0
 		},
 		"tier": "advanced",
 		"type": "fabricator"
@@ -787,12 +941,37 @@
 		"tier": "standard",
 		"type": "hydroponics"
 	},
+	"ion_thruster_cluster_mk2": {
+		"buy_price": 240.0,
+		"description": "Twin ion thruster cluster. Delivers a stronger push in a compact two-cell stack.",
+		"hex_shape": [
+			[
+				0.0,
+				0.0
+			],
+			[
+				0.0,
+				1.0
+			]
+		],
+		"hex_size": 2.0,
+		"name": "Ion Thruster Cluster Mk2",
+		"sell_price": 120.0,
+		"sprite": "ionthrustermk2",
+		"stats": {
+			"power_draw": 7.0,
+			"thrust": 260.0
+		},
+		"tier": "advanced",
+		"type": "engine"
+	},
 	"kitchen_mk1": {
 		"buy_price": 150.0,
 		"description": "Ship galley. A cook turns raw ingredients into proper meals. Generates bonus food.",
 		"hex_size": 1.0,
 		"name": "Kitchen",
 		"sell_price": 75.0,
+		"sprite": "kitchen",
 		"stats": {
 			"crew_slots": 1.0,
 			"food_generation": 0.3,
@@ -849,9 +1028,20 @@
 	"macro_cannon_mk1": {
 		"buy_price": 400.0,
 		"description": "Magnetic Accelerator Cannon. Devastating kinetic slug with explosive impact.",
+		"hex_shape": [
+			[
+				0.0,
+				0.0
+			],
+			[
+				1.0,
+				-1.0
+			]
+		],
 		"hex_size": 2.0,
 		"name": "MAC Gun",
 		"sell_price": 200.0,
+		"sprite": "macupdated",
 		"stats": {
 			"damage": 600.0,
 			"fire_rate": 2.5,
@@ -872,6 +1062,7 @@
 		"hex_size": 2.0,
 		"name": "Medbay Mk1",
 		"sell_price": 60.0,
+		"sprite": "medbay",
 		"stats": {
 			"heal_rate": 2.0,
 			"power_draw": 4.0
@@ -900,6 +1091,7 @@
 		"hex_size": 2.0,
 		"name": "Mess Hall Mk1",
 		"sell_price": 25.0,
+		"sprite": "messhall",
 		"stats": {
 			"feed_capacity": 6.0,
 			"power_draw": 2.0
@@ -921,6 +1113,19 @@
 		"subtype": "mess",
 		"tier": "advanced",
 		"type": "mess"
+	},
+	"makeshift_reactor": {
+		"buy_price": 25.0,
+		"description": "Improvised reactor cobbled together from salvaged parts. Not stable, but enough to wake up a bare hull.",
+		"hex_size": 1.0,
+		"name": "Makeshift Reactor",
+		"sell_price": 10.0,
+		"sprite": "makeshiftreactor",
+		"stats": {
+			"power_output": 12.0
+		},
+		"tier": "basic",
+		"type": "reactor"
 	},
 	"micro_reactor": {
 		"buy_price": 40.0,
@@ -966,9 +1171,20 @@
 	"missile_rack_mk1": {
 		"buy_price": 350.0,
 		"description": "Guided missiles. Slow-firing but devastating. Tracks targets.",
+		"hex_shape": [
+			[
+				0.0,
+				0.0
+			],
+			[
+				0.0,
+				-1.0
+			]
+		],
 		"hex_size": 2.0,
 		"name": "Missile Rack Mk1",
 		"sell_price": 175.0,
+		"sprite": "missilerackmk1",
 		"stats": {
 			"damage": 200.0,
 			"fire_rate": 2.0,
@@ -986,9 +1202,20 @@
 	"observation_deck_mk1": {
 		"buy_price": 90.0,
 		"description": "Viewport lounge. A quiet place to watch the stars.",
+		"hex_shape": [
+			[
+				0.0,
+				0.0
+			],
+			[
+				1.0,
+				-1.0
+			]
+		],
 		"hex_size": 2.0,
 		"name": "Observation Deck",
 		"sell_price": 30.0,
+		"sprite": "observationdeck",
 		"stats": {
 			"morale_bonus": 0.1,
 			"power_draw": 1.0
@@ -1240,6 +1467,7 @@
 		"hex_size": 1.0,
 		"name": "Shield Generator Mk2",
 		"sell_price": 120.0,
+		"sprite": "sheildgeneratormk2",
 		"stats": {
 			"power_draw": 12.0,
 			"recharge_rate": 20.0,
@@ -1280,6 +1508,7 @@
 		"hex_size": 3.0,
 		"name": "Solar Field",
 		"sell_price": 150.0,
+		"sprite": "solarfield",
 		"stats": {
 			"crew_slots": 1.0,
 			"food_generation": 1.5,
@@ -1307,6 +1536,7 @@
 		"hex_size": 1.0,
 		"name": "Ion Thruster Mk1",
 		"sell_price": 30.0,
+		"sprite": "ionthrustermk1",
 		"stats": {
 			"power_draw": 3.0,
 			"thrust": 100.0
@@ -1327,12 +1557,123 @@
 		"tier": "advanced",
 		"type": "engine"
 	},
+	"warp_thruster_mk1": {
+		"buy_price": 260.0,
+		"description": "Long warp-assisted drive bank for ships that need serious straight-line thrust.",
+		"hex_shape": [
+			[
+				0.0,
+				0.0
+			],
+			[
+				-1.0,
+				1.0
+			],
+			[
+				1.0,
+				0.0
+			]
+		],
+		"hex_size": 3.0,
+		"name": "Warp Thruster Mk1",
+		"sell_price": 130.0,
+		"sprite": "warpthrustermk1",
+		"stats": {
+			"power_draw": 10.0,
+			"thrust": 360.0
+		},
+		"subtype": "warp_thruster",
+		"tier": "advanced",
+		"type": "engine"
+	},
+	"warp_thruster_mk2": {
+		"buy_price": 420.0,
+		"description": "Expanded warp drive cluster that pushes heavy hulls without sacrificing maneuvering authority.",
+		"hex_shape": [
+			[
+				0.0,
+				0.0
+			],
+			[
+				-1.0,
+				1.0
+			],
+			[
+				1.0,
+				0.0
+			],
+			[
+				0.0,
+				1.0
+			]
+		],
+		"hex_size": 4.0,
+		"name": "Warp Thruster Mk2",
+		"sell_price": 210.0,
+		"sprite": "warpthrustermk2",
+		"stats": {
+			"power_draw": 14.0,
+			"thrust": 520.0
+		},
+		"subtype": "warp_thruster",
+		"tier": "advanced",
+		"type": "engine"
+	},
+	"mobius_thruster": {
+		"buy_price": 650.0,
+		"description": "Exotic folded-space thruster ring. Extremely expensive, extremely fast, and not remotely standard issue.",
+		"hex_shape": [
+			[
+				0.0,
+				0.0
+			],
+			[
+				-1.0,
+				0.0
+			],
+			[
+				1.0,
+				0.0
+			],
+			[
+				-1.0,
+				1.0
+			],
+			[
+				1.0,
+				-1.0
+			]
+		],
+		"hex_size": 5.0,
+		"name": "Mobius Thruster",
+		"sell_price": 325.0,
+		"sprite": "mobiusthruster",
+		"stats": {
+			"boost_impulse_bonus": 140.0,
+			"power_draw": 16.0,
+			"thrust": 620.0
+		},
+		"subtype": "warp_thruster",
+		"tier": "elite",
+		"type": "engine"
+	},
 	"torpedo_launcher_mk1": {
 		"buy_price": 450.0,
 		"description": "Slow-tracking torpedo. Devastating hull damage on impact.",
+		"hex_shape": [
+			[
+				0.0,
+				0.0
+			],
+			[
+				0.0,
+				-1.0
+			]
+		],
 		"hex_size": 2.0,
 		"name": "Torpedo Launcher",
 		"sell_price": 225.0,
+		"sprite": "torpedobattery",
 		"stats": {
 			"damage": 450.0,
 			"fire_rate": 4.0,

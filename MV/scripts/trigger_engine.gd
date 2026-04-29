@@ -1,6 +1,5 @@
 extends Node
 
-const TriggerRoot = preload("res://Space/scripts/shared/trigger_root.gd")
 
 # ECA (Event-Condition-Action) trigger engine. Autoloaded as `MvTriggerEngine`.
 #
@@ -22,8 +21,9 @@ signal action_spawn_space_ship(class_id: String, anchor: String, pos: Vector2, u
 signal action_move_entity_to_zone(entity_ref: String, zone_id: String, speed: float)
 signal action_play_entity_anim(entity_ref: String, anim_name: String, loop: bool, speed_scale: float)
 signal action_set_entity_facing(entity_ref: String, direction: String, zone_id: String)
-signal action_camera_focus(mode: String, target_ref: String, pos: Vector2, duration: float)
+signal action_camera_focus(mode: String, target_ref: String, pos: Vector2, duration: float, speed: float)
 signal action_camera_unlock()
+signal action_set_room_weather(room_addr: String, preset: String, color: String, intensity: float, speed: float)
 
 var _global_rules: Array = []
 var _room_rules: Array = []
@@ -54,8 +54,9 @@ func _ready() -> void:
 
 # ── Public API ──────────────────────────────────────────────────────────
 
-func fire_event(event_type: String, payload: Dictionary = {}) -> void:
+func fire_event(event_type: String, payload: Dictionary = {}) -> bool:
 	var public_payload: Dictionary = _public_payload(payload)
+	var matched_any: bool = false
 	_push_debug("event", {
 		"event": event_type,
 		"payload": public_payload,
@@ -69,6 +70,7 @@ func fire_event(event_type: String, payload: Dictionary = {}) -> void:
 		var rule_payload: Dictionary = _make_rule_payload(rule, public_payload)
 		var matched: bool = _evaluate_conditions(rule.get("conditions", []), rule_payload)
 		if matched:
+			matched_any = true
 			_push_debug("rule_match", {
 				"rule_id": str(rule.get("id", "")),
 				"event": event_type,
@@ -82,6 +84,7 @@ func fire_event(event_type: String, payload: Dictionary = {}) -> void:
 				"rule_id": str(rule.get("id", "")),
 				"event": event_type,
 			})
+	return matched_any
 
 
 func register_condition(type: String, handler: Callable) -> void:
@@ -326,14 +329,14 @@ func _instantiate_rule_locals(rule: Dictionary) -> Dictionary:
 		if typeof(local_v) != TYPE_DICTIONARY:
 			continue
 		var local: Dictionary = local_v
-		var name: String = str(local.get("name", "")).strip_edges()
-		if name.is_empty():
+		var local_name: String = str(local.get("name", "")).strip_edges()
+		if local_name.is_empty():
 			continue
 		var type_name: String = str(local.get("type", "int")).strip_edges().to_lower()
-		if bool(local.get("persistent", false)) and stored.has(name):
-			out[name] = _coerce_local_value(_coerce_local_default(type_name, local.get("default", "")), stored.get(name))
+		if bool(local.get("persistent", false)) and stored.has(local_name):
+			out[local_name] = _coerce_local_value(_coerce_local_default(type_name, local.get("default", "")), stored.get(local_name))
 		else:
-			out[name] = _coerce_local_default(type_name, local.get("default", ""))
+			out[local_name] = _coerce_local_default(type_name, local.get("default", ""))
 	return out
 
 
@@ -346,10 +349,10 @@ func _safe_local_defs(rule: Dictionary) -> Dictionary:
 		if typeof(local_v) != TYPE_DICTIONARY:
 			continue
 		var local: Dictionary = local_v
-		var name: String = str(local.get("name", "")).strip_edges()
-		if name.is_empty():
+		var local_name: String = str(local.get("name", "")).strip_edges()
+		if local_name.is_empty():
 			continue
-		out[name] = local.duplicate(true)
+		out[local_name] = local.duplicate(true)
 	return out
 
 
@@ -379,17 +382,17 @@ func _locals_dict(payload: Dictionary) -> Dictionary:
 	return {}
 
 
-func _get_local(payload: Dictionary, name: String, default: Variant = null) -> Variant:
-	return _locals_dict(payload).get(name, default)
+func _get_local(payload: Dictionary, var_name: String, default: Variant = null) -> Variant:
+	return _locals_dict(payload).get(var_name, default)
 
 
-func _set_local(payload: Dictionary, name: String, value: Variant) -> void:
-	if name.is_empty():
+func _set_local(payload: Dictionary, var_name: String, value: Variant) -> void:
+	if var_name.is_empty():
 		return
 	var locals := _locals_dict(payload)
-	locals[name] = value
+	locals[var_name] = value
 	payload[RESERVED_LOCAL_KEY] = locals
-	_store_persistent_local(payload, name, value)
+	_store_persistent_local(payload, var_name, value)
 
 
 func _coerce_local_value(existing: Variant, raw_value: Variant) -> Variant:
@@ -417,12 +420,12 @@ func _locals_snapshot(payload: Dictionary) -> Dictionary:
 	return _locals_dict(payload).duplicate(true)
 
 
-func _store_persistent_local(payload: Dictionary, name: String, value: Variant) -> void:
+func _store_persistent_local(payload: Dictionary, var_name: String, value: Variant) -> void:
 	var defs_v: Variant = payload.get("__trigger_local_defs", {})
 	if typeof(defs_v) != TYPE_DICTIONARY:
 		return
 	var defs: Dictionary = defs_v
-	var def_v: Variant = defs.get(name, {})
+	var def_v: Variant = defs.get(var_name, {})
 	if typeof(def_v) != TYPE_DICTIONARY:
 		return
 	var def: Dictionary = def_v
@@ -433,7 +436,7 @@ func _store_persistent_local(payload: Dictionary, name: String, value: Variant) 
 		return
 	var stored_v: Variant = _persistent_rule_locals.get(rule_id, {})
 	var stored: Dictionary = stored_v if typeof(stored_v) == TYPE_DICTIONARY else {}
-	stored[name] = value
+	stored[var_name] = value
 	_persistent_rule_locals[rule_id] = stored
 
 
@@ -546,6 +549,15 @@ func _run_rule_sequence(rule: Dictionary, payload: Dictionary) -> void:
 			_set_active_sequence(sequence_id, rule, action_idx, "wait_for_camera", payload)
 			await _await_camera(action, payload, sequence_id, rule_id)
 			continue
+		if atype == "wait_for_dialogue":
+			_push_debug("wait_start", {
+				"sequence_id": sequence_id,
+				"rule_id": rule_id,
+				"wait": "dialogue",
+			})
+			_set_active_sequence(sequence_id, rule, action_idx, "wait_for_dialogue", payload)
+			await _await_dialogue(action, payload, sequence_id, rule_id)
+			continue
 		_push_debug("action", {
 			"sequence_id": sequence_id,
 			"rule_id": rule_id,
@@ -640,6 +652,7 @@ func _register_builtins() -> void:
 	register_action("wait_for_move", _act_wait_for_move)
 	register_action("wait_for_anim", _act_wait_for_anim)
 	register_action("wait_for_camera", _act_wait_for_camera)
+	register_action("wait_for_dialogue", _act_wait_for_dialogue)
 	register_action("log", _act_log)
 	register_action("set_var", _act_set_var)
 	register_action("add_var", _act_add_var)
@@ -659,6 +672,7 @@ func _register_builtins() -> void:
 	register_action("teleport_player", _act_teleport_player)
 	register_action("lock_player", _act_lock_player)
 	register_action("unlock_player", _act_unlock_player)
+	register_action("spawn_player", _act_spawn_player)
 	register_action("spawn_entity", _act_spawn_entity)
 	register_action("despawn_entity", _act_despawn_entity)
 	register_action("spawn_entity_at_zone", _act_spawn_entity_at_zone)
@@ -668,8 +682,11 @@ func _register_builtins() -> void:
 	register_action("set_entity_facing", _act_set_entity_facing)
 	register_action("camera_focus", _act_camera_focus)
 	register_action("camera_unlock", _act_camera_unlock)
+	register_action("set_room_weather", _act_set_room_weather)
 	register_action("fire_event", _act_fire_event)
 	register_action("set_trigger_enabled", _act_set_trigger_enabled)
+	register_action("set_door_enabled", _act_set_door_enabled)
+	register_action("set_door_locked", _act_set_door_locked)
 	register_action("save_checkpoint", _act_save_checkpoint)
 	register_action("return_to_overworld", _act_return_to_overworld)
 
@@ -704,17 +721,17 @@ func _cond_chance_roll(cond: Dictionary, _payload: Dictionary) -> bool:
 
 
 func _cond_local_var_eq(cond: Dictionary, payload: Dictionary) -> bool:
-	var name: String = str(cond.get("name", "")).strip_edges()
-	if name.is_empty():
+	var var_name: String = str(cond.get("name", "")).strip_edges()
+	if var_name.is_empty():
 		return false
-	return str(_get_local(payload, name, "")) == str(cond.get("value", ""))
+	return str(_get_local(payload, var_name, "")) == str(cond.get("value", ""))
 
 
 func _cond_local_var_gte(cond: Dictionary, payload: Dictionary) -> bool:
-	var name: String = str(cond.get("name", "")).strip_edges()
-	if name.is_empty():
+	var var_name: String = str(cond.get("name", "")).strip_edges()
+	if var_name.is_empty():
 		return false
-	return float(_get_local(payload, name, 0.0)) >= float(cond.get("value", 0.0))
+	return float(_get_local(payload, var_name, 0.0)) >= float(cond.get("value", 0.0))
 
 
 func _cond_has_item(cond: Dictionary, _payload: Dictionary) -> bool:
@@ -798,6 +815,10 @@ func _act_wait_for_camera(_action: Dictionary, _payload: Dictionary) -> void:
 	pass
 
 
+func _act_wait_for_dialogue(_action: Dictionary, _payload: Dictionary) -> void:
+	pass
+
+
 func _act_log(action: Dictionary, _payload: Dictionary) -> void:
 	print("[Trigger] %s" % action.get("message", ""))
 
@@ -815,23 +836,23 @@ func _act_add_var(action: Dictionary, _payload: Dictionary) -> void:
 
 
 func _act_set_local_var(action: Dictionary, payload: Dictionary) -> void:
-	var name: String = str(action.get("name", "")).strip_edges()
-	if name.is_empty():
+	var var_name: String = str(action.get("name", "")).strip_edges()
+	if var_name.is_empty():
 		return
-	var existing: Variant = _get_local(payload, name, "")
-	_set_local(payload, name, _coerce_local_value(existing, action.get("value", "")))
+	var existing: Variant = _get_local(payload, var_name, "")
+	_set_local(payload, var_name, _coerce_local_value(existing, action.get("value", "")))
 
 
 func _act_add_local_var(action: Dictionary, payload: Dictionary) -> void:
-	var name: String = str(action.get("name", "")).strip_edges()
-	if name.is_empty():
+	var var_name: String = str(action.get("name", "")).strip_edges()
+	if var_name.is_empty():
 		return
-	var current: Variant = _get_local(payload, name, 0.0)
+	var current: Variant = _get_local(payload, var_name, 0.0)
 	var delta: float = float(action.get("delta", 0.0))
 	if typeof(current) == TYPE_INT:
-		_set_local(payload, name, int(current) + int(delta))
+		_set_local(payload, var_name, int(current) + int(delta))
 	else:
-		_set_local(payload, name, float(current) + delta)
+		_set_local(payload, var_name, float(current) + delta)
 
 
 func _act_give_item(action: Dictionary, _payload: Dictionary) -> void:
@@ -930,6 +951,24 @@ func _act_unlock_player(_action: Dictionary, _payload: Dictionary) -> void:
 		p.call("set_locked", false)
 
 
+func _act_spawn_player(action: Dictionary, _payload: Dictionary) -> void:
+	if MvGame.main == null or not MvGame.main.has_method("spawn_player"):
+		return
+	var room_addr: String = str(action.get("room", "")).strip_edges()
+	var zone_id: String = str(action.get("zone_id", action.get("zone", ""))).strip_edges()
+	var entry_direction: String = str(action.get("entry_direction",
+		action.get("direction", ""))).strip_edges().to_lower()
+	var facing_direction: String = str(action.get("facing", "")).strip_edges().to_lower()
+	var pos := Vector2(-1, -1)
+	var x_text: String = str(action.get("x", "")).strip_edges()
+	var y_text: String = str(action.get("y", "")).strip_edges()
+	if _is_optional_float(x_text) and _is_optional_float(y_text) \
+			and not x_text.is_empty() and not y_text.is_empty():
+		pos = Vector2(float(x_text), float(y_text))
+	MvGame.main.spawn_player(pos, room_addr, zone_id, entry_direction,
+		bool(action.get("emit_event", true)), facing_direction)
+
+
 func _act_spawn_entity(action: Dictionary, _payload: Dictionary) -> void:
 	var eid: String = str(action.get("id", ""))
 	if eid.is_empty():
@@ -1005,11 +1044,21 @@ func _act_camera_focus(action: Dictionary, _payload: Dictionary) -> void:
 	var target_ref: String = str(action.get("target", "")).strip_edges()
 	var pos := Vector2(float(action.get("x", 0.0)), float(action.get("y", 0.0)))
 	var duration: float = maxf(0.0, float(action.get("duration", 0.0)))
-	action_camera_focus.emit(mode, target_ref, pos, duration)
+	var speed: float = maxf(0.0, float(action.get("speed", 0.0)))
+	action_camera_focus.emit(mode, target_ref, pos, duration, speed)
 
 
 func _act_camera_unlock(_action: Dictionary, _payload: Dictionary) -> void:
 	action_camera_unlock.emit()
+
+
+func _act_set_room_weather(action: Dictionary, _payload: Dictionary) -> void:
+	var room_addr: String = str(action.get("room", "")).strip_edges()
+	var preset: String = str(action.get("preset", "none")).strip_edges().to_lower()
+	var color: String = str(action.get("color", "cfe8ffff")).strip_edges()
+	var intensity: float = clampf(float(action.get("intensity", 0.7)), 0.0, 2.0)
+	var speed: float = clampf(float(action.get("speed", 1.0)), 0.0, 4.0)
+	action_set_room_weather.emit(room_addr, preset, color, intensity, speed)
 
 
 func _act_fire_event(action: Dictionary, payload: Dictionary) -> void:
@@ -1032,6 +1081,20 @@ func _act_set_trigger_enabled(action: Dictionary, _payload: Dictionary) -> void:
 		push_warning("MvTriggerEngine: set_trigger_enabled could not find rule '%s'" % rule_id)
 		return
 	rule["enabled"] = bool(action.get("enabled", true))
+
+
+func _act_set_door_enabled(action: Dictionary, _payload: Dictionary) -> void:
+	var door_id: String = str(action.get("id", "")).strip_edges()
+	if door_id.is_empty() or MvRoomState == null:
+		return
+	MvRoomState.set_door_enabled(door_id, bool(action.get("enabled", true)))
+
+
+func _act_set_door_locked(action: Dictionary, _payload: Dictionary) -> void:
+	var door_id: String = str(action.get("id", "")).strip_edges()
+	if door_id.is_empty() or MvRoomState == null:
+		return
+	MvRoomState.set_door_locked(door_id, bool(action.get("locked", true)))
 
 
 func _await_scripted_move(action: Dictionary, payload: Dictionary, sequence_id: int = -1, rule_id: String = "") -> void:
@@ -1082,13 +1145,16 @@ func _await_event(action: Dictionary, payload: Dictionary, sequence_id: int = -1
 	var timeout: float = maxf(0.0, float(action.get("timeout", 0.0)))
 	var matched: bool = false
 	var started_ms: int = Time.get_ticks_msec()
+	@warning_ignore("confusable_local_declaration")
 	var on_event := func(event_type: String, payload: Dictionary) -> void:
 		if matched or event_type != wanted_event:
 			return
 		if wanted_key.is_empty():
+			@warning_ignore("confusable_capture_reassignment")
 			matched = true
 			return
 		if str(payload.get(wanted_key, "")).strip_edges() == wanted_value:
+			@warning_ignore("confusable_capture_reassignment")
 			matched = true
 	event_fired.connect(on_event)
 	while not matched:
@@ -1126,6 +1192,20 @@ func _await_camera(action: Dictionary, payload: Dictionary, sequence_id: int = -
 		"sequence_id": sequence_id,
 		"rule_id": rule_id,
 		"wait": "camera",
+	})
+
+
+func _await_dialogue(action: Dictionary, payload: Dictionary, sequence_id: int = -1, rule_id: String = "") -> void:
+	if MvGame.main == null or not MvGame.main.has_method("wait_for_dialogue"):
+		_store_wait_result(action, payload, false)
+		return
+	var timeout: float = maxf(0.0, float(action.get("timeout", 0.0)))
+	var finished: bool = await MvGame.main.wait_for_dialogue(timeout)
+	_store_wait_result(action, payload, finished)
+	_push_debug("wait_end" if finished else "wait_timeout", {
+		"sequence_id": sequence_id,
+		"rule_id": rule_id,
+		"wait": "dialogue",
 	})
 
 

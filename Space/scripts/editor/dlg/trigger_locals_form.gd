@@ -56,12 +56,12 @@ func get_value() -> Array:
 		var default_edit: LineEdit = row.get("default") as LineEdit
 		if name_edit == null or type_option == null or default_edit == null:
 			continue
-		var name: String = name_edit.text.strip_edges()
-		if name.is_empty():
+		var entry_name: String = name_edit.text.strip_edges()
+		if entry_name.is_empty():
 			continue
 		var type_name: String = TYPES[type_option.get_selected()] if type_option.get_selected() >= 0 and type_option.get_selected() < TYPES.size() else "int"
 		out.append({
-			"name": name,
+			"name": entry_name,
 			"type": type_name,
 			"default": default_edit.text.strip_edges(),
 			"persistent": (row.get("persistent") as CheckBox).button_pressed if row.get("persistent") is CheckBox else false,
@@ -76,12 +76,12 @@ func has_error() -> bool:
 		var name_edit: LineEdit = row.get("name") as LineEdit
 		if name_edit == null:
 			continue
-		var name: String = name_edit.text.strip_edges()
-		if name.is_empty():
+		var entry_name: String = name_edit.text.strip_edges()
+		if entry_name.is_empty():
 			continue
-		if seen.has(name):
+		if seen.has(entry_name):
 			return true
-		seen[name] = true
+		seen[entry_name] = true
 	return false
 
 
@@ -92,12 +92,12 @@ func error_text() -> String:
 		var name_edit: LineEdit = row.get("name") as LineEdit
 		if name_edit == null:
 			continue
-		var name: String = name_edit.text.strip_edges()
-		if name.is_empty():
+		var entry_name: String = name_edit.text.strip_edges()
+		if entry_name.is_empty():
 			continue
-		if seen.has(name):
-			return "Duplicate local variable '%s'." % name
-		seen[name] = true
+		if seen.has(entry_name):
+			return "Duplicate local variable '%s'." % entry_name
+		seen[entry_name] = true
 	return ""
 
 
@@ -106,7 +106,7 @@ func _on_add_pressed() -> void:
 	_emit_changed()
 
 
-func _append_row(seed: Dictionary) -> void:
+func _append_row(rng_seed: Dictionary) -> void:
 	var row_box := HBoxContainer.new()
 	_rows_box.add_child(row_box)
 
@@ -114,14 +114,14 @@ func _append_row(seed: Dictionary) -> void:
 	name_edit.placeholder_text = "name"
 	name_edit.custom_minimum_size = Vector2(120, 0)
 	name_edit.tooltip_text = "Local variable name. Use short stable ids like intro_step or boss_seen."
-	name_edit.text = str(seed.get("name", ""))
+	name_edit.text = str(rng_seed.get("name", ""))
 	name_edit.text_changed.connect(func(_t): _emit_changed())
 	row_box.add_child(name_edit)
 
 	var type_option := OptionButton.new()
 	for type_name in TYPES:
 		type_option.add_item(type_name)
-	var selected := maxi(0, TYPES.find(str(seed.get("type", "int")).to_lower()))
+	var selected := maxi(0, TYPES.find(str(rng_seed.get("type", "int")).to_lower()))
 	type_option.select(selected)
 	type_option.tooltip_text = "Storage type for this local variable."
 	type_option.item_selected.connect(func(_idx): _emit_changed())
@@ -131,14 +131,14 @@ func _append_row(seed: Dictionary) -> void:
 	default_edit.placeholder_text = "default"
 	default_edit.custom_minimum_size = Vector2(120, 0)
 	default_edit.tooltip_text = "Default value used when the local is first created."
-	default_edit.text = str(seed.get("default", ""))
+	default_edit.text = str(rng_seed.get("default", ""))
 	default_edit.text_changed.connect(func(_t): _emit_changed())
 	row_box.add_child(default_edit)
 
 	var persistent_check := CheckBox.new()
 	persistent_check.text = "Persist"
 	persistent_check.tooltip_text = "Keep this local's value between separate firings of the same rule."
-	persistent_check.button_pressed = bool(seed.get("persistent", false))
+	persistent_check.button_pressed = bool(rng_seed.get("persistent", false))
 	persistent_check.toggled.connect(func(_on): _emit_changed())
 	row_box.add_child(persistent_check)
 

@@ -1,5 +1,8 @@
 extends RefCounted
 
+const TriggerRoot = preload("res://Space/scripts/shared/trigger_root.gd")
+const RegIO = preload("res://Space/scripts/editor/reg/reg_io.gd")
+
 # Pure IO functions for the environment editor. Reads/writes rooms.json
 # from user://Packs/<pack_id>/Rooms/rooms.json, seeds fresh packs with a
 # starter room + a copy of the demo tileset, and exposes tileset discovery
@@ -29,7 +32,6 @@ const BLOCK_SIZE: int = 16
 const DEFAULT_ROOM_W_BLOCKS: int = 30
 const DEFAULT_ROOM_H_BLOCKS: int = 17
 const SHIPPED_SEED_PACK: String = "demo"
-const TriggerRoot = preload("res://Space/scripts/shared/trigger_root.gd")
 
 const ROLE_BG: String = "bg"
 const ROLE_MAIN: String = "main"
@@ -40,6 +42,8 @@ const PARALLAX_DEFAULTS := [
     {"name": "mid", "scroll_speed_x": 0.45, "scroll_speed_y": 0.18},
     {"name": "near", "scroll_speed_x": 0.78, "scroll_speed_y": 0.24},
 ]
+
+static var _last_import_error_text: String = ""
 
 
 static func user_pack_dir(pack_id: String) -> String:
@@ -136,6 +140,26 @@ static func _migrate_rooms_data(data: Dictionary) -> void:
             migrate_room_to_layers(room_v)
 
 
+static func get_last_import_error() -> String:
+    return _last_import_error_text
+
+
+static func _clear_last_import_error() -> void:
+    _last_import_error_text = ""
+
+
+static func _record_import_error(message: String) -> void:
+    _last_import_error_text = message
+    push_error("EnvIO: %s" % message)
+
+
+static func _source_label(path: String) -> String:
+    var label := path.get_file()
+    if label.is_empty():
+        return path
+    return label
+
+
 # Create a new tileset from one or more source PNGs.
 #
 # Single-file path: byte-copies the PNG verbatim into
@@ -155,11 +179,15 @@ static func _migrate_rooms_data(data: Dictionary) -> void:
 #
 # Returns the new tileset index, or -1 on failure.
 static func import_tileset(pack_id: String, src_paths: PackedStringArray, tile_size: int = BLOCK_SIZE) -> int:
+    _clear_last_import_error()
+    if tile_size < BLOCK_SIZE or tile_size % BLOCK_SIZE != 0:
+        _record_import_error("Tile size must be at least %d and a multiple of %d." % [BLOCK_SIZE, BLOCK_SIZE])
+        return -1
     if tile_size < BLOCK_SIZE or tile_size % BLOCK_SIZE != 0:
         push_error("EnvIO: tile_size must be ≥ %d and a multiple of %d (got %d)" % [BLOCK_SIZE, BLOCK_SIZE, tile_size])
         return -1
     if src_paths.is_empty():
-        push_error("EnvIO: no source files provided")
+        _record_import_error("No source PNGs were selected.")
         return -1
 
     var indices := list_tileset_indices(pack_id)
@@ -167,7 +195,7 @@ static func import_tileset(pack_id: String, src_paths: PackedStringArray, tile_s
     while next_idx in indices:
         next_idx += 1
     if next_idx >= 100:
-        push_error("EnvIO: tileset index exhausted (100 max)")
+        _record_import_error("Tileset slots are exhausted for this pack.")
         return -1
 
     var dst_dir := user_pack_dir(pack_id) + "Tilesets/"
@@ -182,13 +210,13 @@ static func import_tileset(pack_id: String, src_paths: PackedStringArray, tile_s
             return -1
         var src := FileAccess.open(path, FileAccess.READ)
         if src == null:
-            push_error("EnvIO: cannot read tileset source %s" % path)
+            _record_import_error("Couldn't read `%s`." % _source_label(path))
             return -1
         var bytes := src.get_buffer(src.get_length())
         src.close()
         var dst := FileAccess.open(dst_path, FileAccess.WRITE)
         if dst == null:
-            push_error("EnvIO: cannot write %s" % dst_path)
+            _record_import_error("Couldn't save the imported tileset atlas.")
             return -1
         dst.store_buffer(bytes)
         dst.close()
@@ -199,7 +227,7 @@ static func import_tileset(pack_id: String, src_paths: PackedStringArray, tile_s
         if out_img == null:
             return -1
         if out_img.save_png(dst_path) != OK:
-            push_error("EnvIO: cannot write composed atlas %s" % dst_path)
+            _record_import_error("Couldn't save the composed tileset atlas.")
             return -1
         print("[EnvIO] imported tileset %d for pack '%s' from %d sources (%d×%d, tile_size=%d)" % [next_idx, pack_id, src_paths.size(), out_img.get_width(), out_img.get_height(), tile_size])
 
@@ -350,19 +378,34 @@ static func _load_png_image(path: String) -> Image:
 # push_error or push_warning with its own context).
 static func _validate_tileset_source(path: String, tile_size: int) -> Dictionary:
     var img := _load_png_image(path)
+    var label := _source_label(path)
     if img == null:
+        _record_import_error("`%s` is not a valid PNG." % label)
+        return {}
         push_error("EnvIO: %s is not a valid PNG" % path)
         return {}
     var w := img.get_width()
     var h := img.get_height()
     if w < BLOCK_SIZE or h < BLOCK_SIZE:
+        _record_import_error("`%s` is too small at %d x %d. Minimum is %d x %d." % [label, w, h, BLOCK_SIZE, BLOCK_SIZE])
+        return {}
+    if w < BLOCK_SIZE or h < BLOCK_SIZE:
         push_error("EnvIO: %s must be at least %d×%d (got %d×%d)" % [path, BLOCK_SIZE, BLOCK_SIZE, w, h])
+        return {}
+    if w % BLOCK_SIZE != 0 or h % BLOCK_SIZE != 0:
+        _record_import_error("`%s` is %d x %d, so it must be cropped to multiples of %d pixels first." % [label, w, h, BLOCK_SIZE])
         return {}
     if w % BLOCK_SIZE != 0 or h % BLOCK_SIZE != 0:
         push_error("EnvIO: %s dims %d×%d must be multiples of %d" % [path, w, h, BLOCK_SIZE])
         return {}
     if tile_size > w or tile_size > h:
+        _record_import_error("`%s` is %d x %d, which is smaller than tile size %d." % [label, w, h, tile_size])
+        return {}
+    if tile_size > w or tile_size > h:
         push_error("EnvIO: %s %d×%d smaller than tile_size %d" % [path, w, h, tile_size])
+        return {}
+    if w % tile_size != 0 or h % tile_size != 0:
+        _record_import_error("`%s` is %d x %d, which doesn't divide evenly by tile size %d." % [label, w, h, tile_size])
         return {}
     if w % tile_size != 0 or h % tile_size != 0:
         push_error("EnvIO: %s %d×%d not a multiple of tile_size %d" % [path, w, h, tile_size])
@@ -403,6 +446,8 @@ static func _collect_logical_tiles(src_paths: PackedStringArray, tile_size: int)
 # null if no valid tiles were found across all sources.
 static func _compose_tileset_atlas(src_paths: PackedStringArray, tile_size: int) -> Image:
     var tiles := _collect_logical_tiles(src_paths, tile_size)
+    if tiles.is_empty() and _last_import_error_text.is_empty():
+        _record_import_error("No valid tiles were found in the selected PNGs.")
     if tiles.is_empty():
         push_error("EnvIO: no valid tiles from sources")
         return null
@@ -554,7 +599,13 @@ static func default_room(addr: String, friendly: String, w_blocks: int, h_blocks
         "width_px": float(w_px),
         "height_px": float(h_px),
         "tileset": float(tileset_id),
+        "parallax_enabled": true,
         "parallax_layers": default_parallax_layers(),
+        "weather": default_weather(),
+        "background_images": default_background_images(w_blocks, h_blocks),
+        "background_image": default_background_image(w_blocks, h_blocks),
+        "shader_regions": default_shader_regions(),
+        "zones": default_zones(),
         "tile_layers": [
             default_tile_layer("Main", ROLE_MAIN, 1.0, 1.0, h_blocks, w_blocks),
         ],
@@ -594,6 +645,96 @@ static func default_parallax_layers() -> Array:
     return out
 
 
+static func default_background_image(room_w_blocks: int = DEFAULT_ROOM_W_BLOCKS, room_h_blocks: int = DEFAULT_ROOM_H_BLOCKS) -> Dictionary:
+    return {
+        "id": "",
+        "image": "",
+        "x_blocks": 0.0,
+        "y_blocks": 0.0,
+        "width_blocks": float(maxi(room_w_blocks, 1)),
+        "height_blocks": float(maxi(room_h_blocks, 1)),
+        "scroll_speed_x": 1.0,
+        "scroll_speed_y": 1.0,
+        "anim_frames": 1,
+        "anim_fps": 0.0,
+        "anim_loop": true,
+        "shader_preset": "none",
+        "shader_tint": "ffffff",
+        "shader_strength": 0.6,
+        "shader_speed": 1.0,
+    }
+
+
+static func default_background_images(_room_w_blocks: int = DEFAULT_ROOM_W_BLOCKS, _room_h_blocks: int = DEFAULT_ROOM_H_BLOCKS) -> Array:
+    return []
+
+
+static func default_shader_region() -> Dictionary:
+    return {
+        "id": "",
+        "x_blocks": 0.0,
+        "y_blocks": 0.0,
+        "width_blocks": 4.0,
+        "height_blocks": 4.0,
+        "shader_preset": "flicker",
+        "shader_tint": "ffffff",
+        "shader_strength": 0.6,
+        "shader_speed": 1.0,
+    }
+
+
+static func default_shader_regions() -> Array:
+    return []
+
+
+static func default_zone() -> Dictionary:
+    return {
+        "id": "",
+        "name": "",
+        "kind": "shader",
+        "x_blocks": 0.0,
+        "y_blocks": 0.0,
+        "width_blocks": 4.0,
+        "height_blocks": 4.0,
+        "shader_preset": "flicker",
+        "shader_tint": "ffffff",
+        "shader_strength": 0.6,
+        "shader_speed": 1.0,
+        "direction": "right",
+        "target_door_id": "",
+        "target_room": "",
+        "send_to_overworld": false,
+        "overworld_region_id": "",
+        "enabled": true,
+        "locked": false,
+        "required_item_id": "",
+        "required_item_count": 1,
+        "required_var_name": "",
+        "required_var_value": 1,
+        "required_global_tag": "",
+        "blocked_event_name": "",
+        "success_event_name": "",
+        "arrive_event_name": "",
+        "prompt_text": "Interact",
+        "event_name": "zone_enter",
+        "once": false,
+        "interaction_mode": "enter",
+    }
+
+
+static func default_zones() -> Array:
+    return []
+
+
+static func default_weather() -> Dictionary:
+    return {
+        "preset": "none",
+        "color": "cfe8ffff",
+        "intensity": 0.7,
+        "speed": 1.0,
+    }
+
+
 static func normalize_parallax_layers(room: Dictionary) -> void:
     var normalized: Array = default_parallax_layers()
     var existing_v: Variant = room.get("parallax_layers", [])
@@ -618,12 +759,362 @@ static func normalize_parallax_layers(room: Dictionary) -> void:
     room["parallax_layers"] = normalized
 
 
+static func _normalize_background_image_entry(entry: Dictionary, room_w_blocks: int, room_h_blocks: int, fallback_id: String = "") -> Dictionary:
+    var defaults := default_background_image(
+        room_w_blocks,
+        room_h_blocks)
+    defaults["id"] = str(entry.get("id", fallback_id)).strip_edges()
+    defaults["image"] = str(entry.get("image", entry.get("path", defaults["image"]))).strip_edges()
+    defaults["x_blocks"] = float(entry.get("x_blocks", entry.get("x", defaults["x_blocks"])))
+    defaults["y_blocks"] = float(entry.get("y_blocks", entry.get("y", defaults["y_blocks"])))
+    defaults["width_blocks"] = maxf(0.0, float(entry.get("width_blocks", entry.get("w", defaults["width_blocks"]))))
+    defaults["height_blocks"] = maxf(0.0, float(entry.get("height_blocks", entry.get("h", defaults["height_blocks"]))))
+    defaults["scroll_speed_x"] = clampf(float(entry.get("scroll_speed_x", defaults["scroll_speed_x"])), 0.0, 2.0)
+    defaults["scroll_speed_y"] = clampf(float(entry.get("scroll_speed_y", defaults["scroll_speed_y"])), 0.0, 2.0)
+    defaults["anim_frames"] = maxi(1, int(entry.get("anim_frames", entry.get("frames", defaults["anim_frames"]))))
+    defaults["anim_fps"] = maxf(0.0, float(entry.get("anim_fps", entry.get("fps", defaults["anim_fps"]))))
+    defaults["anim_loop"] = bool(entry.get("anim_loop", entry.get("loop", defaults["anim_loop"])))
+    var shader_preset := str(entry.get("shader_preset", defaults["shader_preset"])).strip_edges().to_lower()
+    if shader_preset != "flicker" and shader_preset != "wave" and shader_preset != "heat":
+        shader_preset = "none"
+    defaults["shader_preset"] = shader_preset
+    var tint_text := str(entry.get("shader_tint", defaults["shader_tint"])).strip_edges()
+    defaults["shader_tint"] = tint_text if not tint_text.is_empty() else str(defaults["shader_tint"])
+    defaults["shader_strength"] = clampf(float(entry.get("shader_strength", defaults["shader_strength"])), 0.0, 2.0)
+    defaults["shader_speed"] = clampf(float(entry.get("shader_speed", defaults["shader_speed"])), 0.0, 4.0)
+    return defaults
+
+
+static func normalize_background_images(room: Dictionary) -> void:
+    var room_w_blocks := int(room.get("width_blocks", DEFAULT_ROOM_W_BLOCKS))
+    var room_h_blocks := int(room.get("height_blocks", DEFAULT_ROOM_H_BLOCKS))
+    var out: Array = []
+    var raw_v: Variant = room.get("background_images", [])
+    if typeof(raw_v) == TYPE_ARRAY:
+        var raw_images: Array = raw_v
+        for i in raw_images.size():
+            var entry_v: Variant = raw_images[i]
+            if typeof(entry_v) != TYPE_DICTIONARY:
+                continue
+            out.append(_normalize_background_image_entry(
+                entry_v as Dictionary,
+                room_w_blocks,
+                room_h_blocks,
+                "bg_%d" % (i + 1)))
+    elif room.has("background_image"):
+        var legacy_v: Variant = room.get("background_image", {})
+        if typeof(legacy_v) == TYPE_DICTIONARY:
+            var legacy := _normalize_background_image_entry(
+                legacy_v as Dictionary,
+                room_w_blocks,
+                room_h_blocks,
+                "bg_1")
+            if not str(legacy.get("image", "")).is_empty():
+                out.append(legacy)
+    room["background_images"] = out
+    room["parallax_enabled"] = bool(room.get("parallax_enabled", true))
+    normalize_shader_regions(room)
+    normalize_zones(room)
+    normalize_weather(room)
+
+
+static func normalize_background_image(room: Dictionary) -> void:
+    normalize_background_images(room)
+    var defaults := default_background_image(
+        int(room.get("width_blocks", DEFAULT_ROOM_W_BLOCKS)),
+        int(room.get("height_blocks", DEFAULT_ROOM_H_BLOCKS)))
+    var bg_images_v: Variant = room.get("background_images", [])
+    if typeof(bg_images_v) == TYPE_ARRAY and not (bg_images_v as Array).is_empty():
+        var first_v: Variant = (bg_images_v as Array)[0]
+        if typeof(first_v) == TYPE_DICTIONARY:
+            defaults = (first_v as Dictionary).duplicate(true)
+    room["background_image"] = defaults
+    room["parallax_enabled"] = bool(room.get("parallax_enabled", true))
+    normalize_shader_regions(room)
+    normalize_zones(room)
+    normalize_weather(room)
+
+
+static func _normalize_shader_region_entry(entry: Dictionary, room_w_blocks: int, room_h_blocks: int, fallback_id: String = "") -> Dictionary:
+    var defaults: Dictionary = default_shader_region()
+    defaults["id"] = str(entry.get("id", fallback_id)).strip_edges()
+    defaults["x_blocks"] = clampf(float(entry.get("x_blocks", entry.get("x", defaults["x_blocks"]))), -4096.0, 4096.0)
+    defaults["y_blocks"] = clampf(float(entry.get("y_blocks", entry.get("y", defaults["y_blocks"]))), -4096.0, 4096.0)
+    defaults["width_blocks"] = clampf(float(entry.get("width_blocks", entry.get("w", defaults["width_blocks"]))), 0.0, maxf(float(room_w_blocks) * 4.0, 4096.0))
+    defaults["height_blocks"] = clampf(float(entry.get("height_blocks", entry.get("h", defaults["height_blocks"]))), 0.0, maxf(float(room_h_blocks) * 4.0, 4096.0))
+    var shader_preset := str(entry.get("shader_preset", defaults["shader_preset"])).strip_edges().to_lower()
+    if shader_preset != "flicker" and shader_preset != "wave" and shader_preset != "heat":
+        shader_preset = "flicker"
+    defaults["shader_preset"] = shader_preset
+    var tint_text := str(entry.get("shader_tint", defaults["shader_tint"])).strip_edges()
+    defaults["shader_tint"] = tint_text if not tint_text.is_empty() else str(defaults["shader_tint"])
+    defaults["shader_strength"] = clampf(float(entry.get("shader_strength", defaults["shader_strength"])), 0.0, 2.0)
+    defaults["shader_speed"] = clampf(float(entry.get("shader_speed", defaults["shader_speed"])), 0.0, 4.0)
+    return defaults
+
+
+static func normalize_shader_regions(room: Dictionary) -> void:
+    var room_w_blocks := int(room.get("width_blocks", DEFAULT_ROOM_W_BLOCKS))
+    var room_h_blocks := int(room.get("height_blocks", DEFAULT_ROOM_H_BLOCKS))
+    var out: Array = []
+    var raw_v: Variant = room.get("shader_regions", [])
+    if typeof(raw_v) == TYPE_ARRAY:
+        var raw_regions: Array = raw_v
+        for i in raw_regions.size():
+            var entry_v: Variant = raw_regions[i]
+            if typeof(entry_v) != TYPE_DICTIONARY:
+                continue
+            out.append(_normalize_shader_region_entry(
+                entry_v as Dictionary,
+                room_w_blocks,
+                room_h_blocks,
+                "shader_%d" % (i + 1)))
+    room["shader_regions"] = out
+
+
+static func _normalize_zone_kind(raw_kind: String) -> String:
+    var kind := raw_kind.strip_edges().to_lower()
+    if kind == "door" or kind == "shader" or kind == "interact" or kind == "trigger":
+        return kind
+    return "shader"
+
+
+static func _normalize_zone_direction(raw_dir: String) -> String:
+    var direction := raw_dir.strip_edges().to_lower()
+    if direction == "up" or direction == "down" or direction == "left" or direction == "right":
+        return direction
+    return "right"
+
+
+static func _normalize_zone_entry(entry: Dictionary, room_w_blocks: int, room_h_blocks: int,
+        fallback_id: String = "", used_ids: Dictionary = {}) -> Dictionary:
+    var defaults := default_zone()
+    var kind := _normalize_zone_kind(str(entry.get("kind", defaults["kind"])))
+    var raw_name := str(entry.get("name", entry.get("id", fallback_id))).strip_edges()
+    if raw_name.is_empty():
+        raw_name = str(entry.get("id", fallback_id)).strip_edges().replace("_", " ").capitalize()
+    if raw_name.is_empty():
+        raw_name = "%s zone" % kind
+    var raw_id := str(entry.get("id", raw_name)).strip_edges()
+    var zone_id := RegIO.unique_content_id(raw_id if not raw_id.is_empty() else raw_name, used_ids,
+        "zone", fallback_id)
+    var zone := defaults.duplicate(true)
+    zone["id"] = zone_id
+    zone["name"] = raw_name
+    zone["kind"] = kind
+    zone["x_blocks"] = clampf(float(entry.get("x_blocks", entry.get("x", defaults["x_blocks"]))), -4096.0, 4096.0)
+    zone["y_blocks"] = clampf(float(entry.get("y_blocks", entry.get("y", defaults["y_blocks"]))), -4096.0, 4096.0)
+    zone["width_blocks"] = clampf(float(entry.get("width_blocks", entry.get("w", defaults["width_blocks"]))), 0.0, maxf(float(room_w_blocks) * 4.0, 4096.0))
+    zone["height_blocks"] = clampf(float(entry.get("height_blocks", entry.get("h", defaults["height_blocks"]))), 0.0, maxf(float(room_h_blocks) * 4.0, 4096.0))
+    zone["shader_preset"] = str(_normalize_shader_region_entry(entry, room_w_blocks, room_h_blocks, zone_id).get("shader_preset", defaults["shader_preset"]))
+    zone["shader_tint"] = str(entry.get("shader_tint", defaults["shader_tint"])).strip_edges()
+    if str(zone["shader_tint"]).is_empty():
+        zone["shader_tint"] = defaults["shader_tint"]
+    zone["shader_strength"] = clampf(float(entry.get("shader_strength", defaults["shader_strength"])), 0.0, 2.0)
+    zone["shader_speed"] = clampf(float(entry.get("shader_speed", defaults["shader_speed"])), 0.0, 4.0)
+    zone["direction"] = _normalize_zone_direction(str(entry.get("direction", defaults["direction"])))
+    zone["target_door_id"] = str(entry.get("target_door_id", defaults["target_door_id"])).strip_edges()
+    zone["target_room"] = str(entry.get("target_room", defaults["target_room"])).strip_edges()
+    zone["send_to_overworld"] = bool(entry.get("send_to_overworld", defaults["send_to_overworld"]))
+    zone["overworld_region_id"] = str(entry.get("overworld_region_id", defaults["overworld_region_id"])).strip_edges()
+    zone["enabled"] = bool(entry.get("enabled", defaults["enabled"]))
+    zone["locked"] = bool(entry.get("locked", defaults["locked"]))
+    zone["required_item_id"] = str(entry.get("required_item_id", defaults["required_item_id"])).strip_edges()
+    zone["required_item_count"] = maxi(1, int(entry.get("required_item_count", defaults["required_item_count"])))
+    zone["required_var_name"] = str(entry.get("required_var_name", defaults["required_var_name"])).strip_edges()
+    zone["required_var_value"] = entry.get("required_var_value", defaults["required_var_value"])
+    zone["required_global_tag"] = str(entry.get("required_global_tag", defaults["required_global_tag"])).strip_edges()
+    zone["blocked_event_name"] = str(entry.get("blocked_event_name", defaults["blocked_event_name"])).strip_edges()
+    zone["success_event_name"] = str(entry.get("success_event_name", defaults["success_event_name"])).strip_edges()
+    zone["arrive_event_name"] = str(entry.get("arrive_event_name", defaults["arrive_event_name"])).strip_edges()
+    zone["prompt_text"] = str(entry.get("prompt_text", defaults["prompt_text"])).strip_edges()
+    if zone["prompt_text"].is_empty():
+        zone["prompt_text"] = defaults["prompt_text"]
+    zone["event_name"] = str(entry.get("event_name", defaults["event_name"])).strip_edges()
+    if zone["event_name"].is_empty():
+        zone["event_name"] = defaults["event_name"]
+    zone["once"] = bool(entry.get("once", defaults["once"]))
+    var interaction_mode := str(entry.get("interaction_mode", defaults["interaction_mode"])).strip_edges().to_lower()
+    if interaction_mode != "enter" and interaction_mode != "interact":
+        interaction_mode = defaults["interaction_mode"]
+    zone["interaction_mode"] = interaction_mode
+    return zone
+
+
+static func _legacy_door_to_zone(door: Dictionary, used_ids: Dictionary) -> Dictionary:
+    var col := int(door.get("cap_x", 0))
+    var row := int(door.get("cap_y", 0))
+    var direction := _normalize_zone_direction(str(door.get("direction", "right")))
+    var target_door_id := str(door.get("target_door_id", "")).strip_edges()
+    var target_room := str(door.get("target_room", "")).strip_edges()
+    var send_to_overworld := bool(door.get("send_to_overworld", false))
+    var name := "Door %d %d" % [col, row]
+    var zone_id := RegIO.unique_content_id(name, used_ids, "door")
+    return _normalize_zone_entry({
+        "id": zone_id,
+        "name": name,
+        "kind": "door",
+        "x_blocks": float(col),
+        "y_blocks": float(row),
+        "width_blocks": 1.0,
+        "height_blocks": 1.0,
+        "direction": direction,
+        "target_door_id": target_door_id,
+        "target_room": target_room,
+        "send_to_overworld": send_to_overworld,
+    }, DEFAULT_ROOM_W_BLOCKS, DEFAULT_ROOM_H_BLOCKS, zone_id, used_ids)
+
+
+static func _legacy_shader_to_zone(region: Dictionary, room_w_blocks: int, room_h_blocks: int,
+        used_ids: Dictionary) -> Dictionary:
+    var zone_id := str(region.get("id", "")).strip_edges()
+    var name := str(region.get("name", zone_id)).strip_edges()
+    if name.is_empty():
+        name = zone_id.replace("_", " ").capitalize()
+    return _normalize_zone_entry({
+        "id": zone_id,
+        "name": name,
+        "kind": "shader",
+        "x_blocks": region.get("x_blocks", region.get("x", 0.0)),
+        "y_blocks": region.get("y_blocks", region.get("y", 0.0)),
+        "width_blocks": region.get("width_blocks", region.get("w", 4.0)),
+        "height_blocks": region.get("height_blocks", region.get("h", 4.0)),
+        "shader_preset": region.get("shader_preset", "flicker"),
+        "shader_tint": region.get("shader_tint", "ffffff"),
+        "shader_strength": region.get("shader_strength", 0.6),
+        "shader_speed": region.get("shader_speed", 1.0),
+    }, room_w_blocks, room_h_blocks, zone_id, used_ids)
+
+
+static func _legacy_trigger_to_zone(entity: Dictionary, room_w_blocks: int, room_h_blocks: int,
+        used_ids: Dictionary) -> Dictionary:
+    var props_v: Variant = entity.get("properties", {})
+    var props: Dictionary = props_v if typeof(props_v) == TYPE_DICTIONARY else {}
+    var zone_id := str(props.get("zone_id", props.get("instance_id", ""))).strip_edges()
+    var name := str(props.get("name", zone_id)).strip_edges()
+    if name.is_empty():
+        name = zone_id.replace("_", " ").capitalize()
+    var interaction_mode := str(props.get("interaction_mode", "enter")).strip_edges().to_lower()
+    var kind := "interact" if interaction_mode == "interact" or props.has("prompt_text") else "trigger"
+    return _normalize_zone_entry({
+        "id": zone_id,
+        "name": name,
+        "kind": kind,
+        "x_blocks": float(entity.get("x", 0.0)) / float(BLOCK_SIZE),
+        "y_blocks": float(entity.get("y", 0.0)) / float(BLOCK_SIZE),
+        "width_blocks": maxf(1.0, float(props.get("width", BLOCK_SIZE)) / float(BLOCK_SIZE)),
+        "height_blocks": maxf(1.0, float(props.get("height", BLOCK_SIZE)) / float(BLOCK_SIZE)),
+        "prompt_text": props.get("prompt_text", "Interact"),
+        "event_name": props.get("event_name", "zone_enter"),
+        "once": props.get("once", false),
+        "interaction_mode": interaction_mode,
+    }, room_w_blocks, room_h_blocks, zone_id, used_ids)
+
+
+static func normalize_zones(room: Dictionary) -> void:
+    var room_w_blocks := int(room.get("width_blocks", DEFAULT_ROOM_W_BLOCKS))
+    var room_h_blocks := int(room.get("height_blocks", DEFAULT_ROOM_H_BLOCKS))
+    var out: Array = []
+    var used_ids: Dictionary = {}
+    var raw_v: Variant = room.get("zones", [])
+    if room.has("zones") and typeof(raw_v) == TYPE_ARRAY:
+        var raw_zones: Array = raw_v
+        for i in raw_zones.size():
+            var entry_v: Variant = raw_zones[i]
+            if typeof(entry_v) != TYPE_DICTIONARY:
+                continue
+            var zone := _normalize_zone_entry(entry_v as Dictionary, room_w_blocks, room_h_blocks,
+                "zone_%d" % (i + 1), used_ids)
+            used_ids[str(zone.get("id", ""))] = true
+            out.append(zone)
+        room["zones"] = out
+        return
+
+    var shader_regions_v: Variant = room.get("shader_regions", [])
+    if typeof(shader_regions_v) == TYPE_ARRAY:
+        for region_v in shader_regions_v:
+            if typeof(region_v) != TYPE_DICTIONARY:
+                continue
+            var shader_zone := _legacy_shader_to_zone(region_v as Dictionary, room_w_blocks, room_h_blocks, used_ids)
+            used_ids[str(shader_zone.get("id", ""))] = true
+            out.append(shader_zone)
+
+    var doors_v: Variant = room.get("doors", [])
+    if typeof(doors_v) == TYPE_ARRAY:
+        for door_v in doors_v:
+            if typeof(door_v) != TYPE_DICTIONARY:
+                continue
+            var door: Dictionary = door_v
+            var col := int(door.get("cap_x", 0))
+            var row := int(door.get("cap_y", 0))
+            var door_zone := _normalize_zone_entry({
+                "name": "Door %d %d" % [col, row],
+                "kind": "door",
+                "x_blocks": float(col),
+                "y_blocks": float(row),
+                "width_blocks": 1.0,
+                "height_blocks": 1.0,
+                "direction": door.get("direction", "right"),
+                "target_door_id": door.get("target_door_id", ""),
+                "target_room": door.get("target_room", ""),
+                "send_to_overworld": door.get("send_to_overworld", false),
+                "enabled": door.get("enabled", true),
+                "locked": door.get("locked", false),
+                "required_item_id": door.get("required_item_id", ""),
+                "required_item_count": door.get("required_item_count", 1),
+                "required_var_name": door.get("required_var_name", ""),
+                "required_var_value": door.get("required_var_value", 1),
+                "required_global_tag": door.get("required_global_tag", ""),
+                "blocked_event_name": door.get("blocked_event_name", ""),
+                "success_event_name": door.get("success_event_name", ""),
+                "arrive_event_name": door.get("arrive_event_name", ""),
+                "overworld_region_id": door.get("overworld_region_id", ""),
+            }, room_w_blocks, room_h_blocks, "", used_ids)
+            used_ids[str(door_zone.get("id", ""))] = true
+            out.append(door_zone)
+
+    var entities_v: Variant = room.get("entities", [])
+    if typeof(entities_v) == TYPE_ARRAY:
+        for entity_v in entities_v:
+            if typeof(entity_v) != TYPE_DICTIONARY:
+                continue
+            var entity: Dictionary = entity_v
+            if str(entity.get("type", "")).strip_edges() != "trigger_volume":
+                continue
+            var trigger_zone := _legacy_trigger_to_zone(entity, room_w_blocks, room_h_blocks, used_ids)
+            used_ids[str(trigger_zone.get("id", ""))] = true
+            out.append(trigger_zone)
+
+    room["zones"] = out
+
+
+static func normalize_weather(room: Dictionary) -> void:
+    var defaults := default_weather()
+    var raw_v: Variant = room.get("weather", {})
+    if typeof(raw_v) == TYPE_DICTIONARY:
+        var raw: Dictionary = raw_v
+        var preset := str(raw.get("preset", defaults["preset"])).strip_edges().to_lower()
+        if preset != "rain" and preset != "snow":
+            preset = "none"
+        defaults["preset"] = preset
+        var color_text := str(raw.get("color", defaults["color"])).strip_edges()
+        defaults["color"] = color_text if not color_text.is_empty() else str(defaults["color"])
+        defaults["intensity"] = clampf(float(raw.get("intensity", defaults["intensity"])), 0.0, 2.0)
+        defaults["speed"] = clampf(float(raw.get("speed", defaults["speed"])), 0.0, 4.0)
+    room["weather"] = defaults
+
+
 # Converts a legacy room (with layer1/layer1_hi/layer2 + has_layer2 keys)
 # into the new tile_layers array shape. Idempotent: no-op if tile_layers is
 # already present and non-empty. Strips the legacy keys so subsequent saves
 # only write the new schema.
 static func migrate_room_to_layers(room: Dictionary) -> void:
     normalize_parallax_layers(room)
+    normalize_background_images(room)
+    normalize_background_image(room)
+    normalize_shader_regions(room)
+    normalize_zones(room)
+    normalize_weather(room)
     var existing_v: Variant = room.get("tile_layers")
     if typeof(existing_v) == TYPE_ARRAY and (existing_v as Array).size() > 0:
         return
@@ -756,6 +1247,23 @@ static func load_backdrop_texture(pack_id: String, rel_path: String) -> Texture2
     return null
 
 
+static func load_backdrop_image(pack_id: String, rel_path: String) -> Image:
+    var trimmed := rel_path.strip_edges()
+    if trimmed.is_empty():
+        return null
+    var candidates := [
+        user_pack_dir(pack_id) + trimmed,
+        shipped_pack_dir(pack_id) + trimmed,
+    ]
+    for path in candidates:
+        if not FileAccess.file_exists(path):
+            continue
+        var image := _load_png_image(path)
+        if image != null:
+            return image
+    return null
+
+
 static func import_backdrops(pack_id: String, src_paths: PackedStringArray) -> Array:
     var out: Array = []
     if src_paths.is_empty():
@@ -780,6 +1288,24 @@ static func import_backdrops(pack_id: String, src_paths: PackedStringArray) -> A
             continue
         out.append("Backdrops/Parallax/" + file_name)
     return out
+
+
+static func save_baked_backdrop(pack_id: String, suggested_name: String, image: Image) -> String:
+    if image == null or image.is_empty():
+        return ""
+    var dst_dir: String = user_pack_dir(pack_id) + "Backdrops/Parallax/Baked/"
+    _ensure_dir(dst_dir)
+    var clean_name := _sanitize_asset_file_name(suggested_name)
+    if clean_name.is_empty():
+        clean_name = "baked_background.png"
+    if not clean_name.to_lower().ends_with(".png"):
+        clean_name += ".png"
+    if FileAccess.file_exists(dst_dir + clean_name):
+        clean_name = _unique_file_name(dst_dir, clean_name)
+    if image.save_png(dst_dir + clean_name) != OK:
+        push_error("EnvIO: failed to save baked backdrop '%s'" % clean_name)
+        return ""
+    return "Backdrops/Parallax/Baked/" + clean_name
 
 
 # If the user pack has no tileset atlases at all, copy tileset_00 from the

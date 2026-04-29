@@ -221,13 +221,14 @@ static func load_screen(pack_id: String, screen_id: String) -> Dictionary:
     var user_path := screen_path(pack_id, screen_id)
     var d := _read_json(user_path)
     if not d.is_empty():
-        return d
+        return normalize_screen(screen_id, d, pack_id)
     var shipped_path := shipped_pack_dir(pack_id) + "UI/screens/" + screen_id + ".json"
-    return _read_json(shipped_path)
+    return normalize_screen(screen_id, _read_json(shipped_path), pack_id)
 
 
 static func save_screen(pack_id: String, screen_id: String, data: Dictionary) -> bool:
-    var check := validate_screen(screen_id, data, pack_id)
+    var normalized := normalize_screen(screen_id, data, pack_id)
+    var check := validate_screen(screen_id, normalized, pack_id)
     var errors: Array = check.get("errors", [])
     var warnings: Array = check.get("warnings", [])
     if not errors.is_empty():
@@ -237,7 +238,241 @@ static func save_screen(pack_id: String, screen_id: String, data: Dictionary) ->
     for issue in warnings:
         push_warning("UIIo: screen '%s' warning: %s" % [screen_id, str(issue)])
     _ensure_dir(screen_dir(pack_id))
-    return _write_json(screen_path(pack_id, screen_id), data)
+    return _write_json(screen_path(pack_id, screen_id), normalized)
+
+
+static func normalize_screen(screen_id: String, data: Dictionary, pack_id: String = "") -> Dictionary:
+    if data.is_empty():
+        return {}
+    var normalized := data.duplicate(true)
+    var host_id := UiContract.screen_host_id(screen_id)
+    _normalize_screen_element(normalized, screen_id, host_id, pack_id)
+    _normalize_screen_layout(normalized, screen_id)
+    return normalized
+
+
+static func _normalize_screen_element(elem: Dictionary, screen_id: String, host_id: String, pack_id: String) -> void:
+    _ensure_default_element_properties(elem)
+    _normalize_legacy_screen_actions(elem, screen_id, host_id, pack_id)
+    var children_v: Variant = elem.get("children", [])
+    if typeof(children_v) != TYPE_ARRAY:
+        return
+    for child_v in (children_v as Array):
+        if typeof(child_v) == TYPE_DICTIONARY:
+            _normalize_screen_element(child_v as Dictionary, screen_id, host_id, pack_id)
+
+
+static func _normalize_legacy_screen_actions(elem: Dictionary, screen_id: String, host_id: String, _pack_id: String) -> void:
+    if str(elem.get("type", "")) != UITypes.ELEM_BUTTON:
+        return
+    var props_v: Variant = elem.get("properties", {})
+    if typeof(props_v) != TYPE_DICTIONARY:
+        return
+    var props: Dictionary = props_v
+    var eid := str(elem.get("id", ""))
+    if screen_id == "main_menu" and eid == "main_menu_settings" \
+            and str(props.get("action_id", "")) == "play_sfx" \
+            and str(props.get("action_args", "")) == "ui_accept":
+        props["action_id"] = "open_settings"
+        props["action_args"] = ""
+        _replace_legacy_button_label(props, ["PLAY SFX"], "SETTINGS")
+    var action_id := str(props.get("action_id", ""))
+    if action_id != "open_screen":
+        return
+    var action_args := str(props.get("action_args", "")).strip_edges()
+    if UiContract.host_supports_open_target(host_id, action_args):
+        return
+    match screen_id:
+        "main_menu":
+            if eid == "main_menu_settings" and action_args == "inventory":
+                props["action_id"] = "open_settings"
+                props["action_args"] = ""
+                _replace_legacy_button_label(props, ["OPEN INVENTORY", "INVENTORY", "PLAY SFX"], "SETTINGS")
+        "pause":
+            if eid == "pause_inventory" and action_args == "inventory":
+                props["action_id"] = "save_game"
+                props["action_args"] = ""
+                _replace_legacy_button_label(props, ["OPEN INVENTORY", "INVENTORY"], "SAVE GAME")
+            elif eid == "pause_map" and action_args == "map":
+                props["action_id"] = "load_game"
+                props["action_args"] = ""
+                _replace_legacy_button_label(props, ["OPEN MAP", "MAP"], "LOAD")
+
+
+static func _replace_legacy_button_label(props: Dictionary, old_labels: Array, new_label: String) -> void:
+    var current := str(props.get("label", "")).strip_edges()
+    if old_labels.has(current.to_upper()):
+        props["label"] = new_label
+
+
+static func _ensure_default_element_properties(elem: Dictionary) -> void:
+    var etype := str(elem.get("type", "")).strip_edges()
+    if etype.is_empty():
+        return
+    var defaults_v: Variant = UITypes.default_element(etype).get("properties", {})
+    if typeof(defaults_v) != TYPE_DICTIONARY:
+        return
+    var defaults: Dictionary = defaults_v
+    var props_v: Variant = elem.get("properties", {})
+    if typeof(props_v) != TYPE_DICTIONARY:
+        props_v = {}
+        elem["properties"] = props_v
+    var props: Dictionary = props_v
+    for key_v in defaults.keys():
+        var key := str(key_v)
+        if not props.has(key):
+            props[key] = defaults[key]
+    if etype in [UITypes.ELEM_PANEL, UITypes.ELEM_LABEL]:
+        props["opacity"] = clampf(float(props.get("opacity", 1.0)), 0.0, 1.0)
+    match etype:
+        UITypes.ELEM_PANEL:
+            props["sprite_tint"] = _normalize_hex_color_string(props.get("sprite_tint", "#ffffff"), "#ffffff")
+        UITypes.ELEM_BUTTON:
+            props["sprite_tint"] = _normalize_hex_color_string(props.get("sprite_tint", "#ffffff"), "#ffffff")
+        UITypes.ELEM_ICON:
+            props["tint"] = _normalize_hex_color_string(props.get("tint", "#ffffff"), "#ffffff")
+        UITypes.ELEM_PROGRESS_BAR:
+            props["fill_color"] = _normalize_hex_color_string(props.get("fill_color", "#ff4444"), "#ff4444")
+            props["bg_color"] = _normalize_hex_color_string(props.get("bg_color", "#1f2228"), "#1f2228")
+
+
+static func _normalize_hex_color_string(value: Variant, fallback: String) -> String:
+    var text := str(value).strip_edges().to_lower()
+    var fallback_text := str(fallback).strip_edges().to_lower()
+    if text.is_empty():
+        return fallback_text
+    if not text.begins_with("#"):
+        text = "#" + text
+    var digits := text.substr(1)
+    if digits.is_empty():
+        return fallback_text
+    if [1, 2, 5, 7].has(digits.length()):
+        var pad := digits.substr(digits.length() - 1, 1)
+        while not [3, 4, 6, 8].has(digits.length()):
+            digits += pad
+    if not [3, 4, 6, 8].has(digits.length()):
+        return fallback_text
+    for i in range(digits.length()):
+        var ch := digits.unicode_at(i)
+        var is_hex := (ch >= 48 and ch <= 57) or (ch >= 97 and ch <= 102)
+        if not is_hex:
+            return fallback_text
+    return "#" + digits
+
+
+static func _normalize_screen_layout(screen_data: Dictionary, screen_id: String) -> void:
+    match screen_id:
+        "dialogue_box":
+            _ensure_dialogue_box_layout(screen_data)
+        "pause":
+            _ensure_pause_settings_layout(screen_data)
+
+
+static func _ensure_pause_settings_layout(screen_data: Dictionary) -> void:
+    var children_v: Variant = screen_data.get("children", [])
+    if typeof(children_v) != TYPE_ARRAY:
+        return
+    var children := children_v as Array
+    var has_settings := false
+    var has_resume := false
+    var has_quit := false
+    var has_stock_secondary := false
+    var quit_elem: Dictionary = {}
+    var note_elem: Dictionary = {}
+    for child_v in children:
+        if typeof(child_v) != TYPE_DICTIONARY:
+            continue
+        var child: Dictionary = child_v
+        match str(child.get("id", "")):
+            "pause_settings":
+                has_settings = true
+            "pause_resume":
+                has_resume = true
+            "pause_quit":
+                has_quit = true
+                quit_elem = child
+            "pause_note":
+                note_elem = child
+            "pause_save", "pause_load", "pause_inventory", "pause_map":
+                has_stock_secondary = true
+    if has_settings:
+        return
+    if not has_resume or not has_quit or not has_stock_secondary:
+        return
+    if not quit_elem.is_empty():
+        var quit_rect: Variant = quit_elem.get("rect", {})
+        if typeof(quit_rect) == TYPE_DICTIONARY:
+            (quit_rect as Dictionary)["x"] = 302
+            (quit_rect as Dictionary)["y"] = 88
+            (quit_rect as Dictionary)["w"] = 162
+    if not note_elem.is_empty():
+        var note_rect: Variant = note_elem.get("rect", {})
+        if typeof(note_rect) == TYPE_DICTIONARY:
+            (note_rect as Dictionary)["y"] = 132
+            (note_rect as Dictionary)["w"] = 446
+    children.append(_button("pause_settings", 150, 88, 140, 28, "SETTINGS", "open_settings"))
+
+
+static func _ensure_dialogue_box_layout(screen_data: Dictionary) -> void:
+    var rect_v: Variant = screen_data.get("rect", {})
+    if typeof(rect_v) == TYPE_DICTIONARY:
+        var root_rect: Dictionary = rect_v
+        var root_h := float(root_rect.get("h", 272.0))
+        if absf(root_h - 272.0) <= 1.0:
+            root_rect["w"] = 480.0
+            root_rect["h"] = 156.0
+    var children_v: Variant = screen_data.get("children", [])
+    if typeof(children_v) != TYPE_ARRAY:
+        return
+    for child_v in (children_v as Array):
+        if typeof(child_v) != TYPE_DICTIONARY:
+            continue
+        var child: Dictionary = child_v
+        var eid := str(child.get("id", ""))
+        var child_rect_v: Variant = child.get("rect", {})
+        if typeof(child_rect_v) != TYPE_DICTIONARY:
+            child_rect_v = {}
+            child["rect"] = child_rect_v
+        var child_rect: Dictionary = child_rect_v
+        var props_v: Variant = child.get("properties", {})
+        if typeof(props_v) != TYPE_DICTIONARY:
+            props_v = {}
+            child["properties"] = props_v
+        var props: Dictionary = props_v
+        match eid:
+            "dialogue_speaker":
+                var speaker_legacy := float(child_rect.get("w", 200.0)) <= 200.0 and float(child_rect.get("h", 18.0)) <= 18.0
+                if speaker_legacy:
+                    child_rect["x"] = 14.0
+                    child_rect["y"] = 10.0
+                    child_rect["w"] = 452.0
+                    child_rect["h"] = 18.0
+                props["opacity"] = clampf(float(props.get("opacity", 1.0)), 0.0, 1.0)
+            "dialogue_text":
+                var text_legacy := not bool(props.get("wrap", false)) \
+                    and float(child_rect.get("w", 200.0)) <= 220.0 \
+                    and float(child_rect.get("h", 20.0)) <= 24.0
+                if text_legacy:
+                    child_rect["x"] = 14.0
+                    child_rect["y"] = 32.0
+                    child_rect["w"] = 452.0
+                    child_rect["h"] = 52.0
+                props["wrap"] = true
+                props["opacity"] = clampf(float(props.get("opacity", 1.0)), 0.0, 1.0)
+            "dialogue_choices":
+                var choices_legacy := (str(props.get("item_action_arg_key", "__index__")) == "__index__" \
+                    or not bool(props.get("item_wrap", false))) \
+                    and float(child_rect.get("w", 200.0)) <= 220.0 \
+                    and float(child_rect.get("h", 28.0)) <= 32.0
+                if choices_legacy:
+                    child_rect["x"] = 14.0
+                    child_rect["y"] = 90.0
+                    child_rect["w"] = 452.0
+                    child_rect["h"] = 52.0
+                props["item_wrap"] = true
+                props["item_min_height"] = maxf(float(props.get("item_min_height", 20.0)), 20.0)
+                props["spacing"] = maxf(float(props.get("spacing", 6.0)), 6.0)
+                props["item_action_arg_key"] = "choice_index"
 
 
 static func list_screens(pack_id: String) -> Array:
@@ -283,6 +518,10 @@ static func ensure_stock_screens(pack_id: String) -> void:
 
 static func default_stock_screen(screen_id: String) -> Dictionary:
     match screen_id:
+        "hud_space":
+            return _stock_space_hud_screen()
+        "hud_mv":
+            return _stock_mv_hud_screen()
         "main_menu":
             return _stock_main_menu_screen()
         "pause":
@@ -429,8 +668,8 @@ static func _validate_action_args(screen_id: String, host_id: String, action_id:
         errors.append("%s '%s' requires action args" % [path, action_id])
         return
     if item_action and action_id == "choose_dialogue":
-        if trimmed != "__index__":
-            errors.append("%s '%s' must use item_action_arg_key '__index__'" % [path, action_id])
+        if trimmed not in ["__index__", "choice_index"]:
+            errors.append("%s '%s' must use item_action_arg_key '__index__' or 'choice_index'" % [path, action_id])
         return
     if bool(rule.get("integer", false)) and not trimmed.is_empty() and not trimmed.is_valid_int():
         errors.append("%s '%s' requires an integer action arg" % [path, action_id])
@@ -471,7 +710,19 @@ static func _base_screen(screen_id: String, width: int = 480, height: int = 272)
         "rect": {"x": 0, "y": 0, "w": width, "h": height},
         "anchor": "top_left",
         "anchor_offset": {"x": 0, "y": 0},
-        "properties": {"variant": "dark", "padding": 8, "scroll": "none", "tab_id": "", "tab_group": "default"},
+        "properties": {
+            "variant": "dark",
+            "opacity": 1.0,
+            "padding": 8,
+            "scroll": "none",
+            "sprite_source": "",
+            "sprite_mode": "9slice",
+            "sprite_slice_x": 0,
+            "sprite_slice_y": 0,
+            "sprite_tint": "#ffffff",
+            "tab_id": "",
+            "tab_group": "default",
+        },
         "children": [],
     }
 
@@ -491,6 +742,7 @@ static func _elem(id: String, type: String, rect: Dictionary, props: Dictionary,
 static func _label(id: String, x: int, y: int, w: int, h: int, text: String, role: String = "body", bind_var: String = "") -> Dictionary:
     return _elem(id, "label", {"x": x, "y": y, "w": w, "h": h}, {
         "text_role": role,
+        "opacity": 1.0,
         "static_text": text,
         "bind_var": bind_var,
         "format": "{value}",
@@ -568,7 +820,7 @@ static func _stock_main_menu_screen() -> Dictionary:
         _label("main_menu_hint", 88, 54, 308, 18, "Edit these buttons, replace the art, then wire your own pack flow.", "dim"),
         _button("main_menu_new_game", 154, 92, 172, 32, "NEW GAME", "new_game"),
         _button("main_menu_load", 154, 132, 172, 32, "LOAD SLOT 1", "load_slot", "1"),
-        _button("main_menu_settings", 154, 172, 172, 32, "OPEN INVENTORY", "open_screen", "inventory"),
+        _button("main_menu_settings", 154, 172, 172, 32, "SETTINGS", "open_settings"),
         _button("main_menu_quit", 154, 212, 172, 32, "QUIT TO LAUNCHER", "quit_to_menu"),
     ]
     return root
@@ -579,10 +831,11 @@ static func _stock_pause_screen() -> Dictionary:
     root["children"] = [
         _label("pause_title", 18, 16, 200, 24, "PAUSED", "title"),
         _button("pause_resume", 18, 50, 120, 28, "RESUME", "resume"),
-        _button("pause_inventory", 150, 50, 140, 28, "INVENTORY", "open_screen", "inventory"),
-        _button("pause_map", 302, 50, 100, 28, "MAP", "open_screen", "map"),
-        _button("pause_quit", 18, 88, 170, 28, "QUIT TO MENU", "quit_to_menu"),
-        _label("pause_note", 18, 128, 420, 18, "Stock pause screen. Swap art, relabel actions, or add trigger events from buttons.", "dim"),
+        _button("pause_save", 150, 50, 140, 28, "SAVE GAME", "save_game"),
+        _button("pause_load", 302, 50, 100, 28, "LOAD", "load_game"),
+        _button("pause_settings", 150, 88, 140, 28, "SETTINGS", "open_settings"),
+        _button("pause_quit", 302, 88, 162, 28, "QUIT TO MENU", "quit_to_menu"),
+        _label("pause_note", 18, 132, 446, 18, "Stock pause screen. Swap art, relabel actions, or add trigger events from buttons.", "dim"),
     ]
     return root
 
@@ -631,24 +884,52 @@ static func _stock_map_screen() -> Dictionary:
 
 
 static func _stock_dialogue_box_screen() -> Dictionary:
-    var root := _base_screen("dialogue_box", 480, 96)
+    var root := _base_screen("dialogue_box", 480, 156)
+    var speaker := _label("dialogue_speaker", 14, 10, 452, 18, "", "title", "dialogue.speaker")
+    var text := _label("dialogue_text", 14, 32, 452, 52, "", "body", "dialogue.text")
+    text["properties"]["wrap"] = true
+    var choices := _list("dialogue_choices", 14, 90, 452, 52, "dialogue.choices", "choose_dialogue", "choice_index")
+    choices["properties"]["item_wrap"] = true
+    choices["properties"]["item_min_height"] = 20
+    choices["properties"]["spacing"] = 6
     root["children"] = [
-        _label("dialogue_speaker", 14, 10, 200, 18, "", "title", "dialogue.speaker"),
-        _label("dialogue_text", 14, 34, 452, 20, "", "body", "dialogue.text"),
-        _list("dialogue_choices", 14, 58, 452, 28, "dialogue.choices", "choose_dialogue", "__index__"),
+        speaker,
+        text,
+        choices,
+    ]
+    return root
+
+
+static func _stock_space_hud_screen() -> Dictionary:
+    var root := _base_screen("hud_space")
+    root["children"] = [
+        _label("hud_space_hull_label", 12, 10, 80, 16, "HULL", "body"),
+        _progress("hud_space_hull_bar", 54, 10, 136, 14, "player.health", "player.max_health", "#5cd96a"),
+        _label("hud_space_shield_label", 12, 30, 80, 16, "SHD", "body"),
+        _progress("hud_space_shield_bar", 54, 30, 136, 14, "player.shields", "player.max_shields", "#4f9cff"),
+        _label("hud_space_system", 314, 10, 152, 16, "", "dim", "gamemanager.current_system"),
+        _label("hud_space_fuel", 314, 30, 152, 16, "Fuel {value}", "body", "gamemanager.fuel"),
+    ]
+    return root
+
+
+static func _make_stock_mv_hud_screen(screen_id: String) -> Dictionary:
+    var root := _base_screen(screen_id)
+    root["children"] = [
+        _label("hud_mv_hp_label", 12, 10, 80, 16, "HP", "body"),
+        _progress("hud_mv_hp_bar", 44, 10, 150, 14, "player.hp", "player.max_hp", "#d85353"),
+        _label("hud_mv_weapon_label", 214, 10, 100, 16, "", "body", "current_weapon.name"),
+        _label("hud_mv_room_label", 326, 10, 140, 16, "", "dim", "room.name"),
     ]
     return root
 
 
 static func _stock_hud_screen() -> Dictionary:
-    var root := _base_screen("hud")
-    root["children"] = [
-        _label("hud_hp_label", 12, 10, 80, 16, "HP", "body"),
-        _progress("hud_hp_bar", 44, 10, 150, 14, "player.hp", "player.max_hp", "#d85353"),
-        _label("hud_weapon_label", 214, 10, 100, 16, "", "body", "current_weapon.name"),
-        _label("hud_room_label", 326, 10, 140, 16, "", "dim", "room.name"),
-    ]
-    return root
+    return _make_stock_mv_hud_screen("hud")
+
+
+static func _stock_mv_hud_screen() -> Dictionary:
+    return _make_stock_mv_hud_screen("hud_mv")
 
 
 static func _stock_game_over_screen() -> Dictionary:

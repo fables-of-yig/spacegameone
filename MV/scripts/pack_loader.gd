@@ -63,6 +63,13 @@ static func reset_last_loaded_pack_id() -> void:
 	_last_loaded_pack_id = ""
 
 
+static func clear_runtime_state() -> void:
+	current_pack = null
+	_last_loaded_pack_id = ""
+	PlayerInventory.clear()
+	MvTriggerEngine.clear_global_tags()
+
+
 static func _ensure_user_pack_dir(user_path: String) -> void:
 	DirAccess.make_dir_recursive_absolute(user_path)
 	var subs := [

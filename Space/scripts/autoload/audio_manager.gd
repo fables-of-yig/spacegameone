@@ -149,6 +149,12 @@ func set_ambient(ambient_name: String):
             ambient_fade_timer = 0.0
             ambient_fade_dir = -1.0
         return
+    if not _ambient_exists(ambient_name):
+        if ambient_player.playing:
+            ambient_target = ""
+            ambient_fade_timer = 0.0
+            ambient_fade_dir = -1.0
+        return
 
 
     if ambient_player.playing and ambient_player.stream:
@@ -169,7 +175,6 @@ func _start_ambient(ambient_name: String):
     var path = AMBIENCE_DIR + ambient_name + ".wav"
     var stream = _load_audio(path)
     if not stream:
-        print("[AudioManager] Ambient not found: ", path)
         return
     ambient_player.stream = stream
     ambient_player.volume_db = -80.0
@@ -208,14 +213,26 @@ func set_ambient_varied(category: String):
     if pool.is_empty():
         set_ambient(category)
         return
+    var available: Array = []
+    for name_v in pool:
+        var name := str(name_v)
+        if _ambient_exists(name):
+            available.append(name)
+    if available.is_empty():
+        set_ambient("")
+        return
     _last_ambient_category = category
-    var pick = pool[randi() % pool.size()]
+    var pick = available[randi() % available.size()]
 
-    if pool.size() > 1 and ambient_player.playing and ambient_player.stream:
+    if available.size() > 1 and ambient_player.playing and ambient_player.stream:
         var current = ambient_player.stream.resource_path.get_file().get_basename()
         if current == pick:
-            pick = pool[(pool.find(pick) + 1) % pool.size()]
+            pick = available[(available.find(pick) + 1) % available.size()]
     set_ambient(pick)
+
+
+func _ambient_exists(ambient_name: String) -> bool:
+    return ResourceLoader.exists(AMBIENCE_DIR + ambient_name + ".wav")
 
 func linear_to_db(linear: float) -> float:
     if linear <= 0.001:

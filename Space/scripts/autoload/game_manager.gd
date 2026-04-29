@@ -400,12 +400,14 @@ const CRAFTING_RECIPES: Dictionary = {
     "armory_mk1": {"metals": 3, "ore": 2}, 
 
     "thruster_mk1": {"metals": 2, "ore": 2, "gas": 1}, 
+    "engine_block_mk1": {"metals": 3, "ore": 2}, 
     "micro_reactor": {"metals": 3, "crystals": 1}, 
     "reactor_mk1": {"metals": 5, "crystals": 3, "rare_earth": 1}, 
     "fuel_scoop_mk1": {"metals": 3, "gas": 2}, 
     "mining_laser_mk1": {"metals": 3, "crystals": 2, "ore": 2}, 
     "construction_hangar_mk1": {"metals": 8, "ore": 6, "crystals": 4, "rare_earth": 2}, 
     "basic_workshop": {"metals": 3, "ore": 2, "carbon": 1}, 
+    "fabricator_mk1": {"metals": 4, "ore": 3, "carbon": 2, "weaponsmith_tools": 1}, 
     "medbay_mk1": {"metals": 2, "crystals": 2, "carbon": 2}, 
     "hangar_bay_mk1": {"metals": 5, "ore": 3}, 
     "hydroponics_mk1": {"metals": 2, "carbon": 2, "mycelium": 3}, 
@@ -414,17 +416,25 @@ const CRAFTING_RECIPES: Dictionary = {
     "animal_pen_mk1": {"metals": 3, "ore": 2, "carbon": 1}, 
     "animal_pen_mk2": {"metals": 5, "ore": 3, "carbon": 2, "rare_earth": 1}, 
     "aquaculture_tank": {"metals": 4, "crystals": 2, "carbon": 2}, 
+    "cargo_bay_wide_mk1": {"ore": 3, "metals": 2}, 
 
     "pulse_laser_mk2": {"metals": 5, "crystals": 4, "rare_earth": 1}, 
     "autocannon_mk2": {"metals": 6, "ore": 3, "rare_earth": 1}, 
     "shield_gen_mk2": {"metals": 5, "crystals": 5, "rare_earth": 2}, 
     "thruster_mk2": {"metals": 4, "ore": 3, "gas": 2, "rare_earth": 1}, 
+    "ion_thruster_cluster_mk2": {"metals": 5, "ore": 4, "gas": 2, "rare_earth": 1}, 
+    "engine_block_mk2": {"metals": 5, "ore": 4, "gas": 1, "rare_earth": 1}, 
     "reactor_mk2": {"metals": 6, "crystals": 4, "rare_earth": 3}, 
     "sensor_mk2": {"crystals": 5, "metals": 2, "rare_earth": 1}, 
     "fuel_scoop_mk2": {"metals": 5, "gas": 4, "rare_earth": 1}, 
     "mining_laser_mk2": {"metals": 5, "crystals": 4, "ore": 3, "rare_earth": 1}, 
     "armor_plate_mk2": {"ore": 6, "metals": 4, "rare_earth": 1}, 
+    "armor_plate_array_mk2": {"ore": 8, "metals": 6, "rare_earth": 2}, 
     "repair_module_mk1": {"metals": 4, "crystals": 3, "carbon": 2}, 
+    "fabricator_mk2": {"metals": 6, "ore": 4, "carbon": 2, "weaponsmith_tools": 1, "rare_earth": 1}, 
+    "warp_thruster_mk1": {"metals": 6, "ore": 4, "gas": 3, "rare_earth": 2}, 
+    "warp_thruster_mk2": {"metals": 8, "ore": 6, "gas": 4, "rare_earth": 3}, 
+    "mobius_thruster": {"metals": 10, "ore": 8, "gas": 5, "crystals": 3, "rare_earth": 5}, 
 
     "beam_emitter_mk1": {"metals": 4, "crystals": 5, "rare_earth": 2}, 
     "missile_rack_mk1": {"metals": 5, "ore": 4, "crystals": 2}, 
@@ -482,6 +492,9 @@ var current_save_slot: int = 1
 
 func _ready():
     _InputSetup.install()
+    var settings_manager := get_node_or_null("/root/SettingsManager")
+    if settings_manager != null and settings_manager.has_method("register_input_defaults"):
+        settings_manager.call("register_input_defaults")
     _init_starter_inventory()
     _migrate_old_save()
 
@@ -577,8 +590,8 @@ func detect_input_device(event: InputEvent):
 
 
 func poll_right_stick() -> Vector2:
-    var rx = Input.get_joy_axis(0, JOY_AXIS_RIGHT_X)
-    var ry = Input.get_joy_axis(0, JOY_AXIS_RIGHT_Y)
+    var rx = Input.get_action_strength("controller_aim_right") - Input.get_action_strength("controller_aim_left")
+    var ry = Input.get_action_strength("controller_aim_down") - Input.get_action_strength("controller_aim_up")
     var raw = Vector2(rx, ry)
     if raw.length() < STICK_DEADZONE:
         return Vector2.ZERO
@@ -589,8 +602,8 @@ func poll_right_stick() -> Vector2:
 
 
 func poll_left_stick() -> Vector2:
-    var lx = Input.get_joy_axis(0, JOY_AXIS_LEFT_X)
-    var ly = Input.get_joy_axis(0, JOY_AXIS_LEFT_Y)
+    var lx = Input.get_action_strength("controller_move_right") - Input.get_action_strength("controller_move_left")
+    var ly = Input.get_action_strength("controller_move_down") - Input.get_action_strength("controller_move_up")
     var raw = Vector2(lx, ly)
     if raw.length() < STICK_DEADZONE:
         return Vector2.ZERO
@@ -599,50 +612,7 @@ func poll_left_stick() -> Vector2:
 
 
 func get_button_prompt(action_name: String) -> String:
-    if using_controller:
-        match action_name:
-            "jump": return "A"
-            "dodge_roll": return "B"
-            "interact": return "X"
-            "melee_attack": return "RB"
-            "ranged_attack": return "RT"
-            "grapple": return "LT"
-            "map": return "Select"
-            "liftoff": return "Y"
-            "fire_primary": return "RT"
-            "fire_secondary": return "LT"
-            "scan": return "LB"
-            "boost": return "L3"
-            "handbrake": return "R3"
-            "fire_special": return "RB"
-            "toggle_ship_builder": return "X"
-            "toggle_star_map": return "Select"
-            "toggle_pause": return "Start"
-            "launch_boarding": return "Y"
-            "fire_harpoon": return "B"
-            _: return action_name
-    else:
-        match action_name:
-            "jump": return "Space"
-            "dodge_roll": return "Z"
-            "fire_primary": return "LMB"
-            "fire_secondary": return "RMB"
-            "interact": return "E"
-            "melee_attack": return "C"
-            "ranged_attack": return "V"
-            "grapple": return "G"
-            "map": return "M"
-            "liftoff": return "T"
-            "scan": return "Q"
-            "boost": return "Shift"
-            "handbrake": return "Space"
-            "fire_special": return "F"
-            "toggle_ship_builder": return "B"
-            "toggle_star_map": return "M"
-            "toggle_pause": return "`"
-            "launch_boarding": return "V"
-            "fire_harpoon": return "R"
-            _: return action_name
+    return _InputSetup.format_action_prompt(action_name, using_controller, action_name)
 
 
 

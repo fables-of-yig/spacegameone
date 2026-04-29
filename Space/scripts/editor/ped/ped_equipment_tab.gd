@@ -1,7 +1,6 @@
 extends Control
 
 const PedIO = preload("res://Space/scripts/editor/ped/ped_io.gd")
-const EditorUndo = preload("res://Space/scripts/editor/editor_undo.gd")
 
 # Player editor — Equipment tab. List + detail editor for equipment.json.
 # Each piece has a slot (SOTN 7-slot layout), grants_abilities (set), and

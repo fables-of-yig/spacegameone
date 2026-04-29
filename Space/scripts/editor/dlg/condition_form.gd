@@ -17,6 +17,7 @@ var _raw_toggle: CheckBox = null
 var _fields_box: VBoxContainer = null
 var _raw_box: VBoxContainer = null
 var _raw_edit: TextEdit = null
+var _help_label: Label = null
 var _field_controls: Dictionary = {}
 var _current_type: String = ""
 var _suppress_emit: bool = false
@@ -31,22 +32,28 @@ func _build_ui() -> void:
     var header := HBoxContainer.new()
     add_child(header)
     var lbl := Label.new()
-    lbl.text = "Type:"
-    lbl.tooltip_text = "Choose the condition clause type."
+    lbl.text = "Rule:"
+    lbl.tooltip_text = "Choose the requirement that decides whether this line or choice is allowed."
     header.add_child(lbl)
     _type_option = OptionButton.new()
     _type_option.add_item("(none)")
     for label in EcaSchemaLib.condition_labels():
         _type_option.add_item(str(label))
-    _type_option.tooltip_text = "Choose the condition clause type."
+    _type_option.tooltip_text = "Choose the requirement that decides whether this line or choice is allowed."
     _type_option.item_selected.connect(_on_type_changed)
     header.add_child(_type_option)
 
     _raw_toggle = CheckBox.new()
     _raw_toggle.text = "Raw JSON"
-    _raw_toggle.tooltip_text = "Switch to raw JSON mode for compound logic such as and/or/not trees."
+    _raw_toggle.tooltip_text = "Advanced mode for nested logic. Most dialogue should stay in the normal picker above."
     _raw_toggle.toggled.connect(_on_raw_toggled)
     header.add_child(_raw_toggle)
+
+    _help_label = Label.new()
+    _help_label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+    _help_label.add_theme_font_size_override("font_size", 10)
+    _help_label.add_theme_color_override("font_color", Color(0.62, 0.72, 0.84))
+    add_child(_help_label)
 
     _fields_box = VBoxContainer.new()
     add_child(_fields_box)
@@ -55,13 +62,13 @@ func _build_ui() -> void:
     _raw_box.visible = false
     add_child(_raw_box)
     var raw_lbl := Label.new()
-    raw_lbl.text = "Condition JSON"
-    raw_lbl.tooltip_text = "Author a full condition object manually when simple row editing is not enough."
+    raw_lbl.text = "Advanced condition JSON"
+    raw_lbl.tooltip_text = "Use this only when you need nested AND/OR/NOT logic that the simple picker cannot express."
     _raw_box.add_child(raw_lbl)
     _raw_edit = TextEdit.new()
     _raw_edit.custom_minimum_size = Vector2(0, 96)
     _raw_edit.placeholder_text = "{\"type\":\"and\",\"children\":[...]}"
-    _raw_edit.tooltip_text = "Full condition JSON object. Use this for nested and/or/not logic."
+    _raw_edit.tooltip_text = "Full condition object for advanced branching logic."
     _raw_edit.text_changed.connect(func(): _emit_changed(null))
     _raw_box.add_child(_raw_edit)
 
@@ -84,6 +91,7 @@ func open(value: Dictionary) -> void:
         _rebuild_fields({})
         _raw_edit.text = JSON.stringify(value, "  ") if not value.is_empty() else ""
     _sync_mode_visibility()
+    _update_help_label()
     _suppress_emit = false
 
 
@@ -133,9 +141,9 @@ func error_text() -> String:
         var parser := JSON.new()
         var err := parser.parse(trimmed)
         if err != OK:
-            return "Condition JSON is invalid at line %d: %s" % [parser.get_error_line(), parser.get_error_message()]
+            return "The advanced condition text is invalid at line %d: %s" % [parser.get_error_line(), parser.get_error_message()]
         if typeof(parser.data) != TYPE_DICTIONARY:
-            return "Condition JSON must be a single JSON object"
+            return "The advanced condition must be one JSON object"
         return ""
     get_value()
     return _last_error
@@ -153,6 +161,7 @@ func _on_type_changed(option_idx: int) -> void:
             _current_type = str(names[real_idx])
     _type_option.tooltip_text = EcaSchemaLib.condition_help(_current_type)
     _rebuild_fields({})
+    _update_help_label()
     if not _suppress_emit:
         changed.emit()
 
@@ -175,11 +184,12 @@ func _on_raw_toggled(enabled: bool) -> void:
             _type_option.tooltip_text = ""
             _rebuild_fields({})
     _sync_mode_visibility()
+    _update_help_label()
     if not _suppress_emit:
         changed.emit()
 
 
-func _rebuild_fields(seed: Dictionary) -> void:
+func _rebuild_fields(rng_seed: Dictionary) -> void:
     for child in _fields_box.get_children():
         child.queue_free()
     _field_controls.clear()
@@ -200,7 +210,7 @@ func _rebuild_fields(seed: Dictionary) -> void:
         var field_tip := _field_tooltip(condition_label, condition_help, label, kind)
         lbl.tooltip_text = field_tip
         row.add_child(lbl)
-        var control := _make_field(kind, seed.get(key, null))
+        var control := _make_field(kind, rng_seed.get(key, null), _current_type, key)
         control.tooltip_text = field_tip
         row.add_child(control)
         _fields_box.add_child(row)
@@ -217,7 +227,7 @@ func _sync_mode_visibility() -> void:
         _raw_box.visible = raw
 
 
-func _make_field(kind: String, initial: Variant) -> Control:
+func _make_field(kind: String, initial: Variant, condition_type: String = "", field_key: String = "") -> Control:
     match kind:
         "bool":
             var cb := CheckBox.new()
@@ -234,6 +244,7 @@ func _make_field(kind: String, initial: Variant) -> Control:
                     le.text = "%f" % float(initial)
                 else:
                     le.text = str(initial)
+            le.placeholder_text = _field_placeholder(condition_type, field_key, kind)
             le.text_changed.connect(func(_t): _emit_changed(null))
             return le
 
@@ -370,3 +381,79 @@ func _field_tooltip(condition_label: String, condition_help: String, field_label
         _:
             tip += " Enter text."
     return tip
+
+
+func _update_help_label() -> void:
+    if _help_label == null:
+        return
+    if _is_raw_mode():
+        _help_label.text = "Raw JSON is only for advanced nested logic like and/or/not trees."
+        return
+    if _current_type.is_empty():
+        _help_label.text = "Leave this empty if the line, choice, or trigger should always be allowed."
+        return
+    var help_text: String = EcaSchemaLib.condition_help(_current_type)
+    var example_text: String = _condition_example(_current_type)
+    _help_label.text = help_text if example_text.is_empty() else "%s Example: %s" % [help_text, example_text]
+
+
+func _condition_example(condition_type: String) -> String:
+    match condition_type:
+        "has_item":
+            return "id = medkit_small, min_count = 1"
+        "has_ability":
+            return "id = double_jump"
+        "has_tag", "entity_has_tag":
+            return "tag = boss_room"
+        "has_global_tag":
+            return "tag = met_shopkeep"
+        "has_flag":
+            return "name = met_mayor, value = true"
+        "var_eq":
+            return "name = gold, value = 100"
+        "var_gte":
+            return "name = story_step, value = 3"
+        "chance_roll":
+            return "percent = 25"
+        "local_var_eq":
+            return "name = intro_step, value = complete"
+        "local_var_gte":
+            return "name = phase, value = 2"
+        "payload_eq":
+            return "key = entity_id, value = mayor_npc"
+        _:
+            return ""
+
+
+func _field_placeholder(condition_type: String, field_key: String, _kind: String) -> String:
+    match field_key:
+        "id":
+            match condition_type:
+                "has_item":
+                    return "medkit_small"
+                "has_ability":
+                    return "double_jump"
+                _:
+                    return "snake_case_id"
+        "tag":
+            return "boss_room"
+        "name":
+            match condition_type:
+                "has_flag":
+                    return "met_mayor"
+                "var_eq", "var_gte":
+                    return "story_step"
+                "local_var_eq", "local_var_gte":
+                    return "intro_step"
+                _:
+                    return "name"
+        "key":
+            return "entity_id"
+        "value":
+            if condition_type == "payload_eq":
+                return "mayor_npc"
+            if condition_type == "local_var_eq":
+                return "complete"
+            return ""
+        _:
+            return ""

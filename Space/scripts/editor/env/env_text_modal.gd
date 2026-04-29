@@ -19,6 +19,7 @@ const UIPanels = preload("res://Space/scripts/ui/ui_panels.gd")
 
 const BOX_W: float = 420.0
 const BOX_H: float = 170.0
+const PROMPT_LINE_H: float = 16.0
 
 var _title: String = ""
 var _prompt: String = ""
@@ -68,9 +69,10 @@ func close() -> void:
 func _layout_line_edit() -> void:
     if _line_edit == null:
         return
-    var box_x: float = (size.x - BOX_W) * 0.5
-    var box_y: float = (size.y - BOX_H) * 0.5
-    _line_edit.position = Vector2(box_x + 24, box_y + 74)
+    var box := _box_rect()
+    var prompt_lines := _prompt_lines()
+    var prompt_h := maxf(float(prompt_lines.size()) * PROMPT_LINE_H, PROMPT_LINE_H)
+    _line_edit.position = Vector2(box.position.x + 24, box.position.y + 52 + prompt_h)
     _line_edit.size = Vector2(BOX_W - 48, 30)
 
 
@@ -117,7 +119,16 @@ func _cancel() -> void:
 
 
 func _box_rect() -> Rect2:
-    return Rect2((size.x - BOX_W) * 0.5, (size.y - BOX_H) * 0.5, BOX_W, BOX_H)
+    var prompt_lines := maxi(_prompt_lines().size(), 1)
+    var extra_lines := maxi(prompt_lines - 1, 0)
+    var box_h := BOX_H + float(extra_lines) * PROMPT_LINE_H
+    return Rect2((size.x - BOX_W) * 0.5, (size.y - box_h) * 0.5, BOX_W, box_h)
+
+
+func _prompt_lines() -> PackedStringArray:
+    if _prompt.is_empty():
+        return PackedStringArray()
+    return _prompt.split("\n", false)
 
 
 func _draw():
@@ -135,8 +146,11 @@ func _draw():
     draw_string(font, box.position + Vector2(24, 36),
         _title, HORIZONTAL_ALIGNMENT_LEFT, -1, 16, UIPanels.TEXT_PANEL)
     if _prompt != "":
-        draw_string(font, box.position + Vector2(24, 58),
-            _prompt, HORIZONTAL_ALIGNMENT_LEFT, -1, 11, UIPanels.TEXT_PANEL_DIM)
+        var prompt_y := box.position.y + 58.0
+        for line in _prompt_lines():
+            draw_string(font, Vector2(box.position.x + 24.0, prompt_y),
+                line, HORIZONTAL_ALIGNMENT_LEFT, -1, 11, UIPanels.TEXT_PANEL_DIM)
+            prompt_y += PROMPT_LINE_H
 
     var btn_w: float = 96.0
     var btn_h: float = 30.0

@@ -1,6 +1,6 @@
 extends Control
 
-const EditorUndo = preload("res://Space/scripts/editor/editor_undo.gd")
+
 const RegIO = preload("res://Space/scripts/editor/reg/reg_io.gd")
 const SystemIO = preload("res://Space/scripts/editor/system_io.gd")
 const PackAssetIndex = preload("res://Space/scripts/editor/pack_asset_index.gd")

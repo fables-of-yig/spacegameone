@@ -28,7 +28,7 @@ var dirty: bool = false
 
 # Editor mode: 0 = theme styling, 1 = screen layout builder
 var editor_mode: int = 0
-var _active_screen_id: String = "hud"
+var _active_screen_id: String = "hud_space"
 var _screen_data: Dictionary = {}
 var _screen_dirty: bool = false
 
@@ -59,6 +59,10 @@ var _edit_key: String = ""           # Sub-key (e.g. "main", "hover", "title")
 
 const TOPBAR_H: float = 64.0
 const FIELD_W: float  = 380.0
+const TOPBAR_PAD: float = 18.0
+const TOPBAR_BTN_GAP: float = 8.0
+const TUTORIAL_BTN_W: float = 100.0
+const TUTORIAL_BTN_H: float = 32.0
 
 
 func _ready():
@@ -257,11 +261,35 @@ func _layout_children() -> void:
         screen_texture_import_dialog.position = Vector2.ZERO
         screen_texture_import_dialog.size = Vector2(vw, vh)
     if _tutorial_btn != null:
-        _tutorial_btn.position = Vector2(vw - 240, 16)
-        _tutorial_btn.size = Vector2(100, 32)
+        _layout_tutorial_button(vw)
     if _tutorial_overlay != null:
         _tutorial_overlay.position = Vector2.ZERO
         _tutorial_overlay.size = Vector2(vw, vh)
+
+
+func _layout_tutorial_button(vw: float) -> void:
+    if _tutorial_btn == null:
+        return
+    var mode_label := "SCREEN UI" if editor_mode == 1 else "THEME"
+    var header_label := "CAMPAIGN  %s   -   %s" % [pack_id, mode_label]
+    if pack_id == "":
+        header_label = "GLOBAL DEFAULT   -   %s" % mode_label
+    var font: Font = ThemeDB.fallback_font
+    var label_w: float = font.get_string_size(header_label, HORIZONTAL_ALIGNMENT_LEFT, -1, 14).x
+    var left_limit := TOPBAR_PAD + label_w + 18.0 + EditorTooltip.TOGGLE_WIDTH + 12.0
+    var right_cluster_w := 126.0 + TOPBAR_BTN_GAP + 100.0 + TOPBAR_BTN_GAP + 130.0 + TOPBAR_BTN_GAP + 130.0 + TOPBAR_BTN_GAP + 90.0 + TOPBAR_BTN_GAP + 90.0
+    var right_cluster_left := vw - TOPBAR_PAD - right_cluster_w
+    var available_w := right_cluster_left - 12.0 - left_limit
+    if available_w < 64.0:
+        _tutorial_btn.visible = false
+        return
+    _tutorial_btn.visible = true
+    var tutorial_w := minf(TUTORIAL_BTN_W, available_w)
+    var tutorial_x := right_cluster_left - tutorial_w - 12.0
+    if tutorial_x < left_limit:
+        tutorial_x = left_limit
+    _tutorial_btn.position = Vector2(tutorial_x, 16.0)
+    _tutorial_btn.size = Vector2(tutorial_w, TUTORIAL_BTN_H)
 
 
 func open_editor(p_pack_id: String = "") -> void:
@@ -391,6 +419,13 @@ func set_panel_margin(key: String, margin: Vector2i) -> void:
     _apply_live()
 
 
+func cycle_panel_mode(key: String) -> void:
+    var current := UITypes.get_panel_mode(theme_data, key)
+    var next := "stretch" if current == "9slice" else "9slice"
+    UITypes.set_panel_mode(theme_data, key, next)
+    _apply_live()
+
+
 func set_button_frame(key: String, path: String) -> void:
     UITypes.set_button_frame(theme_data, key, path)
     _apply_live()
@@ -398,6 +433,13 @@ func set_button_frame(key: String, path: String) -> void:
 
 func set_button_margin(key: String, margin: Vector2i) -> void:
     UITypes.set_button_margin(theme_data, key, margin)
+    _apply_live()
+
+
+func cycle_button_mode(key: String) -> void:
+    var current := UITypes.get_button_mode(theme_data, key)
+    var next := "stretch" if current == "9slice" else "9slice"
+    UITypes.set_button_mode(theme_data, key, next)
     _apply_live()
 
 
@@ -452,6 +494,15 @@ func request_import_screen_texture(element_id: String, prop_key: String) -> void
     _edit_target = "screen_texture_import"
     _edit_key = "%s|%s" % [element_id, prop_key]
     screen_texture_import_dialog.popup_centered_ratio(0.8)
+
+
+func request_edit_screen_color(element_id: String, prop_key: String, current_hex: String = "") -> void:
+    _edit_target = "screen_color"
+    _edit_key = "%s|%s" % [element_id, prop_key]
+    var current := current_hex.strip_edges()
+    if current.is_empty():
+        current = "#ffffff"
+    color_modal.open("Edit %s" % prop_key, current)
 
 
 func request_edit_panel_margin(key: String) -> void:
@@ -522,6 +573,7 @@ func _on_color_submitted(hex: String) -> void:
     if _undo != null:
         _undo.begin()
     match _edit_target:
+        "screen_color": _apply_screen_color_pick(hex)
         "text_color":   set_text_hex(_edit_key, hex)
         "frame_stroke": set_frame_stroke(hex)
     if _undo != null:
@@ -571,6 +623,30 @@ func _apply_screen_texture_pick(path: String) -> void:
     if typeof(props_v) == TYPE_DICTIONARY:
         props = props_v
     props[prop_key] = path
+    elem["properties"] = props
+    _screen_dirty = true
+    if property_panel != null:
+        property_panel.show_element(elem)
+    if screen_canvas != null:
+        screen_canvas.queue_redraw()
+    if hierarchy_panel != null:
+        hierarchy_panel.queue_redraw()
+
+
+func _apply_screen_color_pick(hex: String) -> void:
+    var parts := _edit_key.split("|", false, 1)
+    if parts.size() != 2:
+        return
+    var element_id := str(parts[0])
+    var prop_key := str(parts[1])
+    var elem := _find_element_by_id(_screen_data, element_id)
+    if elem.is_empty():
+        return
+    var props_v: Variant = elem.get("properties", {})
+    var props: Dictionary = {}
+    if typeof(props_v) == TYPE_DICTIONARY:
+        props = props_v
+    props[prop_key] = hex
     elem["properties"] = props
     _screen_dirty = true
     if property_panel != null:
@@ -656,19 +732,22 @@ func _load_active_screen() -> void:
         _screen_data["id"] = _active_screen_id + "_root"
         _screen_data["rect"] = {"x": 0, "y": 0, "w": 480, "h": 272}
     _screen_dirty = false
-    if screen_canvas != null:
-        screen_canvas.screen_data = _screen_data
-    if hierarchy_panel != null:
-        hierarchy_panel.screen_data = _screen_data
+    _sync_screen_editor_views()
 
 
 func _save_active_screen() -> void:
+    if property_panel != null and property_panel.has_method("commit_pending_edits"):
+        property_panel.commit_pending_edits()
     if pack_id.is_empty() or _active_screen_id.is_empty():
         return
+    _screen_data = UIIo.normalize_screen(_active_screen_id, _screen_data, pack_id)
     if UIIo.save_screen(pack_id, _active_screen_id, _screen_data):
         _screen_dirty = false
         print("[ThemeEditor] saved screen '%s' for pack '%s'" % [_active_screen_id, pack_id])
     else:
+        var check := UIIo.validate_screen(_active_screen_id, _screen_data, pack_id)
+        for issue in check.get("errors", []):
+            push_error("[ThemeEditor] %s.%s" % [_active_screen_id, str(issue)])
         push_error("[ThemeEditor] save failed for screen '%s' in pack '%s'" % [_active_screen_id, pack_id])
 
 
@@ -679,6 +758,8 @@ func save_screen() -> void:
 # ─── Screen editor callbacks ────────────────────────────────────────────
 
 func _on_screen_element_selected(element_id: String) -> void:
+    if property_panel != null and property_panel.has_method("commit_pending_edits"):
+        property_panel.commit_pending_edits()
     if screen_canvas != null:
         screen_canvas.selected_element_id = element_id
     if hierarchy_panel != null:
@@ -701,6 +782,7 @@ func _on_element_add_requested(element_type: String) -> void:
         _screen_data["children"] = []
     (_screen_data["children"] as Array).append(new_elem)
     _screen_dirty = true
+    _sync_screen_editor_views()
     # Select the new element
     _on_screen_element_selected(str(new_elem["id"]))
     if _undo != null:
@@ -712,6 +794,7 @@ func _on_element_delete_requested(element_id: String) -> void:
         _undo.begin()
     if _remove_element_by_id(_screen_data, element_id):
         _screen_dirty = true
+        _sync_screen_editor_views()
         if screen_canvas != null:
             screen_canvas.selected_element_id = ""
         if property_panel != null:
@@ -727,10 +810,16 @@ func _on_element_delete_requested(element_id: String) -> void:
 
 func _on_screen_element_changed(_element_id: String) -> void:
     _screen_dirty = true
+    _sync_screen_editor_views()
+    var elem := _find_element_by_id(_screen_data, _element_id)
+    if property_panel != null and not elem.is_empty():
+        property_panel.show_element(elem)
     if hierarchy_panel != null:
         hierarchy_panel.queue_redraw()
     if property_panel != null:
         property_panel.queue_redraw()
+    if screen_canvas != null:
+        screen_canvas.queue_redraw()
 
 
 func _on_property_changed(element_id: String, key: String, value: Variant) -> void:
@@ -762,10 +851,7 @@ func _on_property_changed(element_id: String, key: String, value: Variant) -> vo
     else:
         elem[key] = value
     _screen_dirty = true
-    if screen_canvas != null:
-        screen_canvas.queue_redraw()
-    if hierarchy_panel != null:
-        hierarchy_panel.queue_redraw()
+    _sync_screen_editor_views()
 
 
 func _find_element_by_id(root: Dictionary, eid: String) -> Dictionary:
@@ -796,3 +882,12 @@ func _remove_element_by_id(root: Dictionary, eid: String) -> bool:
         if _remove_element_by_id(child_v, eid):
             return true
     return false
+
+
+func _sync_screen_editor_views() -> void:
+    if screen_canvas != null:
+        screen_canvas.screen_data = _screen_data
+        screen_canvas.queue_redraw()
+    if hierarchy_panel != null:
+        hierarchy_panel.screen_data = _screen_data
+        hierarchy_panel.queue_redraw()

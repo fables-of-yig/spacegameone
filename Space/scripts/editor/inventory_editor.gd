@@ -1,6 +1,5 @@
 extends Control
 
-const EditorUndo = preload("res://Space/scripts/editor/editor_undo.gd")
 
 
 var scroll_inv: float = 0.0

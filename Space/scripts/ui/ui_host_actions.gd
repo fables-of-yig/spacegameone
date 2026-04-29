@@ -1,7 +1,7 @@
 class_name UiHostActions
 extends RefCounted
 
-const UiContract := preload("res://Space/scripts/ui/ui_contract.gd")
+
 const CinematicOverlay := preload("res://Space/scripts/ui/cinematic_overlay.gd")
 
 

@@ -61,6 +61,7 @@ static func _set_cell_from_value(map: TileMapLayer, col: int, row: int, packed_v
 	var source_id: int = u["tileset"]
 	var atlas_cols := _get_atlas_cols_for_source(map, source_id)
 	var metatile_idx: int = u["idx"]
+	@warning_ignore("integer_division")
 	var atlas_coords := Vector2i(metatile_idx % atlas_cols, metatile_idx / atlas_cols)
 	# Alternative tile ID: 0=none, 1=H, 2=V, 3=H+V
 	var alt_id: int = (1 if u["hflip"] else 0) | (2 if u["vflip"] else 0)
@@ -201,6 +202,7 @@ func _apply_frame(entry: Dictionary) -> void:
 	var frames: Array = entry["frames"]
 	var metatile_idx: int = frames[entry["frame_idx"]]
 	var ac: int = entry["atlas_cols"]
+	@warning_ignore("integer_division")
 	var atlas_coords := Vector2i(metatile_idx % ac, metatile_idx / ac)
 	var node: TileMapLayer = entry["node"]
 	# Preserve the cell's existing alternative-tile (flip) flags.

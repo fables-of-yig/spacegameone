@@ -278,11 +278,28 @@ func _draw():
         var clock_str = GameManager.get_short_clock()
         draw_string(font, Vector2(sys_x + 200, m + 16), clock_str, HORIZONTAL_ALIGNMENT_LEFT, -1, 12, Color(0.5, 0.55, 0.65))
         if GameManager.using_controller:
-            draw_string(font, Vector2(sys_x, m + 32), "Select:Map  X:Builder  Start:Pause", HORIZONTAL_ALIGNMENT_LEFT, -1, 11, Color(0.4, 0.45, 0.5))
-            draw_string(font, Vector2(sys_x, m + 46), "LB:Scan  RT:Fire  LT:Secondary  L3:Boost", HORIZONTAL_ALIGNMENT_LEFT, -1, 11, Color(0.4, 0.45, 0.5))
+            draw_string(font, Vector2(sys_x, m + 32), "%s:Map  %s:Builder  %s:Pause" % [
+                GameManager.get_button_prompt("toggle_star_map"),
+                GameManager.get_button_prompt("toggle_ship_builder"),
+                GameManager.get_button_prompt("toggle_pause"),
+            ], HORIZONTAL_ALIGNMENT_LEFT, -1, 11, Color(0.4, 0.45, 0.5))
+            draw_string(font, Vector2(sys_x, m + 46), "%s:Scan  %s:Fire  %s:Secondary  %s:Boost" % [
+                GameManager.get_button_prompt("scan"),
+                GameManager.get_button_prompt("fire_primary"),
+                GameManager.get_button_prompt("fire_secondary"),
+                GameManager.get_button_prompt("boost"),
+            ], HORIZONTAL_ALIGNMENT_LEFT, -1, 11, Color(0.4, 0.45, 0.5))
         else:
-            draw_string(font, Vector2(sys_x, m + 32), "[M] Map  [B] Builder  [J] Log", HORIZONTAL_ALIGNMENT_LEFT, -1, 11, Color(0.4, 0.45, 0.5))
-            draw_string(font, Vector2(sys_x, m + 46), "[~] Freeze  [F5] Save  [F9] Load", HORIZONTAL_ALIGNMENT_LEFT, -1, 11, Color(0.4, 0.45, 0.5))
+            draw_string(font, Vector2(sys_x, m + 32), "[%s] Map  [%s] Builder  [%s] Pause" % [
+                GameManager.get_button_prompt("toggle_star_map"),
+                GameManager.get_button_prompt("toggle_ship_builder"),
+                GameManager.get_button_prompt("toggle_pause"),
+            ], HORIZONTAL_ALIGNMENT_LEFT, -1, 11, Color(0.4, 0.45, 0.5))
+            draw_string(font, Vector2(sys_x, m + 46), "[%s] Save  [%s] Load  [%s] Scan" % [
+                GameManager.get_button_prompt("save_game"),
+                GameManager.get_button_prompt("load_game"),
+                GameManager.get_button_prompt("scan"),
+            ], HORIZONTAL_ALIGNMENT_LEFT, -1, 11, Color(0.4, 0.45, 0.5))
 
 
     var cx = size.x * 0.5
@@ -1099,8 +1116,18 @@ func _draw_controls_overlay(font: Font):
     var controls: Array = []
     if GameManager.using_controller:
         controls = [
-            ["Left Stick", "Move / Strafe"],
-            ["Right Stick", "Aim"],
+            ["%s / %s / %s / %s" % [
+                GameManager.get_button_prompt("controller_move_up"),
+                GameManager.get_button_prompt("controller_move_left"),
+                GameManager.get_button_prompt("controller_move_down"),
+                GameManager.get_button_prompt("controller_move_right"),
+            ], "Move / Strafe"],
+            ["%s / %s / %s / %s" % [
+                GameManager.get_button_prompt("controller_aim_up"),
+                GameManager.get_button_prompt("controller_aim_left"),
+                GameManager.get_button_prompt("controller_aim_down"),
+                GameManager.get_button_prompt("controller_aim_right"),
+            ], "Aim"],
             [GameManager.get_button_prompt("fire_primary"), "Fire Primary"],
             [GameManager.get_button_prompt("fire_secondary"), "Fire Secondary"],
             [GameManager.get_button_prompt("fire_special"), "Fire Special Weapons"],
@@ -1109,28 +1136,33 @@ func _draw_controls_overlay(font: Font):
             [GameManager.get_button_prompt("fire_harpoon"), "Wretched Harpoon"],
             [GameManager.get_button_prompt("scan"), "Shield Supercharger"],
             [GameManager.get_button_prompt("interact"), "Interact"],
-            ["D-Pad Right", "Cycle Primary Weapons"],
-            ["D-Pad Left", "Cycle Secondary Weapons"],
-            ["D-Pad Down", "Cycle Special Weapons"],
-            ["D-Pad Up", "Cycle Power Preset"],
+            [GameManager.get_button_prompt("cycle_primary"), "Cycle Primary Weapons"],
+            [GameManager.get_button_prompt("cycle_secondary"), "Cycle Secondary Weapons"],
+            [GameManager.get_button_prompt("cycle_special"), "Cycle Special Weapons"],
+            [GameManager.get_button_prompt("cycle_power"), "Cycle Power Preset"],
             [GameManager.get_button_prompt("toggle_star_map"), "Sector Map"],
         ]
     else:
         controls = [
-            ["WASD", "Move / Strafe"],
+            ["%s / %s / %s / %s" % [
+                GameManager.get_button_prompt("move_up"),
+                GameManager.get_button_prompt("move_left"),
+                GameManager.get_button_prompt("move_down"),
+                GameManager.get_button_prompt("move_right"),
+            ], "Move / Strafe"],
             ["Mouse", "Aim"],
-            ["Left Click", "Fire Primary"],
-            ["Right Click", "Fire Secondary"],
-            ["F", "Fire Special Weapons"],
-            ["Shift", "Boost"],
-            ["Space", "Handbrake / Orbit Lock"],
-            ["R", "Wretched Harpoon"],
-            ["Q", "Shield Supercharger"],
-            ["E", "Interact"],
-            ["1", "Cycle Primary Weapons"],
-            ["2", "Cycle Secondary Weapons"],
-            ["3", "Cycle Special Weapons"],
-            ["Tab", "Cycle Power Preset"],
+            [GameManager.get_button_prompt("fire_primary"), "Fire Primary"],
+            [GameManager.get_button_prompt("fire_secondary"), "Fire Secondary"],
+            [GameManager.get_button_prompt("fire_special"), "Fire Special Weapons"],
+            [GameManager.get_button_prompt("boost"), "Boost"],
+            [GameManager.get_button_prompt("handbrake"), "Handbrake / Orbit Lock"],
+            [GameManager.get_button_prompt("fire_harpoon"), "Wretched Harpoon"],
+            [GameManager.get_button_prompt("scan"), "Shield Supercharger"],
+            [GameManager.get_button_prompt("interact"), "Interact"],
+            [GameManager.get_button_prompt("cycle_primary"), "Cycle Primary Weapons"],
+            [GameManager.get_button_prompt("cycle_secondary"), "Cycle Secondary Weapons"],
+            [GameManager.get_button_prompt("cycle_special"), "Cycle Special Weapons"],
+            [GameManager.get_button_prompt("cycle_power"), "Cycle Power Preset"],
             ["Mouse Scroll", "Zoom In/Out"],
         ]
     for c in controls:

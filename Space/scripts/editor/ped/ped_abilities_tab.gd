@@ -1,7 +1,6 @@
 extends Control
 
 const PedIO = preload("res://Space/scripts/editor/ped/ped_io.gd")
-const EditorUndo = preload("res://Space/scripts/editor/editor_undo.gd")
 
 # Player editor — Abilities tab. List + detail editor for abilities.json. Each
 # ability has id/name/description/category plus a `params` dict of arbitrary

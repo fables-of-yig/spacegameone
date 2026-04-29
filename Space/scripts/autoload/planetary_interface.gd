@@ -222,12 +222,12 @@ func begin_launch(main: Node) -> void:
 # the pending snapshot from the wrapper's store and applies the minimal
 # fields we still carry (room address + player position + hp). No-op on
 # fresh boots and on first visits to a planet.
-func restore_pending_if_any(main: Node) -> void:
+func restore_pending_if_any(main: Node) -> bool:
     if main == null:
-        return
+        return false
     var snap := _consume_pending_snapshot()
     if snap.is_empty():
-        return
+        return false
 
     var room_addr := str(snap.get("room", ""))
     var pos := Vector2.ZERO
@@ -242,6 +242,7 @@ func restore_pending_if_any(main: Node) -> void:
     if main.has_method("load_from_snapshot"):
         main.call("load_from_snapshot", room_addr, pos, hp)
     print("PlanetaryInterface: restored snapshot")
+    return true
 
 
 # Stash the editor's current pack/region/room so MvMain's Ctrl+9
@@ -253,6 +254,26 @@ func stage_return_to_editor(pack_id: String, realm_id: String, region_id: String
     pending_editor_realm_id = realm_id
     pending_editor_region_id = region_id
     pending_editor_room_addr = room_addr
+
+
+func reset_runtime_state(clear_editor_return: bool = true, clear_snapshots: bool = true) -> void:
+    hosted = false
+    pending_pack_id = ""
+    pending_realm_id = ""
+    pending_spawn_room = ""
+    pending_spawn_pos = Vector2.ZERO
+    pending_region_id = ""
+    pending_region_meta = {}
+    pending_edit_mode = false
+    _pending_snapshot = {}
+    if clear_snapshots:
+        _planet_snapshots = {}
+    if clear_editor_return:
+        pending_return_to_editor = false
+        pending_editor_pack_id = ""
+        pending_editor_realm_id = ""
+        pending_editor_region_id = ""
+        pending_editor_room_addr = ""
 
 
 # Returns the stashed {pack_id, region_id, room_addr} and clears the

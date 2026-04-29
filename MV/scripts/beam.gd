@@ -62,6 +62,9 @@ func _physics_process(delta: float) -> void:
 		return
 
 	position += _vel * delta
+	_apply_geometry_hits()
+	if is_queued_for_deletion():
+		return
 
 	if position.distance_to(_spawn) > MAX_TRAVEL:
 		queue_free()
@@ -99,3 +102,23 @@ func _on_body_entered(body: Node2D) -> void:
 	if room != null and room.has_method("break_block_at_world_pos"):
 		room.call("break_block_at_world_pos", position)
 	queue_free()
+
+
+func _apply_geometry_hits() -> void:
+	var hit_rect := Rect2(global_position - Vector2(4.0, 4.0), Vector2(8.0, 8.0))
+	for enemy in get_tree().get_nodes_in_group("mv_enemy"):
+		if not is_instance_valid(enemy):
+			continue
+		if enemy.has_method("hurtbox_intersects_rect"):
+			if bool(enemy.call("hurtbox_intersects_rect", hit_rect)):
+				if enemy.has_method("take_damage"):
+					enemy.call("take_damage", _damage)
+				if not _charged:
+					queue_free()
+				return
+		elif enemy is Node2D and hit_rect.has_point((enemy as Node2D).global_position):
+			if enemy.has_method("take_damage"):
+				enemy.call("take_damage", _damage)
+			if not _charged:
+				queue_free()
+			return

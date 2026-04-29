@@ -5,7 +5,7 @@ const EnvTypes = preload("res://Space/scripts/editor/env/env_types.gd")
 
 # Left-side tool palette: tool selection, dynamic tile-layer list with
 # add/remove/reorder/speed controls, edit-mode switcher (collision/
-# entities/doors), and overlay toggle. Each button dispatches to the
+# entities/doors/bg images/shaders), and overlay toggle. Each button dispatches to the
 # parent editor and queues a redraw. The whole panel scrolls vertically
 # when the tile_layers list grows beyond the visible area.
 
@@ -22,7 +22,7 @@ var _tool_rects: Array = []
 var _layer_rects: Array = []
 var _layer_action_rects: Array = []  # up/down/×/speed/rename on active layer
 var _add_rects: Array = []            # + BG / + FG
-var _mode_rects: Array = []           # collision / entities / doors
+var _mode_rects: Array = []           # collision / entities / doors / bg images / shaders
 var _overlay_rects: Array = []
 var _collision_brush_rects: Array = []
 var _slope_shape_rects: Array = []
@@ -302,11 +302,11 @@ func _draw():
         {"action": "rename", "label": "NAM", "tint": Color(0.55, 0.8, 0.55),
             "tip": "Rename the active tile layer. Names are for your own organization — doesn't affect gameplay."},
     ]
-    var active_role := ""
+    var _active_role := ""
     if editing_tile and active_idx >= 0 and active_idx < tile_layers.size():
         var active_layer_v: Variant = tile_layers[active_idx]
         if typeof(active_layer_v) == TYPE_DICTIONARY:
-            active_role = str((active_layer_v as Dictionary).get("role", EnvTypes.ROLE_MAIN))
+            _active_role = str((active_layer_v as Dictionary).get("role", EnvTypes.ROLE_MAIN))
     var action_count: int = action_defs.size()
     var action_btn_w: float = (btn_w - float(action_count - 1) * 2.0) / float(action_count)
     for i in action_count:
@@ -369,6 +369,26 @@ func _draw():
             "tip": "Place entities, NPCs, pickups, and named trigger zones from the entity picker. Click to place; right-click or ERASE to remove."},
         {"mode": EnvTypes.MODE_DOORS, "label": "DOORS", "tint": Color(0.45, 0.95, 0.6),
             "tip": "Drag-create door rectangles that link to other rooms. Doors define room transitions — paint a rect, then set its target room/door."},
+        {"mode": EnvTypes.MODE_BG_IMAGES, "label": "BG IMAGES", "tint": Color(0.95, 0.72, 0.4),
+            "tip": "Place stretched background PNGs directly on the room canvas. Drag out a rect, stack images, and set per-image scroll and animation."},
+        {"mode": EnvTypes.MODE_SHADERS, "label": "SHADERS", "tint": Color(0.72, 0.8, 1.0),
+            "tip": "Paint animated shader zones over the room. Drag a rect, then tune the effect preset, tint, strength, and speed in the right inspector."},
+    ]
+    mode_defs = [
+        mode_defs[0],
+        {
+            "mode": EnvTypes.MODE_ENTITIES,
+            "label": "ENTITIES",
+            "tint": Color(0.45, 0.75, 1.0),
+            "tip": "Place entities, NPCs, pickups, and actors from the entity picker. Click to place; right-click or ERASE to remove.",
+        },
+        {
+            "mode": EnvTypes.MODE_ZONES,
+            "label": "ZONES",
+            "tint": Color(0.45, 0.95, 0.6),
+            "tip": "Draw room zones as rectangles. Doors, shaders, interact prompts, and generic trigger areas all live here now.",
+        },
+        mode_defs[3],
     ]
     for def in mode_defs:
         var rect := Rect2(PAD_X, y, btn_w, ROW_H_LAYER)
@@ -414,6 +434,7 @@ func _draw():
         for i in collision_defs.size():
             var def: Dictionary = collision_defs[i]
             var bx := PAD_X + float(i % 2) * (brush_btn_w + 4.0)
+            @warning_ignore("integer_division")
             var by := y + float(i / 2) * (ROW_H_BTN + 4.0)
             var rect := Rect2(bx, by, brush_btn_w, ROW_H_BTN)
             _collision_brush_rects.append({"nibble": def["nibble"], "rect": rect})
@@ -452,6 +473,7 @@ func _draw():
                 for shape_idx in range(1, slope_shapes.size()):
                     var local_idx := shape_idx - 1
                     var sx := PAD_X + float(local_idx % 2) * (shape_btn_w + 4.0)
+                    @warning_ignore("integer_division")
                     var sy := y + float(local_idx / 2) * (ROW_H_BTN + 4.0)
                     var rect := Rect2(sx, sy, shape_btn_w, ROW_H_BTN)
                     _slope_shape_rects.append({"shape": shape_idx, "rect": rect})

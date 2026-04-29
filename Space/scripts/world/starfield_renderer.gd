@@ -585,9 +585,12 @@ func _draw_star_sprites(n: Node2D):
                 var anim_fps: float = maxf(float(sys.get("star_anim_fps", 0.0)), 0.0)
                 if frame_count > 1 and anim_fps > 0.0:
                     frame_idx = int(floor(Time.get_ticks_msec() * 0.001 * anim_fps)) % frame_count
+                @warning_ignore("confusable_local_declaration")
                 var src = Rect2(frame_w * float(frame_idx), 0.0, frame_w, float(custom_tex.get_height()))
                 var draw_scale: float = (star_r * 2.2) / maxf(frame_w, float(custom_tex.get_height()))
+                @warning_ignore("confusable_local_declaration")
                 var draw_size: Vector2 = Vector2(frame_w, float(custom_tex.get_height())) * draw_scale
+                @warning_ignore("confusable_local_declaration")
                 var dest = Rect2(star_pos - draw_size * 0.5, draw_size)
                 n.draw_texture_rect_region(custom_tex, dest, src)
                 continue

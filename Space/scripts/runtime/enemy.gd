@@ -23,7 +23,6 @@ extends CharacterBody2D
 const EntIO := preload("res://Space/scripts/editor/ent/ent_io.gd")
 const BehIO := preload("res://Space/scripts/editor/beh/beh_io.gd")
 const BehLoader := preload("res://Space/scripts/runtime/beh/beh_loader.gd")
-const MvProjectile := preload("res://MV/scripts/projectile.gd")
 
 const FALLBACK_GRAVITY: float = 0.109375 * 3600.0
 const FALLBACK_MAX_FALL: float = 5.0 * 60.0
@@ -75,6 +74,7 @@ var _ai_pose_state: String = ""
 var _ai_pose_hold_until: float = 0.0
 var _ai_pose_loop: bool = true
 var _ai_pose_speed_scale: float = 1.0
+var _ai_pose_restart_pending: bool = false
 var _vertical_drive_active: bool = false
 var _movement_mode: String = "ground"
 var _hover_anchor_y: float = 0.0
@@ -98,6 +98,7 @@ var projectile_speed: float = 180.0
 var _hit_flash_timer: float = 0.0
 var _dead: bool = false
 var _contact_cooldown_left: float = 0.0
+var _defeat_cleanup_at: float = -1.0
 
 # Authored-direction flag used by walk/turn_around leaves to persist
 # facing across ticks. +1 = right, -1 = left. Walk leaves without an
@@ -139,7 +140,10 @@ func _load_combat_stats() -> void:
     max_hp = maxi(1, int(_entity.get("hp", max_hp)))
     hp = max_hp
     attack_damage = maxi(0, int(_entity.get("attack_damage", attack_damage)))
-    contact_damage = maxi(0, int(_entity.get("contact_damage", contact_damage)))
+    if _entity.has("contact_damage"):
+        contact_damage = maxi(0, int(_entity.get("contact_damage", contact_damage)))
+    else:
+        contact_damage = attack_damage
     contact_cooldown = maxf(0.0, float(_entity.get("contact_cooldown", contact_cooldown)))
     move_speed = maxf(0.0, float(_entity.get("move_speed", move_speed)))
     projectile_damage = maxi(0, int(_entity.get("projectile_damage", projectile_damage)))
@@ -161,6 +165,7 @@ func take_damage(amount: int, _from_pos = null) -> void:
         return
     hp = maxi(0, hp - amount)
     _hit_flash_timer = 0.15
+    ai_request_pose("hurt", 0.14, false, 1.0)
     enemy_damaged.emit(amount, hp)
     if hp == 0:
         _on_defeat()
@@ -170,9 +175,16 @@ func _on_defeat() -> void:
     if _dead:
         return
     _dead = true
+    velocity = Vector2.ZERO
+    if _contact_area != null:
+        _contact_area.monitoring = false
+    if _col_shape != null:
+        _col_shape.set_deferred("disabled", true)
+    if _contact_shape != null:
+        _contact_shape.set_deferred("disabled", true)
+    _play_death_pose()
     enemy_defeated.emit(entity_id)
     MvTriggerEngine.fire_event("enemy_defeated", { "entity_id": entity_id })
-    queue_free()
 
 
 func _process(delta: float) -> void:
@@ -187,6 +199,10 @@ func _process(delta: float) -> void:
             queue_redraw()
     elif _sprite != null and _sprite.modulate != Color.WHITE:
         _sprite.modulate = Color.WHITE
+
+    if _dead and _defeat_cleanup_at >= 0.0 and _now_seconds() >= _defeat_cleanup_at:
+        queue_free()
+        return
 
     if _sprite == null:
         return
@@ -365,7 +381,8 @@ func _ensure_contact_area() -> void:
     _contact_area = Area2D.new()
     _contact_area.name = "TouchDamageArea"
     _contact_area.monitoring = true
-    _contact_area.monitorable = false
+    _contact_area.monitorable = true
+    _contact_area.add_to_group("mv_enemy_hurt")
     _contact_shape = CollisionShape2D.new()
     _contact_area.add_child(_contact_shape)
     add_child(_contact_area)
@@ -382,6 +399,30 @@ func _sync_contact_shape() -> void:
         rect.size = PLACEHOLDER_SIZE
         _contact_shape.position = Vector2.ZERO
     _contact_shape.shape = rect
+
+
+func combat_origin() -> Vector2:
+    if _col_shape != null:
+        return global_position + _col_shape.position
+    return global_position
+
+
+func hurtbox_world_rect() -> Rect2:
+    if _contact_shape != null and _contact_shape.shape is RectangleShape2D:
+        var size := (_contact_shape.shape as RectangleShape2D).size
+        return Rect2(_contact_shape.global_position - size * 0.5, size)
+    if _col_shape != null and _col_shape.shape is RectangleShape2D:
+        var fallback_size := (_col_shape.shape as RectangleShape2D).size
+        return Rect2(_col_shape.global_position - fallback_size * 0.5, fallback_size)
+    return Rect2(global_position - PLACEHOLDER_SIZE * 0.5, PLACEHOLDER_SIZE)
+
+
+func hurtbox_contains_point(world_pos: Vector2) -> bool:
+    return hurtbox_world_rect().has_point(world_pos)
+
+
+func hurtbox_intersects_rect(world_rect: Rect2) -> bool:
+    return hurtbox_world_rect().intersects(world_rect)
 
 
 func _tick_contact_damage() -> void:
@@ -478,10 +519,15 @@ func ai_request_pose(state: String, hold_seconds: float = 0.12,
     var trimmed := state.strip_edges().to_lower()
     if trimmed.is_empty():
         return
+    var now := _now_seconds()
+    if not _ai_pose_state.is_empty() and now <= _ai_pose_hold_until:
+        if _pose_state_priority(trimmed) < _pose_state_priority(_ai_pose_state):
+            return
     _ai_pose_state = trimmed
-    _ai_pose_hold_until = _now_seconds() + maxf(0.0, hold_seconds)
+    _ai_pose_hold_until = now + maxf(0.0, hold_seconds)
     _ai_pose_loop = loop
     _ai_pose_speed_scale = maxf(0.05, speed_scale)
+    _ai_pose_restart_pending = true
 
 
 func ai_face_dir(dir: float) -> void:
@@ -603,9 +649,11 @@ func _apply_runtime_pose() -> void:
         target_state = _ai_pose_state
         loop = _ai_pose_loop
         speed_scale = _ai_pose_speed_scale
-        restart_pose = not loop
+        restart_pose = _ai_pose_restart_pending and not loop
+        _ai_pose_restart_pending = false
     else:
         _ai_pose_state = ""
+        _ai_pose_restart_pending = false
         if _dead:
             target_state = "death"
         elif _movement_mode == "ground" and not is_on_floor():
@@ -636,6 +684,44 @@ func _apply_hover_motion(delta: float) -> void:
 
 func _now_seconds() -> float:
     return float(Time.get_ticks_msec()) / 1000.0
+
+
+func _pose_state_priority(state: String) -> int:
+    match state:
+        "death":
+            return 4
+        "hurt":
+            return 3
+        "attack":
+            return 2
+        "move":
+            return 1
+        "idle":
+            return 0
+        _:
+            return 0
+
+
+func _play_death_pose() -> void:
+    var death_png := _resolve_state_pose("death")
+    if death_png.is_empty():
+        _defeat_cleanup_at = _now_seconds() + 0.08
+        return
+    _script_anim_active = false
+    _script_anim_name = "death"
+    _script_anim_loop = false
+    _script_anim_speed_scale = 1.0
+    _apply_pose_texture(death_png, true)
+    _defeat_cleanup_at = _now_seconds() + _current_pose_duration_seconds() + 0.05
+
+
+func _current_pose_duration_seconds() -> float:
+    var fps: float = DEFAULT_FPS
+    if _pose.has("fps"):
+        fps = float(_pose["fps"])
+    if fps <= 0.0:
+        fps = DEFAULT_FPS
+    return maxf(0.08, float(maxi(1, _frame_count)) / fps)
 
 
 func _apply_pose_texture(png_name: String, force_restart: bool = false) -> void:

@@ -60,21 +60,32 @@ var death_screen = null
 var menu_open: bool = true
 var creative_mode_active: bool = false
 var creative_test_flying: bool = false
+@warning_ignore("unused_private_class_variable")
 var _combat_recorder: Node = null
+@warning_ignore("unused_private_class_variable")
 var _cloned_recordings: Array = []  # loaded CombatRecording instances for AI
 var creative_recording_ai: bool = false
 var creative_previewing_ai: bool = false
 var creative_training_ai: bool = false
+@warning_ignore("unused_private_class_variable")
 var _training_round: int = 0
 var _training_clone: Node2D = null
+@warning_ignore("unused_private_class_variable")
 var _training_advance_pending: bool = false
 var _training_naming: bool = false
+@warning_ignore("unused_private_class_variable")
 var _training_name_input: String = ""
+@warning_ignore("unused_private_class_variable")
 var _training_name_edit: LineEdit = null
+@warning_ignore("unused_private_class_variable")
 var _recording_template_name: String = ""
+@warning_ignore("unused_private_class_variable")
 var _creative_saved_modules: Array = []
+@warning_ignore("unused_private_class_variable")
 var _creative_saved_core: String = ""
+@warning_ignore("unused_private_class_variable")
 var _creative_test_modules: Array = []
+@warning_ignore("unused_private_class_variable")
 var _creative_test_core: String = ""
 var _creative_runtime_source: String = ""
 var pause_open: bool = false
@@ -620,7 +631,9 @@ var _pending_galaxy_size: int = 120
 func _on_creative_mode():
     _cmc.on_creative_mode()
 
+@warning_ignore("unused_private_class_variable")
 var _creative_saved_fuel: float = 0.0
+@warning_ignore("unused_private_class_variable")
 var _creative_saved_credits: int = 0
 
 func _on_test_fly():
@@ -662,6 +675,7 @@ func _cancel_training_naming():
     _cmc.cancel_training_naming()
 
 var _fight_ai_active: bool = false
+@warning_ignore("unused_private_class_variable")
 var _fight_ai_clone: Node2D = null
 
 func _on_fight_ai_requested(placed: Array, core_id: String, template_name: String, recording_path: String):
@@ -826,6 +840,7 @@ func _on_quit_to_menu():
 
     pause_open = false
     time_frozen = false
+    _reset_mv_runtime_for_launcher()
     GameManager.skip_main_menu = false
     GameManager.reset_to_new_game()
     DataManager.systems = {}
@@ -902,6 +917,13 @@ func _on_play_pack(pack_id: String):
     if pack_id.is_empty():
         return
     MvPackLoader.reset_last_loaded_pack_id()
+    if _planet_iface == null:
+        _planet_iface = get_node_or_null("/root/PlanetaryInterface")
+    if _planet_iface != null and _planet_iface.has_method("reset_runtime_state"):
+        # "New Game" from the pack menu must not inherit any pending or cached
+        # planet snapshot, otherwise MV boots as a restore and skips the
+        # authored new_game_started trigger chain.
+        _planet_iface.call("reset_runtime_state", true, true)
     _entered_planet_from_menu = true
     _planet_visit_from_space_session = false
     _entered_authored_pack_from_menu = true
@@ -1334,6 +1356,8 @@ func _on_launch_requested(_pack_id: String):
         player.visible = true
     if hud_control:
         hud_control.visible = true
+    # Save checkpoint so Retry returns to orbit instead of a stale pre-landing state.
+    GameManager.save_game(GameManager.current_save_slot)
     print("PlanetaryInterface: launched from pack='%s'" % _pack_id)
 
 
@@ -1383,6 +1407,8 @@ func _bootstrap_authored_space_session(pack_id: String) -> bool:
     loaded_system = ""
     _load_system_content(GameManager.current_system)
     _apply_initial_loadout()
+    # Save checkpoint so authored-pack deaths can retry from the spawned starter ship.
+    GameManager.save_game(GameManager.current_save_slot)
     return true
 
 
@@ -1419,7 +1445,80 @@ static func _normalize_template_id(value: String) -> String:
     return trimmed
 
 
+func _close_mv_runtime_overlays() -> void:
+    var cinematic_script := preload("res://Space/scripts/ui/cinematic_overlay.gd")
+    var cinematic_overlay = cinematic_script.instance()
+    if cinematic_overlay != null and cinematic_overlay.has_method("close_cinematic"):
+        cinematic_overlay.call("close_cinematic")
+
+    var mv_hud := get_node_or_null("/root/MvHud")
+    if mv_hud != null:
+        mv_hud.visible = false
+
+    for node_name in ["MvInventoryScreen", "MvMapScreen", "MvShopUI"]:
+        var ui_node := get_node_or_null("/root/%s" % node_name)
+        if ui_node == null:
+            continue
+        if ui_node.has_method("close"):
+            ui_node.call("close")
+        else:
+            ui_node.visible = false
+            ui_node.set("_active", false)
+
+    var dialogue_runner := get_node_or_null("/root/MvDialogueRunner")
+    if dialogue_runner != null:
+        if dialogue_runner.has_method("stop"):
+            dialogue_runner.call("stop")
+        else:
+            dialogue_runner.visible = false
+            dialogue_runner.set("_active", false)
+
+    var game_over := get_node_or_null("/root/MvGameOver")
+    if game_over != null:
+        game_over.visible = false
+        game_over.set("_active", false)
+        var authored_screen = game_over.get("_authored_screen")
+        if authored_screen != null and authored_screen.has_method("clear_screen"):
+            authored_screen.call("clear_screen")
+            authored_screen.visible = false
+
+    if has_node("/root/MvGame"):
+        MvGame.simulation_paused = false
+
+
+func _reset_mv_runtime_for_launcher() -> void:
+    _teardown_planet_instances()
+    if planet_viewport_container:
+        planet_viewport_container.visible = false
+        planet_viewport_container.stretch_shrink = 4
+        planet_viewport_container.queue_sort()
+    _clear_planet_overlay()
+    on_surface = false
+    surface_data = {}
+    surface_entry_timer = 0.0
+    surface_exit_timer = 0.0
+    _entered_planet_from_menu = false
+    _planet_visit_from_space_session = false
+    _entered_authored_pack_from_menu = false
+    _surface_death_blocked = false
+    if player and is_instance_valid(player):
+        player.visible = false
+    if hud_control:
+        hud_control.visible = false
+        hud_control.on_surface = false
+    if _planet_iface == null:
+        _planet_iface = get_node_or_null("/root/PlanetaryInterface")
+    if _planet_iface != null and _planet_iface.has_method("reset_runtime_state"):
+        _planet_iface.call("reset_runtime_state", true, true)
+    MvPackLoader.clear_runtime_state()
+    if has_node("/root/MvGame"):
+        MvGame.main = null
+        MvGame.room_manager = null
+        MvGame.simulation_paused = false
+
+
 func _teardown_planet_instances() -> void:
+    _close_mv_runtime_overlays()
     if _overworld_instance and is_instance_valid(_overworld_instance):
         _overworld_instance.queue_free()
         _overworld_instance = null
@@ -3154,13 +3253,12 @@ func _on_player_destroyed():
             get_tree().paused = true
 
 func _on_death_retry():
+    _close_mv_runtime_overlays()
     if on_surface or _surface_death_blocked:
         _surface_death_blocked = false
-        get_tree().paused = true
         if death_screen != null:
             death_screen.visible = false
         _recover_hidden_player_after_surface_death()
-        return
     get_tree().paused = false
     if death_screen != null:
         death_screen.visible = false
@@ -3188,13 +3286,12 @@ func _on_death_retry():
         get_tree().reload_current_scene()
 
 func _on_death_menu():
+    _close_mv_runtime_overlays()
     if on_surface or _surface_death_blocked:
         _surface_death_blocked = false
-        get_tree().paused = true
         if death_screen != null:
             death_screen.visible = false
         _recover_hidden_player_after_surface_death()
-        return
     get_tree().paused = false
     if death_screen != null:
         death_screen.visible = false

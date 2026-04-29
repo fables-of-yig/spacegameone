@@ -183,7 +183,7 @@ func get_equipment_definition(item_id: String) -> Dictionary:
 
 func get_attack_definition(attack_id: String) -> Dictionary:
 	_ensure_defs_loaded()
-	return (_attack_defs_cache.get(attack_id, {}) as Dictionary).duplicate(true)
+	return _normalize_attack_definition((_attack_defs_cache.get(attack_id, {}) as Dictionary).duplicate(true))
 
 
 func get_projectile_definition(projectile_id: String) -> Dictionary:
@@ -329,7 +329,7 @@ func _ensure_defs_loaded() -> void:
 		for entry_v in attacks_v:
 			if typeof(entry_v) != TYPE_DICTIONARY:
 				continue
-			var entry: Dictionary = entry_v
+			var entry: Dictionary = _normalize_attack_definition(entry_v as Dictionary)
 			var attack_id := str(entry.get("id", "")).strip_edges()
 			if not attack_id.is_empty():
 				_attack_defs_cache[attack_id] = entry.duplicate(true)
@@ -467,8 +467,8 @@ func _ability_granted_by_current_equipment(ability_id: String) -> bool:
 	return false
 
 
-func _weapon_type_from_name(name: String) -> WeaponType:
-	var key := name.strip_edges().to_lower()
+func _weapon_type_from_name(weapon_name: String) -> WeaponType:
+	var key := weapon_name.strip_edges().to_lower()
 	match key:
 		"grenadelauncher", "grenade_launcher", "grenade launcher":
 			return WeaponType.GRENADE_LAUNCHER
@@ -485,8 +485,8 @@ func _weapon_type_from_attack_id(attack_id: String) -> WeaponType:
 	return WeaponType.BEAM
 
 
-func _legacy_attack_id_from_weapon_name(name: String) -> String:
-	var key := name.strip_edges().to_lower()
+func _legacy_attack_id_from_weapon_name(weapon_name: String) -> String:
+	var key := weapon_name.strip_edges().to_lower()
 	match key:
 		"beam":
 			return "beam_shot" if _attack_defs_cache.has("beam_shot") else ""
@@ -562,6 +562,45 @@ func _first_attack_id_by_type(attack_type: String) -> String:
 		if _attack_matches_type(attack_id, attack_type):
 			return attack_id
 	return ""
+
+
+func _normalize_attack_definition(entry: Dictionary) -> Dictionary:
+	if entry.is_empty():
+		return {}
+	var out: Dictionary = entry.duplicate(true)
+	var hit_frames_v: Variant = out.get("hit_frames", [])
+	var hit_frames: Array = []
+	if typeof(hit_frames_v) == TYPE_ARRAY:
+		for frame_v in hit_frames_v as Array:
+			hit_frames.append(int(frame_v))
+	out["hit_frames"] = hit_frames
+	for int_key in [
+		"cooldown_ticks",
+		"cost_mp",
+		"player_pose",
+		"charge_ticks",
+		"hitbox_x",
+		"hitbox_y",
+		"hitbox_w",
+		"hitbox_h",
+		"damage",
+		"knockback",
+		"muzzle_x",
+		"muzzle_y",
+		"frame_width",
+		"frame_height",
+		"frame_index",
+		"frame_count",
+		"frame_tick",
+		"charge_fx_frame_width",
+		"charge_fx_frame_height",
+		"charge_fx_frame_index",
+		"charge_fx_frame_count",
+		"charge_fx_frame_tick",
+	]:
+		if out.has(int_key):
+			out[int_key] = int(out.get(int_key, 0))
+	return out
 
 
 func _get_player() -> Node:

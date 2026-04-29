@@ -5,6 +5,7 @@ signal camera_focus_finished
 
 const RegIO = preload("res://Space/scripts/editor/reg/reg_io.gd")
 const OVERWORLD_BLOCK_SIZE: float = 16.0
+const HUD_SCRIPT = preload("res://MV/scripts/hud.gd")
 
 # Top-level game orchestrator for the MVMania planet layer. Ported from the
 # C# Main with a heavy trim: flow scripts, effects, cutscenes, entity
@@ -27,6 +28,7 @@ var _camera: Camera2D = null
 var _player: MvPlayer = null
 var _fade_rect: ColorRect = null
 var _trigger_debug_overlay: CanvasLayer = null
+var _hud: CanvasLayer = null
 
 # Runtime viewport — the C# code swapped this between game (480x270) and
 # editor (1280x720) sizes when the editor opened. Editor's deferred, so we
@@ -39,7 +41,8 @@ var _fade_frame: int = 0
 var _transition_phase: int = 0   # 0=idle, 1=fade-out, 2=load, 3=fade-in
 var _transition_frame: int = 0
 var _pending_door: Dictionary = {}
-var _pending_direction: String = ""
+var _pending_source_room: String = ""
+var _pending_target_link: Dictionary = {}
 var _camera_focus_mode: String = ""
 var _camera_focus_target: String = ""
 var _camera_focus_pos: Vector2 = Vector2.ZERO
@@ -112,6 +115,7 @@ func _ready() -> void:
     ($PlayerLayer as Node).add_child(_player)
     _player.entered_door.connect(_on_player_door)
     _player.player_died.connect(_on_player_died)
+    _ensure_hud()
 
     # Apply ManiaVar stat effects to the player's physics profile before
     # the first room loads, so gravity/jump/speed reflect stat levels.
@@ -125,7 +129,6 @@ func _ready() -> void:
     # Load the start room (no flow engine — MvRoomManager carries the
     # pack's start_room address directly).
     _room_manager.load_start_room()
-    _spawn_player_in_room()
     _setup_camera()
 
     var pack_id := MvPackLoader.current_pack.pack_id if MvPackLoader.current_pack != null else "demo"
@@ -146,6 +149,8 @@ func _ready() -> void:
         MvTriggerEngine.action_camera_focus.connect(_on_trigger_camera_focus)
     if not MvTriggerEngine.action_camera_unlock.is_connected(_on_trigger_camera_unlock):
         MvTriggerEngine.action_camera_unlock.connect(_on_trigger_camera_unlock)
+    if not MvTriggerEngine.action_set_room_weather.is_connected(_on_trigger_set_room_weather):
+        MvTriggerEngine.action_set_room_weather.connect(_on_trigger_set_room_weather)
     _fade = 1.0
     _fade_frame = 0
 
@@ -154,21 +159,41 @@ func _ready() -> void:
     # After the initial room load + player spawn, hand control to the
     # PlanetaryInterface so it can rehydrate any pending per-planet
     # snapshot (player position, hp). No-op on fresh boots and first visits.
-    PlanetaryInterface.restore_pending_if_any(self)
+    var restored_snapshot: bool = PlanetaryInterface.restore_pending_if_any(self)
 
     # Editor playtest handoff: if the env editor staged a spawn room/pos
     # via begin_landing, load that instead of start_room. This runs AFTER
     # restore_pending_if_any so it wins over any stale per-planet snapshot.
+    var playtest_spawn_override: bool = false
     if not PlanetaryInterface.pending_spawn_room.is_empty():
         var target_room: String = PlanetaryInterface.pending_spawn_room
         var target_pos: Vector2 = PlanetaryInterface.pending_spawn_pos
+        playtest_spawn_override = PlanetaryInterface.pending_return_to_editor
         PlanetaryInterface.pending_spawn_room = ""
         PlanetaryInterface.pending_spawn_pos = Vector2.ZERO
         load_from_snapshot(target_room, target_pos, -1)
 
     var boot_room_addr: String = _room_manager.current_room_addr() if _room_manager != null else ""
-    MvTriggerEngine.fire_event("player_spawn", { "room": boot_room_addr })
-    MvTriggerEngine.fire_event("game_started", { "room": boot_room_addr })
+    var startup_payload: Dictionary = {
+        "room": boot_room_addr,
+        "fresh_boot": not restored_snapshot and not playtest_spawn_override,
+        "restored_snapshot": restored_snapshot,
+        "playtest_spawn_override": playtest_spawn_override,
+    }
+    if bool(startup_payload["fresh_boot"]):
+        if _player != null:
+            _player.set_locked(true)
+        var intro_authored: bool = MvTriggerEngine.fire_event("new_game_started", startup_payload)
+        startup_payload["intro_authored"] = intro_authored
+        if not intro_authored:
+            spawn_player(Vector2(-1, -1), boot_room_addr)
+            if _player != null:
+                _player.set_locked(false)
+    else:
+        startup_payload["intro_authored"] = false
+        if _player != null:
+            _player.set_locked(false)
+    MvTriggerEngine.fire_event("game_started", startup_payload)
 
 
 func _input(event: InputEvent) -> void:
@@ -227,6 +252,14 @@ func _ensure_trigger_debug_overlay() -> void:
     add_child(_trigger_debug_overlay)
 
 
+func _ensure_hud() -> void:
+    if _hud != null:
+        return
+    _hud = CanvasLayer.new()
+    _hud.set_script(HUD_SCRIPT)
+    add_child(_hud)
+
+
 # ===== Region meta =====
 
 func _apply_pending_region_meta() -> void:
@@ -264,53 +297,121 @@ func _apply_pending_region_meta() -> void:
 # ===== Player spawn =====
 
 func _spawn_player_in_room() -> void:
-    var room: Dictionary = _room_manager.current_room()
-    if room.is_empty() or (room["collision"] as Array).size() == 0:
+    if _player == null or _room_manager == null:
         return
+    var room: Dictionary = _room_manager.current_room()
+    var spawn_pos := _default_player_spawn_position(room)
+    if spawn_pos.x < 0.0 or spawn_pos.y < 0.0:
+        return
+    _player.spawn_at(spawn_pos, "", _default_player_spawn_facing(room))
 
+
+func spawn_player(pos: Vector2 = Vector2(-1, -1), room_addr: String = "",
+        zone_id: String = "", entry_direction: String = "", fire_trigger: bool = true,
+        facing_direction: String = "") -> bool:
+    if _room_manager == null or _player == null:
+        return false
+    var target_room_addr := room_addr.strip_edges()
+    if not target_room_addr.is_empty() and target_room_addr != _room_manager.current_room_addr():
+        _room_manager.load_room(target_room_addr)
+        _setup_camera()
+    var room: Dictionary = _room_manager.current_room()
+    var spawn_pos := pos
+    var zone_ref := zone_id.strip_edges()
+    var spawn_facing: String = facing_direction.strip_edges().to_lower()
+    if not zone_ref.is_empty():
+        spawn_pos = _room_manager.resolve_zone_position(zone_ref)
+    if spawn_pos.x < 0.0 or spawn_pos.y < 0.0:
+        spawn_pos = _default_player_spawn_position(room)
+        if spawn_facing.is_empty():
+            spawn_facing = _default_player_spawn_facing(room)
+    if spawn_pos.x < 0.0 or spawn_pos.y < 0.0:
+        return false
+    _player.spawn_at(spawn_pos, entry_direction.strip_edges(), spawn_facing)
+    if fire_trigger:
+        MvTriggerEngine.fire_event("player_spawn", {
+            "room": _room_manager.current_room_addr(),
+            "x": spawn_pos.x,
+            "y": spawn_pos.y,
+            "zone_id": zone_ref,
+        })
+    return true
+
+
+func _default_player_spawn_position(room: Dictionary) -> Vector2:
+    if room.is_empty():
+        return Vector2(-1, -1)
     var spawn_pos := _find_player_spawn_in_room(room)
     if spawn_pos.x >= 0.0 and spawn_pos.y >= 0.0:
-        _player.spawn_at(spawn_pos)
-        return
+        return spawn_pos
+    return _fallback_player_spawn_position(room)
 
-    var collision: Array = room["collision"]
-    var rows: int = collision.size()
-    var cols: int = (collision[0] as Array).size()
 
-    for r in range(1, rows):
-        for c in range(cols):
-            if _is_floor_at(int(collision[r][c])) and not _is_floor_at(int(collision[r - 1][c])):
-                var x := float(c * 16 + 8)
-                var y := float(r * 16)
-                _player.spawn_at(Vector2(x, y))
-                return
+func _default_player_spawn_facing(room: Dictionary) -> String:
+    var spawn_entity: Dictionary = _find_player_spawn_entity(room)
+    if spawn_entity.is_empty():
+        return ""
+    var props_v: Variant = spawn_entity.get("properties", {})
+    if typeof(props_v) != TYPE_DICTIONARY:
+        return ""
+    var props: Dictionary = props_v
+    var facing: String = str(props.get("facing", "")).strip_edges().to_lower()
+    if facing == "left" or facing == "right":
+        return facing
+    return ""
 
-    var wpx: int = int(room["width_px"])
-    var hpx: int = int(room["height_px"])
-    _player.spawn_at(Vector2(wpx / 2.0, hpx / 2.0))
+
+func _fallback_player_spawn_position(room: Dictionary) -> Vector2:
+    var collision_v: Variant = room.get("collision", [])
+    if typeof(collision_v) == TYPE_ARRAY:
+        var collision: Array = collision_v
+        if not collision.is_empty() and typeof(collision[0]) == TYPE_ARRAY:
+            var rows: int = collision.size()
+            var cols: int = (collision[0] as Array).size()
+            for r in range(1, rows):
+                for c in range(cols):
+                    if _is_floor_at(int(collision[r][c])) and not _is_floor_at(int(collision[r - 1][c])):
+                        return Vector2(float(c * 16 + 8), float(r * 16))
+    var wpx: float = float(room.get("width_px", 0))
+    var hpx: float = float(room.get("height_px", 0))
+    if wpx <= 0.0 or hpx <= 0.0:
+        return Vector2(-1, -1)
+    return Vector2(wpx / 2.0, hpx / 2.0)
 
 
 func _find_player_spawn_in_room(room: Dictionary) -> Vector2:
+    var entity: Dictionary = _find_player_spawn_entity(room)
+    if entity.is_empty():
+        return Vector2(-1, -1)
+    return _player_spawn_position_from_entity(entity)
+
+
+func _find_player_spawn_entity(room: Dictionary) -> Dictionary:
     var entities_v: Variant = room.get("entities", [])
     if typeof(entities_v) != TYPE_ARRAY:
-        return Vector2(-1, -1)
+        return {}
     for entity_v in entities_v:
         if typeof(entity_v) != TYPE_DICTIONARY:
             continue
         var entity: Dictionary = entity_v
         if str(entity.get("type", "")).strip_edges() != "player_spawn":
             continue
-        if entity.has("x") and entity.has("y"):
-            return Vector2(float(entity.get("x", -1.0)), float(entity.get("y", -1.0)))
-        var pos_v: Variant = entity.get("position", null)
-        if pos_v is Vector2:
-            return pos_v
-        if typeof(pos_v) == TYPE_DICTIONARY:
-            return Vector2(float(pos_v.get("x", -1.0)), float(pos_v.get("y", -1.0)))
-        if typeof(pos_v) == TYPE_ARRAY:
-            var pos_arr: Array = pos_v
-            if pos_arr.size() >= 2:
-                return Vector2(float(pos_arr[0]), float(pos_arr[1]))
+        return entity
+    return {}
+
+
+func _player_spawn_position_from_entity(entity: Dictionary) -> Vector2:
+    if entity.has("x") and entity.has("y"):
+        return Vector2(float(entity.get("x", -1.0)), float(entity.get("y", -1.0)))
+    var pos_v: Variant = entity.get("position", null)
+    if pos_v is Vector2:
+        return pos_v
+    if typeof(pos_v) == TYPE_DICTIONARY:
+        return Vector2(float(pos_v.get("x", -1.0)), float(pos_v.get("y", -1.0)))
+    if typeof(pos_v) == TYPE_ARRAY:
+        var pos_arr: Array = pos_v
+        if pos_arr.size() >= 2:
+            return Vector2(float(pos_arr[0]), float(pos_arr[1]))
     return Vector2(-1, -1)
 
 
@@ -353,7 +454,8 @@ func _stop_camera_pan() -> void:
         _camera_pan_tween = null
 
 
-func _set_camera_focus(mode: String, target_ref: String = "", pos: Vector2 = Vector2.ZERO, duration: float = 0.0) -> void:
+func _set_camera_focus(mode: String, target_ref: String = "", pos: Vector2 = Vector2.ZERO,
+        duration: float = 0.0, speed: float = 0.0) -> void:
     _camera_focus_mode = mode
     _camera_focus_target = target_ref.strip_edges()
     _camera_focus_pos = pos
@@ -361,6 +463,8 @@ func _set_camera_focus(mode: String, target_ref: String = "", pos: Vector2 = Vec
     _stop_camera_pan()
     if _camera == null:
         return
+    if speed > 0.0:
+        duration = _camera.position.distance_to(target_pos) / speed
     if duration <= 0.0:
         _camera.position = target_pos
         _camera.offset = Vector2.ZERO
@@ -574,8 +678,9 @@ func _on_trigger_set_entity_facing(entity_ref: String, direction: String, zone_i
         target.call("ai_face_dir", facing_dir)
 
 
-func _on_trigger_camera_focus(mode: String, target_ref: String, pos: Vector2, duration: float) -> void:
-    _set_camera_focus(mode, target_ref, pos, duration)
+func _on_trigger_camera_focus(mode: String, target_ref: String, pos: Vector2,
+        duration: float, speed: float) -> void:
+    _set_camera_focus(mode, target_ref, pos, duration, speed)
 
 
 func _on_trigger_camera_unlock() -> void:
@@ -583,7 +688,22 @@ func _on_trigger_camera_unlock() -> void:
     _camera_focus_target = ""
     _camera_focus_pos = Vector2.ZERO
     _stop_camera_pan()
+    if _camera != null:
+        _camera.position = _resolve_camera_focus_position()
+        _camera.offset = Vector2.ZERO
     camera_focus_finished.emit()
+
+
+func _on_trigger_set_room_weather(room_addr: String, preset: String, color: String,
+        intensity: float, speed: float) -> void:
+    if _room_manager == null:
+        return
+    _room_manager.set_room_weather(room_addr, {
+        "preset": preset,
+        "color": color,
+        "intensity": intensity,
+        "speed": speed,
+    })
 
 
 func _resolve_trigger_actor(entity_ref: String) -> Node:
@@ -670,6 +790,23 @@ func wait_for_camera_focus(timeout: float = 0.0) -> bool:
     return true
 
 
+func wait_for_dialogue(timeout: float = 0.0) -> bool:
+    if MvDialogueRunner == null or not MvDialogueRunner.has_method("is_active"):
+        return false
+    if not MvDialogueRunner.is_active():
+        return true
+    if timeout <= 0.0:
+        await MvDialogueRunner.dialogue_finished
+        return true
+    var started_ms: int = Time.get_ticks_msec()
+    while MvDialogueRunner.is_active():
+        var elapsed: float = float(Time.get_ticks_msec() - started_ms) / 1000.0
+        if elapsed >= timeout:
+            return false
+        await get_tree().process_frame
+    return true
+
+
 func load_from_snapshot(room_addr: String, pos: Vector2, hp: int) -> void:
     if not room_addr.is_empty() and room_addr != _room_manager.current_room_addr():
         _room_manager.load_room(room_addr)
@@ -685,31 +822,45 @@ func load_from_snapshot(room_addr: String, pos: Vector2, hp: int) -> void:
 
 # ===== Door transitions =====
 
-func _on_player_door(direction: String) -> void:
+func _on_player_door(door_id: String) -> void:
     if _player.is_locked():
         return
-    var from_room: String = _room_manager.current_room_addr()
-    var door: Dictionary = _resolve_active_door(direction)
+    var door: Dictionary = _room_manager.find_door_by_id(door_id) if _room_manager != null and _room_manager.has_method("find_door_by_id") else {}
     if door.is_empty():
         return
-    MvTriggerEngine.fire_event("door_enter", {
-        "direction": direction,
-        "from_room": from_room,
-        "to_room": _resolve_door_target(door),
-    })
-    start_door_transition(direction, door)
+    var payload := _build_door_payload(door)
+    MvTriggerEngine.fire_event("door_use_attempt", payload)
+
+    var enabled := _door_enabled(door)
+    var locked := _door_locked(door)
+    payload["enabled"] = enabled
+    payload["locked"] = locked
+    if not enabled:
+        payload["block_reason"] = "disabled"
+        _fire_blocked_door_events(door, payload)
+        return
+    if locked and not _door_access_granted(door):
+        payload["block_reason"] = "locked"
+        _fire_blocked_door_events(door, payload)
+        return
+
+    MvTriggerEngine.fire_event("door_use_success", payload)
+    MvTriggerEngine.fire_event("door_enter", payload)
+    _fire_custom_door_event(str(door.get("success_event_name", "")).strip_edges(), payload)
+    start_door_transition(door)
 
 
-func start_door_transition(direction: String, door_override: Dictionary = {}) -> void:
+func start_door_transition(door_override: Dictionary = {}) -> void:
     if _transitioning:
         return
-    var door: Dictionary = door_override if not door_override.is_empty() else _resolve_active_door(direction)
+    var door: Dictionary = door_override
     if door.is_empty():
         return
 
     _transitioning = true
     _pending_door = door
-    _pending_direction = direction
+    _pending_source_room = _room_manager.current_room_addr() if _room_manager != null else ""
+    _pending_target_link = _resolve_door_target_link(door)
     _transition_phase = 1
     _transition_frame = 0
     _player.velocity = Vector2.ZERO
@@ -736,22 +887,58 @@ func _tick_door_transition() -> void:
             _transition_phase = 0
             _transitioning = false
             _pending_door = {}
+            _pending_source_room = ""
+            _pending_target_link = {}
+
+
+func _cleanup_room_transition_projectiles() -> void:
+    if _player != null and _player.has_method("cleanup_room_transition_transients"):
+        _player.call("cleanup_room_transition_transients")
+    var queued: Dictionary = {}
+    _queue_free_transition_group_nodes("mv_projectile", queued)
+    _queue_free_transition_group_nodes("mv_grenade", queued)
+    var root: Node = get_tree().current_scene
+    if root == null:
+        root = self
+    _queue_free_transition_projectiles_recursive(root, queued)
+
+
+func _queue_free_transition_group_nodes(group_name: String, queued: Dictionary) -> void:
+    var tree := get_tree()
+    if tree == null:
+        return
+    for node in tree.get_nodes_in_group(group_name):
+        _queue_free_transition_projectile_node(node, queued)
+
+
+func _queue_free_transition_projectiles_recursive(node: Node, queued: Dictionary) -> void:
+    if node == null:
+        return
+    if node is MvBeam or node is MvAuthoredProjectile or node is MvGrappleBeam:
+        _queue_free_transition_projectile_node(node, queued)
+    for child in node.get_children():
+        _queue_free_transition_projectiles_recursive(child, queued)
+
+
+func _queue_free_transition_projectile_node(node: Node, queued: Dictionary) -> void:
+    if node == null or not is_instance_valid(node) or node == _player:
+        return
+    var instance_id := node.get_instance_id()
+    if queued.has(instance_id):
+        return
+    queued[instance_id] = true
+    node.queue_free()
 
 
 func _load_destination_room() -> bool:
     var door := _pending_door
-    var direction := _pending_direction
     if door.is_empty():
         _abort_door_transition()
         return false
 
-    # Planet launch door: if this door carries the "exit_to_space" tag,
-    # hand control back to SSB instead of loading a room. The
-    # PlanetaryInterface autoload snapshots current planet state and emits
-    # launch_requested so SSB can tear down the viewport.
     if bool(door.get("send_to_overworld", false)):
         print("MvMain: overworld door traversed - returning to overworld")
-        request_return_to_overworld()
+        request_return_to_overworld(str(door.get("overworld_region_id", "")).strip_edges())
         return true
     var tags: Array = door.get("tags", [])
     if tags.has("exit_to_space"):
@@ -759,21 +946,17 @@ func _load_destination_room() -> bool:
         PlanetaryInterface.begin_launch(self)
         return true
 
-    # Walk destinations list, pick first (condition-aware routing deferred
-    # with the rest of the trigger/flow rebuild). Fall back to the legacy
-    # single target.
-    var target: String = _resolve_door_target(door)
-    if _room_manager.has_method("resolve_room_addr"):
-        target = str(_room_manager.resolve_room_addr(target, _room_manager.current_room_addr()))
+    var target_link := _pending_target_link if not _pending_target_link.is_empty() else _resolve_door_target_link(door)
+    var target: String = str(target_link.get("room_addr", "")).strip_edges()
     if target.is_empty():
-        push_error("MvMain: door in direction '%s' has no resolvable target" % direction)
+        push_error("MvMain: door '%s' has no resolvable target" % str(door.get("id", "")))
         _abort_door_transition()
         return false
     if not _room_manager.has_room(target):
-        push_error("MvMain: door '%s' → '%s' not found (target room missing/unloaded)" % [direction, target])
+        push_error("MvMain: door '%s' → '%s' not found (target room missing/unloaded)" % [str(door.get("id", "")), target])
         _abort_door_transition()
         return false
-
+    _cleanup_room_transition_projectiles()
     _room_manager.load_room(target)
     _setup_camera()
 
@@ -782,61 +965,153 @@ func _load_destination_room() -> bool:
         _abort_door_transition()
         return false
 
-    var width_px: int = int(room["width_px"])
-    var height_px: int = int(room["height_px"])
-    var width_blocks: int = int(room["width_blocks"])
-
-    var spawn_x: float = 0.0
-    var spawn_y: float = 0.0
-    var dest_x: int = int(door.get("dest_pixel_x", 0))
-    var dest_y: int = int(door.get("dest_pixel_y", 0))
-    if dest_x != 0 or dest_y != 0:
-        spawn_x = float(dest_x) if dest_x != 0 else float(width_px) / 2.0
-        spawn_y = float(dest_y) if dest_y != 0 else float(height_px) / 2.0
-    else:
-        match direction:
-            "left":
-                spawn_x = float(width_px - 24)
-                spawn_y = _find_floor_y(room, width_blocks - 2)
-            "right":
-                spawn_x = 24.0
-                spawn_y = _find_floor_y(room, 1)
-            "up":
-                spawn_x = float(width_px) / 2.0
-                spawn_y = float(height_px - 24)
-            "down":
-                spawn_x = float(width_px) / 2.0
-                spawn_y = 24.0
-            _:
-                spawn_x = float(width_px) / 2.0
-                spawn_y = float(height_px) / 2.0
-
-    _player.spawn_at(Vector2(spawn_x, spawn_y), direction)
+    var target_door: Dictionary = target_link.get("door", {})
+    var spawn_pos := _resolve_spawn_position_for_door(door, target_door, room)
+    if spawn_pos.x < 0.0 or spawn_pos.y < 0.0:
+        spawn_pos = _default_player_spawn_position(room)
+    if spawn_pos.x < 0.0 or spawn_pos.y < 0.0:
+        spawn_pos = Vector2(float(room.get("width_px", 0)) * 0.5, float(room.get("height_px", 0)) * 0.5)
+    var door_side := str(target_door.get("direction", door.get("direction", ""))).strip_edges().to_lower()
+    var inward_direction := _door_inward_direction(door_side)
+    var facing_direction := inward_direction if inward_direction == "left" or inward_direction == "right" else ""
+    _player.spawn_at(spawn_pos, inward_direction, facing_direction)
     _player.set_locked(false)
-    print("Door transition: %s -> %s spawn=(%s,%s)" % [direction, target, spawn_x, spawn_y])
+    var arrival_payload := _build_door_payload(door, target_link, _pending_source_room)
+    arrival_payload["arrival_door_id"] = str(target_door.get("id", "")).strip_edges()
+    MvTriggerEngine.fire_event("door_arrived", arrival_payload)
+    _fire_custom_door_event(str(target_door.get("arrive_event_name", "")).strip_edges(), arrival_payload)
+    print("Door transition: %s -> %s spawn=(%s,%s)" % [str(door.get("id", "")), target, spawn_pos.x, spawn_pos.y])
     return true
 
 
-func _resolve_active_door(direction: String) -> Dictionary:
-    if _player != null and _player.has_method("current_authored_door"):
-        var authored: Dictionary = _player.current_authored_door(direction)
-        if not authored.is_empty():
-            return authored
-    return _room_manager.find_door(direction)
+func _resolve_door_target_link(door: Dictionary) -> Dictionary:
+    if _room_manager == null:
+        return {}
+    var target_door_id := str(door.get("target_door_id", "")).strip_edges()
+    if not target_door_id.is_empty() and _room_manager.has_method("find_door_link"):
+        var link: Dictionary = _room_manager.find_door_link(target_door_id)
+        if not link.is_empty():
+            return link
+    var target := str(door.get("target", "")).strip_edges()
+    if target.is_empty():
+        var destinations: Array = door.get("destinations", [])
+        for d_v in destinations:
+            if typeof(d_v) != TYPE_DICTIONARY:
+                continue
+            target = str((d_v as Dictionary).get("target", "")).strip_edges()
+            if not target.is_empty():
+                break
+    if target.is_empty():
+        return {}
+    if _room_manager.has_method("resolve_room_addr"):
+        target = str(_room_manager.resolve_room_addr(target, _room_manager.current_room_addr()))
+    if target.is_empty():
+        return {}
+    return {
+        "room_addr": target,
+        "room": _room_manager.get_room(target) if _room_manager.has_method("get_room") else {},
+        "door": {},
+    }
 
 
-static func _resolve_door_target(door: Dictionary) -> String:
-    var destinations: Array = door.get("destinations", [])
-    for d in destinations:
-        if typeof(d) == TYPE_DICTIONARY and not str(d.get("target", "")).is_empty():
-            return str(d["target"])
-    return str(door.get("target", ""))
+func _resolve_spawn_position_for_door(source_door: Dictionary, target_door: Dictionary, room: Dictionary) -> Vector2:
+    if _room_manager != null and _room_manager.has_method("door_spawn_position") and not target_door.is_empty():
+        var door_spawn: Vector2 = _room_manager.door_spawn_position(target_door, room)
+        if door_spawn.x >= 0.0 and door_spawn.y >= 0.0:
+            return door_spawn
+    var dest_x: int = int(source_door.get("dest_pixel_x", 0))
+    var dest_y: int = int(source_door.get("dest_pixel_y", 0))
+    if dest_x != 0 or dest_y != 0:
+        return Vector2(
+            float(dest_x) if dest_x != 0 else float(room.get("width_px", 0)) * 0.5,
+            float(dest_y) if dest_y != 0 else float(room.get("height_px", 0)) * 0.5
+        )
+    return _default_player_spawn_position(room)
+
+
+func _door_inward_direction(door_side: String) -> String:
+    match door_side.strip_edges().to_lower():
+        "left":
+            return "right"
+        "right":
+            return "left"
+        _:
+            return ""
+
+
+func _door_enabled(door: Dictionary) -> bool:
+    var door_id := str(door.get("id", "")).strip_edges()
+    var default_value := bool(door.get("enabled", true))
+    if door_id.is_empty():
+        return default_value
+    return MvRoomState.get_door_enabled(door_id, default_value) if MvRoomState != null else default_value
+
+
+func _door_locked(door: Dictionary) -> bool:
+    var door_id := str(door.get("id", "")).strip_edges()
+    var default_value := bool(door.get("locked", false))
+    if door_id.is_empty():
+        return default_value
+    return MvRoomState.get_door_locked(door_id, default_value) if MvRoomState != null else default_value
+
+
+func _door_access_granted(door: Dictionary) -> bool:
+    var required_item_id := str(door.get("required_item_id", "")).strip_edges()
+    if not required_item_id.is_empty():
+        var required_count := maxi(1, int(door.get("required_item_count", 1)))
+        if not PlayerInventory.has_item(required_item_id, required_count):
+            return false
+    var required_var_name := str(door.get("required_var_name", "")).strip_edges()
+    if not required_var_name.is_empty():
+        var actual: Variant = PlayerInventory.get_var(required_var_name, 0)
+        if str(actual) != str(door.get("required_var_value", 1)):
+            return false
+    var required_tag := str(door.get("required_global_tag", "")).strip_edges()
+    if not required_tag.is_empty() and (MvTriggerEngine == null or not MvTriggerEngine.has_global_tag(required_tag)):
+        return false
+    return true
+
+
+func _build_door_payload(door: Dictionary, target_link: Dictionary = {}, from_room_override: String = "") -> Dictionary:
+    var link := target_link if not target_link.is_empty() else _resolve_door_target_link(door)
+    var tags: Array = []
+    var tags_v: Variant = door.get("tags", [])
+    if typeof(tags_v) == TYPE_ARRAY:
+        tags = (tags_v as Array).duplicate()
+    var from_room := from_room_override.strip_edges()
+    if from_room.is_empty() and _room_manager != null:
+        from_room = _room_manager.current_room_addr()
+    return {
+        "door_id": str(door.get("id", "")).strip_edges(),
+        "target_door_id": str(door.get("target_door_id", "")).strip_edges(),
+        "from_room": from_room,
+        "to_room": str(link.get("room_addr", "")).strip_edges(),
+        "door_direction": str(door.get("direction", "")).strip_edges(),
+        "enabled": _door_enabled(door),
+        "locked": _door_locked(door),
+        "send_to_overworld": bool(door.get("send_to_overworld", false)),
+        "overworld_region_id": str(door.get("overworld_region_id", "")).strip_edges(),
+        "tags": tags,
+    }
+
+
+func _fire_custom_door_event(event_name: String, payload: Dictionary) -> void:
+    var trimmed := event_name.strip_edges()
+    if trimmed.is_empty():
+        return
+    MvTriggerEngine.fire_event(trimmed, payload)
+
+
+func _fire_blocked_door_events(door: Dictionary, payload: Dictionary) -> void:
+    MvTriggerEngine.fire_event("door_use_blocked", payload)
+    _fire_custom_door_event(str(door.get("blocked_event_name", "")).strip_edges(), payload)
 
 
 func _abort_door_transition() -> void:
     _transitioning = false
     _pending_door = {}
-    _pending_direction = ""
+    _pending_source_room = ""
+    _pending_target_link = {}
     _transition_phase = 0
     _transition_frame = 0
     _fade_rect.color = Color(0.0, 0.0, 0.0, 0.0)

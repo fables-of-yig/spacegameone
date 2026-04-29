@@ -1,6 +1,6 @@
 extends Control
 
-const EditorUndo = preload("res://Space/scripts/editor/editor_undo.gd")
+
 const PackAssetIndex = preload("res://Space/scripts/editor/pack_asset_index.gd")
 
 

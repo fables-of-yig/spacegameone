@@ -40,6 +40,7 @@ var _event_custom_edit: LineEdit = null
 var _enabled_check: CheckBox = null
 var _once_check: CheckBox = null
 var _breakpoint_check: CheckBox = null
+var _workflow_label: Label = null
 var _summary_label: Label = null
 var _locals_form: TriggerLocalsForm = null
 var _cond_form: DlgConditionsListForm = null
@@ -289,6 +290,13 @@ func _build_ui() -> void:
     _detail.size_flags_horizontal = Control.SIZE_EXPAND_FILL
     _detail.add_theme_constant_override("separation", 8)
     right.add_child(_detail)
+
+    _workflow_label = Label.new()
+    _workflow_label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+    _workflow_label.add_theme_font_size_override("font_size", 10)
+    _workflow_label.add_theme_color_override("font_color", Color(0.65, 0.78, 0.9))
+    _detail.add_child(_workflow_label)
+    _refresh_workflow_help()
 
     _add_label("ID")
     _id_edit = LineEdit.new()
@@ -734,6 +742,7 @@ func _show_detail(idx: int) -> void:
     _locals_form.open(_safe_array(rule.get("locals", [])))
     _cond_form.open(_safe_array(rule.get("conditions", [])))
     _action_form.open(_safe_array(rule.get("actions", [])))
+    _refresh_workflow_help(rule)
     _refresh_summary(rule)
     _update_camera_preview(rule)
     _suppress = false
@@ -761,6 +770,7 @@ func _clear_detail() -> void:
         _action_form.open([])
     if _summary_label != null:
         _summary_label.text = ""
+    _refresh_workflow_help()
     _update_event_control_tooltips()
     camera_preview_cleared.emit()
     _suppress = false
@@ -797,6 +807,7 @@ func _update_event_control_tooltips() -> void:
         if not help_text.is_empty():
             custom_hint += " " + help_text
         _event_custom_edit.tooltip_text = custom_hint
+    _refresh_workflow_help()
 
 
 func _flush_detail() -> bool:
@@ -820,6 +831,7 @@ func _flush_detail() -> bool:
     rule["locals"] = _locals_form.get_value()
     rule["conditions"] = _cond_form.get_value()
     rule["actions"] = _action_form.get_value()
+    _refresh_workflow_help(rule)
     _refresh_summary(rule)
     return true
 
@@ -1162,6 +1174,33 @@ func _on_tutorial_pressed() -> void:
     var EditorTutorial := preload("res://Space/scripts/editor/editor_tutorial.gd")
     var tut: Dictionary = EditorTutorial.get_tutorial("trigger")
     _tutorial_overlay.show_tutorial(str(tut["title"]), tut["steps"])
+
+
+func _refresh_workflow_help(rule: Dictionary = {}) -> void:
+    if _workflow_label == null:
+        return
+    var event_name: String = str(rule.get("event", "")).strip_edges()
+    if event_name.is_empty():
+        event_name = _selected_event_name()
+    var message := "How to author this: pick what starts the rule, add optional checks, then add the actions that should happen."
+    match event_name:
+        "interact":
+            message = "Interact rules run when the player uses an interactable. Simplest NPC dialogue does not need a trigger at all: set the entity's `dialogue_id`. Use an `interact` trigger when you need extra checks or side effects before or after dialogue. The payload includes `entity_id`, `entity_type`, tags, and authored entity properties."
+        "zone_enter", "zone_exit":
+            message = "Zone rules come from named `trigger_volume` entities in a room. Give the zone a `zone_id`, then use `%s` here for cutscenes, ambushes, camera moves, spawns, or room logic tied to crossing that area." % event_name
+        "dialogue_choice":
+            message = "Dialogue-choice rules let conversations branch into game logic. When a player picks a response, the payload includes `dialogue_id`, `line_index`, `choice_index`, and `choice_text`."
+        "ui_button":
+            message = "UI-button rules fire from authored UI screens and menus. Use them when a button should do more than its built-in UI action, or when you want menus to drive story/campaign logic."
+        "game_started":
+            message = "Game-start rules are the clean entry point for boot-time setup, opening cinematics, or starting the first dialogue after the room is fully loaded."
+        "":
+            message = "Common recipes: `interact -> start_dialogue`, `zone_enter -> camera/action sequence`, `dialogue_choice -> set flag / fire event`, `ui_button -> fire event`."
+        _:
+            var help_text: String = EcaSchema.event_help(event_name)
+            if not help_text.is_empty():
+                message = "Event `%s`: %s" % [event_name, help_text]
+    _workflow_label.text = message
 
 
 func _safe_array(value: Variant) -> Array:

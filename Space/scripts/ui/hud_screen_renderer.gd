@@ -21,6 +21,7 @@ extends Control
 
 const UIPanels = preload("res://Space/scripts/ui/ui_panels.gd")
 const HudDataSource = preload("res://Space/scripts/ui/hud_data_source.gd")
+const UIIo = preload("res://Space/scripts/editor/ui/ui_io.gd")
 
 var data_source: RefCounted = null
 var screen_data: Dictionary = {}
@@ -129,13 +130,26 @@ func _draw_element(e: Dictionary, parent_origin: Vector2) -> void:
 
 
 func _draw_panel(rect: Rect2, props: Dictionary) -> void:
-    var variant_key: String = str(props.get("variant", "main"))
-    var variant := UIPanels.PanelVariant.MAIN
-    if variant_key == "alt":
-        variant = UIPanels.PanelVariant.ALT
-    elif variant_key == "dark":
-        variant = UIPanels.PanelVariant.DARK
-    UIPanels.draw_panel(self, rect, Color.WHITE, variant)
+    var opacity := clampf(float(props.get("opacity", 1.0)), 0.0, 1.0)
+    var sprite_path: String = str(props.get("sprite_source", "")).strip_edges()
+    var drew_panel_art := false
+    if not sprite_path.is_empty():
+        var tex: Texture2D = UIIo.load_texture(sprite_path)
+        if tex != null:
+            var tint := UIPanels._hex_to_color(str(props.get("sprite_tint", "#ffffff")))
+            tint.a *= opacity
+            UIPanels.draw_authored_panel_sprite(self, rect, tex, props,
+                tint)
+            drew_panel_art = true
+    if not drew_panel_art:
+        var variant_key: String = str(props.get("variant", "main")).strip_edges()
+        if not variant_key.is_empty() and variant_key != "none":
+            var variant := UIPanels.PanelVariant.MAIN
+            if variant_key == "alt":
+                variant = UIPanels.PanelVariant.ALT
+            elif variant_key == "dark":
+                variant = UIPanels.PanelVariant.DARK
+            UIPanels.draw_panel(self, rect, Color(1.0, 1.0, 1.0, opacity), variant)
 
 
 func _draw_label(rect: Rect2, props: Dictionary) -> void:
@@ -157,6 +171,7 @@ func _draw_label(rect: Rect2, props: Dictionary) -> void:
         col = Color(1, 0.45, 0.4, 1)
     elif role == "success":
         col = Color(0.55, 1, 0.55, 1)
+    col.a *= clampf(float(props.get("opacity", 1.0)), 0.0, 1.0)
     # Vertical center within rect.
     draw_string(font,
         Vector2(rect.position.x + 4, rect.position.y + rect.size.y * 0.5 + 5.0),

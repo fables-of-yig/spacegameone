@@ -8,7 +8,6 @@ const UIPanels := preload("res://Space/scripts/ui/ui_panels.gd")
 const UIIo := preload("res://Space/scripts/editor/ui/ui_io.gd")
 const AuthoredScreenRuntime := preload("res://Space/scripts/ui/authored_screen_runtime.gd")
 const HudDataSource := preload("res://Space/scripts/ui/hud_data_source.gd")
-const UiHostActions := preload("res://Space/scripts/ui/ui_host_actions.gd")
 
 var _panel: Control = null
 var _item_list: VBoxContainer = null
@@ -38,6 +37,12 @@ func _ready() -> void:
 
 
 func _process(_delta: float) -> void:
+	if not _mv_runtime_available():
+		if _active:
+			close()
+		return
+	if MvDialogueRunner != null and MvDialogueRunner.has_method("is_active") and MvDialogueRunner.is_active():
+		return
 	if Input.is_action_just_pressed("ui_cancel"):
 		if _active:
 			close()
@@ -46,6 +51,8 @@ func _process(_delta: float) -> void:
 
 
 func open() -> void:
+	if not _mv_runtime_available():
+		return
 	if _active:
 		return
 	_active = true
@@ -255,3 +262,7 @@ func _use_item_from_action(action_args: String) -> void:
 
 func _emit_ui_button_event(action_id: String, action_args: String, element_id: String) -> void:
 	UiHostActions.emit_ui_button_event("inventory", "inventory_screen", action_id, action_args, element_id)
+
+
+func _mv_runtime_available() -> bool:
+	return PlanetaryInterface.hosted or MvGame.main != null

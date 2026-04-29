@@ -17,6 +17,9 @@ const MODE_TILE: int = 0
 const MODE_COLLISION: int = 1
 const MODE_ENTITIES: int = 2
 const MODE_DOORS: int = 3
+const MODE_BG_IMAGES: int = 4
+const MODE_ZONES: int = 5
+const MODE_SHADERS: int = MODE_ZONES
 
 # Tile layer role. Determines runtime z-order (bg → main → fg). Painted
 # tile layers are world-locked; backdrop parallax is authored in room meta.
@@ -36,7 +39,7 @@ static func role_label(role: String) -> String:
     if role == ROLE_FG: return "FG"
     return "?"
 
-static func default_scroll_for_role(role: String) -> Vector2:
+static func default_scroll_for_role(_role: String) -> Vector2:
     return Vector2(1.0, 1.0)
 
 # Known entity type ids. The runtime has more (ship_boarder etc.) but

@@ -4,7 +4,6 @@ extends Control
 # fields as labeled LineEdits grouped by category. Loads/saves the .tres
 # resource from the current content pack.
 
-const EditorUndo = preload("res://Space/scripts/editor/editor_undo.gd")
 
 signal status_changed(text: String)
 

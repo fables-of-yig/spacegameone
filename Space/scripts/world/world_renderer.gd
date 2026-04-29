@@ -359,7 +359,7 @@ func _draw_surface_poi_indicators(cam: Vector2, hw: float, hh: float):
                 tip + Vector2(6, -10),
             ])
             if _is_valid_triangle(tri):
-                draw_colored_polygon(tri, Color(col, 0.6 * pulse))
+                _draw_filled_triangle(tri, Color(col, 0.6 * pulse))
         else:
 
             if rel.length_squared() <= 0.0001:
@@ -388,7 +388,7 @@ func _draw_surface_poi_indicators(cam: Vector2, hw: float, hh: float):
             ])
             var pulse = sin(poi.pulse_time * 3.0) * 0.2 + 0.8
             if _is_valid_triangle(tri):
-                draw_colored_polygon(tri, Color(col, 0.7 * pulse))
+                _draw_filled_triangle(tri, Color(col, 0.7 * pulse))
                 draw_polyline(PackedVector2Array([tri[0], tri[1], tri[2], tri[0]]), Color(col, 0.9), 1.5)
 
 
@@ -414,6 +414,14 @@ func _is_valid_triangle(points: PackedVector2Array) -> bool:
         (points[1].y - points[0].y) * (points[2].x - points[0].x)
     )
     return area2 > 0.001
+
+
+func _draw_filled_triangle(points: PackedVector2Array, color: Color) -> void:
+    if not _is_valid_triangle(points):
+        return
+    var colors := PackedColorArray([color, color, color])
+    var uvs := PackedVector2Array([Vector2.ZERO, Vector2.ZERO, Vector2.ZERO])
+    draw_primitive(points, colors, uvs)
 
 func _draw_surface_features(cam: Vector2, _base_col: Color, alt_col: Color, accent_col: Color):
     var host = _h()

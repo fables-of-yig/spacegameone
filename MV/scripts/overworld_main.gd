@@ -18,9 +18,13 @@ var realm_data: Dictionary = {}
 var _region_lookup: Dictionary = {}
 var _region_meta_by_id: Dictionary = {}
 
-const BASE_CAM_HEIGHT: float = 120.0
+const WORLD_VIEW_SCALE: float = 10.0
+const CAMERA_HEIGHT_MULT: float = 1.2
+const BASE_CAM_HEIGHT_AUTHORED: float = 120.0
 const BASE_HORIZON: float = 0.35
-const BASE_FOV_SCALE: float = 1.5
+const BASE_FOV_SCALE_AUTHORED: float = 1.5
+const BASE_CAM_HEIGHT: float = (BASE_CAM_HEIGHT_AUTHORED * CAMERA_HEIGHT_MULT) / WORLD_VIEW_SCALE
+const BASE_FOV_SCALE: float = BASE_FOV_SCALE_AUTHORED / WORLD_VIEW_SCALE
 
 var cam_height: float = BASE_CAM_HEIGHT
 var horizon: float = BASE_HORIZON
@@ -41,6 +45,14 @@ var _landing_horizon_start: float = BASE_HORIZON
 var _landing_fov_start: float = BASE_FOV_SCALE
 var _last_hud_payload: Dictionary = {}
 var _flight_bob_time: float = 0.0
+
+
+func _scale_view_value(value: float) -> float:
+    return value / WORLD_VIEW_SCALE
+
+
+func _scale_cam_height(value: float) -> float:
+    return (value * CAMERA_HEIGHT_MULT) / WORLD_VIEW_SCALE
 
 
 func enter_overworld(p_pack_id: String, p_realm_id: String = "", spawn_pos: Vector2 = Vector2(-1, -1)) -> void:
@@ -131,9 +143,17 @@ func _process(_delta: float) -> void:
     if _landing_timer > 0.0:
         _landing_timer = maxf(0.0, _landing_timer - _delta)
         var landing_t: float = 1.0 - (_landing_timer / LANDING_DURATION if LANDING_DURATION > 0.0 else 1.0)
-        cam_height = lerpf(_landing_cam_height_start, maxf(36.0, _landing_cam_height_start * 0.55), landing_t)
+        cam_height = lerpf(
+            _landing_cam_height_start,
+            maxf(_scale_cam_height(36.0), _landing_cam_height_start * 0.55),
+            landing_t
+        )
         horizon = lerpf(_landing_horizon_start, minf(0.52, _landing_horizon_start + 0.10), landing_t)
-        fov_scale = lerpf(_landing_fov_start, maxf(0.7, _landing_fov_start * 0.92), landing_t)
+        fov_scale = lerpf(
+            _landing_fov_start,
+            maxf(_scale_view_value(0.7), _landing_fov_start * 0.92),
+            landing_t
+        )
         if _landing_timer <= 0.0 and _landing_region_id != "":
             land_requested.emit(_landing_region_id)
             return
@@ -295,9 +315,9 @@ func _update_region_cam(ship_ref: OverworldShip, delta: float) -> void:
         var meta_v: Variant = _region_meta_by_id.get(region_id, null)
         if typeof(meta_v) == TYPE_DICTIONARY:
             var meta: Dictionary = meta_v
-            target_h = float(meta.get("cam_height", BASE_CAM_HEIGHT))
+            target_h = _scale_cam_height(float(meta.get("cam_height", BASE_CAM_HEIGHT_AUTHORED)))
             target_horizon = float(meta.get("horizon", BASE_HORIZON))
-            target_fov = float(meta.get("fov_scale", BASE_FOV_SCALE))
+            target_fov = _scale_view_value(float(meta.get("fov_scale", BASE_FOV_SCALE_AUTHORED)))
 
     # Smooth the transition so crossing region boundaries doesn't snap.
     var lerp_rate: float = clampf(delta * 4.0, 0.0, 1.0)

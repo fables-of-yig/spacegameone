@@ -96,7 +96,9 @@ func _build_atlas_source(tileset_index: int, suffix: String) -> TileSetAtlasSour
 		return null
 	var texture := ImageTexture.create_from_image(image)
 
+	@warning_ignore("integer_division")
 	var grid_cols := image.get_width() / TILE_SIZE
+	@warning_ignore("integer_division")
 	var grid_rows := image.get_height() / TILE_SIZE
 	var total_slots := grid_cols * grid_rows
 
@@ -106,6 +108,7 @@ func _build_atlas_source(tileset_index: int, suffix: String) -> TileSetAtlasSour
 
 	for i in total_slots:
 		var col := i % grid_cols
+		@warning_ignore("integer_division")
 		var row := i / grid_cols
 		var atlas_coords := Vector2i(col, row)
 		source.create_tile(atlas_coords)
@@ -140,6 +143,8 @@ func metatile_to_atlas_coords(tileset_id: int, metatile_idx: int) -> Vector2i:
 			var tile_size: int = src.texture_region_size.x
 			if tile_size < 1:
 				tile_size = TILE_SIZE
+			@warning_ignore("integer_division")
 			var cols := maxi(1, src.texture.get_width() / tile_size)
+			@warning_ignore("integer_division")
 			return Vector2i(metatile_idx % cols, metatile_idx / cols)
 	return Vector2i(-1, -1)

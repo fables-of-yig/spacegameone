@@ -2,7 +2,6 @@ extends Control
 
 const PedIO = preload("res://Space/scripts/editor/ped/ped_io.gd")
 const PedUtil = preload("res://Space/scripts/editor/ped/ped_util.gd")
-const EditorUndo = preload("res://Space/scripts/editor/editor_undo.gd")
 
 # Player editor — Stats tab. Two sections:
 #   1. LEGACY: hardcoded base/growth rows (stats.json) — the leveling system

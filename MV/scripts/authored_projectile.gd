@@ -1,6 +1,8 @@
 class_name MvAuthoredProjectile
 extends Area2D
 
+const _MvBulletImpactFx := preload("res://MV/scripts/bullet_impact_fx.gd")
+
 const MAX_TRAIL_POINTS: int = 8
 
 var _velocity: Vector2 = Vector2.ZERO
@@ -31,6 +33,8 @@ var _anim_timer: float = 0.0
 var _anim_frame: int = 0
 var _sheet_path: String = ""
 var _already_hit: Dictionary = {}
+var _initial_overlap_scan_pending: bool = true
+var _ignore_world_collision: bool = false
 
 var _shape: CollisionShape2D = null
 var _sprite: Sprite2D = null
@@ -71,6 +75,9 @@ func configure(projectile_def: Dictionary, origin: Vector2, aim_dir: Vector2, da
 
 	var speed := float(projectile_def.get("speed", 0.0))
 	_velocity = aim_dir.normalized() * speed
+	_ignore_world_collision = PlayerInventory.has_ability("wave_beam") \
+		and not _explosive \
+		and _gravity <= 0.0
 	if _rotate_to_velocity and _velocity.length_squared() > 0.0001:
 		rotation = _velocity.angle()
 
@@ -79,6 +86,8 @@ func configure(projectile_def: Dictionary, origin: Vector2, aim_dir: Vector2, da
 
 
 func _ready() -> void:
+	monitoring = true
+	monitorable = true
 	body_entered.connect(_on_body_entered)
 	area_entered.connect(_on_area_entered)
 
@@ -86,10 +95,33 @@ func _ready() -> void:
 func _physics_process(delta: float) -> void:
 	if MvGame.simulation_paused:
 		return
+	if _initial_overlap_scan_pending:
+		_initial_overlap_scan_pending = false
+		_apply_initial_overlaps()
+		if is_queued_for_deletion():
+			return
 
 	_tick_homing(delta)
 	_velocity.y += _gravity * delta
-	position += _velocity * delta
+	var next_pos := global_position + _velocity * delta
+	if not _ignore_world_collision:
+		var world_hit := _first_world_collision(global_position, next_pos)
+		if bool(world_hit.get("hit", false)):
+			var impact_point: Vector2 = world_hit.get("point", global_position)
+			global_position = impact_point
+			if _explosive and _explode_on_hit:
+				_explode()
+			else:
+				_spawn_impact_fx(impact_point, -_velocity.normalized())
+				var room: Node = MvGame.room_manager
+				if _break_blocks and room != null and room.has_method("break_block_at_world_pos"):
+					room.call("break_block_at_world_pos", impact_point)
+				queue_free()
+			return
+	global_position = next_pos
+	_apply_geometry_hits()
+	if is_queued_for_deletion() or _exploded:
+		return
 	_remaining_ticks -= delta * 60.0
 
 	_trail_points.append(global_position)
@@ -230,6 +262,7 @@ func _on_area_entered(area: Area2D) -> void:
 	if _explosive and _explode_on_hit:
 		_explode()
 		return
+	_spawn_impact_fx(global_position, _impact_normal_toward(parent))
 	_apply_damage(parent)
 
 
@@ -240,11 +273,15 @@ func _on_body_entered(body: Node2D) -> void:
 		if _explosive and _explode_on_hit:
 			_explode()
 			return
+		_spawn_impact_fx(global_position, _impact_normal_toward(body))
 		_apply_damage(body)
+		return
+	if _ignore_world_collision:
 		return
 	if _explosive and _explode_on_hit:
 		_explode()
 		return
+	_spawn_impact_fx(global_position, -_velocity.normalized())
 	var room: Node = MvGame.room_manager
 	if _break_blocks and room != null and room.has_method("break_block_at_world_pos"):
 		room.call("break_block_at_world_pos", global_position)
@@ -297,3 +334,124 @@ func _explode() -> void:
 			if player.has_method("apply_bomb_jump"):
 				player.call("apply_bomb_jump", _bomb_jump_speed)
 	queue_free()
+
+
+func _apply_initial_overlaps() -> void:
+	for area in get_overlapping_areas():
+		_on_area_entered(area)
+		if is_queued_for_deletion() or _exploded:
+			return
+	for body in get_overlapping_bodies():
+		if body is Node2D:
+			_on_body_entered(body)
+			if is_queued_for_deletion() or _exploded:
+				return
+
+
+func _apply_geometry_hits() -> void:
+	var world_rect := _world_hit_rect()
+	for enemy in get_tree().get_nodes_in_group("mv_enemy"):
+		if not is_instance_valid(enemy):
+			continue
+		if enemy.has_method("hurtbox_intersects_rect"):
+			if bool(enemy.call("hurtbox_intersects_rect", world_rect)):
+				if _explosive and _explode_on_hit:
+					_explode()
+				else:
+					_apply_damage(enemy)
+				if is_queued_for_deletion() or _exploded:
+					return
+		elif enemy is Node2D and world_rect.has_point((enemy as Node2D).global_position):
+			if _explosive and _explode_on_hit:
+				_explode()
+			else:
+				_apply_damage(enemy)
+			if is_queued_for_deletion() or _exploded:
+				return
+
+
+func _world_hit_rect() -> Rect2:
+	var size := Vector2(8.0, 8.0)
+	if _shape != null and _shape.shape is RectangleShape2D:
+		size = (_shape.shape as RectangleShape2D).size
+	return Rect2(global_position - size * 0.5, size)
+
+
+func _first_world_collision(from_pos: Vector2, to_pos: Vector2) -> Dictionary:
+	var room: Node = MvGame.room_manager
+	if room == null or not room.has_method("is_solid_at_world_pos"):
+		return {"hit": false}
+	var travel := from_pos.distance_to(to_pos)
+	var steps := maxi(1, int(ceil(travel / 4.0)))
+	var last_safe := from_pos
+	for i in range(1, steps + 1):
+		var t := float(i) / float(steps)
+		var sample := from_pos.lerp(to_pos, t)
+		if _overlaps_world_at(sample, room):
+			return {"hit": true, "point": _refine_world_collision(last_safe, sample, room)}
+		last_safe = sample
+	return {"hit": false}
+
+
+func _overlaps_world_at(center: Vector2, room: Node) -> bool:
+	for point in _world_probe_points(center):
+		if bool(room.call("is_solid_at_world_pos", point)):
+			return true
+	return false
+
+
+func _world_probe_points(center: Vector2) -> Array:
+	var rect := _world_hit_rect_at(center)
+	var top_left := rect.position
+	var bottom_right := rect.position + rect.size
+	var top_right := Vector2(bottom_right.x, top_left.y)
+	var bottom_left := Vector2(top_left.x, bottom_right.y)
+	var mid_top := Vector2(rect.position.x + rect.size.x * 0.5, rect.position.y)
+	var mid_bottom := Vector2(rect.position.x + rect.size.x * 0.5, rect.position.y + rect.size.y)
+	var mid_left := Vector2(rect.position.x, rect.position.y + rect.size.y * 0.5)
+	var mid_right := Vector2(rect.position.x + rect.size.x, rect.position.y + rect.size.y * 0.5)
+	return [
+		center,
+		top_left,
+		top_right,
+		bottom_left,
+		bottom_right,
+		mid_top,
+		mid_bottom,
+		mid_left,
+		mid_right,
+	]
+
+
+func _world_hit_rect_at(center: Vector2) -> Rect2:
+	var size := Vector2(8.0, 8.0)
+	if _shape != null and _shape.shape is RectangleShape2D:
+		size = (_shape.shape as RectangleShape2D).size
+	return Rect2(center - size * 0.5, size)
+
+
+func _refine_world_collision(safe_pos: Vector2, blocked_pos: Vector2, room: Node) -> Vector2:
+	var lo := safe_pos
+	var hi := blocked_pos
+	for _i in range(6):
+		var mid := lo.lerp(hi, 0.5)
+		if _overlaps_world_at(mid, room):
+			hi = mid
+		else:
+			lo = mid
+	return hi
+
+
+func _spawn_impact_fx(hit_pos: Vector2, normal: Vector2 = Vector2.ZERO) -> void:
+	var parent := get_parent()
+	if parent == null:
+		return
+	var fx := _MvBulletImpactFx.new()
+	parent.add_child(fx)
+	fx.setup(hit_pos, normal, 5)
+
+
+func _impact_normal_toward(target: Node) -> Vector2:
+	if target is Node2D:
+		return (global_position - (target as Node2D).global_position).normalized()
+	return -_velocity.normalized()

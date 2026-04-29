@@ -6,15 +6,15 @@ extends Control
 
 const UIPanels = preload("res://Space/scripts/ui/ui_panels.gd")
 const UITypes = preload("res://Space/scripts/editor/ui/ui_types.gd")
-const UiContract = preload("res://Space/scripts/ui/ui_contract.gd")
 
 signal property_changed(element_id: String, key: String, value: Variant)
 
 var editor: Node = null
 var _element: Dictionary = {}  # Currently displayed element
-var _field_edits: Dictionary = {}  # key -> LineEdit
+var _field_edits: Dictionary = {}  # key -> Control
 var _field_buttons: Dictionary = {}  # key -> Button
 var _scroll_y: float = 0.0
+var _rebuild_scheduled: bool = false
 const _FIELD_X: float = 144.0
 const _FIELD_W_PAD: float = 8.0
 const _PICKER_W: float = 28.0
@@ -33,20 +33,34 @@ func _process(_delta):
 func show_element(element: Dictionary) -> void:
     _element = element
     _scroll_y = 0.0
-    _clear_edits()
-    _build_edits()
+    _schedule_rebuild()
+    queue_redraw()
 
 
 func clear() -> void:
     _element = {}
+    _schedule_rebuild()
+    queue_redraw()
+
+
+func _schedule_rebuild() -> void:
+    if _rebuild_scheduled:
+        return
+    _rebuild_scheduled = true
+    _rebuild_edits_deferred.call_deferred()
+
+
+func _rebuild_edits_deferred() -> void:
+    _rebuild_scheduled = false
     _clear_edits()
+    _build_edits()
 
 
 func _clear_edits() -> void:
     for key in _field_edits.keys():
-        var le: LineEdit = _field_edits[key]
-        if le != null and is_instance_valid(le):
-            le.queue_free()
+        var ctrl: Control = _field_edits[key]
+        if ctrl != null and is_instance_valid(ctrl):
+            ctrl.queue_free()
     for key in _field_buttons.keys():
         var btn: Button = _field_buttons[key]
         if btn != null and is_instance_valid(btn):
@@ -73,19 +87,39 @@ func _build_edits() -> void:
 
     var y := 80.0
     for field in fields:
-        var le := LineEdit.new()
-        le.size = Vector2(_field_edit_width(field), 22)
-        le.position = Vector2(_FIELD_X, y)
         var val: Variant = _get_field_value(field)
-        le.text = str(val)
-        le.text_submitted.connect(_on_field_submitted.bind(field))
-        add_child(le)
-        _field_edits[field] = le
-        if _is_texture_field(field):
+        if _is_enum_field(field):
+            var option := OptionButton.new()
+            option.size = Vector2(_field_edit_width(field), 22)
+            option.position = Vector2(_FIELD_X, y)
+            for item in _enum_values(field):
+                option.add_item(str(item))
+            var selected_idx := _enum_values(field).find(str(val))
+            if selected_idx < 0:
+                selected_idx = 0
+            option.select(selected_idx)
+            option.item_selected.connect(_on_enum_selected.bind(field))
+            add_child(option)
+            _field_edits[field] = option
+        else:
+            var le := LineEdit.new()
+            le.size = Vector2(_field_edit_width(field), 22)
+            le.position = Vector2(_FIELD_X, y)
+            le.text = str(val)
+            le.text_submitted.connect(_on_field_submitted.bind(field))
+            le.focus_exited.connect(_on_field_focus_exited.bind(field))
+            add_child(le)
+            _field_edits[field] = le
+        if _is_texture_field(field) or _is_color_field(field):
             var pick_btn := Button.new()
-            pick_btn.text = "..."
-            pick_btn.tooltip_text = "Import a PNG for this sprite field."
-            pick_btn.pressed.connect(_on_pick_texture_pressed.bind(field))
+            if _is_texture_field(field):
+                pick_btn.text = "..."
+                pick_btn.tooltip_text = "Import a PNG for this sprite field."
+                pick_btn.pressed.connect(_on_pick_texture_pressed.bind(field))
+            else:
+                pick_btn.text = "#"
+                pick_btn.tooltip_text = "Open the color picker for this color field."
+                pick_btn.pressed.connect(_on_pick_color_pressed.bind(field))
             add_child(pick_btn)
             _field_buttons[field] = pick_btn
         y += 28.0
@@ -108,19 +142,19 @@ func _update_edit_layout() -> void:
     for field in fields:
         if not _field_edits.has(field):
             continue
-        var le: LineEdit = _field_edits[field]
-        if le == null or not is_instance_valid(le):
+        var ctrl: Control = _field_edits[field]
+        if ctrl == null or not is_instance_valid(ctrl):
             continue
         var width := _field_edit_width(field)
-        le.size = Vector2(width, 22)
-        le.position = Vector2(_FIELD_X, y)
-        le.visible = y + le.size.y >= 0.0 and y <= size.y
+        ctrl.size = Vector2(width, 22)
+        ctrl.position = Vector2(_FIELD_X, y)
+        ctrl.visible = y + ctrl.size.y >= 0.0 and y <= size.y
         if _field_buttons.has(field):
             var btn: Button = _field_buttons[field]
             if btn != null and is_instance_valid(btn):
                 btn.size = Vector2(_PICKER_W, 22)
                 btn.position = Vector2(_FIELD_X + width + 4.0, y)
-                btn.visible = le.visible
+                btn.visible = ctrl.visible
         y += 28.0
 
 
@@ -191,6 +225,27 @@ func _on_field_submitted(text: String, field: String) -> void:
         else:
             (props as Dictionary)[k] = text
         property_changed.emit(eid, "properties", props)
+
+
+func commit_pending_edits() -> void:
+    if _element.is_empty():
+        return
+    for field_v in _field_edits.keys():
+        var field: String = str(field_v)
+        var ctrl: Variant = _field_edits.get(field)
+        if not (ctrl is LineEdit):
+            continue
+        var le: LineEdit = ctrl
+        if le == null or not is_instance_valid(le):
+            continue
+        _on_field_submitted(le.text, field)
+
+
+func _on_field_focus_exited(field: String) -> void:
+    var le: LineEdit = _field_edits.get(field)
+    if le == null or not is_instance_valid(le):
+        return
+    _on_field_submitted(le.text, field)
 
 
 func _gui_input(event):
@@ -287,9 +342,26 @@ func _draw_binding_reference(font: Font, y: float) -> void:
 
 func _field_edit_width(field: String) -> float:
     var width := maxf(size.x - _FIELD_X - _FIELD_W_PAD, 120.0)
-    if _is_texture_field(field):
+    if _is_texture_field(field) or _is_color_field(field):
         width = maxf(width - _PICKER_W - 4.0, 92.0)
     return width
+
+
+func _is_enum_field(field: String) -> bool:
+    if not field.begins_with("prop."):
+        return false
+    var key := field.substr(5)
+    return key in ["sprite_mode"]
+
+
+func _enum_values(field: String) -> Array:
+    if not field.begins_with("prop."):
+        return []
+    var key := field.substr(5)
+    match key:
+        "sprite_mode":
+            return ["9slice", "stretch"]
+    return []
 
 
 func _is_texture_field(field: String) -> bool:
@@ -299,9 +371,32 @@ func _is_texture_field(field: String) -> bool:
     return key in ["sprite_source", "sprite_normal", "sprite_hover", "sprite_pressed"]
 
 
+func _is_color_field(field: String) -> bool:
+    if not field.begins_with("prop."):
+        return false
+    var key := field.substr(5)
+    return key in ["sprite_tint", "tint", "fill_color", "bg_color"]
+
+
 func _on_pick_texture_pressed(field: String) -> void:
     if editor == null or _element.is_empty() or not field.begins_with("prop."):
         return
     var key := field.substr(5)
     if editor.has_method("request_import_screen_texture"):
         editor.request_import_screen_texture(str(_element.get("id", "")), key)
+
+
+func _on_pick_color_pressed(field: String) -> void:
+    if editor == null or _element.is_empty() or not field.begins_with("prop."):
+        return
+    var key := field.substr(5)
+    var current := str(_get_field_value(field))
+    if editor.has_method("request_edit_screen_color"):
+        editor.request_edit_screen_color(str(_element.get("id", "")), key, current)
+
+
+func _on_enum_selected(index: int, field: String) -> void:
+    var values := _enum_values(field)
+    if index < 0 or index >= values.size():
+        return
+    _on_field_submitted(str(values[index]), field)

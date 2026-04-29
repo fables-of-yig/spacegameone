@@ -1,7 +1,7 @@
 extends Control
 
 const AudIO = preload("res://Space/scripts/editor/aud/aud_io.gd")
-const EditorUndo = preload("res://Space/scripts/editor/editor_undo.gd")
+
 
 # Audio editor main controller. Owns the clips.json registry for the
 # active pack, the currently-selected clip, a reusable AudioStreamPlayer

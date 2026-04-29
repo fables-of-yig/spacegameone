@@ -20,12 +20,12 @@ func tick(actor: Node, _blackboard: Blackboard) -> int:
     if world == null:
         return FAILURE
     var range_px: float = float(_params().get("range", 150.0))
-    var a_pos: Vector2 = body.global_position
+    var a_pos: Vector2 = _combat_origin(body)
     var space := world.direct_space_state
     for p in tree.get_nodes_in_group("mv_player"):
         if not (p is Node2D):
             continue
-        var pp: Vector2 = (p as Node2D).global_position
+        var pp: Vector2 = _combat_origin(p)
         if pp.distance_to(a_pos) > range_px:
             continue
         var q := PhysicsRayQueryParameters2D.create(a_pos, pp, body.collision_mask, [body.get_rid()])
@@ -40,3 +40,11 @@ func _params() -> Dictionary:
     if typeof(p) != TYPE_DICTIONARY:
         return {}
     return p
+
+
+func _combat_origin(node: Node) -> Vector2:
+    if node != null and node.has_method("combat_origin"):
+        var origin_v: Variant = node.call("combat_origin")
+        if typeof(origin_v) == TYPE_VECTOR2:
+            return origin_v
+    return (node as Node2D).global_position if node is Node2D else Vector2.ZERO

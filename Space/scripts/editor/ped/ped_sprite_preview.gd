@@ -27,7 +27,18 @@ var hitbox_y: int = 0
 var hitbox_w: int = 0
 var hitbox_h: int = 0
 
+# Optional reference sprite drawn under the animated preview. Used by the
+# attacks tab so melee hitboxes can be aligned against a live player pose.
+var reference_sheet_name: String = ""
+var reference_content_folder: String = "Sprites"
+var reference_frame_width: int = 16
+var reference_frame_height: int = 16
+var reference_frame_index: int = 0
+var reference_alpha: float = 0.4
+var reference_label: String = ""
+
 var _texture: Texture2D = null
+var _reference_texture: Texture2D = null
 var _anim_timer: float = 0.0
 var _anim_frame: int = 0
 var _sheet_cols: int = 1
@@ -55,18 +66,23 @@ func _process(delta: float) -> void:
 
 
 func reload_texture() -> void:
-    _texture = null
-    if pack_id.is_empty() or sheet_name.is_empty():
-        return
-    var folder := content_folder.strip_edges()
+    _texture = _load_texture(pack_id, content_folder, sheet_name)
+    _reference_texture = _load_texture(pack_id, reference_content_folder, reference_sheet_name)
+    _recalc_grid()
+
+
+func _load_texture(target_pack_id: String, folder_name: String, file_name: String) -> Texture2D:
+    if target_pack_id.is_empty() or file_name.is_empty():
+        return null
+    var folder := folder_name.strip_edges()
     if folder.is_empty():
         folder = "Sprites"
     # Try to load from user pack sprites, then shipped
     for base in [
-        "user://Packs/%s/%s/" % [pack_id, folder],
-        "res://Content/%s/%s/" % [pack_id, folder],
+        "user://Packs/%s/%s/" % [target_pack_id, folder],
+        "res://Content/%s/%s/" % [target_pack_id, folder],
     ]:
-        var path: String = base + sheet_name
+        var path: String = base + file_name
         if FileAccess.file_exists(path):
             var f := FileAccess.open(path, FileAccess.READ)
             if f != null:
@@ -74,9 +90,8 @@ func reload_texture() -> void:
                 f.close()
                 var img := Image.new()
                 if img.load_png_from_buffer(bytes) == OK:
-                    _texture = ImageTexture.create_from_image(img)
-                    break
-    _recalc_grid()
+                    return ImageTexture.create_from_image(img)
+    return null
 
 
 func _recalc_grid() -> void:
@@ -104,6 +119,11 @@ func _gui_input(event):
 func _draw():
     var bg := Color(0.08, 0.09, 0.12, 1.0)
     draw_rect(Rect2(Vector2.ZERO, size), bg)
+    var preview_w: float = minf(size.x * 0.42, 144.0)
+    preview_w = maxf(preview_w, 92.0)
+    var grid_w: float = maxf(0.0, size.x - preview_w - 8.0)
+    var prev_x := grid_w + 8.0
+    var prev_size := minf(preview_w - 8.0, size.y - 20.0)
 
     if _texture == null or _sheet_cols <= 0:
         var font := ThemeDB.fallback_font
@@ -112,21 +132,19 @@ func _draw():
         if not sheet_name.is_empty():
             draw_string(font, Vector2(8, 36), sheet_name,
                 HORIZONTAL_ALIGNMENT_LEFT, int(size.x - 16), 10, Color(0.4, 0.45, 0.55))
-        # Even without a sheet, still draw the hitbox overlay on a blank panel
-        # on the right so attack authors can position hitboxes before adding art.
-        if hitbox_w > 0 and hitbox_h > 0:
-            var blank_w: float = minf(size.x * 0.3, 80.0)
-            var blank_size: float = minf(blank_w - 8.0, size.y - 20.0)
-            if blank_size > 8.0:
-                var blank := Rect2(size.x - blank_w + 4, 4, blank_size, blank_size)
-                draw_rect(blank, Color(0.12, 0.14, 0.18, 1.0))
-                draw_rect(blank, Color(0.3, 0.4, 0.55, 0.6), false, 1.0)
-                _draw_hitbox_overlay_on(blank)
+        if prev_size > 8.0 and (_reference_texture != null or hitbox_w > 0 and hitbox_h > 0):
+            var blank := Rect2(prev_x, 4, prev_size, prev_size)
+            draw_rect(blank, Color(0.12, 0.14, 0.18, 1.0))
+            draw_rect(blank, Color(0.3, 0.4, 0.55, 0.6), false, 1.0)
+            _draw_reference_on(blank)
+            _draw_hitbox_overlay_on(blank)
+            if not reference_label.is_empty():
+                draw_string(font, Vector2(prev_x, prev_size + 18),
+                    reference_label, HORIZONTAL_ALIGNMENT_LEFT, -1, 10,
+                    Color(0.72, 0.78, 0.88))
         return
 
     # Split: left = sheet grid, right = animation preview
-    var preview_w: float = minf(size.x * 0.3, 80.0)
-    var grid_w: float = size.x - preview_w - 8.0
     var grid_h: float = size.y
 
     # Calculate cell draw size to fit the grid area
@@ -170,8 +188,6 @@ func _draw():
                 Color(0.3, 0.35, 0.45, 0.4), 1.0)
 
     # Animation preview (right side)
-    var prev_x := grid_w + 8.0
-    var prev_size := minf(preview_w - 8.0, size.y - 20.0)
     if prev_size > 8.0 and frame_count > 0:
         var cur_idx := frame_start + (_anim_frame % frame_count)
         if cur_idx < _total_frames:
@@ -180,6 +196,7 @@ func _draw():
             var sc := cur_idx % _sheet_cols
             var src := Rect2(sc * frame_width, sr * frame_height, frame_width, frame_height)
             var dst := Rect2(prev_x, 4, prev_size, prev_size)
+            _draw_reference_on(dst)
             draw_texture_rect_region(_texture, dst, src)
             draw_rect(dst, Color(0.4, 0.5, 0.7, 0.4), false, 1.0)
             _draw_hitbox_overlay_on(dst)
@@ -190,6 +207,10 @@ func _draw():
         draw_string(font, Vector2(prev_x, prev_size + 32),
             "f%d/%d" % [_anim_frame + 1, frame_count],
             HORIZONTAL_ALIGNMENT_LEFT, -1, 10, Color(0.5, 0.6, 0.7))
+        if not reference_label.is_empty():
+            draw_string(font, Vector2(prev_x, prev_size + 46),
+                reference_label, HORIZONTAL_ALIGNMENT_LEFT, -1, 10,
+                Color(0.72, 0.78, 0.88))
 
 
 # Overlay a translucent red hitbox rect onto a preview frame `dst`, positioning
@@ -212,3 +233,21 @@ func _draw_hitbox_overlay_on(dst: Rect2) -> void:
     )
     draw_rect(hb, Color(1.0, 0.3, 0.3, 0.25))
     draw_rect(hb, Color(1.0, 0.4, 0.4, 0.9), false, 1.5)
+
+
+func _draw_reference_on(dst: Rect2) -> void:
+    if _reference_texture == null or reference_frame_width <= 0 or reference_frame_height <= 0:
+        return
+    @warning_ignore("integer_division")
+    var ref_cols := maxi(1, _reference_texture.get_width() / reference_frame_width)
+    var idx := maxi(0, reference_frame_index)
+    @warning_ignore("integer_division")
+    var src_row := idx / ref_cols
+    var src_col := idx % ref_cols
+    var src := Rect2(
+        float(src_col * reference_frame_width),
+        float(src_row * reference_frame_height),
+        float(reference_frame_width),
+        float(reference_frame_height)
+    )
+    draw_texture_rect_region(_reference_texture, dst, src, Color(1.0, 1.0, 1.0, clampf(reference_alpha, 0.0, 1.0)))

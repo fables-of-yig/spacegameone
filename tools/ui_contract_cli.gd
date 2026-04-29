@@ -1,7 +1,5 @@
 extends SceneTree
 
-const ContentValidator := preload("res://Space/scripts/editor/content_validator.gd")
-const UiContract := preload("res://Space/scripts/ui/ui_contract.gd")
 
 const SUPPORTED_FEATURES_PATH := "res://SUPPORTED_FEATURES.md"
 const DEFAULT_SMOKE_PACK := "demo"

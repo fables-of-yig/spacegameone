@@ -12,7 +12,6 @@ extends ActionLeaf
 #   aim:      "facing" or "player". Default "facing".
 #   cooldown: seconds between shots. Default 1.2.
 
-const MvProjectile = preload("res://MV/scripts/projectile.gd")
 
 var _next_ok_at: float = 0.0
 
@@ -60,19 +59,19 @@ func _aim_dir(actor: Node, params: Dictionary) -> Vector2:
         var tree := actor.get_tree()
         if tree == null:
             return Vector2.ZERO
-        var a_pos: Vector2 = (actor as Node2D).global_position
+        var a_pos: Vector2 = _combat_origin(actor)
         var best: Node2D = null
         var best_d: float = INF
         for p in tree.get_nodes_in_group("mv_player"):
             if not (p is Node2D):
                 continue
-            var d: float = (p as Node2D).global_position.distance_to(a_pos)
+            var d: float = _combat_origin(p).distance_to(a_pos)
             if d < best_d:
                 best_d = d
                 best = p
         if best == null:
             return Vector2.ZERO
-        var v: Vector2 = best.global_position - a_pos
+        var v: Vector2 = _combat_origin(best) - a_pos
         return v.normalized() if v.length_squared() > 0.001 else Vector2.RIGHT
     var facing_x: float = 1.0
     if "beh_facing" in actor:
@@ -87,3 +86,11 @@ func _params() -> Dictionary:
     if typeof(p) != TYPE_DICTIONARY:
         return {}
     return p
+
+
+func _combat_origin(node: Node) -> Vector2:
+    if node != null and node.has_method("combat_origin"):
+        var origin_v: Variant = node.call("combat_origin")
+        if typeof(origin_v) == TYPE_VECTOR2:
+            return origin_v
+    return (node as Node2D).global_position if node is Node2D else Vector2.ZERO

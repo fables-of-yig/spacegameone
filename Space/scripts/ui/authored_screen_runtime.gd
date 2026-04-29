@@ -17,15 +17,17 @@ var _binding_issues_reported: Dictionary = {}
 var _layout_scale: float = 1.0
 var _layout_offset: Vector2 = Vector2.ZERO
 var _design_size: Vector2 = Vector2(480.0, 272.0)
+const DESIGN_VIEWPORT_SIZE := Vector2(480.0, 272.0)
 
 
 func _ready() -> void:
-    set_anchors_preset(PRESET_FULL_RECT)
     mouse_filter = MOUSE_FILTER_STOP
+    _sync_host_rect()
     set_process(true)
 
 
 func load_screen(id: String, data: Dictionary, source: RefCounted) -> void:
+    _sync_host_rect()
     screen_id = id
     screen_data = data.duplicate(true)
     data_source = source
@@ -56,6 +58,7 @@ func has_screen() -> bool:
 
 
 func _process(_delta: float) -> void:
+    _sync_host_rect()
     if visible and not screen_data.is_empty():
         queue_redraw()
 
@@ -63,6 +66,7 @@ func _process(_delta: float) -> void:
 func _draw() -> void:
     if screen_data.is_empty():
         return
+    _sync_host_rect()
     _refresh_layout_metrics()
     _interactive.clear()
     _draw_element(screen_data, Vector2.ZERO)
@@ -172,13 +176,25 @@ func _draw_element(elem: Dictionary, parent_origin: Vector2) -> void:
 
 
 func _draw_panel(rect: Rect2, props: Dictionary) -> void:
-    var variant_key := str(props.get("variant", "main"))
-    var variant := UIPanels.PanelVariant.MAIN
-    if variant_key == "alt":
-        variant = UIPanels.PanelVariant.ALT
-    elif variant_key == "dark":
-        variant = UIPanels.PanelVariant.DARK
-    UIPanels.draw_panel(self, rect, Color.WHITE, variant)
+    var opacity := clampf(float(props.get("opacity", 1.0)), 0.0, 1.0)
+    var sprite_path := str(props.get("sprite_source", "")).strip_edges()
+    var sprite_tint := _hex(str(props.get("sprite_tint", "#ffffff")))
+    sprite_tint.a *= opacity
+    var drew_panel_art := false
+    if not sprite_path.is_empty():
+        var tex := UIIo.load_texture(sprite_path)
+        if tex != null:
+            UIPanels.draw_authored_panel_sprite(self, rect, tex, props, sprite_tint, _layout_scale)
+            drew_panel_art = true
+    if not drew_panel_art:
+        var variant_key := str(props.get("variant", "main")).strip_edges()
+        if not variant_key.is_empty() and variant_key != "none":
+            var variant := UIPanels.PanelVariant.MAIN
+            if variant_key == "alt":
+                variant = UIPanels.PanelVariant.ALT
+            elif variant_key == "dark":
+                variant = UIPanels.PanelVariant.DARK
+            UIPanels.draw_panel(self, rect, Color(1.0, 1.0, 1.0, opacity), variant)
 
 
 func _draw_label(rect: Rect2, props: Dictionary) -> void:
@@ -194,6 +210,7 @@ func _draw_label(rect: Rect2, props: Dictionary) -> void:
         align = HORIZONTAL_ALIGNMENT_RIGHT
     var role := str(props.get("text_role", "body"))
     var col := UIPanels.text_color(role)
+    col.a *= clampf(float(props.get("opacity", 1.0)), 0.0, 1.0)
     var size_role := "body_size"
     if role == "title":
         size_role = "title_size"
@@ -203,9 +220,23 @@ func _draw_label(rect: Rect2, props: Dictionary) -> void:
     if font_size <= 0:
         font_size = UIPanels.font_size(size_role)
     font_size = _scaled_font_size(font_size)
+    var padding_x := _scaled_value(4.0)
+    var wrap := bool(props.get("wrap", false))
+    if wrap:
+        var lines := _wrap_text_lines(text, maxf(rect.size.x - padding_x * 2.0, 1.0), font_size, font)
+        var line_h := font_size + int(round(_scaled_value(4.0)))
+        var baseline := rect.position.y + _scaled_value(6.0) + float(font_size)
+        for line in lines:
+            if baseline > rect.end.y:
+                break
+            draw_string(font,
+                Vector2(rect.position.x + padding_x, baseline),
+                line, align, int(rect.size.x - padding_x * 2.0), font_size, col)
+            baseline += float(line_h)
+        return
     draw_string(font,
-        Vector2(rect.position.x + _scaled_value(4.0), rect.position.y + rect.size.y * 0.5 + font_size * 0.35),
-        text, align, int(rect.size.x - _scaled_value(8.0)), font_size, col)
+        Vector2(rect.position.x + padding_x, rect.position.y + rect.size.y * 0.5 + font_size * 0.35),
+        text, align, int(rect.size.x - padding_x * 2.0), font_size, col)
 
 
 func _draw_button(rect: Rect2, elem: Dictionary, props: Dictionary) -> void:
@@ -341,21 +372,34 @@ func _draw_list(rect: Rect2, props: Dictionary) -> void:
     var issue_text := str(array_result.get("issue", ""))
     var spacing := maxf(_scaled_value(float(props.get("spacing", 4.0))), 0.0)
     var max_visible := maxi(int(props.get("max_visible", 10)), 1)
-    var line_h := _scaled_value(18.0)
     var y := rect.position.y + _scaled_value(8.0)
     var font := ThemeDB.fallback_font
     var font_size: int = _scaled_font_size(11)
     var item_action_id := str(props.get("item_action_id", ""))
+    var item_wrap := bool(props.get("item_wrap", false))
+    var item_min_height := maxf(_scaled_value(float(props.get("item_min_height", 18.0))), _scaled_value(18.0))
+    var text_width := maxf(rect.size.x - _scaled_value(16.0), 1.0)
+    var line_h := float(font_size) + _scaled_value(4.0)
     for i in range(min(items.size(), max_visible)):
-        if y + line_h > rect.end.y:
+        var item_text := _item_text(items[i])
+        var item_lines := [item_text]
+        if item_wrap:
+            item_lines = _wrap_text_lines(item_text, text_width, font_size, font)
+        var item_h := maxf(item_min_height, _scaled_value(4.0) + float(item_lines.size()) * line_h + _scaled_value(4.0))
+        if y + item_h > rect.end.y:
             break
-        var line_rect := Rect2(rect.position.x + _scaled_value(4.0), y - _scaled_value(1.0), rect.size.x - _scaled_value(8.0), line_h)
+        var line_rect := Rect2(rect.position.x + _scaled_value(4.0), y - _scaled_value(1.0), rect.size.x - _scaled_value(8.0), item_h)
         var hovered := _hovered_element_id == "%s::item::%d" % [str(props.get("bind_array", "")), i]
         if hovered and not item_action_id.is_empty():
             draw_rect(line_rect, Color(0.22, 0.32, 0.48, 0.45))
-        draw_string(font, Vector2(rect.position.x + _scaled_value(8.0), y + _scaled_value(12.0)),
-            _item_text(items[i]), HORIZONTAL_ALIGNMENT_LEFT, int(rect.size.x - _scaled_value(16.0)), font_size,
-            UIPanels.text_color("body"))
+        var baseline := y + float(font_size)
+        for line in item_lines:
+            if baseline > line_rect.end.y:
+                break
+            draw_string(font, Vector2(rect.position.x + _scaled_value(8.0), baseline),
+                line, HORIZONTAL_ALIGNMENT_LEFT, int(text_width), font_size,
+                UIPanels.text_color("body"))
+            baseline += line_h
         if not item_action_id.is_empty():
             _interactive.append({
                 "id": "%s::item::%d" % [str(props.get("bind_array", "")), i],
@@ -364,7 +408,7 @@ func _draw_list(rect: Rect2, props: Dictionary) -> void:
                 "action_id": item_action_id,
                 "action_args": _item_action_arg(items[i], i, props),
             })
-        y += line_h + spacing
+        y += item_h + spacing
     if items.is_empty():
         draw_string(font, Vector2(rect.position.x + _scaled_value(8.0), rect.position.y + _scaled_value(20.0)),
             issue_text if not issue_text.is_empty() else "(empty)",
@@ -552,6 +596,10 @@ func _item_text(item: Variant) -> String:
         var d: Dictionary = item
         if d.has("key") and d.has("value"):
             return "%s: %s" % [str(d["key"]), str(d["value"])]
+        if d.has("label"):
+            return str(d.get("label", ""))
+        if d.has("text"):
+            return str(d.get("text", ""))
         if d.has("name"):
             return str(d.get("name", ""))
         return JSON.stringify(d)
@@ -612,7 +660,8 @@ func _resolve_rect(elem: Dictionary, parent_origin: Vector2) -> Rect2:
     var scaled_pos: Vector2 = Vector2(x, y) * _layout_scale
     var scaled_size: Vector2 = Vector2(w, h) * _layout_scale
     if _is_root_element(elem):
-        return Rect2(_layout_offset, scaled_size)
+        var root_anchor := str(elem.get("anchor", "top_left"))
+        return Rect2(_anchor_origin(root_anchor) - _anchor_pivot(root_anchor, scaled_size) + scaled_pos, scaled_size)
     var origin := _anchor_origin(str(elem.get("anchor", "top_left")))
     var offs: Dictionary = {}
     var offs_v: Variant = elem.get("anchor_offset", null)
@@ -629,29 +678,67 @@ func _resolve_origin(elem: Dictionary, parent_origin: Vector2) -> Vector2:
 
 
 func _anchor_origin(anchor: String) -> Vector2:
-    var s := size
+    var rect := Rect2(_layout_offset, _design_size * _layout_scale)
+    var pos := rect.position
+    var s := rect.size
+    match anchor:
+        "top_left":      return pos
+        "top_center":    return pos + Vector2(s.x * 0.5, 0.0)
+        "top_right":     return pos + Vector2(s.x, 0.0)
+        "center_left":   return pos + Vector2(0.0, s.y * 0.5)
+        "center":        return pos + s * 0.5
+        "center_right":  return pos + Vector2(s.x, s.y * 0.5)
+        "bottom_left":   return pos + Vector2(0.0, s.y)
+        "bottom_center": return pos + Vector2(s.x * 0.5, s.y)
+        "bottom_right":  return pos + s
+    return pos
+
+
+func _anchor_pivot(anchor: String, rect_size: Vector2) -> Vector2:
     match anchor:
         "top_left":      return Vector2.ZERO
-        "top_center":    return Vector2(s.x * 0.5, 0)
-        "top_right":     return Vector2(s.x, 0)
-        "center_left":   return Vector2(0, s.y * 0.5)
-        "center":        return s * 0.5
-        "center_right":  return Vector2(s.x, s.y * 0.5)
-        "bottom_left":   return Vector2(0, s.y)
-        "bottom_center": return Vector2(s.x * 0.5, s.y)
-        "bottom_right":  return s
+        "top_center":    return Vector2(rect_size.x * 0.5, 0.0)
+        "top_right":     return Vector2(rect_size.x, 0.0)
+        "center_left":   return Vector2(0.0, rect_size.y * 0.5)
+        "center":        return rect_size * 0.5
+        "center_right":  return Vector2(rect_size.x, rect_size.y * 0.5)
+        "bottom_left":   return Vector2(0.0, rect_size.y)
+        "bottom_center": return Vector2(rect_size.x * 0.5, rect_size.y)
+        "bottom_right":  return rect_size
     return Vector2.ZERO
+
+
+func _sync_host_rect() -> void:
+    if not is_inside_tree():
+        return
+    var parent_control := get_parent() as Control
+    if parent_control != null:
+        set_anchors_preset(PRESET_FULL_RECT)
+        offset_left = 0.0
+        offset_top = 0.0
+        offset_right = 0.0
+        offset_bottom = 0.0
+        position = Vector2.ZERO
+        return
+    var viewport_size := get_viewport_rect().size
+    if viewport_size.x <= 0.0 or viewport_size.y <= 0.0:
+        return
+    set_anchors_preset(PRESET_TOP_LEFT)
+    position = Vector2.ZERO
+    size = viewport_size
 
 
 func _refresh_layout_metrics() -> void:
     _layout_scale = 1.0
     _layout_offset = Vector2.ZERO
-    _design_size = size
+    _design_size = DESIGN_VIEWPORT_SIZE
     if screen_data.is_empty():
         return
     var root_rect: Dictionary = _rect_dict(screen_data)
-    var design_w: float = float(root_rect.get("w", size.x))
-    var design_h: float = float(root_rect.get("h", size.y))
+    var design_w: float = maxf(DESIGN_VIEWPORT_SIZE.x,
+        float(root_rect.get("x", 0)) + float(root_rect.get("w", DESIGN_VIEWPORT_SIZE.x)))
+    var design_h: float = maxf(DESIGN_VIEWPORT_SIZE.y,
+        float(root_rect.get("y", 0)) + float(root_rect.get("h", DESIGN_VIEWPORT_SIZE.y)))
     if design_w <= 0.0 or design_h <= 0.0 or size.x <= 0.0 or size.y <= 0.0:
         return
     _design_size = Vector2(design_w, design_h)
@@ -709,3 +796,56 @@ func _is_truthy(v: Variant) -> bool:
         TYPE_DICTIONARY:
             return not (v as Dictionary).is_empty()
     return true
+
+
+func _wrap_text_lines(text: String, max_width: float, font_size: int, font: Font) -> Array:
+    var out: Array = []
+    var safe_width := maxf(max_width, 1.0)
+    var hard_lines := text.split("\n", false)
+    if hard_lines.is_empty():
+        hard_lines = [text]
+    for hard_v in hard_lines:
+        var hard := str(hard_v)
+        if hard.is_empty():
+            out.append("")
+            continue
+        var words := hard.split(" ", false)
+        var current := ""
+        for word_v in words:
+            var word := str(word_v)
+            var test := word if current.is_empty() else current + " " + word
+            if font.get_string_size(test, HORIZONTAL_ALIGNMENT_LEFT, -1, font_size).x <= safe_width:
+                current = test
+                continue
+            if not current.is_empty():
+                out.append(current)
+                current = ""
+            if font.get_string_size(word, HORIZONTAL_ALIGNMENT_LEFT, -1, font_size).x <= safe_width:
+                current = word
+                continue
+            var fragments := _wrap_long_word(word, safe_width, font_size, font)
+            for fragment_i in range(fragments.size()):
+                var fragment := str(fragments[fragment_i])
+                if fragment_i == fragments.size() - 1:
+                    current = fragment
+                else:
+                    out.append(fragment)
+        if not current.is_empty():
+            out.append(current)
+    return out
+
+
+func _wrap_long_word(word: String, max_width: float, font_size: int, font: Font) -> Array:
+    var out: Array = []
+    var current := ""
+    for i in range(word.length()):
+        var letter := word.substr(i, 1)
+        var test := current + letter
+        if not current.is_empty() and font.get_string_size(test, HORIZONTAL_ALIGNMENT_LEFT, -1, font_size).x > max_width:
+            out.append(current)
+            current = letter
+        else:
+            current = test
+    if not current.is_empty():
+        out.append(current)
+    return out

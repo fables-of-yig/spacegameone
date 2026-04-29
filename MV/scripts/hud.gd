@@ -30,6 +30,9 @@ var _using_custom_screen: bool = false
 
 func _ready() -> void:
 	layer = 90
+	name = "MvHud"
+	add_to_group("mv_hud")
+	visible = false
 	_try_custom_screen()
 	if not _using_custom_screen:
 		_build_hp_bar()
@@ -38,25 +41,37 @@ func _ready() -> void:
 
 
 func _try_custom_screen() -> void:
+	if _using_custom_screen or not _mv_runtime_available():
+		return
 	var pack_id := ""
 	if MvPackLoader.current_pack != null:
 		pack_id = MvPackLoader.current_pack.pack_id
 	if pack_id.is_empty():
 		return
-	if not UIIo.screen_exists(pack_id, "hud"):
+	var screen_id := ""
+	if UIIo.screen_exists(pack_id, "hud_mv"):
+		screen_id = "hud_mv"
+	elif UIIo.screen_exists(pack_id, "hud"):
+		screen_id = "hud"
+	if screen_id.is_empty():
 		return
-	var data := UIIo.load_screen(pack_id, "hud")
+	var data := UIIo.load_screen(pack_id, screen_id)
 	if data.is_empty():
 		return
 	var renderer := Control.new()
 	renderer.set_anchors_preset(Control.PRESET_FULL_RECT)
 	renderer.set_script(AuthoredScreenRuntime)
-	renderer.call("load_screen", "hud", data, HudDataSource.new(_find_player(), GameManager))
+	renderer.call("load_screen", screen_id, data, HudDataSource.new(_find_player(), GameManager))
 	add_child(renderer)
 	_using_custom_screen = true
 
 
 func _process(_delta: float) -> void:
+	visible = _mv_runtime_available()
+	if not visible:
+		return
+	if not _using_custom_screen:
+		_try_custom_screen()
 	if _using_custom_screen:
 		return
 	_update_hp()
@@ -182,3 +197,7 @@ func _find_player() -> Node:
 	if players.is_empty():
 		return null
 	return players[0]
+
+
+func _mv_runtime_available() -> bool:
+	return PlanetaryInterface.hosted or MvGame.main != null

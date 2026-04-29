@@ -19,9 +19,19 @@ const MODE_HELP := {
     EnvTypes.MODE_COLLISION: "COLLISION mode: LMB paints the selected collision brush on this cell. Ctrl-drag copies a collision region; Ctrl-V pastes it. Use the left palette to author supported runtime blocks only: solid, slope, crumble, shot/bomb break, grapple, spikes, and air.",
     EnvTypes.MODE_ENTITIES: "ENTITIES mode: LMB places the selected entity type at the cursor. Use trigger volumes as named zones for zone_enter triggers, scripted NPC movement targets, and spawn targets. RMB or ERASE removes them.",
     EnvTypes.MODE_DOORS: "DOORS mode: LMB places a door cell. Doors link rooms — click a placed door with the PICK tool to edit its target room/direction.",
+    EnvTypes.MODE_BG_IMAGES: "BG IMAGES mode: PAINT drags out stretched PNG rects using the selected background asset. PICK selects an existing placement. ERASE deletes the top-most placement under the cursor. Drag the selected image or its corner handles to move and resize it.",
+    EnvTypes.MODE_SHADERS: "SHADERS mode: PAINT drags out animated shader zones over the room. PICK selects one, ERASE deletes one, and dragging the selected rect or its corner handles moves and resizes it.",
 }
 
 var editor: Node = null  # EnvironmentEditor — set by parent after instantiation.
+
+func _mode_help_text(mode: int) -> String:
+    if mode == EnvTypes.MODE_ENTITIES:
+        return "ENTITIES mode: LMB places the selected entity type at the cursor. Use this for actors and pickups; room logic zones now live in ZONES mode. RMB or ERASE removes them."
+    if mode == EnvTypes.MODE_ZONES or mode == EnvTypes.MODE_DOORS or mode == EnvTypes.MODE_SHADERS:
+        return "ZONES mode: PAINT drags out room zones for doors, shaders, interact prompts, and triggers. PICK selects one, ERASE deletes one, and dragging the selected rect or its corner handles moves and resizes it."
+    return MODE_HELP.get(mode, "")
+
 
 const BLOCK_SIZE: int = 16
 
@@ -40,6 +50,18 @@ var _copy_end_cell: Vector2i = Vector2i(-1, -1)
 var _copied_rect: Rect2i = Rect2i()
 var _last_painted_cell: Vector2i = Vector2i(-1, -1)
 var _hover_cell: Vector2i = Vector2i(-1, -1)
+var _bg_drag_mode: String = ""
+var _bg_drag_active: bool = false
+var _bg_drag_start_blocks: Vector2 = Vector2.ZERO
+var _bg_drag_last_blocks: Vector2 = Vector2.ZERO
+var _bg_drag_origin_rect: Rect2 = Rect2()
+var _bg_preview_rect: Rect2 = Rect2()
+var _shader_drag_mode: String = ""
+var _shader_drag_active: bool = false
+var _shader_drag_start_blocks: Vector2 = Vector2.ZERO
+var _shader_drag_last_blocks: Vector2 = Vector2.ZERO
+var _shader_drag_origin_rect: Rect2 = Rect2()
+var _shader_preview_rect: Rect2 = Rect2()
 
 
 func _ready():
@@ -71,6 +93,30 @@ func _gui_input(event):
             _zoom_at(mb.position, 1.0 / 1.15)
             accept_event()
             return
+        if editor.active_mode == EnvTypes.MODE_BG_IMAGES:
+            if mb.button_index == MOUSE_BUTTON_LEFT:
+                if mb.pressed:
+                    _begin_bg_image_interaction(mb.position, false)
+                else:
+                    _finish_bg_image_interaction()
+                accept_event()
+                return
+            if mb.button_index == MOUSE_BUTTON_RIGHT and mb.pressed:
+                _begin_bg_image_interaction(mb.position, true)
+                accept_event()
+                return
+        if editor.active_mode == EnvTypes.MODE_ZONES:
+            if mb.button_index == MOUSE_BUTTON_LEFT:
+                if mb.pressed:
+                    _begin_shader_interaction(mb.position, false)
+                else:
+                    _finish_shader_interaction()
+                accept_event()
+                return
+            if mb.button_index == MOUSE_BUTTON_RIGHT and mb.pressed:
+                _begin_shader_interaction(mb.position, true)
+                accept_event()
+                return
         if mb.button_index == MOUSE_BUTTON_LEFT:
             if mb.pressed:
                 if mb.ctrl_pressed and editor.active_mode in [EnvTypes.MODE_TILE, EnvTypes.MODE_COLLISION]:
@@ -119,6 +165,14 @@ func _gui_input(event):
             _pan_last = mm.position
             accept_event()
             return
+        if editor.active_mode == EnvTypes.MODE_BG_IMAGES and _bg_drag_active:
+            _update_bg_image_interaction(mm.position)
+            accept_event()
+            return
+        if editor.active_mode == EnvTypes.MODE_ZONES and _shader_drag_active:
+            _update_shader_interaction(mm.position)
+            accept_event()
+            return
         _hover_cell = _screen_to_cell(mm.position)
         if _copy_selecting:
             _copy_end_cell = _hover_cell
@@ -150,6 +204,250 @@ func _cell_to_screen(col: int, row: int) -> Vector2:
 
 func _world_to_screen(world: Vector2) -> Vector2:
     return cam_offset + world * zoom
+
+
+func _screen_to_block_pos(screen_pos: Vector2) -> Vector2:
+    var world := _screen_to_world_px(screen_pos)
+    return world / float(BLOCK_SIZE)
+
+
+func _normalized_rect_from_points(a: Vector2, b: Vector2) -> Rect2:
+    var min_x := minf(a.x, b.x)
+    var min_y := minf(a.y, b.y)
+    var max_x := maxf(a.x, b.x)
+    var max_y := maxf(a.y, b.y)
+    return Rect2(Vector2(min_x, min_y), Vector2(maxf(0.0, max_x - min_x), maxf(0.0, max_y - min_y)))
+
+
+func _bg_screen_rect(entry: Dictionary) -> Rect2:
+    return _background_image_screen_rect(entry)
+
+
+func _bg_handle_rects(screen_rect: Rect2) -> Dictionary:
+    var handle_size := maxf(8.0, 10.0 * zoom)
+    var half := handle_size * 0.5
+    return {
+        "tl": Rect2(screen_rect.position - Vector2(half, half), Vector2(handle_size, handle_size)),
+        "tr": Rect2(Vector2(screen_rect.end.x - half, screen_rect.position.y - half), Vector2(handle_size, handle_size)),
+        "bl": Rect2(Vector2(screen_rect.position.x - half, screen_rect.end.y - half), Vector2(handle_size, handle_size)),
+        "br": Rect2(screen_rect.end - Vector2(half, half), Vector2(handle_size, handle_size)),
+    }
+
+
+func _begin_bg_image_interaction(screen_pos: Vector2, erase: bool) -> void:
+    if editor == null:
+        return
+    var world := _screen_to_world_px(screen_pos)
+    if erase or editor.active_tool == EnvTypes.TOOL_ERASE:
+        editor.begin_stroke()
+        editor.delete_background_image_at(world.x, world.y)
+        editor.end_stroke()
+        return
+    if editor.active_tool == EnvTypes.TOOL_PICK:
+        editor.pick_background_image_at(world.x, world.y)
+        return
+    var selected: Dictionary = editor.get_selected_background_image() if editor.has_method("get_selected_background_image") else {}
+    if not selected.is_empty():
+        var screen_rect := _bg_screen_rect(selected)
+        var handles := _bg_handle_rects(screen_rect)
+        for key_v in handles.keys():
+            var key := str(key_v)
+            if (handles[key] as Rect2).has_point(screen_pos):
+                _bg_drag_active = true
+                _bg_drag_mode = "resize_%s" % key
+                _bg_drag_origin_rect = Rect2(
+                    Vector2(float(selected.get("x_blocks", 0.0)), float(selected.get("y_blocks", 0.0))),
+                    Vector2(float(selected.get("width_blocks", 0.0)), float(selected.get("height_blocks", 0.0))))
+                _bg_drag_start_blocks = _screen_to_block_pos(screen_pos)
+                _bg_drag_last_blocks = _bg_drag_start_blocks
+                editor.begin_stroke()
+                return
+        if screen_rect.has_point(screen_pos):
+            _bg_drag_active = true
+            _bg_drag_mode = "move"
+            _bg_drag_origin_rect = Rect2(
+                Vector2(float(selected.get("x_blocks", 0.0)), float(selected.get("y_blocks", 0.0))),
+                Vector2(float(selected.get("width_blocks", 0.0)), float(selected.get("height_blocks", 0.0))))
+            _bg_drag_start_blocks = _screen_to_block_pos(screen_pos)
+            _bg_drag_last_blocks = _bg_drag_start_blocks
+            editor.begin_stroke()
+            return
+    if editor.has_method("find_background_image_hit"):
+        var hit: Dictionary = editor.find_background_image_hit(world.x, world.y)
+        if not hit.is_empty():
+            editor.pick_background_image_at(world.x, world.y)
+            selected = editor.get_selected_background_image() if editor.has_method("get_selected_background_image") else {}
+            if not selected.is_empty():
+                _bg_drag_active = true
+                _bg_drag_mode = "move"
+                _bg_drag_origin_rect = Rect2(
+                    Vector2(float(selected.get("x_blocks", 0.0)), float(selected.get("y_blocks", 0.0))),
+                    Vector2(float(selected.get("width_blocks", 0.0)), float(selected.get("height_blocks", 0.0))))
+                _bg_drag_start_blocks = _screen_to_block_pos(screen_pos)
+                _bg_drag_last_blocks = _bg_drag_start_blocks
+                editor.begin_stroke()
+                return
+    _bg_drag_active = true
+    _bg_drag_mode = "create"
+    _bg_drag_start_blocks = _screen_to_block_pos(screen_pos)
+    _bg_drag_last_blocks = _bg_drag_start_blocks
+    _bg_preview_rect = Rect2(_bg_drag_start_blocks, Vector2.ZERO)
+
+
+func _update_bg_image_interaction(screen_pos: Vector2) -> void:
+    if not _bg_drag_active or editor == null:
+        return
+    var blocks := _screen_to_block_pos(screen_pos)
+    _bg_drag_last_blocks = blocks
+    if _bg_drag_mode == "create":
+        _bg_preview_rect = _normalized_rect_from_points(_bg_drag_start_blocks, blocks)
+        return
+    if _bg_drag_mode == "move":
+        var delta := blocks - _bg_drag_start_blocks
+        editor.set_selected_background_image_rect(Rect2(_bg_drag_origin_rect.position + delta, _bg_drag_origin_rect.size))
+        return
+    if _bg_drag_mode.begins_with("resize_"):
+        var rect := _bg_drag_origin_rect
+        var tl := rect.position
+        var br := rect.end
+        var handle := _bg_drag_mode.trim_prefix("resize_")
+        if handle == "tl":
+            tl = blocks
+        elif handle == "tr":
+            tl.y = blocks.y
+            br.x = blocks.x
+        elif handle == "bl":
+            tl.x = blocks.x
+            br.y = blocks.y
+        elif handle == "br":
+            br = blocks
+        editor.set_selected_background_image_rect(_normalized_rect_from_points(tl, br))
+
+
+func _finish_bg_image_interaction() -> void:
+    if not _bg_drag_active or editor == null:
+        return
+    if _bg_drag_mode == "create":
+        var rect := _normalized_rect_from_points(_bg_drag_start_blocks, _bg_drag_last_blocks)
+        if rect.size.x > 0.01 and rect.size.y > 0.01:
+            editor.begin_stroke()
+            editor.create_background_image(rect)
+            editor.end_stroke()
+    elif _bg_drag_mode == "move" or _bg_drag_mode.begins_with("resize_"):
+        editor.end_stroke()
+    _bg_drag_active = false
+    _bg_drag_mode = ""
+    _bg_preview_rect = Rect2()
+
+
+func _shader_screen_rect(entry: Dictionary) -> Rect2:
+    return _background_image_screen_rect(entry)
+
+
+func _begin_shader_interaction(screen_pos: Vector2, erase: bool) -> void:
+    if editor == null:
+        return
+    var world := _screen_to_world_px(screen_pos)
+    if erase or editor.active_tool == EnvTypes.TOOL_ERASE:
+        editor.begin_stroke()
+        editor.delete_zone_at(world.x, world.y)
+        editor.end_stroke()
+        return
+    if editor.active_tool == EnvTypes.TOOL_PICK:
+        editor.pick_zone_at(world.x, world.y)
+        return
+    var selected: Dictionary = editor.get_selected_zone() if editor.has_method("get_selected_zone") else {}
+    if not selected.is_empty():
+        var screen_rect := _shader_screen_rect(selected)
+        var handles := _bg_handle_rects(screen_rect)
+        for key_v in handles.keys():
+            var key := str(key_v)
+            if (handles[key] as Rect2).has_point(screen_pos):
+                _shader_drag_active = true
+                _shader_drag_mode = "resize_%s" % key
+                _shader_drag_origin_rect = Rect2(
+                    Vector2(float(selected.get("x_blocks", 0.0)), float(selected.get("y_blocks", 0.0))),
+                    Vector2(float(selected.get("width_blocks", 0.0)), float(selected.get("height_blocks", 0.0))))
+                _shader_drag_start_blocks = _screen_to_block_pos(screen_pos)
+                _shader_drag_last_blocks = _shader_drag_start_blocks
+                editor.begin_stroke()
+                return
+        if screen_rect.has_point(screen_pos):
+            _shader_drag_active = true
+            _shader_drag_mode = "move"
+            _shader_drag_origin_rect = Rect2(
+                Vector2(float(selected.get("x_blocks", 0.0)), float(selected.get("y_blocks", 0.0))),
+                Vector2(float(selected.get("width_blocks", 0.0)), float(selected.get("height_blocks", 0.0))))
+            _shader_drag_start_blocks = _screen_to_block_pos(screen_pos)
+            _shader_drag_last_blocks = _shader_drag_start_blocks
+            editor.begin_stroke()
+            return
+    if editor.has_method("find_zone_hit"):
+        var hit: Dictionary = editor.find_zone_hit(world.x, world.y)
+        if not hit.is_empty():
+            editor.pick_zone_at(world.x, world.y)
+            selected = editor.get_selected_zone() if editor.has_method("get_selected_zone") else {}
+            if not selected.is_empty():
+                _shader_drag_active = true
+                _shader_drag_mode = "move"
+                _shader_drag_origin_rect = Rect2(
+                    Vector2(float(selected.get("x_blocks", 0.0)), float(selected.get("y_blocks", 0.0))),
+                    Vector2(float(selected.get("width_blocks", 0.0)), float(selected.get("height_blocks", 0.0))))
+                _shader_drag_start_blocks = _screen_to_block_pos(screen_pos)
+                _shader_drag_last_blocks = _shader_drag_start_blocks
+                editor.begin_stroke()
+                return
+    _shader_drag_active = true
+    _shader_drag_mode = "create"
+    _shader_drag_start_blocks = _screen_to_block_pos(screen_pos)
+    _shader_drag_last_blocks = _shader_drag_start_blocks
+    _shader_preview_rect = Rect2(_shader_drag_start_blocks, Vector2.ZERO)
+
+
+func _update_shader_interaction(screen_pos: Vector2) -> void:
+    if not _shader_drag_active or editor == null:
+        return
+    var blocks := _screen_to_block_pos(screen_pos)
+    _shader_drag_last_blocks = blocks
+    if _shader_drag_mode == "create":
+        _shader_preview_rect = _normalized_rect_from_points(_shader_drag_start_blocks, blocks)
+        return
+    if _shader_drag_mode == "move":
+        var delta := blocks - _shader_drag_start_blocks
+        editor.set_selected_zone_rect(Rect2(_shader_drag_origin_rect.position + delta, _shader_drag_origin_rect.size))
+        return
+    if _shader_drag_mode.begins_with("resize_"):
+        var rect := _shader_drag_origin_rect
+        var tl := rect.position
+        var br := rect.end
+        var handle := _shader_drag_mode.trim_prefix("resize_")
+        if handle == "tl":
+            tl = blocks
+        elif handle == "tr":
+            tl.y = blocks.y
+            br.x = blocks.x
+        elif handle == "bl":
+            tl.x = blocks.x
+            br.y = blocks.y
+        elif handle == "br":
+            br = blocks
+        editor.set_selected_zone_rect(_normalized_rect_from_points(tl, br))
+
+
+func _finish_shader_interaction() -> void:
+    if not _shader_drag_active or editor == null:
+        return
+    if _shader_drag_mode == "create":
+        var rect := _normalized_rect_from_points(_shader_drag_start_blocks, _shader_drag_last_blocks)
+        if rect.size.x > 0.01 and rect.size.y > 0.01:
+            editor.begin_stroke()
+            editor.create_zone(rect)
+            editor.end_stroke()
+    elif _shader_drag_mode == "move" or _shader_drag_mode.begins_with("resize_"):
+        editor.end_stroke()
+    _shader_drag_active = false
+    _shader_drag_mode = ""
+    _shader_preview_rect = Rect2()
 
 
 func _apply_tool_at(screen_pos: Vector2, erase: bool) -> void:
@@ -188,13 +486,12 @@ func _apply_tool_at(screen_pos: Vector2, erase: bool) -> void:
     if cell.y < 0 or cell.y >= rows or cell.x < 0 or cell.x >= cols:
         return
 
-    if editor.active_mode == EnvTypes.MODE_DOORS:
+    if editor.active_mode == EnvTypes.MODE_ZONES:
+        var world := _screen_to_world_px(screen_pos)
         if editor.active_tool == EnvTypes.TOOL_ERASE or erase:
-            editor.delete_door_at(cell.y, cell.x)
+            editor.delete_zone_at(world.x, world.y)
         elif editor.active_tool == EnvTypes.TOOL_PICK:
-            editor.pick_door_at(cell.y, cell.x)
-        else:
-            editor.place_door_at(cell.y, cell.x)
+            editor.pick_zone_at(world.x, world.y)
         return
 
     if erase:
@@ -229,7 +526,8 @@ func _draw():
     var editing_tile: bool = active_mode == EnvTypes.MODE_TILE
     var editing_collision: bool = active_mode == EnvTypes.MODE_COLLISION
     var _editing_entities: bool = active_mode == EnvTypes.MODE_ENTITIES
-    var _editing_doors: bool = active_mode == EnvTypes.MODE_DOORS
+    var editing_bg_images: bool = active_mode == EnvTypes.MODE_BG_IMAGES
+    var editing_zones: bool = active_mode == EnvTypes.MODE_ZONES
 
     # tile_layers is already in draw order (bg → main → fg). Iterate and
     # draw each in place. When editing a tile layer, the active layer draws
@@ -269,14 +567,16 @@ func _draw():
 
     _draw_entities(room)
     _draw_trigger_camera_preview()
-    _draw_doors(room, rows, cols)
+    _draw_zones(editing_zones)
+    _draw_background_image_handles(editing_bg_images)
+    _draw_zone_handles(editing_zones)
     _draw_grid(rows, cols)
     _draw_copy_selection(rows, cols)
     _draw_paste_preview(rows, cols)
     _draw_hover_marker(rows, cols)
 
     if Rect2(Vector2.ZERO, size).has_point(get_local_mouse_position()):
-        var help: String = MODE_HELP.get(active_mode, "")
+        var help: String = _mode_help_text(active_mode)
         if help != "":
             var controls := "\nMMB drag to pan, wheel to zoom. LMB uses the active tool, RMB always erases."
             if _hover_cell.x >= 0 and _hover_cell.x < cols and _hover_cell.y >= 0 and _hover_cell.y < rows:
@@ -356,10 +656,11 @@ func _draw_room_background(room: Dictionary, rows: int, cols: int) -> void:
     var has_parallax := _draw_room_parallax(room, room_rect)
     if not has_parallax:
         draw_rect(room_rect, Color(0.02, 0.03, 0.06, 1.0))
+    _draw_room_background_images()
     draw_rect(room_rect, Color(0.35, 0.5, 0.75, 0.8), false, 2.0)
 
 
-func _draw_room_parallax(room: Dictionary, room_rect: Rect2) -> bool:
+func _draw_room_parallax(_room: Dictionary, room_rect: Rect2) -> bool:
     if editor == null or not editor.has_method("get_room_parallax_layers"):
         return false
     var layers: Array = editor.get_room_parallax_layers()
@@ -379,6 +680,180 @@ func _draw_room_parallax(room: Dictionary, room_rect: Rect2) -> bool:
         draw_texture_rect(tex, room_rect, false)
         any_drawn = true
     return any_drawn
+
+
+func _draw_room_background_images() -> void:
+    if editor == null \
+            or not editor.has_method("get_room_background_images") \
+            or not editor.has_method("load_backdrop_texture"):
+        return
+    var bg_images: Array = editor.get_room_background_images()
+    for bg_v in bg_images:
+        if typeof(bg_v) != TYPE_DICTIONARY:
+            continue
+        var bg: Dictionary = bg_v
+        var rel_path := str(bg.get("image", "")).strip_edges()
+        if rel_path.is_empty():
+            continue
+        var tex: Texture2D = editor.load_backdrop_texture(rel_path)
+        if tex == null:
+            continue
+        var screen_rect := _background_image_screen_rect(bg)
+        if screen_rect.size.x <= 0.0 or screen_rect.size.y <= 0.0:
+            continue
+        var frame_count := maxi(1, int(bg.get("anim_frames", 1)))
+        var fps := maxf(0.0, float(bg.get("anim_fps", 0.0)))
+        var tint := Color.from_string(str(bg.get("shader_tint", "ffffff")), Color.WHITE)
+        if frame_count > 1 and fps > 0.0:
+            var frame_w := float(tex.get_width()) / float(frame_count)
+            var frame_idx := int(floor(Time.get_ticks_msec() * 0.001 * fps)) % frame_count
+            var src_rect := Rect2(frame_w * float(frame_idx), 0.0, frame_w, float(tex.get_height()))
+            draw_texture_rect_region(tex, screen_rect, src_rect, tint)
+        else:
+            draw_texture_rect(tex, screen_rect, false, tint)
+
+
+func _background_image_screen_rect(bg: Dictionary) -> Rect2:
+    var x_blocks := float(bg.get("x_blocks", 0.0))
+    var y_blocks := float(bg.get("y_blocks", 0.0))
+    var w_blocks := float(bg.get("width_blocks", 0.0))
+    var h_blocks := float(bg.get("height_blocks", 0.0))
+    if w_blocks <= 0.0 or h_blocks <= 0.0:
+        return Rect2()
+    var world_pos := Vector2(x_blocks * BLOCK_SIZE, y_blocks * BLOCK_SIZE)
+    var screen_pos := _world_to_screen(world_pos)
+    return Rect2(screen_pos, Vector2(w_blocks * BLOCK_SIZE * zoom, h_blocks * BLOCK_SIZE * zoom))
+
+
+func _draw_background_image_handles(editing_bg_images: bool) -> void:
+    if editor == null or not editor.has_method("get_selected_background_image"):
+        return
+    var selected: Dictionary = editor.get_selected_background_image()
+    if selected.is_empty():
+        if _bg_drag_mode == "create" and _bg_preview_rect.size.x > 0.0 and _bg_preview_rect.size.y > 0.0:
+            var preview := _bg_screen_rect({
+                "x_blocks": _bg_preview_rect.position.x,
+                "y_blocks": _bg_preview_rect.position.y,
+                "width_blocks": _bg_preview_rect.size.x,
+                "height_blocks": _bg_preview_rect.size.y,
+            })
+            draw_rect(preview, Color(1.0, 0.86, 0.45, 0.14))
+            draw_rect(preview, Color(1.0, 0.86, 0.45, 0.95), false, 2.0)
+        return
+    var screen_rect := _bg_screen_rect(selected)
+    var stroke := Color(1.0, 0.86, 0.45, 0.95) if editing_bg_images else Color(0.9, 0.8, 0.55, 0.75)
+    draw_rect(screen_rect, Color(stroke.r, stroke.g, stroke.b, 0.10))
+    draw_rect(screen_rect, stroke, false, 2.0)
+    if editing_bg_images:
+        var handles := _bg_handle_rects(screen_rect)
+        for key_v in handles.keys():
+            var rect: Rect2 = handles[key_v]
+            draw_rect(rect, Color(0.05, 0.06, 0.08, 0.95))
+            draw_rect(rect, stroke, false, 1.5)
+    if _bg_drag_mode == "create" and _bg_preview_rect.size.x > 0.0 and _bg_preview_rect.size.y > 0.0:
+        var preview := _bg_screen_rect({
+            "x_blocks": _bg_preview_rect.position.x,
+            "y_blocks": _bg_preview_rect.position.y,
+            "width_blocks": _bg_preview_rect.size.x,
+            "height_blocks": _bg_preview_rect.size.y,
+        })
+        draw_rect(preview, Color(1.0, 0.86, 0.45, 0.14))
+        draw_rect(preview, Color(1.0, 0.86, 0.45, 0.95), false, 2.0)
+
+
+func _zone_palette_colors(zone: Dictionary, editing_zones: bool) -> Dictionary:
+    var kind := str(zone.get("kind", "shader")).strip_edges().to_lower()
+    var stroke := Color(0.8, 0.88, 1.0, 0.9)
+    var fill := Color(0.6, 0.72, 1.0, 0.16)
+    if kind == "door":
+        stroke = Color(0.45, 0.95, 0.6, 0.94)
+        fill = Color(0.14, 0.62, 0.34, 0.16)
+    elif kind == "interact":
+        stroke = Color(1.0, 0.86, 0.35, 0.94)
+        fill = Color(0.92, 0.66, 0.12, 0.16)
+    elif kind == "trigger":
+        stroke = Color(1.0, 0.52, 0.34, 0.94)
+        fill = Color(0.78, 0.26, 0.18, 0.16)
+    else:
+        var preset := str(zone.get("shader_preset", "flicker")).strip_edges().to_lower()
+        match preset:
+            "wave":
+                stroke = Color(0.45, 0.95, 1.0, 0.92)
+                fill = Color(0.2, 0.7, 1.0, 0.16)
+            "heat":
+                stroke = Color(1.0, 0.68, 0.35, 0.94)
+                fill = Color(1.0, 0.42, 0.16, 0.15)
+            _:
+                stroke = Color(0.88, 0.84, 1.0, 0.92)
+                fill = Color(0.72, 0.62, 1.0, 0.14)
+    if not editing_zones:
+        stroke.a *= 0.7
+        fill.a *= 0.8
+    return {"stroke": stroke, "fill": fill}
+
+
+func _draw_zones(editing_zones: bool) -> void:
+    if editor == null or not editor.has_method("get_room_zones"):
+        return
+    var zones: Array = editor.get_room_zones()
+    var time_s := Time.get_ticks_msec() * 0.001
+    for zone_v in zones:
+        if typeof(zone_v) != TYPE_DICTIONARY:
+            continue
+        var zone: Dictionary = zone_v
+        var screen_rect := _shader_screen_rect(zone)
+        if screen_rect.size.x <= 0.0 or screen_rect.size.y <= 0.0:
+            continue
+        var palette: Dictionary = _zone_palette_colors(zone, editing_zones)
+        var stroke: Color = palette.get("stroke", Color(1, 1, 1, 0.9))
+        var fill: Color = palette.get("fill", Color(1, 1, 1, 0.14))
+        var pulse := 1.0
+        if str(zone.get("kind", "shader")) == "shader":
+            pulse = 0.86 + sin(time_s * maxf(0.5, float(zone.get("shader_speed", 1.0))) * 3.2) * 0.14
+        draw_rect(screen_rect, Color(fill.r, fill.g, fill.b, fill.a * pulse))
+        draw_rect(screen_rect, stroke, false, 2.0)
+        var label := str(zone.get("kind", "shader")).to_upper()
+        if label == "SHADER":
+            label = str(zone.get("shader_preset", "flicker")).to_upper()
+        var font := ThemeDB.fallback_font
+        draw_string(font, screen_rect.position + Vector2(6.0, 14.0),
+            label, HORIZONTAL_ALIGNMENT_LEFT, -1, 10, Color(stroke.r, stroke.g, stroke.b, 0.95))
+    if _shader_drag_mode == "create" and _shader_preview_rect.size.x > 0.0 and _shader_preview_rect.size.y > 0.0:
+        var preview := _shader_screen_rect({
+            "x_blocks": _shader_preview_rect.position.x,
+            "y_blocks": _shader_preview_rect.position.y,
+            "width_blocks": _shader_preview_rect.size.x,
+            "height_blocks": _shader_preview_rect.size.y,
+        })
+        draw_rect(preview, Color(0.75, 0.84, 1.0, 0.14))
+        draw_rect(preview, Color(0.75, 0.84, 1.0, 0.96), false, 2.0)
+
+
+func _draw_zone_handles(editing_zones: bool) -> void:
+    if editor == null or not editor.has_method("get_selected_zone"):
+        return
+    var selected: Dictionary = editor.get_selected_zone()
+    if selected.is_empty():
+        return
+    var screen_rect := _shader_screen_rect(selected)
+    var palette := _zone_palette_colors(selected, editing_zones)
+    var stroke: Color = palette.get("stroke", Color(0.82, 0.9, 1.0, 0.98))
+    draw_rect(screen_rect, Color(stroke.r, stroke.g, stroke.b, 0.08))
+    draw_rect(screen_rect, stroke, false, 2.0)
+    if editing_zones:
+        var handles := _bg_handle_rects(screen_rect)
+        for key_v in handles.keys():
+            var rect: Rect2 = handles[key_v]
+            draw_rect(rect, Color(0.05, 0.06, 0.08, 0.95))
+            draw_rect(rect, stroke, false, 1.5)
+
+
+func _draw_shader_regions(editing_shaders: bool) -> void:
+    _draw_zones(editing_shaders)
+
+
+func _draw_shader_region_handles(editing_shaders: bool) -> void:
+    _draw_zone_handles(editing_shaders)
 
 
 func _draw_tile_layer(tiles: Array, alpha: float) -> void:
@@ -556,14 +1031,39 @@ func _draw_entities(room: Dictionary) -> void:
                 draw_string(font, rect.position + Vector2(4, rect.size.y + 12),
                     instance_id, HORIZONTAL_ALIGNMENT_LEFT, -1, 9, Color(0.8, 0.86, 0.98, 0.82 * alpha_mul))
             continue
-        var radius := 6.0 * zoom * 0.5 + 4.0
-        draw_circle(center, radius, col)
-        draw_arc(center, radius, 0, TAU, 24, Color(1, 1, 1, 0.9 * alpha_mul), 1.5)
-        draw_string(font, center + Vector2(radius + 4, 4),
-            EnvTypes.entity_label(type_id), HORIZONTAL_ALIGNMENT_LEFT, -1, 10, label_col)
+        var preview_tex: Texture2D = null
+        if editor.has_method("get_entity_preview_texture"):
+            preview_tex = editor.get_entity_preview_texture(type_id)
+        var label_pos := center + Vector2(12.0, 4.0)
+        if preview_tex != null:
+            var preview_rect := _entity_preview_rect(center, preview_tex)
+            draw_texture_rect(preview_tex, preview_rect, false, Color(1, 1, 1, alpha_mul))
+            draw_rect(preview_rect.grow(1.0), Color(0, 0, 0, 0.55 * alpha_mul), false, 1.0)
+            label_pos = Vector2(preview_rect.end.x + 4.0, preview_rect.position.y + 12.0)
+        else:
+            var radius := 6.0 * zoom * 0.5 + 4.0
+            draw_circle(center, radius, col)
+            draw_arc(center, radius, 0, TAU, 24, Color(1, 1, 1, 0.9 * alpha_mul), 1.5)
+            label_pos = center + Vector2(radius + 4.0, 4.0)
+        var label := EnvTypes.entity_label(type_id)
+        if editor.has_method("get_entity_preview_label"):
+            label = str(editor.get_entity_preview_label(type_id))
+        draw_string(font, label_pos,
+            label, HORIZONTAL_ALIGNMENT_LEFT, -1, 10, label_col)
         if editing_entities and not instance_id.is_empty():
-            draw_string(font, center + Vector2(radius + 4, 15),
+            draw_string(font, label_pos + Vector2(0.0, 11.0),
                 instance_id, HORIZONTAL_ALIGNMENT_LEFT, -1, 9, Color(0.8, 0.86, 0.98, 0.82 * alpha_mul))
+
+
+func _entity_preview_rect(center: Vector2, tex: Texture2D) -> Rect2:
+    var tex_size := tex.get_size()
+    if tex_size.x <= 0.0 or tex_size.y <= 0.0:
+        return Rect2(center - Vector2(8.0, 16.0), Vector2(16.0, 16.0))
+    var max_draw := maxf(24.0, 48.0 * zoom)
+    var scale := minf(max_draw / tex_size.x, max_draw / tex_size.y)
+    scale = minf(scale, maxf(zoom, 1.0))
+    var draw_size := tex_size * maxf(scale, 0.01)
+    return Rect2(Vector2(center.x - draw_size.x * 0.5, center.y - draw_size.y), draw_size)
 
 
 func _draw_doors(room: Dictionary, rows: int, cols: int) -> void:

@@ -157,6 +157,7 @@ func _draw():
     for i in _items.size():
         var item: Dictionary = _items[i]
         var col_i: int = i % cols
+        @warning_ignore("integer_division")
         var row_i: int = i / cols
         var x: float = grid.position.x + 4 + float(col_i) * (col_w + THUMB_GAP)
         var y: float = grid.position.y + 8 + float(row_i) * row_h - _scroll
@@ -197,11 +198,11 @@ func _draw():
                 "(load fail)", HORIZONTAL_ALIGNMENT_LEFT, -1, 10,
                 Color(0.85, 0.4, 0.4, 1))
 
-        var name := str(item["name"])
-        if name.length() > 14:
-            name = name.substr(0, 12) + "…"
+        var texture_name := str(item["name"])
+        if texture_name.length() > 14:
+            texture_name = texture_name.substr(0, 12) + "…"
         draw_string(font, thumb_rect.position + Vector2(6, THUMB_H + 14),
-            name, HORIZONTAL_ALIGNMENT_LEFT, int(col_w - 12), 10,
+            texture_name, HORIZONTAL_ALIGNMENT_LEFT, int(col_w - 12), 10,
             Color(0.85, 0.98, 0.92, 1))
         if hover:
             EditorTooltip.show_text("Texture \"%s\". Click to assign it to the field that opened this picker. Path: %s" % [str(item["name"]), str(item["path"])])

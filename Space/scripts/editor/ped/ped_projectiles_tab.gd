@@ -2,7 +2,6 @@ extends Control
 
 const PedIO = preload("res://Space/scripts/editor/ped/ped_io.gd")
 const PedUtil = preload("res://Space/scripts/editor/ped/ped_util.gd")
-const EditorUndo = preload("res://Space/scripts/editor/editor_undo.gd")
 
 # Player editor — Projectiles tab. List + detail editor for projectiles.json.
 # Each entry owns sprite (sheet path + frame layout + animation tick), physics

@@ -274,17 +274,22 @@ func _draw_region_overlays() -> void:
 	var cell_size := float(BLOCK_SIZE) * zoom
 	var regions: Array = editor.get_realm_regions()
 	var font := ThemeDB.fallback_font
+	var selected_region_id := ""
+	if editor.has_method("get_selected_region_id"):
+		selected_region_id = str(editor.get_selected_region_id())
 	for entry_v in regions:
 		if typeof(entry_v) != TYPE_DICTIONARY:
 			continue
 		var entry: Dictionary = entry_v
+		var region_id := str(entry.get("id", ""))
 		var col: int = int(entry.get("col", 0))
 		var row: int = int(entry.get("row", 0))
 		var rname := str(entry.get("name", str(entry.get("id", "?"))))
 		var pos := _cell_to_screen(col, row)
 		var rect := Rect2(pos, Vector2(cell_size, cell_size))
-		draw_rect(rect, Color(0.3, 0.85, 0.5, 0.25))
-		draw_rect(rect, Color(0.3, 0.85, 0.5, 0.7), false, 2.0)
+		var active := region_id == selected_region_id
+		draw_rect(rect, Color(0.4, 0.95, 0.6, 0.33) if active else Color(0.3, 0.85, 0.5, 0.25))
+		draw_rect(rect, Color(0.85, 1.0, 0.9, 0.95) if active else Color(0.3, 0.85, 0.5, 0.7), false, 2.0)
 		if zoom >= 1.5:
 			var label_size: int = clampi(int(8.0 * zoom), 8, 14)
 			draw_string(font, pos + Vector2(3, float(label_size) + 2),

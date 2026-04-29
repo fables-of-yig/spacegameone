@@ -5,6 +5,7 @@ const _MvInteractable := preload("res://MV/scripts/interactable.gd")
 const _MvPickup := preload("res://MV/scripts/pickup.gd")
 const _MvTriggerVolume := preload("res://MV/scripts/trigger_volume.gd")
 const _MvBoss := preload("res://MV/scripts/boss.gd")
+const _MvWeatherOverlay := preload("res://MV/scripts/weather_overlay.gd")
 
 # Loads room definitions from the current content pack, builds a dynamic
 # stack of TileMapLayers per room (bg layers behind the player, main at
@@ -58,6 +59,7 @@ var _tile_animator: MvRoomRenderer = null
 var _fg_host: Node2D = null
 var _backdrop_root: Node2D = null
 var _backdrop_layers: Array = []
+var _shader_fx_root: Node2D = null
 var _crumble_fx_root: Node2D = null
 
 var _collision_container: Node2D
@@ -81,6 +83,13 @@ var _active_crumbles: Dictionary = {}
 const CRUMBLE_FADE_SECONDS: float = 0.2
 const CRUMBLE_RESPAWN_SECONDS: float = 4.0
 const CRUMBLE_PERSIST_UNTIL_RELOAD_BIT: int = 0x01
+const _BG_SHADER_CODE: String = "shader_type canvas_item;\nuniform int effect_mode = 0;\nuniform vec4 tint : source_color = vec4(1.0);\nuniform float strength = 0.6;\nuniform float speed = 1.0;\nvoid fragment() {\n\tvec2 uv = UV;\n\tif (effect_mode == 2 || effect_mode == 3) {\n\t\tfloat off = sin((uv.y * 24.0 + TIME * speed * 4.0)) * strength * 0.02;\n\t\tuv.x += off;\n\t}\n\tvec4 tex = texture(TEXTURE, uv);\n\tif (effect_mode == 1) {\n\t\tfloat flick = 1.0 - strength * 0.35 + sin(TIME * (6.0 * speed) + uv.y * 12.0) * strength * 0.2;\n\t\ttex.rgb *= flick;\n\t} else if (effect_mode == 3) {\n\t\tfloat shimmer = sin((uv.y * 32.0) - TIME * speed * 5.0) * strength * 0.15;\n\t\ttex.rgb += tint.rgb * max(shimmer, 0.0) * 0.5;\n\t}\n\ttex.rgb *= mix(vec3(1.0), tint.rgb, clamp(strength, 0.0, 1.0));\n\ttex.a *= tint.a;\n\tCOLOR = tex;\n}\n"
+const _ROOM_FX_SHADER_CODE: String = "shader_type canvas_item;\nrender_mode unshaded, blend_mix;\nuniform sampler2D screen_tex : hint_screen_texture, filter_linear_mipmap, repeat_disable;\nuniform int effect_mode = 1;\nuniform vec4 tint : source_color = vec4(1.0);\nuniform float strength = 0.6;\nuniform float speed = 1.0;\nvoid fragment() {\n\tvec2 uv = SCREEN_UV;\n\tvec2 offset = vec2(0.0);\n\tif (effect_mode == 2 || effect_mode == 3) {\n\t\tfloat wave = sin((UV.y * 32.0 + TIME * speed * 4.0)) * 0.006 * strength;\n\t\toffset.x += wave;\n\t}\n\tvec4 src = textureLod(screen_tex, uv + offset, 0.0);\n\tif (effect_mode == 1) {\n\t\tfloat flick = 1.0 - strength * 0.22 + sin(TIME * (7.0 * speed) + UV.y * 12.0) * strength * 0.18;\n\t\tsrc.rgb *= flick;\n\t} else if (effect_mode == 3) {\n\t\tfloat shimmer = sin((UV.y * 42.0) - TIME * speed * 6.0) * strength * 0.18;\n\t\tsrc.rgb += tint.rgb * max(shimmer, 0.0) * 0.5;\n\t}\n\tsrc.rgb = mix(src.rgb, src.rgb * tint.rgb, clamp(strength * 0.6, 0.0, 1.0));\n\tsrc.a = 1.0;\n\tCOLOR = src;\n}\n"
+
+var _backdrop_shader: Shader = null
+var _room_fx_shader: Shader = null
+var _weather_canvas: CanvasLayer = null
+var _weather_overlay: Control = null
 
 
 func _ready() -> void:
@@ -88,6 +97,11 @@ func _ready() -> void:
     _backdrop_root.name = "Backdrop"
     _backdrop_root.z_index = -100
     add_child(_backdrop_root)
+
+    _shader_fx_root = Node2D.new()
+    _shader_fx_root.name = "ShaderFx"
+    _shader_fx_root.z_index = 80
+    add_child(_shader_fx_root)
 
     _crumble_fx_root = Node2D.new()
     _crumble_fx_root.name = "CrumbleFx"
@@ -101,6 +115,12 @@ func _ready() -> void:
     _entities_container = Node2D.new()
     _entities_container.name = "Entities"
     add_child(_entities_container)
+
+    _weather_canvas = CanvasLayer.new()
+    _weather_canvas.name = "WeatherCanvas"
+    add_child(_weather_canvas)
+    _weather_overlay = _MvWeatherOverlay.new()
+    _weather_canvas.add_child(_weather_overlay)
 
     _pack = MvPackLoader.current_pack
     if _pack == null:
@@ -131,6 +151,7 @@ func _process(_delta: float) -> void:
         var node: Sprite2D = entry.get("node") as Sprite2D
         if node == null:
             continue
+        _update_backdrop_layer_animation(entry, _delta)
         _update_backdrop_layer_transform(entry, cam, cam_pos)
     _tick_active_crumbles(_delta)
 
@@ -358,6 +379,7 @@ func _create_crumble_overlay(layer_node: TileMapLayer, packed_value: int, cell: 
     var source_id := int(unpacked.get("tileset", 0))
     var atlas_cols := _get_atlas_cols_for_source(layer_node, source_id)
     var metatile_idx := int(unpacked.get("idx", 0))
+    @warning_ignore("integer_division")
     var atlas_coords := Vector2i(metatile_idx % atlas_cols, metatile_idx / atlas_cols)
     var src := layer_node.tile_set.get_source(source_id)
     if not (src is TileSetAtlasSource):
@@ -549,6 +571,7 @@ func _get_atlas_cols_for_source(map: TileMapLayer, source_id: int) -> int:
             var tile_size := atlas_src.texture_region_size.x
             if tile_size < 1:
                 tile_size = BLOCK_SIZE
+            @warning_ignore("integer_division")
             return maxi(1, atlas_src.texture.get_width() / tile_size)
     return 1
 
@@ -567,10 +590,10 @@ func _load_room_data(path: String) -> void:
         return
 
     _start_room = str(raw.get("start_room", ""))
-    var rooms: Dictionary = raw.get("rooms", {})
-    for key in rooms.keys():
+    var room_list: Dictionary = raw.get("rooms", {})
+    for key in room_list.keys():
         var addr := str(key)
-        var info := _parse_room_info(addr, rooms[key])
+        var info := _parse_room_info(addr, room_list[key])
         _rooms[addr] = info
 
     print("[MvRoomManager] loaded %d room(s), start=%s" % [_rooms.size(), _start_room])
@@ -580,10 +603,15 @@ func _parse_room_info(addr: String, r: Dictionary) -> Dictionary:
     var info: Dictionary = {
         "addr": addr,
         "name": str(r.get("friendly_name", addr)),
+        "parallax_enabled": bool(r.get("parallax_enabled", true)),
         "backdrop_image": str(r.get("backdrop_image", "")),
         "backdrop_scroll_speed_x": float(r.get("backdrop_scroll_speed_x", 0.94)),
         "backdrop_scroll_speed_y": float(r.get("backdrop_scroll_speed_y", 0.97)),
         "parallax_layers": _parse_parallax_layers(r),
+        "background_images": _parse_background_images(r),
+        "background_image": _parse_background_image(r),
+        "shader_regions": _parse_shader_regions(r),
+        "weather": _parse_weather(r),
         "width_screens":  int(r.get("width_screens", 0)),
         "height_screens": int(r.get("height_screens", 0)),
         "width_blocks":   int(r.get("width_blocks", 0)),
@@ -591,6 +619,7 @@ func _parse_room_info(addr: String, r: Dictionary) -> Dictionary:
         "width_px":       int(r.get("width_px", 0)),
         "height_px":      int(r.get("height_px", 0)),
         "tileset":        int(r.get("tileset", 0)),
+        "zones":          [],
         "doors":          [],
         "tile_layers":    [],
         "collision":      [],
@@ -601,27 +630,8 @@ func _parse_room_info(addr: String, r: Dictionary) -> Dictionary:
         "raw_triggers":   [],
     }
 
-    if r.has("doors"):
-        for d in r["doors"]:
-            var di: Dictionary = {
-                "target":        str(d.get("target_room", "")),
-                "direction":     str(d.get("direction", "")),
-                "cap_block_x":   int(d.get("cap_x", 0)),
-                "cap_block_y":   int(d.get("cap_y", 0)),
-                "dest_pixel_x":  int(d.get("dest_x", 0)),
-                "dest_pixel_y":  int(d.get("dest_y", 0)),
-                "send_to_overworld": bool(d.get("send_to_overworld", false)),
-                "tags":          [],
-                "destinations": [],
-            }
-            if d.has("tags") and typeof(d["tags"]) == TYPE_ARRAY:
-                for t in d["tags"]:
-                    di["tags"].append(str(t))
-            if d.has("destinations") and typeof(d["destinations"]) == TYPE_ARRAY:
-                # Raw pass-through — the condition layer is deferred with
-                # the rest of the trigger/flow rebuild.
-                di["destinations"] = (d["destinations"] as Array).duplicate(true)
-            info["doors"].append(di)
+    info["zones"] = _parse_room_zones(r)
+    info["doors"] = _parse_room_doors(r, info["zones"])
 
     info["collision"] = _parse_2d(r.get("collision", []))
     info["bts"]       = _parse_2d(r.get("bts", []))
@@ -668,9 +678,127 @@ func _parse_room_info(addr: String, r: Dictionary) -> Dictionary:
     # Forward-compat: pass raw trigger dicts straight through so the JSON
     # round-trip preserves them even before the trigger system is rebuilt.
     if r.has("triggers") and (typeof(r["triggers"]) == TYPE_ARRAY or typeof(r["triggers"]) == TYPE_DICTIONARY):
+        @warning_ignore("incompatible_ternary")
         info["raw_triggers"] = (r["triggers"] as Array).duplicate(true) if typeof(r["triggers"]) == TYPE_ARRAY else (r["triggers"] as Dictionary).duplicate(true)
 
     return info
+
+
+func _parse_room_zones(r: Dictionary) -> Array:
+    var out: Array = []
+    var zones_v: Variant = r.get("zones", [])
+    if typeof(zones_v) != TYPE_ARRAY:
+        return out
+    for zone_v in zones_v:
+        if typeof(zone_v) != TYPE_DICTIONARY:
+            continue
+        out.append((zone_v as Dictionary).duplicate(true))
+    return out
+
+
+func _parse_room_doors(r: Dictionary, zones: Array) -> Array:
+    var out: Array = []
+    var seen_ids: Dictionary = {}
+    for zone_v in zones:
+        if typeof(zone_v) != TYPE_DICTIONARY:
+            continue
+        var zone: Dictionary = zone_v
+        if str(zone.get("kind", "")).strip_edges().to_lower() != "door":
+            continue
+        var door := _parse_door_from_zone(zone)
+        var door_id := str(door.get("id", "")).strip_edges()
+        if door_id.is_empty():
+            continue
+        seen_ids[door_id] = true
+        out.append(door)
+    if not out.is_empty():
+        return out
+
+    var doors_v: Variant = r.get("doors", [])
+    if typeof(doors_v) != TYPE_ARRAY:
+        return out
+    for d_v in doors_v:
+        if typeof(d_v) != TYPE_DICTIONARY:
+            continue
+        var door := _parse_legacy_door(d_v as Dictionary)
+        var door_id := str(door.get("id", "")).strip_edges()
+        if door_id.is_empty() or seen_ids.has(door_id):
+            continue
+        out.append(door)
+    return out
+
+
+func _parse_door_from_zone(zone: Dictionary) -> Dictionary:
+    var tags: Array = []
+    var tags_v: Variant = zone.get("tags", [])
+    if typeof(tags_v) == TYPE_ARRAY:
+        for tag_v in tags_v:
+            tags.append(str(tag_v))
+    return {
+        "id": str(zone.get("id", "")),
+        "target_door_id": str(zone.get("target_door_id", zone.get("target_room", ""))).strip_edges(),
+        "target": str(zone.get("target_room", "")).strip_edges(),
+        "direction": str(zone.get("direction", "right")).strip_edges().to_lower(),
+        "send_to_overworld": bool(zone.get("send_to_overworld", false)),
+        "overworld_region_id": str(zone.get("overworld_region_id", "")).strip_edges(),
+        "enabled": bool(zone.get("enabled", true)),
+        "locked": bool(zone.get("locked", false)),
+        "required_item_id": str(zone.get("required_item_id", "")).strip_edges(),
+        "required_item_count": maxi(1, int(zone.get("required_item_count", 1))),
+        "required_var_name": str(zone.get("required_var_name", "")).strip_edges(),
+        "required_var_value": zone.get("required_var_value", 1),
+        "required_global_tag": str(zone.get("required_global_tag", "")).strip_edges(),
+        "blocked_event_name": str(zone.get("blocked_event_name", "")).strip_edges(),
+        "success_event_name": str(zone.get("success_event_name", "")).strip_edges(),
+        "arrive_event_name": str(zone.get("arrive_event_name", "")).strip_edges(),
+        "x_blocks": float(zone.get("x_blocks", zone.get("x", 0.0))),
+        "y_blocks": float(zone.get("y_blocks", zone.get("y", 0.0))),
+        "width_blocks": maxf(1.0, float(zone.get("width_blocks", zone.get("w", 1.0)))),
+        "height_blocks": maxf(1.0, float(zone.get("height_blocks", zone.get("h", 1.0)))),
+        "zone": zone.duplicate(true),
+        "tags": tags,
+        "destinations": [],
+    }
+
+
+func _parse_legacy_door(door: Dictionary) -> Dictionary:
+    var tags: Array = []
+    var tags_v: Variant = door.get("tags", [])
+    if typeof(tags_v) == TYPE_ARRAY:
+        for tag_v in tags_v:
+            tags.append(str(tag_v))
+    var destinations: Array = []
+    var dests_v: Variant = door.get("destinations", [])
+    if typeof(dests_v) == TYPE_ARRAY:
+        destinations = (dests_v as Array).duplicate(true)
+    return {
+        "id": str(door.get("door_id", door.get("id", ""))).strip_edges(),
+        "target_door_id": str(door.get("target_door_id", "")).strip_edges(),
+        "target": str(door.get("target_room", door.get("target", ""))).strip_edges(),
+        "direction": str(door.get("direction", "right")).strip_edges().to_lower(),
+        "send_to_overworld": bool(door.get("send_to_overworld", false)),
+        "overworld_region_id": str(door.get("overworld_region_id", "")).strip_edges(),
+        "enabled": bool(door.get("enabled", true)),
+        "locked": bool(door.get("locked", false)),
+        "required_item_id": str(door.get("required_item_id", "")).strip_edges(),
+        "required_item_count": maxi(1, int(door.get("required_item_count", 1))),
+        "required_var_name": str(door.get("required_var_name", "")).strip_edges(),
+        "required_var_value": door.get("required_var_value", 1),
+        "required_global_tag": str(door.get("required_global_tag", "")).strip_edges(),
+        "blocked_event_name": str(door.get("blocked_event_name", "")).strip_edges(),
+        "success_event_name": str(door.get("success_event_name", "")).strip_edges(),
+        "arrive_event_name": str(door.get("arrive_event_name", "")).strip_edges(),
+        "cap_block_x": int(door.get("cap_x", 0)),
+        "cap_block_y": int(door.get("cap_y", 0)),
+        "dest_pixel_x": int(door.get("dest_x", 0)),
+        "dest_pixel_y": int(door.get("dest_y", 0)),
+        "x_blocks": float(int(door.get("cap_x", 0))),
+        "y_blocks": float(int(door.get("cap_y", 0))),
+        "width_blocks": maxf(1.0, float(door.get("width_blocks", 1.0))),
+        "height_blocks": maxf(1.0, float(door.get("height_blocks", 1.0))),
+        "tags": tags,
+        "destinations": destinations,
+    }
 
 
 func _parse_parallax_layers(r: Dictionary) -> Array:
@@ -704,6 +832,120 @@ func _parse_parallax_layers(r: Dictionary) -> Array:
     for entry_v in defaults:
         normalized.append((entry_v as Dictionary).duplicate(true))
     return normalized
+
+
+func _parse_background_image(r: Dictionary) -> Dictionary:
+    var defaults := {
+        "image": "",
+        "x_blocks": 0.0,
+        "y_blocks": 0.0,
+        "width_blocks": float(maxi(1, int(r.get("width_blocks", 1)))),
+        "height_blocks": float(maxi(1, int(r.get("height_blocks", 1)))),
+        "scroll_speed_x": 1.0,
+        "scroll_speed_y": 1.0,
+        "shader_preset": "none",
+        "shader_tint": Color.WHITE,
+        "shader_strength": 0.6,
+        "shader_speed": 1.0,
+    }
+    var raw_v: Variant = r.get("background_image", {})
+    if typeof(raw_v) != TYPE_DICTIONARY:
+        return defaults
+    var raw: Dictionary = raw_v
+    defaults["image"] = str(raw.get("image", raw.get("path", defaults["image"]))).strip_edges()
+    defaults["x_blocks"] = float(raw.get("x_blocks", raw.get("x", defaults["x_blocks"])))
+    defaults["y_blocks"] = float(raw.get("y_blocks", raw.get("y", defaults["y_blocks"])))
+    defaults["width_blocks"] = maxf(0.0, float(raw.get("width_blocks", raw.get("w", defaults["width_blocks"]))))
+    defaults["height_blocks"] = maxf(0.0, float(raw.get("height_blocks", raw.get("h", defaults["height_blocks"]))))
+    defaults["scroll_speed_x"] = clampf(float(raw.get("scroll_speed_x", defaults["scroll_speed_x"])), 0.0, 2.0)
+    defaults["scroll_speed_y"] = clampf(float(raw.get("scroll_speed_y", defaults["scroll_speed_y"])), 0.0, 2.0)
+    var shader_preset := str(raw.get("shader_preset", defaults["shader_preset"])).strip_edges().to_lower()
+    if shader_preset != "flicker" and shader_preset != "wave" and shader_preset != "heat":
+        shader_preset = "none"
+    defaults["shader_preset"] = shader_preset
+    defaults["shader_tint"] = Color.from_string(str(raw.get("shader_tint", "ffffff")), Color.WHITE)
+    defaults["shader_strength"] = clampf(float(raw.get("shader_strength", defaults["shader_strength"])), 0.0, 2.0)
+    defaults["shader_speed"] = clampf(float(raw.get("shader_speed", defaults["shader_speed"])), 0.0, 4.0)
+    return defaults
+
+
+func _parse_background_images(r: Dictionary) -> Array:
+    var out: Array = []
+    var raw_v: Variant = r.get("background_images", [])
+    if typeof(raw_v) == TYPE_ARRAY:
+        var raw_arr: Array = raw_v
+        for i in raw_arr.size():
+            var entry_v: Variant = raw_arr[i]
+            if typeof(entry_v) != TYPE_DICTIONARY:
+                continue
+            var entry: Dictionary = _parse_background_image({
+                "width_blocks": r.get("width_blocks", 1),
+                "height_blocks": r.get("height_blocks", 1),
+                "background_image": entry_v,
+            })
+            entry["id"] = str((entry_v as Dictionary).get("id", "bg_%d" % (i + 1))).strip_edges()
+            entry["anim_frames"] = maxi(1, int((entry_v as Dictionary).get("anim_frames", (entry_v as Dictionary).get("frames", 1))))
+            entry["anim_fps"] = maxf(0.0, float((entry_v as Dictionary).get("anim_fps", (entry_v as Dictionary).get("fps", 0.0))))
+            entry["anim_loop"] = bool((entry_v as Dictionary).get("anim_loop", (entry_v as Dictionary).get("loop", true)))
+            out.append(entry)
+    if out.is_empty():
+        var legacy := _parse_background_image(r)
+        if not str(legacy.get("image", "")).is_empty():
+            legacy["id"] = "bg_1"
+            legacy["anim_frames"] = 1
+            legacy["anim_fps"] = 0.0
+            legacy["anim_loop"] = true
+            out.append(legacy)
+    return out
+
+
+func _parse_shader_regions(r: Dictionary) -> Array:
+    var out: Array = []
+    var raw_v: Variant = r.get("shader_regions", [])
+    if typeof(raw_v) != TYPE_ARRAY:
+        return out
+    var raw_arr: Array = raw_v
+    for i in raw_arr.size():
+        var entry_v: Variant = raw_arr[i]
+        if typeof(entry_v) != TYPE_DICTIONARY:
+            continue
+        var raw: Dictionary = entry_v
+        var preset := str(raw.get("shader_preset", "flicker")).strip_edges().to_lower()
+        if preset != "flicker" and preset != "wave" and preset != "heat":
+            preset = "flicker"
+        out.append({
+            "id": str(raw.get("id", "shader_%d" % (i + 1))).strip_edges(),
+            "x_blocks": float(raw.get("x_blocks", raw.get("x", 0.0))),
+            "y_blocks": float(raw.get("y_blocks", raw.get("y", 0.0))),
+            "width_blocks": maxf(0.0, float(raw.get("width_blocks", raw.get("w", 0.0)))),
+            "height_blocks": maxf(0.0, float(raw.get("height_blocks", raw.get("h", 0.0)))),
+            "shader_preset": preset,
+            "shader_tint": Color.from_string(str(raw.get("shader_tint", "ffffff")), Color.WHITE),
+            "shader_strength": clampf(float(raw.get("shader_strength", 0.6)), 0.0, 2.0),
+            "shader_speed": clampf(float(raw.get("shader_speed", 1.0)), 0.0, 4.0),
+        })
+    return out
+
+
+func _parse_weather(r: Dictionary) -> Dictionary:
+    var out := {
+        "preset": "none",
+        "color": Color(0.81, 0.91, 1.0, 1.0),
+        "intensity": 0.7,
+        "speed": 1.0,
+    }
+    var raw_v: Variant = r.get("weather", {})
+    if typeof(raw_v) != TYPE_DICTIONARY:
+        return out
+    var raw: Dictionary = raw_v
+    var preset := str(raw.get("preset", "none")).strip_edges().to_lower()
+    if preset != "rain" and preset != "snow":
+        preset = "none"
+    out["preset"] = preset
+    out["color"] = Color.from_string(str(raw.get("color", "cfe8ffff")), Color(0.81, 0.91, 1.0, 1.0))
+    out["intensity"] = clampf(float(raw.get("intensity", 0.7)), 0.0, 2.0)
+    out["speed"] = clampf(float(raw.get("speed", 1.0)), 0.0, 4.0)
+    return out
 
 
 func _parse_tile_layers(r: Dictionary) -> Array:
@@ -793,7 +1035,7 @@ static func _migrate_layer_tileset_ids(layer: Array, default_tileset_id: int) ->
             if MvTileValue.get_tileset_id(v) == 0:
                 line[col] = MvTileValue.set_tileset_id(v, default_tileset_id)
 
-static func _normalized_scroll_for_role(role: String, sx: float, sy: float) -> Vector2:
+static func _normalized_scroll_for_role(_role: String, _sx: float, _sy: float) -> Vector2:
     return Vector2.ONE
 
 
@@ -801,10 +1043,10 @@ static func _normalize_layer_role(raw_role: String, layer_name: String = "") -> 
     var role := raw_role.strip_edges().to_lower()
     if role == ROLE_BG or role == ROLE_MAIN or role == ROLE_FG:
         return role
-    var name := layer_name.strip_edges().to_lower()
-    if name.contains("foreground") or name == "fg":
+    var normalized_name := layer_name.strip_edges().to_lower()
+    if normalized_name.contains("foreground") or normalized_name == "fg":
         return ROLE_FG
-    if name.contains("background") or name == "bg":
+    if normalized_name.contains("background") or normalized_name == "bg":
         return ROLE_BG
     return ROLE_MAIN
 
@@ -970,6 +1212,28 @@ func load_start_room() -> void:
 func rebuild_collision_from_current() -> void:
     if _rooms.has(_current_room_addr):
         _build_collision(_rooms[_current_room_addr])
+
+
+func block_type_at_world_pos(world_pos: Vector2) -> int:
+    var info: Dictionary = current_room()
+    if info.is_empty() or info["collision"].size() == 0:
+        return BT_AIR
+
+    var col := int(world_pos.x / BLOCK_SIZE)
+    var row := int(world_pos.y / BLOCK_SIZE)
+    if row < 0 or row >= info["collision"].size():
+        return BT_AIR
+    if col < 0 or col >= info["collision"][row].size():
+        return BT_AIR
+    return int(info["collision"][row][col])
+
+
+func is_solid_at_world_pos(world_pos: Vector2) -> bool:
+    var block := block_type_at_world_pos(world_pos)
+    if block == BT_SLOPE:
+        var slope_hit := try_get_slope_floor(world_pos.x, world_pos.y)
+        return bool(slope_hit.get("hit", false))
+    return _is_rect_mergeable(block)
 
 
 # Break a destructible block at the given world position. Used by beam
@@ -1266,6 +1530,7 @@ func _spawn_entities(info: Dictionary) -> void:
         var pos_v: Variant = e.get("position", Vector2.ZERO)
         if pos_v is Vector2:
             node.position = pos_v
+        _apply_room_entity_overrides(node, entity_props)
         _entities_container.add_child(node)
 
         if category == "enemy" or category == "boss":
@@ -1319,6 +1584,7 @@ func spawn_entity_dynamic(type_id: String, pos: Vector2, entity_tags: Array = []
             enemy.instance_id = uid
             node = enemy
     node.position = pos
+    _apply_room_entity_overrides(node, entity_props)
     _entities_container.add_child(node)
     return node
 
@@ -1386,19 +1652,26 @@ func resolve_zone_position(zone_id: String) -> Vector2:
                 return node.position
     var info: Dictionary = current_room()
     var entities_v: Variant = info.get("entities", [])
-    if typeof(entities_v) != TYPE_ARRAY:
-        return Vector2(-1, -1)
-    for e_v in entities_v:
-        if typeof(e_v) != TYPE_DICTIONARY:
-            continue
-        var e: Dictionary = e_v
-        var props_v: Variant = e.get("properties", {})
-        if typeof(props_v) != TYPE_DICTIONARY:
-            continue
-        if str((props_v as Dictionary).get("zone_id", "")).strip_edges() == trimmed:
-            var pos_v: Variant = e.get("position", Vector2(-1, -1))
-            if pos_v is Vector2:
-                return pos_v
+    if typeof(entities_v) == TYPE_ARRAY:
+        for e_v in entities_v:
+            if typeof(e_v) != TYPE_DICTIONARY:
+                continue
+            var e: Dictionary = e_v
+            var props_v: Variant = e.get("properties", {})
+            if typeof(props_v) != TYPE_DICTIONARY:
+                continue
+            if str((props_v as Dictionary).get("zone_id", "")).strip_edges() == trimmed:
+                var pos_v: Variant = e.get("position", Vector2(-1, -1))
+                if pos_v is Vector2:
+                    return pos_v
+    var zones_v: Variant = info.get("zones", [])
+    if typeof(zones_v) == TYPE_ARRAY:
+        for zone_v in zones_v:
+            if typeof(zone_v) != TYPE_DICTIONARY:
+                continue
+            var zone: Dictionary = zone_v
+            if str(zone.get("id", "")).strip_edges() == trimmed:
+                return _room_zone_center(zone)
     return Vector2(-1, -1)
 
 
@@ -1452,6 +1725,34 @@ func _node_zone_id(node: Node) -> String:
     return ""
 
 
+func _room_zone_center(zone: Dictionary) -> Vector2:
+    var x_blocks: float = float(zone.get("x_blocks", 0.0))
+    var y_blocks: float = float(zone.get("y_blocks", 0.0))
+    var width_blocks: float = maxf(1.0, float(zone.get("width_blocks", 1.0)))
+    var height_blocks: float = maxf(1.0, float(zone.get("height_blocks", 1.0)))
+    return Vector2(
+        (x_blocks + width_blocks * 0.5) * float(BLOCK_SIZE),
+        (y_blocks + height_blocks * 0.5) * float(BLOCK_SIZE)
+    )
+
+
+func _apply_room_entity_overrides(node: Node, entity_props: Dictionary) -> void:
+    if node == null or entity_props.is_empty():
+        return
+    var behavior_override := str(entity_props.get("behavior", "")).strip_edges()
+    if behavior_override.is_empty():
+        return
+    node.set_meta("behavior_override", behavior_override)
+    if "behavior_id" in node:
+        node.set("behavior_id", behavior_override)
+        return
+    if "behavior" in node:
+        node.set("behavior", behavior_override)
+        return
+    if node.has_method("set_behavior_override"):
+        node.call("set_behavior_override", behavior_override)
+
+
 func _fallback_entity_instance_id(type_id: String, pos: Vector2) -> String:
     var col := maxi(0, floori(pos.x / float(BLOCK_SIZE)))
     var row := maxi(0, floori(pos.y / float(BLOCK_SIZE)))
@@ -1484,11 +1785,13 @@ func _build_slope_polygon(sc: Dictionary) -> ConvexPolygonShape2D:
         return null
     var shape: Array = _slope_shapes[sh_idx]
 
-    # Evaluate the surface at each column, applying H/V flips the same way
-    # try_get_slope_floor does so the collider matches the sample math.
-    # Completely empty shapes (all 16s) produce no collider.
-    var points: PackedVector2Array = PackedVector2Array()
-    var any_solid := false
+    # Build a smooth ramp from the first and last solid columns instead of a
+    # 16-step staircase. CharacterBody2D resolves continuous faces much more
+    # reliably than dense micro-steps on slopes.
+    var first_x: int = -1
+    var last_x: int = -1
+    var first_y: float = 0.0
+    var last_y: float = 0.0
     for x in shape.size():
         var src_x: int = (shape.size() - 1 - x) if sc["hflip"] else x
         var surface_y: int = shape[src_x]
@@ -1498,25 +1801,32 @@ func _build_slope_polygon(sc: Dictionary) -> ConvexPolygonShape2D:
             surface_y = 16 - surface_y
         elif surface_y >= 16:
             continue
-        any_solid = true
-        points.append(Vector2(x, surface_y))
-    if not any_solid or points.size() < 2:
+        if first_x < 0:
+            first_x = x
+            first_y = float(surface_y)
+        last_x = x
+        last_y = float(surface_y)
+    if first_x < 0 or last_x < 0:
         return null
 
-    # Extend the surface to the right edge of the cell so the polygon
-    # reaches x=16 instead of stopping at the last shape column. Avoids a
-    # 1px gap where the next cell's collider starts.
-    var last := points[points.size() - 1]
-    points.append(Vector2(BLOCK_SIZE, last.y))
+    var left_x := float(first_x)
+    var right_x := float(last_x + 1)
+    if right_x <= left_x:
+        right_x = left_x + 1.0
+    if left_x <= 0.0:
+        left_x = 0.0
+    if right_x >= float(BLOCK_SIZE):
+        right_x = float(BLOCK_SIZE)
 
-    # V-flipped slopes are ceilings — close along the top of the cell (y=0)
-    # instead of the bottom. Non-flipped slopes close along y=16 (bottom).
+    var points: PackedVector2Array = PackedVector2Array()
+    points.append(Vector2(left_x, first_y))
+    points.append(Vector2(right_x, last_y))
     if sc["vflip"]:
-        points.append(Vector2(BLOCK_SIZE, 0))
-        points.append(Vector2(0, 0))
+        points.append(Vector2(right_x, 0))
+        points.append(Vector2(left_x, 0))
     else:
-        points.append(Vector2(BLOCK_SIZE, BLOCK_SIZE))
-        points.append(Vector2(0, BLOCK_SIZE))
+        points.append(Vector2(right_x, BLOCK_SIZE))
+        points.append(Vector2(left_x, BLOCK_SIZE))
 
     var poly := ConvexPolygonShape2D.new()
     poly.points = points
@@ -1582,16 +1892,6 @@ static func _is_rect_mergeable(block_type: int) -> bool:
         or block_type == BT_CRUMBLE
 
 
-func find_door(direction: String) -> Dictionary:
-    var info: Dictionary = current_room()
-    if info.is_empty():
-        return {}
-    for door in info["doors"]:
-        if door["direction"] == direction:
-            return door
-    return {}
-
-
 func find_door_for_points(points: Array, preferred_direction: String = "") -> Dictionary:
     var info: Dictionary = current_room()
     if info.is_empty():
@@ -1616,13 +1916,101 @@ func find_door_for_points(points: Array, preferred_direction: String = "") -> Di
     return {}
 
 
+func find_door_by_id(door_id: String, room_addr: String = "") -> Dictionary:
+    var trimmed := door_id.strip_edges()
+    if trimmed.is_empty():
+        return {}
+    var room := current_room() if room_addr.strip_edges().is_empty() else get_room(room_addr)
+    if room.is_empty():
+        return {}
+    var doors_v: Variant = room.get("doors", [])
+    if typeof(doors_v) != TYPE_ARRAY:
+        return {}
+    for door_v in doors_v:
+        if typeof(door_v) != TYPE_DICTIONARY:
+            continue
+        var door: Dictionary = door_v
+        if str(door.get("id", "")).strip_edges() == trimmed:
+            return door
+    return {}
+
+
+func find_door_link(door_id: String) -> Dictionary:
+    var trimmed := door_id.strip_edges()
+    if trimmed.is_empty():
+        return {}
+    for room_addr_v in _rooms.keys():
+        var room_addr := str(room_addr_v)
+        var room: Dictionary = _rooms.get(room_addr, {})
+        if room.is_empty():
+            continue
+        var door := find_door_by_id(trimmed, room_addr)
+        if door.is_empty():
+            continue
+        return {
+            "room_addr": room_addr,
+            "room": room,
+            "door": door,
+        }
+    return {}
+
+
+func door_spawn_position(door: Dictionary, room: Dictionary = {}) -> Vector2:
+    if door.is_empty():
+        return Vector2(-1, -1)
+    var target_room: Dictionary = room if not room.is_empty() else current_room()
+    if target_room.is_empty():
+        return Vector2(-1, -1)
+    var rect := _door_local_rect(door)
+    if rect.size.x <= 0.0 or rect.size.y <= 0.0:
+        return Vector2(-1, -1)
+    var width_px := maxi(BLOCK_SIZE, int(target_room.get("width_blocks", 1)) * BLOCK_SIZE)
+    var height_px := maxi(BLOCK_SIZE, int(target_room.get("height_blocks", 1)) * BLOCK_SIZE)
+    var left_px := int(round(rect.position.x))
+    var top_px := int(round(rect.position.y))
+    var right_px := int(round(rect.end.x))
+    var bottom_px := int(round(rect.end.y))
+    var center_x := int(round(rect.position.x + rect.size.x * 0.5))
+    var center_y := int(round(rect.position.y + rect.size.y * 0.5))
+    var spawn_x := center_x
+    var spawn_y := center_y
+    match str(door.get("direction", "right")).strip_edges():
+        "left":
+            spawn_x = right_px + 8
+        "right":
+            spawn_x = left_px - 8
+        "up":
+            spawn_y = bottom_px + 8
+        "down":
+            spawn_y = top_px - 8
+    spawn_x = clampi(spawn_x, 24, maxi(24, width_px - 24))
+    spawn_y = clampi(spawn_y, 24, maxi(24, height_px - 24))
+    return Vector2(spawn_x, spawn_y)
+
+
 func _door_world_rect(door: Dictionary) -> Rect2:
+    var local_rect := _door_local_rect(door)
+    if local_rect.size.x <= 0.0 or local_rect.size.y <= 0.0:
+        return Rect2()
+    return Rect2(to_global(local_rect.position), local_rect.size)
+
+
+func _door_local_rect(door: Dictionary) -> Rect2:
+    var width_blocks := maxf(1.0, float(door.get("width_blocks", 1.0)))
+    var height_blocks := maxf(1.0, float(door.get("height_blocks", 1.0)))
+    if door.has("x_blocks") and door.has("y_blocks"):
+        return Rect2(
+            Vector2(float(door.get("x_blocks", 0.0)) * BLOCK_SIZE, float(door.get("y_blocks", 0.0)) * BLOCK_SIZE),
+            Vector2(width_blocks * BLOCK_SIZE, height_blocks * BLOCK_SIZE)
+        )
     var block_x := int(door.get("cap_block_x", -1))
     var block_y := int(door.get("cap_block_y", -1))
     if block_x < 0 or block_y < 0:
         return Rect2()
-    var local_pos := Vector2(float(block_x * BLOCK_SIZE), float(block_y * BLOCK_SIZE))
-    return Rect2(to_global(local_pos), Vector2(float(BLOCK_SIZE), float(BLOCK_SIZE)))
+    return Rect2(
+        Vector2(float(block_x * BLOCK_SIZE), float(block_y * BLOCK_SIZE)),
+        Vector2(width_blocks * BLOCK_SIZE, height_blocks * BLOCK_SIZE)
+    )
 
 
 func get_room(addr: String) -> Dictionary:
@@ -1631,28 +2019,51 @@ func get_room(addr: String) -> Dictionary:
 
 func _clear_backdrop() -> void:
     _backdrop_layers.clear()
+    if _weather_overlay != null and _weather_overlay.has_method("clear_weather"):
+        _weather_overlay.call("clear_weather")
     if _backdrop_root == null:
         return
     for child in _backdrop_root.get_children():
         child.queue_free()
+    if _shader_fx_root != null:
+        for child in _shader_fx_root.get_children():
+            child.queue_free()
 
 
 func _apply_backdrop(info: Dictionary) -> void:
     if _backdrop_root == null:
         return
-    var layers_v: Variant = info.get("parallax_layers", [])
-    if typeof(layers_v) == TYPE_ARRAY:
-        for layer_v in layers_v:
-            if typeof(layer_v) != TYPE_DICTIONARY:
+    if bool(info.get("parallax_enabled", true)):
+        var layers_v: Variant = info.get("parallax_layers", [])
+        if typeof(layers_v) == TYPE_ARRAY:
+            for layer_v in layers_v:
+                if typeof(layer_v) != TYPE_DICTIONARY:
+                    continue
+                _apply_backdrop_layer(info, layer_v)
+        elif not str(info.get("backdrop_image", "")).is_empty():
+            _apply_backdrop_layer(info, {
+                "name": "mid",
+                "image": str(info.get("backdrop_image", "")),
+                "scroll_speed_x": float(info.get("backdrop_scroll_speed_x", 0.94)),
+                "scroll_speed_y": float(info.get("backdrop_scroll_speed_y", 0.97)),
+            })
+    var bg_arr_v: Variant = info.get("background_images", [])
+    if typeof(bg_arr_v) == TYPE_ARRAY and not (bg_arr_v as Array).is_empty():
+        for bg_v in bg_arr_v:
+            if typeof(bg_v) != TYPE_DICTIONARY:
                 continue
-            _apply_backdrop_layer(info, layer_v)
-    elif not str(info.get("backdrop_image", "")).is_empty():
-        _apply_backdrop_layer(info, {
-            "name": "mid",
-            "image": str(info.get("backdrop_image", "")),
-            "scroll_speed_x": float(info.get("backdrop_scroll_speed_x", 0.94)),
-            "scroll_speed_y": float(info.get("backdrop_scroll_speed_y", 0.97)),
-        })
+            _apply_placed_background_image(bg_v)
+    else:
+        var bg_v: Variant = info.get("background_image", {})
+        if typeof(bg_v) == TYPE_DICTIONARY:
+            _apply_placed_background_image(bg_v)
+    var shader_regions_v: Variant = info.get("shader_regions", [])
+    if typeof(shader_regions_v) == TYPE_ARRAY:
+        for region_v in shader_regions_v:
+            if typeof(region_v) != TYPE_DICTIONARY:
+                continue
+            _apply_shader_region(region_v)
+    _apply_weather(info.get("weather", {}))
 
 
 func _apply_backdrop_layer(info: Dictionary, layer: Dictionary) -> void:
@@ -1690,6 +2101,156 @@ func _apply_backdrop_layer(info: Dictionary, layer: Dictionary) -> void:
         _update_backdrop_layer_transform(_backdrop_layers[_backdrop_layers.size() - 1], cam, cam.get_screen_center_position())
 
 
+func _apply_placed_background_image(bg: Dictionary) -> void:
+    var rel_path := str(bg.get("image", "")).strip_edges()
+    if rel_path.is_empty() or _backdrop_root == null:
+        return
+    var tex_path := _resolve_pack_asset_path(rel_path)
+    var tex := _load_backdrop_texture(tex_path)
+    if not (tex is Texture2D):
+        push_warning("MvRoomManager: failed to load placed background '%s'" % tex_path)
+        return
+    var spr := Sprite2D.new()
+    spr.name = "PlacedBackground_%s" % str(bg.get("id", "bg"))
+    spr.centered = false
+    spr.texture = tex as Texture2D
+    spr.texture_filter = CanvasItem.TEXTURE_FILTER_NEAREST
+    var shader_mat: Variant = _make_background_shader_material(bg)
+    if shader_mat != null:
+        spr.material = shader_mat
+    var anim_frames := maxi(1, int(bg.get("anim_frames", 1)))
+    spr.hframes = anim_frames
+    spr.frame = 0
+    _backdrop_root.add_child(spr)
+    var tex_size_full: Vector2 = (spr.texture as Texture2D).get_size()
+    var tex_size := Vector2(tex_size_full.x / float(anim_frames), tex_size_full.y)
+    var size_px := Vector2(
+        maxf(1.0, float(bg.get("width_blocks", 0.0)) * BLOCK_SIZE),
+        maxf(1.0, float(bg.get("height_blocks", 0.0)) * BLOCK_SIZE))
+    var base_position := Vector2(
+        float(bg.get("x_blocks", 0.0)) * BLOCK_SIZE,
+        float(bg.get("y_blocks", 0.0)) * BLOCK_SIZE)
+    _backdrop_layers.append({
+        "node": spr,
+        "type": "placed",
+        "texture_size": tex_size,
+        "target_size": size_px,
+        "base_position": base_position,
+        "scroll_speed": Vector2(
+            float(bg.get("scroll_speed_x", 1.0)),
+            float(bg.get("scroll_speed_y", 1.0))),
+        "anim_frames": anim_frames,
+        "anim_fps": maxf(0.0, float(bg.get("anim_fps", 0.0))),
+        "anim_loop": bool(bg.get("anim_loop", true)),
+        "anim_time": 0.0,
+    })
+    var cam := get_viewport().get_camera_2d()
+    if cam != null:
+        _update_backdrop_layer_transform(_backdrop_layers[_backdrop_layers.size() - 1], cam, cam.get_screen_center_position())
+
+
+func _make_background_shader_material(bg: Dictionary) -> Variant:
+    var preset := str(bg.get("shader_preset", "none")).strip_edges().to_lower()
+    if preset == "none":
+        return null
+    if _backdrop_shader == null:
+        _backdrop_shader = Shader.new()
+        _backdrop_shader.code = _BG_SHADER_CODE
+    var mode := 0
+    match preset:
+        "flicker":
+            mode = 1
+        "wave":
+            mode = 2
+        "heat":
+            mode = 3
+    if mode == 0:
+        return null
+    var material := ShaderMaterial.new()
+    material.shader = _backdrop_shader
+    material.set_shader_parameter("effect_mode", mode)
+    material.set_shader_parameter("tint", bg.get("shader_tint", Color.WHITE))
+    material.set_shader_parameter("strength", clampf(float(bg.get("shader_strength", 0.6)), 0.0, 2.0))
+    material.set_shader_parameter("speed", clampf(float(bg.get("shader_speed", 1.0)), 0.0, 4.0))
+    return material
+
+
+func _apply_shader_region(region: Dictionary) -> void:
+    if _shader_fx_root == null:
+        return
+    var size_px := Vector2(
+        maxf(1.0, float(region.get("width_blocks", 0.0)) * BLOCK_SIZE),
+        maxf(1.0, float(region.get("height_blocks", 0.0)) * BLOCK_SIZE))
+    if size_px.x <= 0.0 or size_px.y <= 0.0:
+        return
+    var poly := Polygon2D.new()
+    poly.name = "ShaderRegion_%s" % str(region.get("id", "shader"))
+    poly.polygon = PackedVector2Array([
+        Vector2.ZERO,
+        Vector2(size_px.x, 0.0),
+        Vector2(size_px.x, size_px.y),
+        Vector2(0.0, size_px.y),
+    ])
+    poly.color = Color.WHITE
+    poly.position = Vector2(
+        float(region.get("x_blocks", 0.0)) * BLOCK_SIZE,
+        float(region.get("y_blocks", 0.0)) * BLOCK_SIZE)
+    var material: Variant = _make_room_fx_material(region)
+    if material != null:
+        poly.material = material
+    _shader_fx_root.add_child(poly)
+
+
+func _make_room_fx_material(region: Dictionary) -> Variant:
+    var preset := str(region.get("shader_preset", "flicker")).strip_edges().to_lower()
+    var mode := 0
+    match preset:
+        "flicker":
+            mode = 1
+        "wave":
+            mode = 2
+        "heat":
+            mode = 3
+    if mode == 0:
+        return null
+    if _room_fx_shader == null:
+        _room_fx_shader = Shader.new()
+        _room_fx_shader.code = _ROOM_FX_SHADER_CODE
+    var material := ShaderMaterial.new()
+    material.shader = _room_fx_shader
+    material.set_shader_parameter("effect_mode", mode)
+    material.set_shader_parameter("tint", region.get("shader_tint", Color.WHITE))
+    material.set_shader_parameter("strength", clampf(float(region.get("shader_strength", 0.6)), 0.0, 2.0))
+    material.set_shader_parameter("speed", clampf(float(region.get("shader_speed", 1.0)), 0.0, 4.0))
+    return material
+
+
+func _apply_weather(weather_v: Variant) -> void:
+    if _weather_overlay == null:
+        return
+    if typeof(weather_v) == TYPE_DICTIONARY and _weather_overlay.has_method("configure"):
+        _weather_overlay.call("configure", weather_v as Dictionary)
+    elif _weather_overlay.has_method("clear_weather"):
+        _weather_overlay.call("clear_weather")
+
+
+func set_room_weather(room_addr: String, weather: Dictionary) -> void:
+    var target_room := room_addr.strip_edges()
+    if target_room.is_empty():
+        target_room = _current_room_addr
+    if target_room.is_empty() or not _rooms.has(target_room):
+        return
+    var target_v: Variant = _rooms.get(target_room, {})
+    if typeof(target_v) != TYPE_DICTIONARY:
+        return
+    var target: Dictionary = target_v
+    var normalized := _parse_weather({"weather": weather})
+    target["weather"] = normalized
+    _rooms[target_room] = target
+    if target_room == _current_room_addr:
+        _apply_weather(normalized)
+
+
 func _resolve_pack_asset_path(rel_path: String) -> String:
     if rel_path.begins_with("res://") or rel_path.begins_with("user://"):
         return rel_path
@@ -1713,9 +2274,41 @@ func _load_backdrop_texture(path: String) -> Texture2D:
     return null
 
 
+func _update_backdrop_layer_animation(entry: Dictionary, delta: float) -> void:
+    var node: Sprite2D = entry.get("node") as Sprite2D
+    if node == null:
+        return
+    var anim_frames := maxi(1, int(entry.get("anim_frames", 1)))
+    var anim_fps := maxf(0.0, float(entry.get("anim_fps", 0.0)))
+    if anim_frames <= 1 or anim_fps <= 0.0:
+        node.frame = 0
+        return
+    var anim_time := float(entry.get("anim_time", 0.0)) + delta
+    entry["anim_time"] = anim_time
+    var frame_idx := int(floor(anim_time * anim_fps))
+    if bool(entry.get("anim_loop", true)):
+        frame_idx %= anim_frames
+    else:
+        frame_idx = mini(frame_idx, anim_frames - 1)
+    node.frame = frame_idx
+
+
 func _update_backdrop_layer_transform(entry: Dictionary, cam: Camera2D, cam_pos: Vector2) -> void:
     var node: Sprite2D = entry.get("node") as Sprite2D
     if node == null or node.texture == null:
+        return
+    var entry_type := str(entry.get("type", "fullscreen"))
+    if entry_type == "placed":
+        var tex_size_placed: Vector2 = entry.get("texture_size", node.texture.get_size())
+        var target_size: Vector2 = entry.get("target_size", tex_size_placed)
+        var speed_placed: Vector2 = entry.get("scroll_speed", Vector2.ONE)
+        var base_position: Vector2 = entry.get("base_position", Vector2.ZERO)
+        if tex_size_placed.x <= 0.0 or tex_size_placed.y <= 0.0:
+            return
+        node.scale = Vector2(target_size.x / tex_size_placed.x, target_size.y / tex_size_placed.y)
+        node.position = base_position + Vector2(
+            cam_pos.x * (1.0 - speed_placed.x),
+            cam_pos.y * (1.0 - speed_placed.y))
         return
     var room_size: Vector2 = entry.get("room_size", Vector2.ONE)
     var tex_size: Vector2 = entry.get("texture_size", node.texture.get_size())

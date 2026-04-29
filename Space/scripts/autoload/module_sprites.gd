@@ -54,7 +54,9 @@ static func _has_color_mask(img: Image) -> bool:
     var h := img.get_height()
     if w <= 0 or h <= 0:
         return false
+    @warning_ignore("integer_division")
     var step_x: int = maxi(1, w / 16)
+    @warning_ignore("integer_division")
     var step_y: int = maxi(1, h / 16)
     var y := 0
     while y < h:

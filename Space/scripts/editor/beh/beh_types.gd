@@ -68,6 +68,8 @@ const ACTION_PRESETS: Array = [
     "attack",
     "flee",
     "pursue",
+    "flee_fly",
+    "pursue_fly",
     "patrol_point",
     "shoot",
     "dash",

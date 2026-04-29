@@ -6,9 +6,6 @@ extends Node
 # transitions and reads/writes via owner_main. Entry points on main.gd are
 # thin delegators that call into `cmc.<method>`.
 
-const CombatRecorder = preload("res://Space/scripts/ai/combat_recorder.gd")
-const CombatRecording = preload("res://Space/scripts/ai/combat_recording.gd")
-const ClonedAI = preload("res://Space/scripts/ai/cloned_ai.gd")
 
 var owner_main: Node = null
 

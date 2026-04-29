@@ -2,8 +2,6 @@ extends Control
 
 const BehIO = preload("res://Space/scripts/editor/beh/beh_io.gd")
 const BehTypes = preload("res://Space/scripts/editor/beh/beh_types.gd")
-const BehLeafSchema = preload("res://Space/scripts/editor/beh/beh_leaf_schema.gd")
-const EditorUndo = preload("res://Space/scripts/editor/editor_undo.gd")
 
 # Entity behavior editor main controller. Owns behaviors.json for the
 # active pack, the currently-selected behavior, and the current node

@@ -1,6 +1,5 @@
 extends Control
 
-const EditorUndo = preload("res://Space/scripts/editor/editor_undo.gd")
 
 
 var editor_mode: String = "enemies"

@@ -1,7 +1,6 @@
 class_name MvGrappleBeam
 extends Node2D
 
-const MvAbilityParams := preload("res://MV/scripts/ability_params.gd")
 
 # Grapple projectile. Flies from the player's shoulder along the aim vector
 # and steps through the world tile grid each physics tick. If its tip lands
@@ -29,8 +28,8 @@ var _speed: float = DEFAULT_SPEED
 var _max_range: float = DEFAULT_MAX_RANGE
 
 
-func fire(owner: Node2D, origin: Vector2, aim_dir: Vector2) -> void:
-	_owner = owner
+func fire(node_owner: Node2D, origin: Vector2, aim_dir: Vector2) -> void:
+	_owner = node_owner
 	_origin = origin
 	_dir = aim_dir.normalized() if aim_dir.length_squared() > 0.0001 else Vector2.RIGHT
 	position = origin
