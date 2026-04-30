@@ -96,6 +96,7 @@ func _draw():
         var name_str := str(e.get("name", ""))
         var cat := str(e.get("category", "other"))
         var sprite_set := str(e.get("sprite_set", ""))
+        var placement_folder := str(e.get("placement_folder", ""))
 
         var row_top: float = list_y0 + float(i) * ROW_H - _scroll
         var row_rect := Rect2(PAD, row_top, size.x - PAD * 2.0, ROW_H - 4.0)
@@ -146,15 +147,20 @@ func _draw():
         draw_string(font, Vector2(row_rect.position.x + 22.0,
             row_rect.position.y + 14),
             id, HORIZONTAL_ALIGNMENT_LEFT, -1, 12, text_col)
-        if name_str != "" and name_str != id:
-            draw_string(font, Vector2(row_rect.position.x + 22.0,
-                row_rect.position.y + 28),
-                name_str, HORIZONTAL_ALIGNMENT_LEFT, -1, 10,
-                Color(0.6, 0.72, 0.85, 1))
+        var secondary := ""
+        if placement_folder != "":
+            secondary = placement_folder
+            if name_str != "" and name_str != id:
+                secondary += " - " + name_str
+        elif name_str != "" and name_str != id:
+            secondary = name_str
         elif sprite_set != "":
+            secondary = sprite_set
+
+        if secondary != "":
             draw_string(font, Vector2(row_rect.position.x + 22.0,
                 row_rect.position.y + 28),
-                sprite_set, HORIZONTAL_ALIGNMENT_LEFT, -1, 10,
+                secondary, HORIZONTAL_ALIGNMENT_LEFT, -1, 10,
                 Color(0.55, 0.68, 0.82, 1))
 
         _draw_row_icon(font, rename_rect, "✎",

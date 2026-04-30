@@ -110,15 +110,15 @@ func _draw():
 
     var y: float = list_y
     y = _draw_group(font, mouse_pos, list_x, y, list_w,
-        "COMPOSITES", BehTypes.COMPOSITE_TYPES,
+        "WAYS TO COMBINE STEPS", BehTypes.COMPOSITE_TYPES,
         BehTypes.category_color(BehTypes.CAT_COMPOSITE))
     y += 8
     y = _draw_group(font, mouse_pos, list_x, y, list_w,
-        "DECORATORS", BehTypes.DECORATOR_TYPES,
+        "WAYS TO CHANGE ONE STEP", BehTypes.DECORATOR_TYPES,
         BehTypes.category_color(BehTypes.CAT_DECORATOR))
     y += 8
     y = _draw_group(font, mouse_pos, list_x, y, list_w,
-        "LEAVES", BehTypes.LEAF_TYPES,
+        "ACTUAL CHECKS AND ACTIONS", BehTypes.LEAF_TYPES,
         BehTypes.category_color(BehTypes.CAT_LEAF))
 
     # Cancel button.
@@ -175,7 +175,9 @@ func _draw_group(font: Font, mouse_pos: Vector2, x: float, y: float,
         else:
             text_col = Color(0.78, 0.92, 0.84, 1)
         draw_string(font, rect.position + Vector2(26, 18),
-            t, HORIZONTAL_ALIGNMENT_LEFT, -1, 12, text_col)
+            BehTypes.type_label(t), HORIZONTAL_ALIGNMENT_LEFT, int(w - 150), 12, text_col)
+        draw_string(font, Vector2(rect.end.x - 118, rect.position.y + 18),
+            t, HORIZONTAL_ALIGNMENT_LEFT, -1, 10, Color(0.55, 0.7, 0.6, 1))
 
         _rows.append({
             "type": t,
@@ -190,34 +192,4 @@ func _draw_group(font: Font, mouse_pos: Vector2, x: float, y: float,
 
 
 func _describe_type(t: String) -> String:
-    match t:
-        "sequence":
-            return "sequence — runs children in order. Returns SUCCESS only if every child succeeds; fails on the first failure. Like a logical AND."
-        "selector":
-            return "selector — runs children in order. Returns SUCCESS on the first child that succeeds; fails only if all fail. Like a logical OR / fallback chain."
-        "simple_parallel":
-            return "simple_parallel — ticks all children every frame. Success/failure policy depends on the configured threshold."
-        "selector_random":
-            return "selector_random — picks one child at random each tick. Useful for variety in idle animations or attack patterns."
-        "sequence_reactive":
-            return "sequence_reactive — like sequence, but re-evaluates earlier children each tick. Aborts if a previously-passing child fails."
-        "sequence_star":
-            return "sequence_star — like sequence, but remembers where it left off. Resumes from the last running child instead of restarting."
-        "inverter":
-            return "inverter — flips the child's result. SUCCESS becomes FAILURE and vice versa. Wrap a condition to negate it."
-        "repeater":
-            return "repeater — re-runs its child N times (or forever). Often used at the root of a behavior."
-        "limiter":
-            return "limiter — allows its child to run at most N times total. Returns FAILURE after the limit is reached."
-        "until_fail":
-            return "until_fail — re-ticks its child until it returns FAILURE, then itself returns SUCCESS."
-        "cooldown":
-            return "cooldown — runs its child, then refuses to run again for N seconds. Good for rate-limiting attacks."
-        "delayer":
-            return "delayer — waits N seconds before ticking its child the first time. Useful for telegraph windows."
-        "action":
-            return "action (leaf) — invokes a runtime action handler by name, e.g. walk_left, attack. Set the action name and any params on the right."
-        "condition":
-            return "condition (leaf) — queries a runtime condition handler by name, e.g. wall_ahead, see_player. Returns SUCCESS or FAILURE based on the world state."
-        _:
-            return "Behavior node type \"%s\". Click to apply." % t
+    return "%s: %s Internal type: %s." % [BehTypes.type_label(t), BehTypes.type_help(t), t]

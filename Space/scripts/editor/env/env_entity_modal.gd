@@ -233,7 +233,20 @@ func _picker_entity_ids() -> Array:
 		if _is_enemy_like() and category != "enemy" and category != "boss":
 			continue
 		out.append(entity)
+	out.sort_custom(Callable(self, "_sort_entity_picker_rows"))
 	return out
+
+
+func _sort_entity_picker_rows(a: Dictionary, b: Dictionary) -> bool:
+	var folder_a := str(a.get("placement_folder", "")).strip_edges().to_lower()
+	var folder_b := str(b.get("placement_folder", "")).strip_edges().to_lower()
+	if folder_a != folder_b:
+		return folder_a < folder_b
+	var name_a := str(a.get("name", a.get("id", ""))).strip_edges().to_lower()
+	var name_b := str(b.get("name", b.get("id", ""))).strip_edges().to_lower()
+	if name_a != name_b:
+		return name_a < name_b
+	return str(a.get("id", "")).strip_edges().to_lower() < str(b.get("id", "")).strip_edges().to_lower()
 
 
 func _populate_entity_picker() -> void:
@@ -250,6 +263,9 @@ func _populate_entity_picker() -> void:
 		var display_name := str(entity.get("name", "")).strip_edges()
 		if not display_name.is_empty() and display_name != entity_id:
 			label = "%s  (%s)" % [display_name, entity_id]
+		var folder := str(entity.get("placement_folder", "")).strip_edges()
+		if not folder.is_empty():
+			label = "%s / %s" % [folder, label]
 		_entity_picker.add_item(label)
 		_entity_picker.set_item_metadata(_entity_picker.item_count - 1, entity_id)
 

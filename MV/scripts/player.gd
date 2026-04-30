@@ -1004,6 +1004,11 @@ func _physics_process(delta: float) -> void:
     var jump_pressed := Input.is_action_just_pressed("jump")
     var down_pressed := Input.is_action_just_pressed("crouch")
     var dodge_pressed := Input.is_action_just_pressed("dodge_roll")
+    var active_ranged_attack := _active_ranged_attack()
+    var has_authored_ranged_attack := not active_ranged_attack.is_empty()
+    var authored_hold_behavior := _active_ranged_attack_hold_behavior(active_ranged_attack)
+    var authored_full_auto := authored_hold_behavior == "full_auto"
+    var ranged_held := Input.is_action_pressed("ranged_attack") and not _melee_input_locked and not _locked
     if _melee_input_locked or _locked:
         jump_held = false
         jump_pressed = false
@@ -1015,7 +1020,11 @@ func _physics_process(delta: float) -> void:
     # velocity (knockback keeps its impulse; door-entry gently pushes
     # inward). Jump/down/shoot all stay live so the player isn't completely
     # frozen — matches SM's "reeling but still reactive" state.
-    var input_locked := _locked or _knockback_timer > 0.0 or _door_lock_timer > 0.0 or _melee_input_locked
+    var input_locked := _locked \
+        or _knockback_timer > 0.0 \
+        or _door_lock_timer > 0.0 \
+        or _melee_input_locked \
+        or (has_authored_ranged_attack and authored_full_auto and ranged_held)
 
     var dir := 0.0
     if not input_locked:
@@ -1238,13 +1247,8 @@ func _physics_process(delta: float) -> void:
     if _shoot_cooldown > 0.0:
         _shoot_cooldown -= dt
     var melee_pressed := Input.is_action_just_pressed("melee_attack") and not _locked
-    var ranged_held := Input.is_action_pressed("ranged_attack") and not _melee_input_locked and not _locked
     var ranged_pressed := Input.is_action_just_pressed("ranged_attack") and not _melee_input_locked and not _locked
-    var active_ranged_attack := _active_ranged_attack()
-    var has_authored_ranged_attack := not active_ranged_attack.is_empty()
-    var authored_hold_behavior := _active_ranged_attack_hold_behavior(active_ranged_attack)
     var authored_charge := authored_hold_behavior == "charge_release"
-    var authored_full_auto := authored_hold_behavior == "full_auto"
     var charge_feedback_active := authored_charge or not has_authored_ranged_attack
 
     if melee_pressed:
@@ -2039,10 +2043,14 @@ func _try_fire_authored_attack(attack_id: String, ignore_cooldown: bool = false)
     var pose_id := _resolved_attack_pose_id(int(attack.get("player_pose", -1)))
     var attack_type := str(attack.get("type", "")).strip_edges()
     var hold_behavior := _active_ranged_attack_hold_behavior(attack)
+    var moving_horizontally := absf(velocity.x) > 10.0
     var should_reset_pose := pose_id >= 0
-    if should_reset_pose and attack_type == "projectile" and hold_behavior == "full_auto":
-        var hold_pose_id := _full_auto_hold_pose_id(attack)
-        if hold_pose_id >= 0 or _pose == pose_id:
+    if should_reset_pose and attack_type == "projectile":
+        if hold_behavior == "full_auto":
+            var hold_pose_id := _full_auto_hold_pose_id(attack)
+            if hold_pose_id >= 0 or _pose == pose_id:
+                should_reset_pose = false
+        elif not is_on_floor() or moving_horizontally:
             should_reset_pose = false
     if should_reset_pose:
         _try_set_pose(pose_id)
@@ -2088,6 +2096,10 @@ func _spawn_authored_projectile_attack(attack: Dictionary, aim: Vector2, pose_id
 
     var projectile := _MvAuthoredProjectile.new()
     var damage_mult := float(PlayerInventory.get_var("mv_projectile_damage_mult", 1.0))
+    var damage_bonus := int(round(float(PlayerInventory.get_var("mv_projectile_damage_bonus", 0.0))))
+    if damage_bonus != 0:
+        projectile_def = projectile_def.duplicate(true)
+        projectile_def["damage"] = int(projectile_def.get("damage", 0)) + damage_bonus
     projectile.configure(projectile_def, _attack_spawn_position(attack, aim, pose_id), aim, damage_mult)
     get_parent().add_child(projectile)
 
@@ -2156,7 +2168,8 @@ func _spawn_authored_melee_hitbox(attack: Dictionary) -> void:
         maxf(1.0, float(int(attack.get("hitbox_h", 1))) * range_mult)
     )
     var hitbox := _MvAuthoredMeleeHitbox.new()
-    hitbox.configure(combat_origin() + Vector2(offset_x, offset_y), size, int(round(float(attack.get("damage", 0)) * damage_mult)))
+    var damage_bonus := int(round(float(PlayerInventory.get_var("mv_melee_damage_bonus", 0.0))))
+    hitbox.configure(combat_origin() + Vector2(offset_x, offset_y), size, int(round(float(attack.get("damage", 0)) * damage_mult)) + damage_bonus)
     get_parent().add_child(hitbox)
 
 
@@ -2172,7 +2185,8 @@ func _apply_authored_melee_geometry_hits(attack: Dictionary, hit_targets: Dictio
         maxf(1.0, float(int(attack.get("hitbox_h", 1))) * range_mult)
     )
     var world_rect := Rect2(combat_origin() + Vector2(offset_x, offset_y) - size * 0.5, size)
-    var damage := int(round(float(attack.get("damage", 0)) * damage_mult))
+    var damage_bonus := int(round(float(PlayerInventory.get_var("mv_melee_damage_bonus", 0.0))))
+    var damage := int(round(float(attack.get("damage", 0)) * damage_mult)) + damage_bonus
     if damage <= 0:
         return
     for enemy in get_tree().get_nodes_in_group("mv_enemy"):

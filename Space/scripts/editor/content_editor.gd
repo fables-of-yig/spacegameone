@@ -11,19 +11,19 @@ signal playtest_requested(pack_id: String)
 const MODE_ORDER: Array = ["campaign", "objects", "world", "triggers", "ui", "audio", "playtest"]
 const MODE_LABELS: Dictionary = {
     "campaign": "CAMPAIGN",
-    "objects": "OBJECTS",
+    "objects": "GAME PIECES",
     "world": "WORLD",
-    "triggers": "TRIGGERS",
+    "triggers": "GAME LOGIC",
     "ui": "UI + FX",
     "audio": "AUDIO",
-    "playtest": "PLAYTEST",
+    "playtest": "CHECK + PLAY",
 }
 
 const MODE_DESCRIPTIONS: Dictionary = {
     "campaign": "Pack metadata, start flow, starting ship, and authoring checklist.",
     "objects": "Definitions: player, ships, modules, loot, entities, AI, dialogue, shops.",
     "world": "Realm, regions, rooms, solar systems, and planet landing pathways.",
-    "triggers": "Campaign logic, dialogue flow, and runtime glue.",
+    "triggers": "Rules for when things happen, what must be true, and what the game should do.",
     "ui": "Theme, authored screens, cinematics, and trigger-driven menu flow.",
     "audio": "Import and curate music / SFX assets for this pack.",
     "playtest": "Validate the pack, including authored UI screens, then launch it as a playable build.",
@@ -127,20 +127,20 @@ const MODE_TILES: Dictionary = {
     "triggers": [
         {
             "kind": "trigger",
-            "label": "TRIGGER EDITOR",
+            "label": "GAME LOGIC",
             "subtitle": "When something happens, run dialogue, flags, cutscenes, spawns, or camera logic.",
             "accent": Color(0.93, 0.63, 0.2),
         },
         {
             "kind": "dialogue",
-            "label": "DIALOGUE EVENTS",
-            "subtitle": "Author conversations. NPC `dialogue_id` or trigger `start_dialogue` opens them.",
+            "label": "CONVERSATIONS",
+            "subtitle": "Write NPC lines, player choices, and conversation side effects.",
             "accent": Color(0.42, 0.84, 0.88),
         },
         {
             "kind": "shop",
-            "label": "SHOP EVENTS",
-            "subtitle": "Vendor state, stock changes, and economy hooks.",
+            "label": "SHOPS",
+            "subtitle": "Vendor stock, prices, and economy hooks.",
             "accent": Color(0.85, 0.73, 0.42),
         },
     ],
@@ -153,8 +153,8 @@ const MODE_TILES: Dictionary = {
         },
         {
             "kind": "trigger",
-            "label": "UI EVENTS",
-            "subtitle": "Use triggers for menu flow, buttons, and authored events.",
+            "label": "UI BUTTON LOGIC",
+            "subtitle": "Use game logic for menu flow, buttons, and authored events.",
             "accent": Color(0.93, 0.63, 0.2),
         },
     ],
@@ -175,7 +175,7 @@ const MODE_TILES: Dictionary = {
         },
         {
             "kind": "__validate__",
-            "label": "VALIDATE",
+            "label": "CHECK PACK",
             "subtitle": "Cross-check rooms, entities, triggers, dialogue, and shops.",
             "accent": Color(0.28, 0.6, 0.95),
         },

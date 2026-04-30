@@ -28,7 +28,10 @@ func tick(actor: Node, _blackboard: Blackboard) -> int:
     if actor.has_method("ai_set_vertical_drive"):
         actor.call("ai_set_vertical_drive", true)
     if actor.has_method("ai_face_dir"):
-        actor.call("ai_face_dir", dir.x if absf(dir.x) > 0.01 else 1.0)
+        var face_dir: float = dir.x
+        if absf(face_dir) <= 0.01 and "beh_facing" in actor:
+            face_dir = float(actor.beh_facing)
+        actor.call("ai_face_dir", face_dir)
     if actor.has_method("ai_request_pose"):
         actor.call("ai_request_pose", "move", 0.1, true, 1.0)
     return SUCCESS

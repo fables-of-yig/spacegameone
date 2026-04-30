@@ -20,6 +20,12 @@ godot --headless --import   # refresh import cache after
 
 There is no test runner or CI pipeline. Validation is embedded in the editor (`content_validator.gd`). The smoke-test workflow is documented in `TESTING_GUIDE.md`.
 
+## Agent Workflow
+
+Project-local agent prompts live in `.claude/agents/`. The human-readable operating guide and task templates live in `.agents/`.
+
+Use the coordinator/explorer/worker/reviewer flow for non-trivial changes: map the path first, assign bounded ownership, implement the narrow slice, validate contract behavior, run the smallest useful smoke check, then sync docs.
+
 ## Two-Engine Architecture
 
 The project runs two separate game engines that share state through `PlanetaryInterface`:

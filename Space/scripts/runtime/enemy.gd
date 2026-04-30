@@ -23,6 +23,7 @@ extends CharacterBody2D
 const EntIO := preload("res://Space/scripts/editor/ent/ent_io.gd")
 const BehIO := preload("res://Space/scripts/editor/beh/beh_io.gd")
 const BehLoader := preload("res://Space/scripts/runtime/beh/beh_loader.gd")
+const MvPickupScene := preload("res://MV/scripts/pickup.gd")
 
 const FALLBACK_GRAVITY: float = 0.109375 * 3600.0
 const FALLBACK_MAX_FALL: float = 5.0 * 60.0
@@ -95,10 +96,15 @@ var contact_cooldown: float = 0.8
 var move_speed: float = 40.0
 var projectile_damage: int = 1
 var projectile_speed: float = 180.0
+var melee_range: float = 24.0
+var projectile_range: float = 220.0
+var melee_attack_trigger_frame: int = -1
+var projectile_attack_trigger_frame: int = -1
 var _hit_flash_timer: float = 0.0
 var _dead: bool = false
 var _contact_cooldown_left: float = 0.0
 var _defeat_cleanup_at: float = -1.0
+var _pending_attack: Dictionary = {}
 
 # Authored-direction flag used by walk/turn_around leaves to persist
 # facing across ticks. +1 = right, -1 = left. Walk leaves without an
@@ -148,6 +154,10 @@ func _load_combat_stats() -> void:
     move_speed = maxf(0.0, float(_entity.get("move_speed", move_speed)))
     projectile_damage = maxi(0, int(_entity.get("projectile_damage", projectile_damage)))
     projectile_speed = maxf(0.0, float(_entity.get("projectile_speed", projectile_speed)))
+    melee_range = maxf(0.0, float(_entity.get("melee_range", melee_range)))
+    projectile_range = maxf(0.0, float(_entity.get("projectile_range", projectile_range)))
+    melee_attack_trigger_frame = max(-1, int(_entity.get("melee_attack_trigger_frame", melee_attack_trigger_frame)))
+    projectile_attack_trigger_frame = max(-1, int(_entity.get("projectile_attack_trigger_frame", projectile_attack_trigger_frame)))
     _movement_mode = str(_entity.get("movement_mode", "ground")).strip_edges().to_lower()
     if not VALID_MOVEMENT_MODES.has(_movement_mode):
         _movement_mode = "ground"
@@ -183,8 +193,46 @@ func _on_defeat() -> void:
     if _contact_shape != null:
         _contact_shape.set_deferred("disabled", true)
     _play_death_pose()
+    _spawn_item_drops()
     enemy_defeated.emit(entity_id)
     MvTriggerEngine.fire_event("enemy_defeated", { "entity_id": entity_id })
+
+
+func _spawn_item_drops() -> void:
+    var drops: Array = []
+    var drops_v: Variant = _entity.get("item_drops", [])
+    if typeof(drops_v) == TYPE_ARRAY:
+        drops = drops_v
+    elif not str(_entity.get("drop_item_id", "")).strip_edges().is_empty():
+        drops = [{
+            "id": str(_entity.get("drop_item_id", "")).strip_edges(),
+            "count": int(_entity.get("drop_count", 1)),
+            "chance": float(_entity.get("drop_chance", 1.0)),
+        }]
+    if drops.is_empty():
+        return
+    var parent := get_parent()
+    if parent == null:
+        return
+    var spawned := 0
+    for drop_v in drops:
+        if typeof(drop_v) != TYPE_DICTIONARY:
+            continue
+        var drop: Dictionary = drop_v
+        var item_id := str(drop.get("id", drop.get("item_id", ""))).strip_edges()
+        if item_id.is_empty():
+            continue
+        var chance := clampf(float(drop.get("chance", 1.0)), 0.0, 1.0)
+        if randf() > chance:
+            continue
+        var pickup := MvPickupScene.new()
+        pickup.configure(pack_id, str(drop.get("pickup_entity", "pickup")), [], {
+            "item_id": item_id,
+            "count": maxi(1, int(drop.get("count", 1))),
+        })
+        pickup.global_position = global_position + Vector2(float(spawned * 10), -8.0)
+        parent.add_child(pickup)
+        spawned += 1
 
 
 func _process(delta: float) -> void:
@@ -206,16 +254,21 @@ func _process(delta: float) -> void:
 
     if _sprite == null:
         return
-    # Flip the sprite to match movement direction. Stickiness: only flip
-    # when velocity.x is non-zero so a stopped enemy keeps its last
-    # facing instead of snapping to a default.
-    if velocity.x > 0.01:
+    # Prefer the authored/AI facing flag over live velocity so hovering
+    # and flying enemies do not flicker when their horizontal speed
+    # oscillates around zero while aiming.
+    if beh_facing > 0:
+        _last_facing_right = true
+    elif beh_facing < 0:
+        _last_facing_right = false
+    elif velocity.x > 0.01:
         _last_facing_right = true
     elif velocity.x < -0.01:
         _last_facing_right = false
     _sprite.flip_h = not _last_facing_right
 
     if _frame_count <= 1:
+        _maybe_execute_pending_attack()
         return
     var fps: float = DEFAULT_FPS
     if _pose.has("fps"):
@@ -244,6 +297,8 @@ func _process(delta: float) -> void:
                 break
             _frame_index = loop_from
         _sprite.frame = _frame_index
+        _maybe_execute_pending_attack()
+    _maybe_execute_pending_attack()
 
 
 func _physics_process(delta: float) -> void:
@@ -558,6 +613,55 @@ func fire_projectile(dir: Vector2, speed: float = -1.0, damage: int = -1,
     return true
 
 
+func default_melee_range() -> float:
+    return melee_range
+
+
+func default_projectile_range() -> float:
+    return projectile_range
+
+
+func queue_melee_attack(target: Node, range_px: float = -1.0, damage: int = -1) -> bool:
+    if _dead:
+        return false
+    var attack_range: float = range_px if range_px >= 0.0 else melee_range
+    var attack_damage_value: int = damage if damage >= 0 else attack_damage
+    if _should_execute_attack_immediately():
+        return _execute_melee_attack(target, attack_range, attack_damage_value)
+    _pending_attack = {
+        "type": "melee",
+        "target_ref": weakref(target),
+        "range": attack_range,
+        "damage": attack_damage_value,
+        "trigger_frame": _resolved_attack_trigger_frame(melee_attack_trigger_frame),
+    }
+    ai_request_pose("attack", _attack_pose_hold_seconds(int(_pending_attack["trigger_frame"])), false, 1.0)
+    return true
+
+
+func queue_projectile_attack(target: Node, dir: Vector2, speed: float = -1.0,
+        damage: int = -1, lifetime: float = 2.0, range_px: float = -1.0) -> bool:
+    if _dead or dir.length_squared() <= 0.0001:
+        return false
+    var attack_speed: float = speed if speed > 0.0 else projectile_speed
+    var attack_damage_value: int = damage if damage >= 0 else projectile_damage
+    var attack_range: float = range_px if range_px >= 0.0 else projectile_range
+    if _should_execute_attack_immediately():
+        return _execute_projectile_attack(target, dir, attack_speed, attack_damage_value, lifetime, attack_range)
+    _pending_attack = {
+        "type": "projectile",
+        "target_ref": weakref(target),
+        "dir": dir.normalized(),
+        "speed": attack_speed,
+        "damage": attack_damage_value,
+        "lifetime": maxf(0.05, lifetime),
+        "range": attack_range,
+        "trigger_frame": _resolved_attack_trigger_frame(projectile_attack_trigger_frame),
+    }
+    ai_request_pose("attack", _attack_pose_hold_seconds(int(_pending_attack["trigger_frame"])), false, 1.0)
+    return true
+
+
 func _resolve_pose_png(anim_name: String) -> String:
     var trimmed := anim_name.strip_edges().to_lower()
     if trimmed.is_empty():
@@ -572,6 +676,125 @@ func _resolve_pose_png(anim_name: String) -> String:
         if png_name.get_basename().to_lower().contains(trimmed):
             return png_name
     return ""
+
+
+func _should_execute_attack_immediately() -> bool:
+    return _sprite == null or _attack_pose_frame_count() <= 1
+
+
+func _resolved_attack_trigger_frame(configured_frame: int) -> int:
+    var frame_count := _attack_pose_frame_count()
+    if frame_count <= 1:
+        return 0
+    if configured_frame < 0:
+        return frame_count - 1
+    return clampi(configured_frame, 0, frame_count - 1)
+
+
+func _attack_pose_hold_seconds(trigger_frame: int) -> float:
+    var frame_count := _attack_pose_frame_count()
+    var fps := _attack_pose_fps()
+    if frame_count <= 1 or fps <= 0.0:
+        return 0.18
+    var clamped_trigger := clampi(trigger_frame, 0, frame_count - 1)
+    return maxf(0.18, float(clamped_trigger + 1) / fps + 0.05)
+
+
+func _attack_pose_frame_count() -> int:
+    var attack_png := _resolve_state_pose("attack")
+    if attack_png.is_empty():
+        return _frame_count
+    if _current_pose_png == attack_png and _frame_count > 0:
+        return _frame_count
+    var pose_v: Variant = _pose_registry.get(attack_png, {})
+    if typeof(pose_v) == TYPE_DICTIONARY:
+        var pose: Dictionary = pose_v
+        if pose.has("frames"):
+            return maxi(1, int(pose.get("frames", 1)))
+    var tex := EntIO.load_sprite_png(pack_id, _sprite_set_rel, attack_png)
+    return EntIO.autodetect_frame_count(tex)
+
+
+func _attack_pose_fps() -> float:
+    var attack_png := _resolve_state_pose("attack")
+    if attack_png.is_empty():
+        return DEFAULT_FPS
+    if _current_pose_png == attack_png and _pose.has("fps"):
+        return maxf(0.01, float(_pose.get("fps", DEFAULT_FPS)))
+    var pose_v: Variant = _pose_registry.get(attack_png, {})
+    if typeof(pose_v) == TYPE_DICTIONARY:
+        return maxf(0.01, float((pose_v as Dictionary).get("fps", DEFAULT_FPS)))
+    return DEFAULT_FPS
+
+
+func _maybe_execute_pending_attack() -> void:
+    if _pending_attack.is_empty():
+        return
+    var trigger_frame: int = int(_pending_attack.get("trigger_frame", 0))
+    if _frame_index < trigger_frame:
+        return
+    var pending := _pending_attack
+    _pending_attack = {}
+    var attack_type := str(pending.get("type", ""))
+    if attack_type == "melee":
+        _execute_melee_attack(
+            _deref_attack_target(pending.get("target_ref", null)),
+            float(pending.get("range", melee_range)),
+            int(pending.get("damage", attack_damage))
+        )
+    elif attack_type == "projectile":
+        _execute_projectile_attack(
+            _deref_attack_target(pending.get("target_ref", null)),
+            pending.get("dir", Vector2.RIGHT),
+            float(pending.get("speed", projectile_speed)),
+            int(pending.get("damage", projectile_damage)),
+            float(pending.get("lifetime", 2.0)),
+            float(pending.get("range", projectile_range))
+        )
+
+
+func _deref_attack_target(target_ref: Variant) -> Node:
+    if target_ref is WeakRef:
+        return (target_ref as WeakRef).get_ref()
+    if target_ref is Node:
+        return target_ref as Node
+    return null
+
+
+func _execute_melee_attack(target: Node, range_px: float, damage: int) -> bool:
+    if target == null or not is_instance_valid(target) or not (target is Node2D):
+        return false
+    var target_node := target as Node2D
+    var a_pos := combat_origin()
+    var target_pos := _combat_origin(target_node)
+    if target_pos.distance_to(a_pos) > range_px:
+        return false
+    if target.has_method("take_damage"):
+        target.call("take_damage", damage, "enemy", a_pos)
+        return true
+    return false
+
+
+func _execute_projectile_attack(target: Node, dir: Vector2, speed: float, damage: int,
+        lifetime: float, range_px: float) -> bool:
+    var shot_dir := dir.normalized()
+    if target != null and is_instance_valid(target) and target is Node2D:
+        var a_pos := combat_origin()
+        var target_pos := _combat_origin(target)
+        if range_px < INF and target_pos.distance_to(a_pos) > range_px:
+            return false
+        var target_vec := target_pos - a_pos
+        if target_vec.length_squared() > 0.001:
+            shot_dir = target_vec.normalized()
+    return fire_projectile(shot_dir, speed, damage, lifetime)
+
+
+func _combat_origin(node: Node) -> Vector2:
+    if node != null and node.has_method("combat_origin"):
+        var origin_v: Variant = node.call("combat_origin")
+        if typeof(origin_v) == TYPE_VECTOR2:
+            return origin_v
+    return (node as Node2D).global_position if node is Node2D else Vector2.ZERO
 
 
 func _rebuild_pose_stems() -> void:

@@ -293,7 +293,7 @@ func _draw_type_row(font: Font, mouse_pos: Vector2, y: float,
     var swatch := Rect2(rect.position.x + 10, rect.position.y + 22, 12, 12)
     draw_rect(swatch, BehTypes.type_color(type_str))
     draw_string(font, rect.position + Vector2(28, 34),
-        type_str, HORIZONTAL_ALIGNMENT_LEFT, -1, 13,
+        "%s (%s)" % [BehTypes.type_label(type_str), type_str], HORIZONTAL_ALIGNMENT_LEFT, -1, 13,
         Color(1, 1, 1, 1) if hover else Color(0.85, 0.98, 0.92, 1))
     draw_string(font, Vector2(rect.position.x + rect.size.x - 64,
         rect.position.y + 30),
@@ -302,7 +302,7 @@ func _draw_type_row(font: Font, mouse_pos: Vector2, y: float,
 
     _type_btn_rect = rect
     if hover:
-        EditorTooltip.show_text("Click to change the node's type. Composites hold many children, decorators wrap one child, leaves are actions or conditions. Changing type may invalidate children.")
+        EditorTooltip.show_text("%s Click to change how this node behaves. Changing type may remove children that no longer fit." % BehTypes.type_help(type_str))
     return y + FIELD_H + 4
 
 
@@ -391,9 +391,9 @@ func _prompt_for_node_field(field: String) -> String:
     if field == "name":
         return "Display label for this node. Shown in the tree view."
     if field == "action":
-        return "Action name — maps to a runtime action. e.g. walk_left"
+        return "Pick what this actor should do, such as Walk left, Chase the player, or Attack in melee."
     if field == "condition":
-        return "Condition name — maps to a runtime condition. e.g. wall_ahead"
+        return "Pick what this actor should check, such as Player is visible or Health is low."
     return ""
 
 
@@ -407,7 +407,7 @@ func _tooltip_for_field(field: String, kind: String) -> String:
         if field == "name":
             return "Display label for this node in the tree view. Purely cosmetic — does not affect behavior."
         if field == "action":
-            return "Name of the runtime action handler to invoke (e.g. walk_left, attack). Must match a registered action in the runtime."
+            return "The action this actor performs at this point in the tree. Use the picker to choose a registered action."
         if field == "condition":
-            return "Name of the runtime condition handler to query (e.g. wall_ahead, see_player). Must match a registered condition in the runtime."
+            return "The check this branch uses before continuing. Use the picker to choose a registered condition."
     return "Opens a text input modal."

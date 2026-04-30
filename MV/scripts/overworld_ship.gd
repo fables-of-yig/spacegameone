@@ -1,7 +1,7 @@
 extends Node2D
 
 const BLOCK_SIZE: int = 16
-const TURN_SPEED: float = 2.5
+const TURN_SPEED: float = 0.5
 const MAX_SPEED: float = 180.0
 const ACCEL: float = 200.0
 const FRICTION: float = 120.0

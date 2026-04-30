@@ -108,6 +108,80 @@ static func type_color(type: String) -> Color:
     return category_color(category_of(type))
 
 
+static func type_label(type: String) -> String:
+    match type:
+        "sequence":
+            return "Do these in order"
+        "sequence_reactive":
+            return "Keep checking, then do these in order"
+        "sequence_star":
+            return "Continue this ordered list"
+        "selector":
+            return "Try these until one works"
+        "selector_random":
+            return "Try one of these at random"
+        "simple_parallel":
+            return "Do these at the same time"
+        "inverter":
+            return "Reverse the answer"
+        "repeater":
+            return "Repeat this"
+        "limiter":
+            return "Limit how often this runs"
+        "cooldown":
+            return "Wait before running again"
+        "delayer":
+            return "Delay before running"
+        "until_fail":
+            return "Repeat until this fails"
+        "succeeder":
+            return "Treat as success"
+        "failer":
+            return "Treat as failure"
+        "time_limiter":
+            return "Stop after time runs out"
+        "action":
+            return "Do an action"
+        "condition":
+            return "Check a condition"
+        _:
+            return type.replace("_", " ").capitalize()
+
+
+static func type_help(type: String) -> String:
+    match type:
+        "sequence":
+            return "Runs children in order. The list works only if every child succeeds."
+        "selector":
+            return "Runs children in order and stops at the first child that works."
+        "simple_parallel":
+            return "Ticks all children together every frame."
+        "selector_random":
+            return "Picks one child at random each tick. Useful for variety."
+        "sequence_reactive":
+            return "Like an ordered list, but earlier checks are re-tested every tick."
+        "sequence_star":
+            return "Like an ordered list, but resumes where it left off."
+        "inverter":
+            return "Flips its child's answer. Success becomes failure and failure becomes success."
+        "repeater":
+            return "Runs its child again and again."
+        "limiter":
+            return "Allows its child to run only a limited number of times."
+        "until_fail":
+            return "Keeps running its child until the child fails."
+        "cooldown":
+            return "Runs its child, then waits before allowing it again."
+        "delayer":
+            return "Waits before running its child."
+        "action":
+            return "Makes the actor do something."
+        "condition":
+            return "Checks the world and decides whether this branch may continue."
+        _:
+            return "Behavior node type %s." % type
+
+
 # Returns true for types that can host children arrays. Composites take
 # any number of children; decorators take exactly one; leaves take none.
 static func accepts_children(type: String) -> bool:

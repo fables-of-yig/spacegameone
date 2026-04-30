@@ -40,6 +40,7 @@ func _ready() -> void:
 func open_shop(shop_id: String) -> void:
 	_shop_id = shop_id
 	_shop_items = _load_shop(shop_id)
+	_normalize_shop_items()
 	if _shop_items.is_empty():
 		return
 	_active = true
@@ -67,11 +68,13 @@ func _refresh() -> void:
 		var item_id: String = str(item.get("id", ""))
 		var price: int = int(item.get("price", 0))
 		var item_name: String = str(item.get("name", item_id))
+		var count: int = int(item.get("count", 1))
 		var can_afford := gold >= price
 
 		var row := HBoxContainer.new()
 		var lbl := Label.new()
-		lbl.text = "%s — %d gold" % [item_name, price]
+		var count_suffix := (" x%d" % count) if count > 1 else ""
+		lbl.text = "%s%s - %d gold" % [item_name, count_suffix, price]
 		lbl.add_theme_font_size_override("font_size", UIPanels.font_size("hint_size"))
 		lbl.add_theme_color_override("font_color", UIPanels.text_color("success") if can_afford else UIPanels.text_color("dim"))
 		lbl.size_flags_horizontal = Control.SIZE_EXPAND_FILL
@@ -94,8 +97,25 @@ func _on_buy(index: int) -> void:
 	if gold < price:
 		return
 	PlayerInventory.add_var("gold", -price)
-	PlayerInventory.add_item(str(item.get("id", "")), int(item.get("count", 1)))
-	MvTriggerEngine.fire_event("item_gain", { "item_id": str(item.get("id", "")) })
+	var item_id := str(item.get("id", ""))
+	var count := maxi(1, int(item.get("count", 1)))
+	var applied_shop_effect := false
+	if str(item.get("use_effect", "")).strip_edges() != "" and bool(item.get("auto_use_on_gain", true)):
+		var def := PlayerInventory.get_item_definition(item_id)
+		def["id"] = item_id
+		def["stock_id"] = str(item.get("stock_id", ""))
+		def["use_effect"] = str(item.get("use_effect", ""))
+		def["use_amount"] = int(item.get("use_amount", 0))
+		def["use_arg"] = str(item.get("use_arg", ""))
+		applied_shop_effect = PlayerInventory.apply_item_effect_definition(def, count)
+	if not applied_shop_effect:
+		PlayerInventory.add_item(item_id, count)
+	MvTriggerEngine.fire_event("item_gain", {
+		"item_id": item_id,
+		"stock_id": str(item.get("stock_id", "")),
+		"shop_id": _shop_id,
+		"count": count,
+	})
 	_refresh()
 
 
@@ -112,6 +132,29 @@ func _load_shop(shop_id: String) -> Array:
 	var raw := MvPackLoader.read_json_dict(path)
 	var items_v: Variant = raw.get("items", [])
 	return items_v if typeof(items_v) == TYPE_ARRAY else []
+
+
+func _normalize_shop_items() -> void:
+	var used: Dictionary = {}
+	for i in range(_shop_items.size()):
+		if typeof(_shop_items[i]) != TYPE_DICTIONARY:
+			continue
+		var item: Dictionary = _shop_items[i]
+		var stock_id := str(item.get("stock_id", "")).strip_edges()
+		if stock_id.is_empty():
+			stock_id = _sanitize_stock_id(str(item.get("id", "stock_item")))
+		var base := stock_id
+		var suffix := 1
+		while used.has(stock_id):
+			stock_id = "%s_%d" % [base, suffix]
+			suffix += 1
+		item["stock_id"] = stock_id
+		used[stock_id] = true
+
+
+func _sanitize_stock_id(value: String) -> String:
+	var out := value.strip_edges().to_lower().replace(" ", "_")
+	return out if not out.is_empty() else "stock_item"
 
 
 func _current_pack_id() -> String:
@@ -178,7 +221,7 @@ func _draw_bg() -> void:
 func _buy_item_by_id(item_id: String) -> bool:
 	for i in range(_shop_items.size()):
 		var item: Dictionary = _shop_items[i]
-		if str(item.get("id", "")) == item_id:
+		if str(item.get("stock_id", "")) == item_id or str(item.get("id", "")) == item_id:
 			_on_buy(i)
 			return true
 	return false
@@ -218,10 +261,10 @@ func _on_authored_action(action_id: String, action_args: String, _element_id: St
 			})
 		"buy_item":
 			if action_args.is_empty():
-				push_warning("MvShopUI: buy_item authored action requires action_args = item_id")
+				push_warning("MvShopUI: buy_item authored action requires action_args = offer id or item id")
 				return
 			if not _buy_item_by_id(action_args):
-				push_warning("MvShopUI: shop '%s' has no item '%s'" % [_shop_id, action_args])
+				push_warning("MvShopUI: shop '%s' has no offer or item '%s'" % [_shop_id, action_args])
 		"sell_item":
 			_sell_item_from_action(action_args)
 		"play_sfx":

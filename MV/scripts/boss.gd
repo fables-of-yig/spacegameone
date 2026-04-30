@@ -96,6 +96,8 @@ func _on_defeat() -> void:
 	if _arena_lock:
 		MvTriggerEngine.fire_event("boss_arena_unlock", { "entity_id": entity_id })
 
+	_spawn_item_drops()
+
 	var hud := _find_hud()
 	if hud != null:
 		hud.hide_boss()

@@ -49,6 +49,8 @@ var _new_realm_rect: Rect2 = Rect2()
 var _new_region_rect: Rect2 = Rect2()
 var _realm_rename_rect: Rect2 = Rect2()
 var _realm_delete_rect: Rect2 = Rect2()
+var _realm_resize_rect: Rect2 = Rect2()
+var _realm_sky_rect: Rect2 = Rect2()
 var _region_open_rect: Rect2 = Rect2()
 var _region_pos_rect: Rect2 = Rect2()
 var _region_rename_rect: Rect2 = Rect2()
@@ -146,6 +148,7 @@ func _reload() -> void:
     realm_data = bundle.get("realm", {})
     realm_id = str(bundle.get("realm_id", realm_id))
     regions_meta = bundle.get("regions", {})
+    _upgrade_legacy_realm_grid_if_needed()
     _sync_selected_region()
     if _undo != null:
         _undo.clear()
@@ -217,6 +220,14 @@ func _gui_input(event):
             return
         if _realm_delete_rect.has_point(p):
             _request_delete_realm()
+            accept_event()
+            return
+        if _realm_resize_rect.has_point(p):
+            _edit_realm_grid_size()
+            accept_event()
+            return
+        if _realm_sky_rect.has_point(p):
+            _edit_realm_sky()
             accept_event()
             return
         if _region_open_rect.has_point(p):
@@ -322,9 +333,9 @@ func _create_new_region() -> void:
         new_name = "Region %d" % idx
         new_id = RegIO.unique_content_id(new_name, used_ids, "region")
     var default_pos := _first_open_region_cell()
-    var prompt := "New regions need a realm-grid position.\nEnter `col,row` inside this realm's %dx%d grid." % [realm_grid_w(), realm_grid_h()]
+    var prompt := _region_bounds_prompt("New regions need realm-grid bounds.")
     show_text_modal("New Region Position",
-        "%d,%d" % [default_pos.x, default_pos.y],
+        "%d,%d,1,1" % [default_pos.x, default_pos.y],
         prompt,
         Callable(self, "_finish_create_new_region").bind(new_id, new_name))
 
@@ -383,7 +394,7 @@ func _finish_rename_realm(name_text: String, target_realm_id: String) -> void:
 
 
 func _finish_create_new_region(position_text: String, new_id: String, new_name: String) -> void:
-    var parsed := _parse_region_position(position_text, "")
+    var parsed := _parse_region_bounds(position_text, "", Vector2i.ONE)
     if not bool(parsed.get("ok", false)):
         _reopen_region_position_modal("New Region Position", position_text, str(parsed.get("error", "Invalid region position.")),
             Callable(self, "_finish_create_new_region").bind(new_id, new_name))
@@ -396,6 +407,8 @@ func _finish_create_new_region(position_text: String, new_id: String, new_name: 
         "name": new_name,
         "col": int(parsed.get("col", 0)),
         "row": int(parsed.get("row", 0)),
+        "span_w": int(parsed.get("span_w", 1)),
+        "span_h": int(parsed.get("span_h", 1)),
     })
     realm_data["regions"] = regions
     RegIO.save_realm(pack_id, realm_id, realm_data)
@@ -443,20 +456,78 @@ func _edit_selected_region_position() -> void:
     var region := _get_region_entry(selected_region_id)
     if region.is_empty():
         return
-    var prompt := "Move the selected region to a new realm-grid cell.\nEnter `col,row` inside this realm's %dx%d grid." % [realm_grid_w(), realm_grid_h()]
-    show_text_modal("Region Position",
-        "%d,%d" % [int(region.get("col", 0)), int(region.get("row", 0))],
+    var prompt := _region_bounds_prompt("Move or resize the selected region.")
+    var span := _region_span(region)
+    show_text_modal("Region Bounds",
+        "%d,%d,%d,%d" % [int(region.get("col", 0)), int(region.get("row", 0)), span.x, span.y],
         prompt,
-        Callable(self, "_finish_move_region").bind(selected_region_id))
+        Callable(self, "_finish_move_region").bind(selected_region_id, span))
 
 
-func _finish_move_region(position_text: String, region_id_to_move: String) -> void:
-    var parsed := _parse_region_position(position_text, region_id_to_move)
+func _finish_move_region(position_text: String, region_id_to_move: String, default_span: Vector2i) -> void:
+    var parsed := _parse_region_bounds(position_text, region_id_to_move, default_span)
     if not bool(parsed.get("ok", false)):
-        _reopen_region_position_modal("Region Position", position_text, str(parsed.get("error", "Invalid region position.")),
-            Callable(self, "_finish_move_region").bind(region_id_to_move))
+        _reopen_region_position_modal("Region Bounds", position_text, str(parsed.get("error", "Invalid region bounds.")),
+            Callable(self, "_finish_move_region").bind(region_id_to_move, default_span))
         return
-    _set_region_position(region_id_to_move, int(parsed.get("col", 0)), int(parsed.get("row", 0)))
+    _set_region_bounds(
+        region_id_to_move,
+        int(parsed.get("col", 0)),
+        int(parsed.get("row", 0)),
+        int(parsed.get("span_w", default_span.x)),
+        int(parsed.get("span_h", default_span.y))
+    )
+
+
+func _edit_realm_grid_size() -> void:
+    show_text_modal(
+        "Realm Grid Size",
+        "%d,%d" % [realm_grid_w(), realm_grid_h()],
+        _realm_grid_prompt("Resize the active realm grid."),
+        Callable(self, "_finish_resize_realm_grid")
+    )
+
+
+func _finish_resize_realm_grid(size_text: String) -> void:
+    var parsed := _parse_realm_grid_size(size_text)
+    if not bool(parsed.get("ok", false)):
+        _reopen_realm_grid_modal(size_text, str(parsed.get("error", "Invalid realm grid size.")))
+        return
+    _set_realm_grid_size(int(parsed.get("grid_w", realm_grid_w())), int(parsed.get("grid_h", realm_grid_h())))
+
+
+func _edit_realm_sky() -> void:
+    show_text_modal(
+        "Realm Sky",
+        "%s,%s,%s" % [
+            str(realm_data.get("sky_preset", "midnight")),
+            str(realm_data.get("sky_top_color", "#050814")),
+            str(realm_data.get("sky_bottom_color", "#152743"))
+        ],
+        _realm_sky_prompt(),
+        Callable(self, "_finish_edit_realm_sky")
+    )
+
+
+func _finish_edit_realm_sky(raw_text: String) -> void:
+    var parsed := _parse_realm_sky(raw_text)
+    if not bool(parsed.get("ok", false)):
+        show_text_modal(
+            "Realm Sky",
+            raw_text,
+            _realm_sky_prompt(str(parsed.get("error", "Invalid sky background."))),
+            Callable(self, "_finish_edit_realm_sky")
+        )
+        return
+    if _undo != null:
+        _undo.begin()
+    realm_data["sky_preset"] = str(parsed.get("preset", "custom"))
+    realm_data["sky_top_color"] = str(parsed.get("top", "#050814"))
+    realm_data["sky_bottom_color"] = str(parsed.get("bottom", "#152743"))
+    RegIO.save_realm(pack_id, realm_id, realm_data)
+    queue_redraw()
+    if _undo != null:
+        _undo.commit("set realm sky")
 
 
 func _open_selected_region() -> void:
@@ -683,6 +754,26 @@ func _draw():
             EditorTooltip.show_text("A campaign needs at least one realm, so the last realm cannot be deleted.")
 
     row_y += realm_action_h + row_gap
+    _realm_resize_rect = Rect2(list_rect.position.x + 12.0, row_y, list_rect.size.x - 24.0, 30.0)
+    var realm_resize_hover := _realm_resize_rect.has_point(mouse_pos)
+    UIPanels.draw_button_bg(self, _realm_resize_rect, realm_resize_hover, Color(0.42, 0.82, 0.72, 1))
+    draw_string(font, _realm_resize_rect.position + Vector2(10, 20),
+        "RESIZE GRID", HORIZONTAL_ALIGNMENT_LEFT, -1, 12,
+        Color(1, 1, 1, 1) if realm_resize_hover else Color(0.86, 0.98, 0.94, 1))
+    if realm_resize_hover:
+        EditorTooltip.show_text("Resize this realm's authored overworld grid. Existing regions and realm tiles must still fit inside the new bounds.")
+
+    row_y += _realm_resize_rect.size.y + row_gap
+    _realm_sky_rect = Rect2(list_rect.position.x + 12.0, row_y, list_rect.size.x - 24.0, 30.0)
+    var realm_sky_hover := _realm_sky_rect.has_point(mouse_pos)
+    UIPanels.draw_button_bg(self, _realm_sky_rect, realm_sky_hover, Color(0.42, 0.62, 0.92, 1))
+    draw_string(font, _realm_sky_rect.position + Vector2(10, 20),
+        "SKY BG", HORIZONTAL_ALIGNMENT_LEFT, -1, 12,
+        Color(1, 1, 1, 1) if realm_sky_hover else Color(0.9, 0.95, 1.0, 1))
+    if realm_sky_hover:
+        EditorTooltip.show_text("Set this realm's overworld sky gradient. Enter a preset like `midnight`/`dawn`/`storm`/`toxic`/`sunset`, or `preset,#top,#bottom` for custom colors.")
+
+    row_y += _realm_sky_rect.size.y + row_gap
     _new_realm_rect = Rect2(list_rect.position.x + 12.0, row_y, list_rect.size.x - 24.0, 32.0)
     var new_realm_hover := _new_realm_rect.has_point(mouse_pos)
     UIPanels.draw_button_bg(self, _new_realm_rect, new_realm_hover, Color(0.45, 0.78, 0.98, 1))
@@ -768,7 +859,7 @@ func _draw():
         "OPEN", HORIZONTAL_ALIGNMENT_LEFT, -1, 12,
         Color(1, 1, 1, 1) if selected_valid else Color(0.6, 0.68, 0.78, 1))
     draw_string(font, _region_pos_rect.position + Vector2(12, 20),
-        "SET POS", HORIZONTAL_ALIGNMENT_LEFT, -1, 12,
+        "SET BOUNDS", HORIZONTAL_ALIGNMENT_LEFT, -1, 12,
         Color(1, 1, 1, 1) if selected_valid else Color(0.6, 0.68, 0.78, 1))
     draw_string(font, _region_rename_rect.position + Vector2(12, 20),
         "RENAME", HORIZONTAL_ALIGNMENT_LEFT, -1, 12,
@@ -780,7 +871,7 @@ func _draw():
         if _region_open_rect.has_point(mouse_pos):
             EditorTooltip.show_text("Open the selected region in the region editor so you can paint room layouts and room ownership.")
         elif _region_pos_rect.has_point(mouse_pos):
-            EditorTooltip.show_text("Change the selected region's realm-grid coordinates. Regions must occupy a unique cell inside the realm bounds.")
+            EditorTooltip.show_text("Move or resize the selected region on the realm grid. Enter `col,row,width,height`; `col,row` alone keeps the current size.")
         elif _region_rename_rect.has_point(mouse_pos):
             EditorTooltip.show_text("Rename the selected region.")
         elif _region_delete_rect.has_point(mouse_pos):
@@ -946,11 +1037,32 @@ func get_realm_tile_layers() -> Array:
     return []
 
 
+func get_realm_layer_animations(layer_idx: int) -> Dictionary:
+    var layers := get_realm_tile_layers()
+    if layer_idx < 0 or layer_idx >= layers.size():
+        return {}
+    var layer_v: Variant = layers[layer_idx]
+    if typeof(layer_v) != TYPE_DICTIONARY:
+        return {}
+    var anims_v: Variant = (layer_v as Dictionary).get("animations", {})
+    if typeof(anims_v) == TYPE_DICTIONARY:
+        return anims_v
+    return {}
+
+
 func get_realm_regions() -> Array:
     var regions_v: Variant = realm_data.get("regions", [])
     if typeof(regions_v) == TYPE_ARRAY:
         return regions_v
     return []
+
+
+func get_realm_sky_top_color() -> String:
+    return str(realm_data.get("sky_top_color", "#050814"))
+
+
+func get_realm_sky_bottom_color() -> String:
+    return str(realm_data.get("sky_bottom_color", "#152743"))
 
 
 func get_tileset_indices() -> Array:
@@ -1018,6 +1130,96 @@ func set_selected_metatile_block(idx: int, logical_w: int, logical_h: int) -> vo
     _realm_paste_preview_active = false
 
 
+func get_hover_realm_cell() -> Vector2i:
+    if _rlm_canvas != null and _rlm_canvas.has_method("get_hover_cell"):
+        return _rlm_canvas.get_hover_cell()
+    return Vector2i(-1, -1)
+
+
+func apply_selected_animation_to_hover_cell() -> void:
+    var hover := get_hover_realm_cell()
+    if hover.x < 0 or hover.x >= realm_grid_w() or hover.y < 0 or hover.y >= realm_grid_h():
+        return
+    var frames := _selected_animation_frames()
+    if frames.size() < 2:
+        return
+    show_text_modal(
+        "Tile Animation",
+        "8,loop",
+        _realm_animation_prompt(),
+        Callable(self, "_finish_apply_hover_animation").bind(hover, frames)
+    )
+
+
+func _finish_apply_hover_animation(raw_text: String, hover: Vector2i, frames: Array) -> void:
+    var parsed := _parse_realm_animation_settings(raw_text)
+    if not bool(parsed.get("ok", false)):
+        show_text_modal(
+            "Tile Animation",
+            raw_text,
+            _realm_animation_prompt(str(parsed.get("error", "Invalid animation settings."))),
+            Callable(self, "_finish_apply_hover_animation").bind(hover, frames)
+        )
+        return
+    var layers := get_realm_tile_layers()
+    if active_realm_layer < 0 or active_realm_layer >= layers.size():
+        return
+    var tex: Texture2D = get_tileset_texture(selected_realm_tileset)
+    if tex == null:
+        return
+    if _undo != null:
+        _undo.begin()
+    var layer: Dictionary = layers[active_realm_layer]
+    var tiles: Array = layer.get("tiles", [])
+    var first_frame: int = int(frames[0])
+    @warning_ignore("integer_division")
+    var grid_cols: int = maxi(tex.get_width() / EnvIO.BLOCK_SIZE, 1)
+    var entry := {
+        "col": hover.x,
+        "row": hover.y,
+        "tileset": get_tileset_name(selected_realm_tileset),
+        "atlas_x": first_frame % grid_cols,
+        "atlas_y": first_frame / grid_cols,
+    }
+    _set_realm_tile_entry(tiles, hover.x, hover.y, entry)
+    layer["tiles"] = tiles
+    var anims := _ensure_layer_animations(layer)
+    anims[_realm_cell_key(hover.x, hover.y)] = {
+        "frames": frames.duplicate(true),
+        "fps": float(parsed.get("fps", 8.0)),
+        "loop": bool(parsed.get("loop", true)),
+        "ping_pong": false,
+        "phase_offset": 0,
+    }
+    layer["animations"] = anims
+    RegIO.save_realm(pack_id, realm_id, realm_data)
+    queue_redraw()
+    if _undo != null:
+        _undo.commit("set realm tile animation")
+
+
+func clear_hover_cell_animation() -> void:
+    var hover := get_hover_realm_cell()
+    if hover.x < 0 or hover.x >= realm_grid_w() or hover.y < 0 or hover.y >= realm_grid_h():
+        return
+    var layers := get_realm_tile_layers()
+    if active_realm_layer < 0 or active_realm_layer >= layers.size():
+        return
+    var layer: Dictionary = layers[active_realm_layer]
+    var anims := _ensure_layer_animations(layer)
+    var key := _realm_cell_key(hover.x, hover.y)
+    if not anims.has(key):
+        return
+    if _undo != null:
+        _undo.begin()
+    anims.erase(key)
+    layer["animations"] = anims
+    RegIO.save_realm(pack_id, realm_id, realm_data)
+    queue_redraw()
+    if _undo != null:
+        _undo.commit("clear realm tile animation")
+
+
 func get_selected_realm_tile_span() -> Vector2i:
     return selected_realm_tile_span
 
@@ -1051,6 +1253,139 @@ func _snap_to_realm_logical_tile(idx: int, tileset_idx: int) -> int:
     @warning_ignore("integer_division")
     var logical_row := sub_row / n_subs
     return (logical_row * n_subs) * grid_cols + (logical_col * n_subs)
+
+
+func _selected_animation_frames() -> Array:
+    var tex: Texture2D = get_tileset_texture(selected_realm_tileset)
+    if tex == null:
+        return []
+    @warning_ignore("integer_division")
+    var grid_cols: int = maxi(tex.get_width() / EnvIO.BLOCK_SIZE, 1)
+    var n_subs: int = _get_tileset_subtile_span(selected_realm_tileset)
+    var start_idx := int(selected_realm_tile)
+    var start_col := start_idx % grid_cols
+    @warning_ignore("integer_division")
+    var start_row := start_idx / grid_cols
+    var frames: Array = []
+    var logical_w := maxi(selected_realm_tile_span.x, 1)
+    var logical_h := maxi(selected_realm_tile_span.y, 1)
+    for y in logical_h:
+        for x in logical_w:
+            frames.append((start_row + y * n_subs) * grid_cols + (start_col + x * n_subs))
+    return frames
+
+
+func _realm_animation_prompt(error_text: String = "") -> String:
+    var lines := PackedStringArray()
+    var trimmed := error_text.strip_edges()
+    if not trimmed.is_empty():
+        lines.append("Error: %s" % trimmed)
+    lines.append("Apply an animation to the last realm cell you hovered on the canvas.")
+    lines.append("The current tileset selection is used as the frame strip in row-major order.")
+    lines.append("Enter `fps,loop` or `fps,once`. Example: `8,loop`.")
+    return "\n".join(lines)
+
+
+func _parse_realm_animation_settings(raw_text: String) -> Dictionary:
+    var trimmed := raw_text.strip_edges().to_lower()
+    if trimmed.is_empty():
+        return {"ok": true, "fps": 8.0, "loop": true}
+    var clean := trimmed.replace(" ", "")
+    var parts := clean.split(",", false)
+    if parts.is_empty() or not str(parts[0]).is_valid_float():
+        return {"ok": false, "error": "Animation fps must be a number like `8` or `12.5`."}
+    var fps := float(parts[0])
+    if fps <= 0.0:
+        return {"ok": false, "error": "Animation fps must be greater than 0."}
+    var loop := true
+    if parts.size() >= 2:
+        var loop_token := str(parts[1])
+        if loop_token == "loop" or loop_token == "true" or loop_token == "yes":
+            loop = true
+        elif loop_token == "once" or loop_token == "false" or loop_token == "no":
+            loop = false
+        else:
+            return {"ok": false, "error": "Use `loop` or `once` for the second animation setting."}
+    return {"ok": true, "fps": fps, "loop": loop}
+
+
+func _realm_cell_key(col: int, row: int) -> String:
+    return "%d,%d" % [col, row]
+
+
+func _ensure_layer_animations(layer: Dictionary) -> Dictionary:
+    var anims_v: Variant = layer.get("animations", {})
+    if typeof(anims_v) == TYPE_DICTIONARY:
+        return anims_v
+    var anims: Dictionary = {}
+    layer["animations"] = anims
+    return anims
+
+
+func _clear_realm_cell_animation(layer: Dictionary, col: int, row: int) -> bool:
+    var anims := _ensure_layer_animations(layer)
+    var key := _realm_cell_key(col, row)
+    if not anims.has(key):
+        return false
+    anims.erase(key)
+    layer["animations"] = anims
+    return true
+
+
+func _sky_preset_colors(preset: String) -> Dictionary:
+    match preset.strip_edges().to_lower():
+        "dawn":
+            return {"top": "#2d1f4f", "bottom": "#f58b57"}
+        "sunset":
+            return {"top": "#3b2458", "bottom": "#ff6b4a"}
+        "storm":
+            return {"top": "#16202d", "bottom": "#4d6278"}
+        "toxic":
+            return {"top": "#112915", "bottom": "#6ea53b"}
+        "void":
+            return {"top": "#010105", "bottom": "#18122a"}
+        _:
+            return {"top": "#050814", "bottom": "#152743"}
+
+
+func _normalize_hex_color(raw_text: String) -> String:
+    var trimmed := raw_text.strip_edges()
+    if trimmed.is_empty():
+        return ""
+    if not trimmed.begins_with("#"):
+        trimmed = "#" + trimmed
+    return trimmed.to_upper()
+
+
+func _realm_sky_prompt(error_text: String = "") -> String:
+    var lines := PackedStringArray()
+    var trimmed := error_text.strip_edges()
+    if not trimmed.is_empty():
+        lines.append("Error: %s" % trimmed)
+    lines.append("Enter `preset` or `preset,#top,#bottom` for this realm's sky gradient.")
+    lines.append("Presets: midnight, dawn, sunset, storm, toxic, void.")
+    return "\n".join(lines)
+
+
+func _parse_realm_sky(raw_text: String) -> Dictionary:
+    var trimmed := raw_text.strip_edges()
+    if trimmed.is_empty():
+        return {"ok": false, "error": "Enter a sky preset or preset plus two hex colors."}
+    var parts := trimmed.replace(" ", "").split(",", false)
+    var preset := str(parts[0]).strip_edges().to_lower()
+    if preset.is_empty():
+        preset = "custom"
+    var colors := _sky_preset_colors(preset)
+    var top := str(colors.get("top", "#050814"))
+    var bottom := str(colors.get("bottom", "#152743"))
+    if parts.size() == 3:
+        top = _normalize_hex_color(str(parts[1]))
+        bottom = _normalize_hex_color(str(parts[2]))
+    elif parts.size() != 1:
+        return {"ok": false, "error": "Use `preset` or `preset,#top,#bottom`."}
+    if top.length() != 7 or bottom.length() != 7:
+        return {"ok": false, "error": "Sky colors must use 6-digit hex like `#0A1B2C`."}
+    return {"ok": true, "preset": preset, "top": top, "bottom": bottom}
 
 
 # ─── Tileset import (shares pool with environment editor) ───────────────
@@ -1278,6 +1613,7 @@ func paste_realm_clipboard(start_col: int, start_row: int) -> void:
         return
     var layer: Dictionary = layers[active_realm_layer]
     var tiles: Array = layer.get("tiles", [])
+    var anims := _ensure_layer_animations(layer)
     var width := int(_realm_clipboard.get("width", 0))
     var height := int(_realm_clipboard.get("height", 0))
     var cells: Array = _realm_clipboard.get("cells", [])
@@ -1322,6 +1658,9 @@ func paste_realm_clipboard(start_col: int, start_row: int) -> void:
                         entry["placement_h"] = clip_bottom - clip_top
             if _set_realm_tile_entry(tiles, dst_col, dst_row, entry):
                 changed = true
+            if not entry.is_empty() or anims.has(_realm_cell_key(dst_col, dst_row)):
+                if _clear_realm_cell_animation(layer, dst_col, dst_row):
+                    changed = true
     if changed:
         layer["tiles"] = tiles
 
@@ -1343,6 +1682,7 @@ func paint_realm_cell(col: int, row: int) -> void:
         return
     var layer: Dictionary = layers[active_realm_layer]
     var tiles: Array = layer.get("tiles", [])
+    var anims := _ensure_layer_animations(layer)
 
     var tileset_name := get_tileset_name(selected_realm_tileset)
     var tex: Texture2D = get_tileset_texture(selected_realm_tileset)
@@ -1398,6 +1738,9 @@ func paint_realm_cell(col: int, row: int) -> void:
                         entry["placement_h"] = clipped_h
                     if _set_realm_tile_entry(tiles, dst_col, dst_row, entry):
                         changed = true
+                    if anims.has(_realm_cell_key(dst_col, dst_row)):
+                        if _clear_realm_cell_animation(layer, dst_col, dst_row):
+                            changed = true
     if changed:
         layer["tiles"] = tiles
 
@@ -1408,6 +1751,7 @@ func erase_realm_cell(col: int, row: int) -> void:
         return
     var layer: Dictionary = layers[active_realm_layer]
     var tiles: Array = layer.get("tiles", [])
+    var anims := _ensure_layer_animations(layer)
     var changed := false
     var grid_w := realm_grid_w()
     var grid_h := realm_grid_h()
@@ -1454,9 +1798,15 @@ func erase_realm_cell(col: int, row: int) -> void:
                         continue
                     if _set_realm_tile_entry(tiles, dst_col, dst_row, {}):
                         changed = true
+                    if anims.has(_realm_cell_key(dst_col, dst_row)):
+                        if _clear_realm_cell_animation(layer, dst_col, dst_row):
+                            changed = true
         for cell in fallback_cells:
             if _set_realm_tile_entry(tiles, cell.x, cell.y, {}):
                 changed = true
+            if anims.has(_realm_cell_key(cell.x, cell.y)):
+                if _clear_realm_cell_animation(layer, cell.x, cell.y):
+                    changed = true
         if changed:
             layer["tiles"] = tiles
         return
@@ -1469,6 +1819,9 @@ func erase_realm_cell(col: int, row: int) -> void:
                 continue
             if _set_realm_tile_entry(tiles, col + dx, row + dy, {}):
                 changed = true
+            if anims.has(_realm_cell_key(col + dx, row + dy)):
+                if _clear_realm_cell_animation(layer, col + dx, row + dy):
+                    changed = true
     if changed:
         layer["tiles"] = tiles
 
@@ -1592,8 +1945,23 @@ func _get_region_entry_index(region_id_to_find: String) -> int:
     return -1
 
 
+func _region_span(entry: Dictionary) -> Vector2i:
+    return Vector2i(
+        maxi(1, int(entry.get("span_w", 1))),
+        maxi(1, int(entry.get("span_h", 1)))
+    )
+
+
+func _region_rect(entry: Dictionary) -> Rect2i:
+    return Rect2i(
+        Vector2i(int(entry.get("col", 0)), int(entry.get("row", 0))),
+        _region_span(entry)
+    )
+
+
 func _region_coord_label(entry: Dictionary) -> String:
-    return "(%d,%d)" % [int(entry.get("col", 0)), int(entry.get("row", 0))]
+    var span := _region_span(entry)
+    return "(%d,%d) %dx%d" % [int(entry.get("col", 0)), int(entry.get("row", 0)), span.x, span.y]
 
 
 func get_selected_region_id() -> String:
@@ -1601,34 +1969,51 @@ func get_selected_region_id() -> String:
 
 
 func _first_open_region_cell() -> Vector2i:
-    var used: Dictionary = {}
-    var regions: Array = realm_data.get("regions", [])
-    for entry_v in regions:
-        if typeof(entry_v) != TYPE_DICTIONARY:
-            continue
-        var entry: Dictionary = entry_v
-        used["%d,%d" % [int(entry.get("col", 0)), int(entry.get("row", 0))]] = true
     for row in range(realm_grid_h()):
         for col in range(realm_grid_w()):
-            if not used.has("%d,%d" % [col, row]):
+            if _region_id_at_cell(col, row).is_empty():
                 return Vector2i(col, row)
     return Vector2i.ZERO
 
 
-func _parse_region_position(raw_text: String, exclude_region_id: String) -> Dictionary:
+func _region_bounds_prompt(prefix: String = "") -> String:
+    var lines := PackedStringArray()
+    if not prefix.strip_edges().is_empty():
+        lines.append(prefix.strip_edges())
+    lines.append("Enter `col,row,width,height` inside this realm's %dx%d grid." % [realm_grid_w(), realm_grid_h()])
+    lines.append("You can also enter `col,row` to keep the current region size.")
+    return "\n".join(lines)
+
+
+func _parse_region_bounds(raw_text: String, exclude_region_id: String, default_span: Vector2i) -> Dictionary:
     var trimmed := raw_text.strip_edges()
     var clean := trimmed.replace(" ", "")
     var parts := clean.split(",", false)
-    if parts.size() != 2 or not str(parts[0]).is_valid_int() or not str(parts[1]).is_valid_int():
-        return {"ok": false, "error": "Enter the region position as `col,row` using whole numbers."}
+    if parts.size() != 2 and parts.size() != 4:
+        return {"ok": false, "error": "Enter region bounds as `col,row,width,height` or `col,row` using whole numbers."}
+    for part_v in parts:
+        if not str(part_v).is_valid_int():
+            return {"ok": false, "error": "Enter region bounds as whole numbers."}
     var col := int(parts[0])
     var row := int(parts[1])
-    if col < 0 or col >= realm_grid_w() or row < 0 or row >= realm_grid_h():
-        return {"ok": false, "error": "Region position (%d,%d) is outside this realm's %dx%d grid." % [col, row, realm_grid_w(), realm_grid_h()]}
-    var occupant := _region_id_at_cell(col, row, exclude_region_id)
+    var span_w := maxi(1, default_span.x)
+    var span_h := maxi(1, default_span.y)
+    if parts.size() >= 4:
+        span_w = int(parts[2])
+        span_h = int(parts[3])
+    if span_w <= 0 or span_h <= 0:
+        return {"ok": false, "error": "Region width and height must both be at least 1 cell."}
+    if col < 0 or row < 0 or col + span_w > realm_grid_w() or row + span_h > realm_grid_h():
+        return {
+            "ok": false,
+            "error": "Region bounds (%d,%d %dx%d) are outside this realm's %dx%d grid." % [
+                col, row, span_w, span_h, realm_grid_w(), realm_grid_h()
+            ]
+        }
+    var occupant := _region_id_overlapping_rect(Rect2i(Vector2i(col, row), Vector2i(span_w, span_h)), exclude_region_id)
     if not occupant.is_empty():
-        return {"ok": false, "error": "Realm cell (%d,%d) is already occupied by region `%s`." % [col, row, occupant]}
-    return {"ok": true, "col": col, "row": row}
+        return {"ok": false, "error": "Those realm cells overlap region `%s`." % occupant}
+    return {"ok": true, "col": col, "row": row, "span_w": span_w, "span_h": span_h}
 
 
 func _region_id_at_cell(col: int, row: int, exclude_region_id: String = "") -> String:
@@ -1640,12 +2025,27 @@ func _region_id_at_cell(col: int, row: int, exclude_region_id: String = "") -> S
         var rid := str(entry.get("id", ""))
         if not exclude_region_id.is_empty() and rid == exclude_region_id:
             continue
-        if int(entry.get("col", -1)) == col and int(entry.get("row", -1)) == row:
+        var rect := _region_rect(entry)
+        if col >= rect.position.x and col < rect.end.x and row >= rect.position.y and row < rect.end.y:
             return rid
     return ""
 
 
-func _set_region_position(region_id_to_move: String, col: int, row: int) -> void:
+func _region_id_overlapping_rect(rect: Rect2i, exclude_region_id: String = "") -> String:
+    var regions: Array = realm_data.get("regions", [])
+    for entry_v in regions:
+        if typeof(entry_v) != TYPE_DICTIONARY:
+            continue
+        var entry: Dictionary = entry_v
+        var rid := str(entry.get("id", ""))
+        if not exclude_region_id.is_empty() and rid == exclude_region_id:
+            continue
+        if _region_rect(entry).intersects(rect):
+            return rid
+    return ""
+
+
+func _set_region_bounds(region_id_to_move: String, col: int, row: int, span_w: int, span_h: int) -> void:
     var idx := _get_region_entry_index(region_id_to_move)
     if idx < 0:
         return
@@ -1655,17 +2055,103 @@ func _set_region_position(region_id_to_move: String, col: int, row: int) -> void
     var entry: Dictionary = (regions[idx] as Dictionary).duplicate(true)
     entry["col"] = col
     entry["row"] = row
+    entry["span_w"] = maxi(1, span_w)
+    entry["span_h"] = maxi(1, span_h)
     regions[idx] = entry
     realm_data["regions"] = regions
     RegIO.save_realm(pack_id, realm_id, realm_data)
     selected_region_id = region_id_to_move
     queue_redraw()
     if _undo != null:
-        _undo.commit("move region")
+        _undo.commit("set region bounds")
 
 
 func _reopen_region_position_modal(title: String, attempted_text: String, error_text: String, cb: Callable) -> void:
-    show_text_modal(title, attempted_text, "%s\nEnter `col,row` inside this realm's %dx%d grid." % [error_text, realm_grid_w(), realm_grid_h()], cb)
+    show_text_modal(title, attempted_text, _region_bounds_prompt(error_text), cb)
+
+
+func _realm_grid_prompt(prefix: String = "") -> String:
+    var lines := PackedStringArray()
+    if not prefix.strip_edges().is_empty():
+        lines.append(prefix.strip_edges())
+    lines.append("Enter `width,height` for this realm's authored overworld grid.")
+    lines.append("Existing regions and realm tiles must remain inside the new bounds.")
+    return "\n".join(lines)
+
+
+func _parse_realm_grid_size(raw_text: String) -> Dictionary:
+    var trimmed := raw_text.strip_edges()
+    var clean := trimmed.replace(" ", "")
+    var parts := clean.split(",", false)
+    if parts.size() != 2 or not str(parts[0]).is_valid_int() or not str(parts[1]).is_valid_int():
+        return {"ok": false, "error": "Enter the realm grid size as `width,height` using whole numbers."}
+    var grid_w := int(parts[0])
+    var grid_h := int(parts[1])
+    if grid_w <= 0 or grid_h <= 0:
+        return {"ok": false, "error": "Realm grid width and height must both be at least 1 cell."}
+    var fit_error := _validate_realm_grid_resize(grid_w, grid_h)
+    if not fit_error.is_empty():
+        return {"ok": false, "error": fit_error}
+    return {"ok": true, "grid_w": grid_w, "grid_h": grid_h}
+
+
+func _validate_realm_grid_resize(grid_w: int, grid_h: int) -> String:
+    var regions: Array = get_realm_regions()
+    for entry_v in regions:
+        if typeof(entry_v) != TYPE_DICTIONARY:
+            continue
+        var entry: Dictionary = entry_v
+        var rect := _region_rect(entry)
+        if rect.position.x < 0 or rect.position.y < 0 or rect.end.x > grid_w or rect.end.y > grid_h:
+            return "Region `%s` would fall outside the new %dx%d grid." % [str(entry.get("id", "")), grid_w, grid_h]
+    var layers := get_realm_tile_layers()
+    for layer_v in layers:
+        if typeof(layer_v) != TYPE_DICTIONARY:
+            continue
+        var tiles: Array = (layer_v as Dictionary).get("tiles", [])
+        for tile_v in tiles:
+            if typeof(tile_v) != TYPE_DICTIONARY:
+                continue
+            var tile: Dictionary = tile_v
+            var col := int(tile.get("col", 0))
+            var row := int(tile.get("row", 0))
+            if col < 0 or col >= grid_w or row < 0 or row >= grid_h:
+                return "A realm tile at (%d,%d) would fall outside the new %dx%d grid." % [col, row, grid_w, grid_h]
+            if tile.has("anchor_col"):
+                var anchor_col := int(tile.get("anchor_col", col))
+                var anchor_row := int(tile.get("anchor_row", row))
+                var placement_w := maxi(1, int(tile.get("placement_w", 1)))
+                var placement_h := maxi(1, int(tile.get("placement_h", 1)))
+                if anchor_col < 0 or anchor_row < 0 or anchor_col + placement_w > grid_w or anchor_row + placement_h > grid_h:
+                    return "A multi-cell realm tile anchored at (%d,%d) would overflow the new %dx%d grid." % [
+                        anchor_col, anchor_row, grid_w, grid_h
+                    ]
+    return ""
+
+
+func _set_realm_grid_size(grid_w: int, grid_h: int) -> void:
+    if _undo != null:
+        _undo.begin()
+    realm_data["realm_grid_cells_x"] = maxi(1, grid_w)
+    realm_data["realm_grid_cells_y"] = maxi(1, grid_h)
+    RegIO.save_realm(pack_id, realm_id, realm_data)
+    queue_redraw()
+    if _undo != null:
+        _undo.commit("resize realm grid")
+
+
+func _reopen_realm_grid_modal(attempted_text: String, error_text: String) -> void:
+    show_text_modal("Realm Grid Size", attempted_text, _realm_grid_prompt(error_text), Callable(self, "_finish_resize_realm_grid"))
+
+
+func _upgrade_legacy_realm_grid_if_needed() -> void:
+    var grid_w := int(realm_data.get("realm_grid_cells_x", RegIO.DEFAULT_REALM_GRID_X))
+    var grid_h := int(realm_data.get("realm_grid_cells_y", RegIO.DEFAULT_REALM_GRID_Y))
+    if grid_w != 32 or grid_h != 32:
+        return
+    realm_data["realm_grid_cells_x"] = RegIO.DEFAULT_REALM_GRID_X
+    realm_data["realm_grid_cells_y"] = RegIO.DEFAULT_REALM_GRID_Y
+    RegIO.save_realm(pack_id, realm_id, realm_data)
 
 
 func fill_realm_cells(start_col: int, start_row: int) -> void:

@@ -87,21 +87,35 @@ func _draw():
         header, HORIZONTAL_ALIGNMENT_LEFT, -1, 16, UIPanels.TEXT_PANEL)
 
     var y: float = HEADER_H + 8.0 - _scroll_y
-    y = _draw_field(font, mouse_pos, e, "id", "ID", "text", y)
-    y = _draw_field(font, mouse_pos, e, "name", "Name", "text", y)
-    y = _draw_field(font, mouse_pos, e, "category", "Category", "category", y)
-    y = _draw_field(font, mouse_pos, e, "description", "Description", "text", y)
-    y = _draw_field(font, mouse_pos, e, "scene", "Scene (.tscn)", "text", y)
-    y = _draw_field(font, mouse_pos, e, "sprite_set", "Sprite set folder", "text", y)
-    y = _draw_field(font, mouse_pos, e, "behavior", "Behavior", "behavior", y)
-    y = _draw_field(font, mouse_pos, e, "movement_mode", "Movement mode", "text", y)
-    y = _draw_field(font, mouse_pos, e, "hp", "HP", "text", y)
+    y = _draw_section(font, y, "Identity")
+    y = _draw_field(font, mouse_pos, e, "id", "Internal name", "text", y)
+    y = _draw_field(font, mouse_pos, e, "name", "Display name", "text", y)
+    y = _draw_field(font, mouse_pos, e, "category", "Kind of entity", "category", y)
+    y = _draw_field(font, mouse_pos, e, "description", "Author note", "text", y)
+
+    y = _draw_section(font, y, "Appearance")
+    y = _draw_field(font, mouse_pos, e, "scene", "Gameplay scene", "text", y)
+    y = _draw_field(font, mouse_pos, e, "sprite_set", "Animation art", "text", y)
+
+    y = _draw_section(font, y, "AI")
+    y = _draw_field(font, mouse_pos, e, "behavior", "Behavior tree", "behavior", y)
+    y = _draw_field(font, mouse_pos, e, "movement_mode", "How it moves", "text", y)
+    y = _draw_field(font, mouse_pos, e, "move_speed", "Move speed", "text", y)
+
+    y = _draw_section(font, y, "Combat")
+    y = _draw_field(font, mouse_pos, e, "hp", "Health", "text", y)
     y = _draw_field(font, mouse_pos, e, "attack_damage", "Melee damage", "text", y)
     y = _draw_field(font, mouse_pos, e, "contact_damage", "Touch damage", "text", y)
-    y = _draw_field(font, mouse_pos, e, "contact_cooldown", "Touch cooldown", "text", y)
-    y = _draw_field(font, mouse_pos, e, "move_speed", "Move speed", "text", y)
+    y = _draw_field(font, mouse_pos, e, "contact_cooldown", "Touch hit delay", "text", y)
     y = _draw_field(font, mouse_pos, e, "projectile_damage", "Projectile damage", "text", y)
     y = _draw_field(font, mouse_pos, e, "projectile_speed", "Projectile speed", "text", y)
+    y = _draw_field(font, mouse_pos, e, "melee_range", "Melee reach", "text", y)
+    y = _draw_field(font, mouse_pos, e, "melee_attack_trigger_frame", "Melee hit frame", "text", y)
+    y = _draw_field(font, mouse_pos, e, "projectile_range", "Projectile range", "text", y)
+    y = _draw_field(font, mouse_pos, e, "projectile_attack_trigger_frame", "Projectile fire frame", "text", y)
+
+    y = _draw_section(font, y, "Loot")
+    y = _draw_field(font, mouse_pos, e, "item_drops", "Drops", "text", y)
 
     var hint_y: float = y + 12.0
     if hint_y >= -16.0 and hint_y <= size.y + 16.0:
@@ -186,19 +200,30 @@ func _draw_field(font: Font, mouse_pos: Vector2, e: Dictionary,
     return y + FIELD_H + 6.0
 
 
+func _draw_section(font: Font, y: float, label: String) -> float:
+    if y >= -18.0 and y <= size.y + 18.0:
+        draw_string(font, Vector2(FIELD_PAD_X + 4, y + 16),
+            label, HORIZONTAL_ALIGNMENT_LEFT, -1, 12,
+            Color(0.48, 0.72, 0.96, 1))
+        draw_line(Vector2(FIELD_PAD_X, y + 22),
+            Vector2(size.x - FIELD_PAD_X, y + 22),
+            Color(0.28, 0.42, 0.62, 0.8), 1.0)
+    return y + 30.0
+
+
 func _prompt_for(field: String) -> String:
     if field == "id":
-        return "Unique id (snake_case)."
+        return "Stable internal name. Use snake_case, like mayor_guard."
     if field == "name":
-        return "Human-readable label for this entity."
+        return "Name shown in editor pickers and notes."
     if field == "description":
-        return "Short one-line description. Optional."
+        return "Short author note. Optional."
     if field == "scene":
-        return "Path to gameplay scene, e.g. res://Space/scenes/enemies/crawler.tscn"
+        return "Path to the gameplay scene, e.g. res://Space/scenes/enemies/crawler.tscn"
     if field == "sprite_set":
-        return "Sprite-set folder under the pack's Sprites/, e.g. Sprites/crawler"
+        return "Animation art folder under this pack's Sprites folder, e.g. Sprites/crawler"
     if field == "behavior":
-        return "Behavior id from this pack's behaviors.json. Click to pick."
+        return "Behavior tree this actor uses. Click to pick one."
     if field == "movement_mode":
         return "ground, hover, or fly. Hover/fly suppress gravity and use flight-aware AI leaves."
     if field == "hp":
@@ -215,6 +240,16 @@ func _prompt_for(field: String) -> String:
         return "Default damage used by shoot_action when the leaf does not override damage."
     if field == "projectile_speed":
         return "Default projectile speed used by shoot_action when the leaf does not override speed."
+    if field == "melee_range":
+        return "Default melee attack range in pixels for attack_action when the leaf does not override range."
+    if field == "melee_attack_trigger_frame":
+        return "Animation frame index that actually lands the melee hit. Use -1 to land on the final frame."
+    if field == "projectile_range":
+        return "Default max distance in pixels for shoot_action when aiming at the player and the leaf does not override range."
+    if field == "projectile_attack_trigger_frame":
+        return "Animation frame index that actually fires the projectile. Use -1 to fire on the final frame."
+    if field == "item_drops":
+        return "Advanced drop list. Example: [{\"id\":\"health_pickup\",\"count\":1,\"chance\":0.35}]. Use item ids from the Shop Editor's Item Registry."
     return ""
 
 
@@ -249,4 +284,14 @@ func _tooltip_for(field: String, _kind: String) -> String:
         return "Fallback damage for shoot_action when its params omit damage."
     if field == "projectile_speed":
         return "Fallback projectile speed for shoot_action when its params omit speed."
+    if field == "melee_range":
+        return "Fallback melee distance used by attack_action when its params omit range."
+    if field == "melee_attack_trigger_frame":
+        return "Which frame of the attack animation actually applies melee damage. -1 means the last frame."
+    if field == "projectile_range":
+        return "Fallback attack distance used by shoot_action when aiming at the player and its params omit range."
+    if field == "projectile_attack_trigger_frame":
+        return "Which frame of the attack animation actually spawns the projectile. -1 means the last frame."
+    if field == "item_drops":
+        return "Enemy loot table. JSON array entries support id/item_id, count, chance 0..1, and optional pickup_entity. Spawned pickups use these item ids."
     return "Click to edit this field. Opens a text input modal."

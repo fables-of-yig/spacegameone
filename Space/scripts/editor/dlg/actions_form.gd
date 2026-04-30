@@ -27,18 +27,18 @@ func _build_ui() -> void:
     var add_row := HBoxContainer.new()
     add_child(add_row)
     var lbl := Label.new()
-    lbl.text = "Add effect:"
-    lbl.tooltip_text = "Add something that should happen automatically. Effects run from top to bottom."
+    lbl.text = "Add action:"
+    lbl.tooltip_text = "Add something the game should do. Actions run from top to bottom."
     add_row.add_child(lbl)
     _add_option = OptionButton.new()
-    _add_option.add_item("(pick type)")
+    _add_option.add_item("(choose what happens)")
     for label in EcaSchemaLib.action_labels():
         _add_option.add_item(str(label))
-    _add_option.tooltip_text = "Choose what kind of effect to add."
+    _add_option.tooltip_text = "Choose what the game should do next."
     add_row.add_child(_add_option)
     var add_btn := Button.new()
     add_btn.text = "+ Add"
-    add_btn.tooltip_text = "Add the selected effect to the bottom of the list."
+    add_btn.tooltip_text = "Add the selected action to the bottom of the list."
     add_btn.pressed.connect(_on_add_pressed)
     add_row.add_child(add_btn)
 
@@ -157,7 +157,7 @@ func _append_row(seed_data: Dictionary) -> void:
     help_lbl.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
     help_lbl.add_theme_font_size_override("font_size", 10)
     help_lbl.add_theme_color_override("font_color", Color(0.62, 0.72, 0.84))
-    help_lbl.text = _action_summary_text(type_name)
+    help_lbl.text = _action_summary_text(type_name, seed_data)
     row_box.add_child(help_lbl)
 
     var sep := HSeparator.new()
@@ -320,14 +320,18 @@ func _field_tooltip(action_label: String, action_help: String, field_label: Stri
     return tip
 
 
-func _action_summary_text(action_type: String) -> String:
+func _action_summary_text(action_type: String, action_data: Dictionary = {}) -> String:
+    var natural := EcaSchemaLib.action_summary(action_data if not action_data.is_empty() else {"type": action_type})
     var help_text: String = EcaSchemaLib.action_help(action_type)
     var example_text: String = _action_example(action_type)
-    if help_text.is_empty():
-        return example_text
-    if example_text.is_empty():
-        return help_text
-    return "%s Example: %s" % [help_text, example_text]
+    var parts: Array = []
+    if not natural.is_empty():
+        parts.append("Reads as: %s." % natural)
+    if not help_text.is_empty():
+        parts.append(help_text)
+    if not example_text.is_empty():
+        parts.append("Example: %s" % example_text)
+    return " ".join(parts)
 
 
 func _action_example(action_type: String) -> String:

@@ -176,8 +176,18 @@ static func _validate_items(pack_id: String, data: Dictionary) -> bool:
         "": true,
         "heal_hp": true,
         "max_hp_up": true,
+        "add_gold": true,
+        "add_ammo": true,
+        "max_ammo_up": true,
+        "damage_up": true,
+        "melee_damage_up": true,
+        "projectile_damage_up": true,
+        "inventory_slots_up": true,
         "grant_ability": true,
         "add_var": true,
+        "set_flag": true,
+        "add_tag": true,
+        "fire_event": true,
         "set_weapon": true,
     }
     for i in range((items_v as Array).size()):
@@ -216,7 +226,7 @@ static func _validate_items(pack_id: String, data: Dictionary) -> bool:
             return false
 
         var arg := str(entry.get("use_arg", "")).strip_edges()
-        if (effect == "grant_ability" or effect == "add_var" or effect == "set_weapon") and arg.is_empty():
+        if (effect == "grant_ability" or effect == "add_var" or effect == "set_flag" or effect == "add_tag" or effect == "fire_event" or effect == "set_weapon" or effect == "add_ammo" or effect == "max_ammo_up") and arg.is_empty():
             push_error("PedIO: item '%s' requires use_arg for effect '%s'" % [item_id, effect])
             return false
         if effect == "set_weapon" and not attack_ids.has(arg) and not _supported_weapon_values().has(arg.to_lower()):
@@ -294,9 +304,10 @@ static func load_attacks(pack_id: String) -> Dictionary:
 
 
 static func save_attacks(pack_id: String, data: Dictionary) -> bool:
-    if not _validate_attacks(pack_id, data):
+    var merged := _merge_root_doc_with_existing(pack_id, "Player", "attacks.json", "attacks", data)
+    if not _validate_attacks(pack_id, merged):
         return false
-    return _write_json(user_file(pack_id, "Player", "attacks.json"), data)
+    return _write_json(user_file(pack_id, "Player", "attacks.json"), merged)
 
 
 static func default_attacks() -> Dictionary:
@@ -315,9 +326,10 @@ static func load_projectiles(pack_id: String) -> Dictionary:
 
 
 static func save_projectiles(pack_id: String, data: Dictionary) -> bool:
-    if not _validate_projectiles(data):
+    var merged := _merge_root_doc_with_existing(pack_id, "Projectiles", "projectiles.json", "projectiles", data)
+    if not _validate_projectiles(merged):
         return false
-    return _write_json(user_file(pack_id, "Projectiles", "projectiles.json"), data)
+    return _write_json(user_file(pack_id, "Projectiles", "projectiles.json"), merged)
 
 
 static func default_projectiles() -> Dictionary:
@@ -1237,21 +1249,42 @@ static func _validate_shop(pack_id: String, shop_id: String, data: Dictionary) -
         push_error("PedIO: shop '%s' must contain an 'items' array" % shop_id)
         return false
     var item_ids := _item_id_set(pack_id)
-    var seen_ids: Dictionary = {}
+    var attack_ids := _attack_id_set(pack_id)
+    var allowed_effects := {
+        "": true,
+        "heal_hp": true,
+        "max_hp_up": true,
+        "add_gold": true,
+        "add_ammo": true,
+        "max_ammo_up": true,
+        "damage_up": true,
+        "melee_damage_up": true,
+        "projectile_damage_up": true,
+        "inventory_slots_up": true,
+        "grant_ability": true,
+        "add_var": true,
+        "set_flag": true,
+        "add_tag": true,
+        "fire_event": true,
+        "set_weapon": true,
+    }
+    var seen_stock_ids: Dictionary = {}
     for i in range((items_v as Array).size()):
         var entry_v: Variant = (items_v as Array)[i]
         if typeof(entry_v) != TYPE_DICTIONARY:
             push_error("PedIO: shop '%s' item %d must be a dictionary" % [shop_id, i])
             return false
         var entry: Dictionary = entry_v
+        var stock_id := str(entry.get("stock_id", "")).strip_edges()
+        if not stock_id.is_empty():
+            if seen_stock_ids.has(stock_id):
+                push_error("PedIO: shop '%s' contains duplicate stock entry id '%s'" % [shop_id, stock_id])
+                return false
+            seen_stock_ids[stock_id] = true
         var item_id := str(entry.get("id", "")).strip_edges()
         if item_id.is_empty():
             push_error("PedIO: shop '%s' item %d is missing an id" % [shop_id, i])
             return false
-        if seen_ids.has(item_id):
-            push_error("PedIO: shop '%s' contains duplicate item id '%s'" % [shop_id, item_id])
-            return false
-        seen_ids[item_id] = true
         if not item_ids.has(item_id):
             push_error("PedIO: shop '%s' references unknown item '%s'" % [shop_id, item_id])
             return false
@@ -1260,6 +1293,20 @@ static func _validate_shop(pack_id: String, shop_id: String, data: Dictionary) -
             return false
         if int(entry.get("count", 1)) < 1:
             push_error("PedIO: shop '%s' item '%s' has invalid count" % [shop_id, item_id])
+            return false
+        var effect := str(entry.get("use_effect", "")).strip_edges()
+        if not allowed_effects.has(effect):
+            push_error("PedIO: shop '%s' item '%s' has unknown use_effect '%s'" % [shop_id, item_id, effect])
+            return false
+        if int(entry.get("use_amount", 0)) < 0:
+            push_error("PedIO: shop '%s' item '%s' has invalid use_amount" % [shop_id, item_id])
+            return false
+        var arg := str(entry.get("use_arg", "")).strip_edges()
+        if (effect == "grant_ability" or effect == "add_var" or effect == "set_flag" or effect == "add_tag" or effect == "fire_event" or effect == "set_weapon" or effect == "add_ammo" or effect == "max_ammo_up") and arg.is_empty():
+            push_error("PedIO: shop '%s' item '%s' requires use_arg for effect '%s'" % [shop_id, item_id, effect])
+            return false
+        if effect == "set_weapon" and not attack_ids.has(arg) and not _supported_weapon_values().has(arg.to_lower()):
+            push_error("PedIO: shop '%s' item '%s' uses unknown set_weapon target '%s'" % [shop_id, item_id, arg])
             return false
     return true
 
@@ -1451,6 +1498,24 @@ static func _seed_version_is_stale(current_data: Dictionary, shipped_path: Strin
     if shipped_data.is_empty():
         return false
     return int(current_data.get("seed_version", 0)) < int(shipped_data.get("seed_version", 0))
+
+
+static func _merge_root_doc_with_existing(pack_id: String, folder: String, file_name: String,
+        primary_key: String, data: Dictionary) -> Dictionary:
+    var merged: Dictionary = {}
+    var existing := _read_json(user_file(pack_id, folder, file_name))
+    if existing.is_empty():
+        existing = _read_json(shipped_file(pack_id, folder, file_name))
+    if existing.is_empty():
+        existing = _read_json(demo_file(folder, file_name))
+    for key_v in existing.keys():
+        var key := str(key_v)
+        if key == primary_key:
+            continue
+        merged[key] = existing[key_v]
+    for key_v in data.keys():
+        merged[key_v] = data[key_v]
+    return merged
 
 
 static func _pose_id_set(pack_id: String) -> Dictionary:

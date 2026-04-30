@@ -205,6 +205,10 @@ static func default_entity(id: String) -> Dictionary:
         "move_speed": 40,
         "projectile_damage": 1,
         "projectile_speed": 180,
+        "melee_range": 24,
+        "melee_attack_trigger_frame": -1,
+        "projectile_range": 220,
+        "projectile_attack_trigger_frame": -1,
     }
 
 

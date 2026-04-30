@@ -861,9 +861,9 @@ static func _stock_shop_screen() -> Dictionary:
     var root := _base_screen("shop")
     root["children"] = [
         _label("shop_title", 16, 12, 160, 24, "SHOP", "title"),
-        _label("shop_hint", 16, 36, 448, 18, "Starter layout only. The runtime exposes shop.items and inventory.items; barter/selection logic still needs authoring work.", "dim"),
+        _label("shop_hint", 16, 36, 448, 18, "Vendor stock uses each offer id, so duplicate base items still buy the correct row.", "dim"),
         _label("shop_vendor_lbl", 16, 64, 180, 18, "Vendor stock", "body"),
-        _grid("shop_vendor_items", 16, 84, 180, 136, "shop.items", 4, 36, "buy_item", "id"),
+        _grid("shop_vendor_items", 16, 84, 180, 136, "shop.items", 4, 36, "buy_item", "stock_id"),
         _label("shop_player_lbl", 214, 64, 180, 18, "Player inventory", "body"),
         _grid("shop_player_items", 214, 84, 180, 136, "inventory.items", 4, 36, "sell_item", "key"),
         _label("shop_barter_lbl", 16, 224, 180, 18, "Barter offer / notes", "body"),

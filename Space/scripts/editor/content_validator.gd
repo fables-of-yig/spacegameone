@@ -99,7 +99,7 @@ static func validate(pack_id: String) -> Array:
 	_validate_world_hierarchy(pack_id, flat_rooms_root, room_addrs, issues)
 	_validate_rooms(rooms, entity_ids, room_addrs, dialogue_ids, shop_ids, ability_ids, item_ids, issues)
 	_validate_triggers(triggers, dialogue_ids, shop_ids, ability_ids, item_ids, entity_ids, room_addrs, issues)
-	_validate_entities(entities, behavior_ids, issues)
+	_validate_entities(entities, behavior_ids, item_ids, issues)
 	_validate_abilities(abilities, projectile_ids, issues)
 	_validate_items(items, ability_ids, attack_ids, issues)
 	_validate_equipment(equipment, ability_ids, attack_ids, issues)
@@ -437,7 +437,7 @@ static func _validate_trigger_locals(locals_v: Variant, src: String, issues: Arr
 			issues.append(Issue.new("error", src, "local '%s' has unsupported type '%s'" % [name, type_name]))
 
 
-static func _validate_entities(entities: Array, behavior_ids: Dictionary, issues: Array) -> void:
+static func _validate_entities(entities: Array, behavior_ids: Dictionary, item_ids: Dictionary, issues: Array) -> void:
 	var seen_ids: Dictionary = {}
 	var known_categories := {
 		"enemy": true,
@@ -492,6 +492,21 @@ static func _validate_entities(entities: Array, behavior_ids: Dictionary, issues
 			issues.append(Issue.new("error", "Entity '%s'" % eid, "projectile_damage must be >= 0"))
 		if float(e.get("projectile_speed", 0.0)) < 0.0:
 			issues.append(Issue.new("error", "Entity '%s'" % eid, "projectile_speed must be >= 0"))
+		var drops_v: Variant = e.get("item_drops", [])
+		if typeof(drops_v) == TYPE_ARRAY:
+			for drop_v in drops_v:
+				if typeof(drop_v) != TYPE_DICTIONARY:
+					issues.append(Issue.new("error", "Entity '%s'" % eid, "item_drops entries must be dictionaries"))
+					continue
+				var drop: Dictionary = drop_v
+				var drop_id := str(drop.get("id", drop.get("item_id", ""))).strip_edges()
+				if drop_id.is_empty():
+					issues.append(Issue.new("error", "Entity '%s'" % eid, "item_drops entry missing id"))
+				elif not item_ids.has(drop_id):
+					issues.append(Issue.new("error", "Entity '%s'" % eid, "item_drops references unknown item '%s'" % drop_id))
+				var chance := float(drop.get("chance", 1.0))
+				if chance < 0.0 or chance > 1.0:
+					issues.append(Issue.new("error", "Entity '%s'" % eid, "item_drops chance must be 0..1"))
 
 
 static func _validate_abilities(abilities: Array, projectile_ids: Dictionary,
@@ -523,6 +538,9 @@ static func _validate_items(items: Array, ability_ids: Dictionary,
 		elif effect == "set_weapon" and not arg.is_empty() and not attack_ids.has(arg) and not _legacy_weapon_ids().has(arg.to_lower()):
 			issues.append(Issue.new("error", "Item '%s'" % item_id,
 				"set_weapon references unknown attack '%s'" % arg))
+		elif (effect == "add_ammo" or effect == "max_ammo_up" or effect == "add_var" or effect == "set_flag" or effect == "add_tag" or effect == "fire_event") and arg.is_empty():
+			issues.append(Issue.new("error", "Item '%s'" % item_id,
+				"%s requires use_arg" % effect))
 
 
 static func _validate_equipment(equipment: Array, ability_ids: Dictionary,
@@ -700,25 +718,31 @@ static func _validate_shops(pack_id: String, item_ids: Dictionary, issues: Array
 		if typeof(items_v) != TYPE_ARRAY:
 			issues.append(Issue.new("error", src, "items is not an array"))
 			continue
-		var seen_ids: Dictionary = {}
+		var seen_stock_ids: Dictionary = {}
 		for i in range((items_v as Array).size()):
 			var entry_v: Variant = (items_v as Array)[i]
 			if typeof(entry_v) != TYPE_DICTIONARY:
 				issues.append(Issue.new("error", src, "item row #%d is not a dictionary" % i))
 				continue
 			var entry: Dictionary = entry_v
+			var stock_id := str(entry.get("stock_id", "")).strip_edges()
+			if not stock_id.is_empty():
+				if seen_stock_ids.has(stock_id):
+					issues.append(Issue.new("error", src, "item row #%d duplicates shop entry id '%s'" % [i, stock_id]))
+				seen_stock_ids[stock_id] = true
 			var item_id := str(entry.get("id", "")).strip_edges()
 			if item_id.is_empty():
 				issues.append(Issue.new("error", src, "item row #%d has empty id" % i))
 			elif not item_ids.has(item_id):
 				issues.append(Issue.new("error", src, "item row #%d references unknown item '%s'" % [i, item_id]))
-			elif seen_ids.has(item_id):
-				issues.append(Issue.new("warning", src, "item row #%d duplicates item '%s'" % [i, item_id]))
-			seen_ids[item_id] = true
 			if int(entry.get("price", 0)) < 0:
 				issues.append(Issue.new("error", src, "item row #%d has negative price" % i))
 			if int(entry.get("count", 1)) < 1:
 				issues.append(Issue.new("error", src, "item row #%d has count < 1" % i))
+			var effect := str(entry.get("use_effect", "")).strip_edges()
+			var arg := str(entry.get("use_arg", "")).strip_edges()
+			if (effect == "add_ammo" or effect == "max_ammo_up" or effect == "add_var" or effect == "set_flag" or effect == "add_tag" or effect == "fire_event" or effect == "grant_ability" or effect == "set_weapon") and arg.is_empty():
+				issues.append(Issue.new("error", src, "item row #%d effect '%s' requires use_arg" % [i, effect]))
 
 
 static func _validate_world_hierarchy(pack_id: String, flat_rooms_root: Dictionary,

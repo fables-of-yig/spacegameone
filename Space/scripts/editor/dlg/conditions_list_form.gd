@@ -20,12 +20,12 @@ func _build_ui() -> void:
     var footer := HBoxContainer.new()
     add_child(footer)
     var lbl := Label.new()
-    lbl.text = "Conditions:"
-    lbl.tooltip_text = "Conditions gate whether the rule may run after its event fires."
+    lbl.text = "Only run if:"
+    lbl.tooltip_text = "These checks decide whether the rule may run after its event fires."
     footer.add_child(lbl)
     _add_btn = Button.new()
     _add_btn.text = "+ Add"
-    _add_btn.tooltip_text = "Append a new condition clause."
+    _add_btn.tooltip_text = "Append another check."
     _add_btn.pressed.connect(_on_add_pressed)
     footer.add_child(_add_btn)
 
@@ -85,8 +85,8 @@ func _append_row(seed_data: Dictionary) -> void:
     row.add_child(header)
 
     var title := Label.new()
-    title.text = "Clause"
-    title.tooltip_text = "One condition clause in this rule."
+    title.text = "Check"
+    title.tooltip_text = "One requirement in this rule."
     title.add_theme_color_override("font_color", Color(0.8, 0.9, 1.0))
     header.add_child(title)
 

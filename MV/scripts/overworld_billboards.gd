@@ -1,6 +1,7 @@
 extends Node2D
 
 const EnvIO = preload("res://Space/scripts/editor/env/env_io.gd")
+const OverworldLayout = preload("res://MV/scripts/overworld_layout.gd")
 const BLOCK_SIZE: int = 16
 const STRUCTURE_SCALE_MULT: float = 12.0
 const SKY_SCALE_MULT: float = 4.0
@@ -23,8 +24,9 @@ func load_billboards(pack_id: String, realm_data: Dictionary) -> void:
     _tex_cache.clear()
     _animated_entries.clear()
     _anim_clock = 0.0
-    _realm_width_px = float(int(realm_data.get("realm_grid_cells_x", 32))) * BLOCK_SIZE
-    _realm_height_px = float(int(realm_data.get("realm_grid_cells_y", 32))) * BLOCK_SIZE
+    var expanded_grid := OverworldLayout.expanded_grid_size(realm_data)
+    _realm_width_px = float(expanded_grid.x) * BLOCK_SIZE
+    _realm_height_px = float(expanded_grid.y) * BLOCK_SIZE
 
     var layers_v: Variant = realm_data.get("realm_tile_layers", [])
     if typeof(layers_v) != TYPE_ARRAY:
@@ -32,16 +34,17 @@ func load_billboards(pack_id: String, realm_data: Dictionary) -> void:
     var layers: Array = layers_v
 
     if layers.size() > 1:
-        _load_layer_entries(pack_id, layers[1], _structure_entries, STRUCTURE_SCALE_MULT, 0.0)
+        _load_layer_entries(pack_id, realm_data, layers[1], _structure_entries, STRUCTURE_SCALE_MULT, 0.0)
     if layers.size() > 2:
-        _load_layer_entries(pack_id, layers[2], _sky_entries, SKY_SCALE_MULT, SKY_ELEVATION)
+        _load_layer_entries(pack_id, realm_data, layers[2], _sky_entries, SKY_SCALE_MULT, SKY_ELEVATION)
 
 
-func _load_layer_entries(pack_id: String, layer_v: Variant, out: Array,
+func _load_layer_entries(pack_id: String, realm_data: Dictionary, layer_v: Variant, out: Array,
         scale_mult: float, elevation: float) -> void:
     if typeof(layer_v) != TYPE_DICTIONARY:
         return
     var layer_dict: Dictionary = layer_v as Dictionary
+    var offset := OverworldLayout.content_offset(realm_data)
     var tiles: Array = layer_dict.get("tiles", [])
     var animations: Dictionary = layer_dict.get("animations", {})
     var grouped: Dictionary = {}
@@ -71,8 +74,8 @@ func _load_layer_entries(pack_id: String, layer_v: Variant, out: Array,
         var src_rect := Rect2(
             float(anchor_atlas_x) * BLOCK_SIZE, float(anchor_atlas_y) * BLOCK_SIZE,
             float(placement_w) * BLOCK_SIZE, float(placement_h) * BLOCK_SIZE)
-        var world_x: float = (float(anchor_col) + float(placement_w) * 0.5) * BLOCK_SIZE
-        var world_y: float = (float(anchor_row) + float(placement_h)) * BLOCK_SIZE
+        var world_x: float = (float(anchor_col + offset.x) + float(placement_w) * 0.5) * BLOCK_SIZE
+        var world_y: float = (float(anchor_row + offset.y) + float(placement_h)) * BLOCK_SIZE
         var billboard := {
             "world_x": world_x,
             "world_y": world_y,

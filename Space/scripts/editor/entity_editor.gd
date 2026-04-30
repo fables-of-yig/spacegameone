@@ -437,17 +437,27 @@ func _set_field(value: String, field: String) -> void:
 
 func _parse_field_value(field: String, value: String) -> Dictionary:
     var text := value.strip_edges()
-    match field:
-        "hp", "attack_damage", "contact_damage", "projectile_damage":
-            if not text.is_valid_int():
-                return {"ok": false, "error": "%s must be a whole number" % field}
-            return {"ok": true, "value": maxi(0, int(text))}
-        "contact_cooldown", "move_speed", "projectile_speed":
-            if not text.is_valid_float():
-                return {"ok": false, "error": "%s must be a number" % field}
-            return {"ok": true, "value": maxf(0.0, float(text))}
-        _:
-            return {"ok": true, "value": value}
+    if field in ["hp", "attack_damage", "contact_damage", "projectile_damage",
+        "melee_attack_trigger_frame", "projectile_attack_trigger_frame"]:
+        if not text.is_valid_int():
+            return {"ok": false, "error": "%s must be a whole number" % field}
+        var int_value := int(text)
+        if field.ends_with("_trigger_frame"):
+            return {"ok": true, "value": max(-1, int_value)}
+        return {"ok": true, "value": maxi(0, int_value)}
+    if field in ["contact_cooldown", "move_speed", "projectile_speed",
+        "melee_range", "projectile_range"]:
+        if not text.is_valid_float():
+            return {"ok": false, "error": "%s must be a number" % field}
+        return {"ok": true, "value": maxf(0.0, float(text))}
+    if field == "item_drops":
+        if text.is_empty():
+            return {"ok": true, "value": []}
+        var parsed: Variant = JSON.parse_string(text)
+        if typeof(parsed) != TYPE_ARRAY:
+            return {"ok": false, "error": "item_drops must be a JSON array"}
+        return {"ok": true, "value": parsed}
+    return {"ok": true, "value": value}
 
 func set_selected_sprite_set(sprite_set_rel: String) -> void:
     _set_field(sprite_set_rel, "sprite_set")

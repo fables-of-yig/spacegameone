@@ -98,33 +98,6 @@
 		"tier": "standard",
 		"type": "aquaculture_tank"
 	},
-	"armor_plate_mk1": {
-		"buy_price": 50.0,
-		"description": "Bolted-on armor plating. Heavy but effective.",
-		"hex_size": 1.0,
-		"name": "Armor Plating Mk1",
-		"sell_price": 25.0,
-		"sprite": "armorplatingmk1",
-		"stats": {
-			"damage_resist": 0.05,
-			"hull_bonus": 25.0
-		},
-		"tier": "standard",
-		"type": "armor"
-	},
-	"armor_plate_mk2": {
-		"buy_price": 130.0,
-		"description": "Composite armor. Superior protection, manageable weight.",
-		"hex_size": 1.0,
-		"name": "Armor Plating Mk2",
-		"sell_price": 65.0,
-		"stats": {
-			"damage_resist": 0.1,
-			"hull_bonus": 45.0
-		},
-		"tier": "advanced",
-		"type": "armor"
-	},
 	"armor_plate_array_mk2": {
 		"buy_price": 220.0,
 		"description": "Interlocking armor strip that reinforces an entire flank instead of a single hardpoint.",
@@ -149,6 +122,33 @@
 		"stats": {
 			"damage_resist": 0.14,
 			"hull_bonus": 90.0
+		},
+		"tier": "advanced",
+		"type": "armor"
+	},
+	"armor_plate_mk1": {
+		"buy_price": 50.0,
+		"description": "Bolted-on armor plating. Heavy but effective.",
+		"hex_size": 1.0,
+		"name": "Armor Plating Mk1",
+		"sell_price": 25.0,
+		"sprite": "armorplatingmk1",
+		"stats": {
+			"damage_resist": 0.05,
+			"hull_bonus": 25.0
+		},
+		"tier": "standard",
+		"type": "armor"
+	},
+	"armor_plate_mk2": {
+		"buy_price": 130.0,
+		"description": "Composite armor. Superior protection, manageable weight.",
+		"hex_size": 1.0,
+		"name": "Armor Plating Mk2",
+		"sell_price": 65.0,
+		"stats": {
+			"damage_resist": 0.1,
+			"hull_bonus": 45.0
 		},
 		"tier": "advanced",
 		"type": "armor"
@@ -343,6 +343,19 @@
 		"tier": "standard",
 		"type": "cargo"
 	},
+	"cargo_bay_mk2": {
+		"buy_price": 200.0,
+		"description": "Expanded cargo hold. Serious hauling capacity.",
+		"hex_size": 4.0,
+		"name": "Cargo Bay Mk2",
+		"sell_price": 100.0,
+		"sprite": "cargobaymk2",
+		"stats": {
+			"cargo_capacity": 10.0
+		},
+		"tier": "advanced",
+		"type": "cargo"
+	},
 	"cargo_bay_wide_mk1": {
 		"buy_price": 90.0,
 		"description": "Broadside cargo hold laid out sideways for flatter hulls and deck plans.",
@@ -364,19 +377,6 @@
 			"cargo_capacity": 4.0
 		},
 		"tier": "standard",
-		"type": "cargo"
-	},
-	"cargo_bay_mk2": {
-		"buy_price": 200.0,
-		"description": "Expanded cargo hold. Serious hauling capacity.",
-		"hex_size": 4.0,
-		"name": "Cargo Bay Mk2",
-		"sell_price": 100.0,
-		"sprite": "cargobaymk2",
-		"stats": {
-			"cargo_capacity": 10.0
-		},
-		"tier": "advanced",
 		"type": "cargo"
 	},
 	"colony_spear_mk1": {
@@ -1056,6 +1056,19 @@
 		"type": "weapon",
 		"weapon_class": "special"
 	},
+	"makeshift_reactor": {
+		"buy_price": 25.0,
+		"description": "Improvised reactor cobbled together from salvaged parts. Not stable, but enough to wake up a bare hull.",
+		"hex_size": 1.0,
+		"name": "Makeshift Reactor",
+		"sell_price": 10.0,
+		"sprite": "makeshiftreactor",
+		"stats": {
+			"power_output": 12.0
+		},
+		"tier": "basic",
+		"type": "reactor"
+	},
 	"medbay_mk1": {
 		"buy_price": 120.0,
 		"description": "Onboard medical facility. Treats injuries and stabilizes wounded crew.",
@@ -1092,6 +1105,7 @@
 		"name": "Mess Hall Mk1",
 		"sell_price": 25.0,
 		"sprite": "messhall",
+		"sprite_rotation_deg": 60.0,
 		"stats": {
 			"feed_capacity": 6.0,
 			"power_draw": 2.0
@@ -1113,19 +1127,6 @@
 		"subtype": "mess",
 		"tier": "advanced",
 		"type": "mess"
-	},
-	"makeshift_reactor": {
-		"buy_price": 25.0,
-		"description": "Improvised reactor cobbled together from salvaged parts. Not stable, but enough to wake up a bare hull.",
-		"hex_size": 1.0,
-		"name": "Makeshift Reactor",
-		"sell_price": 10.0,
-		"sprite": "makeshiftreactor",
-		"stats": {
-			"power_output": 12.0
-		},
-		"tier": "basic",
-		"type": "reactor"
 	},
 	"micro_reactor": {
 		"buy_price": 40.0,
@@ -1198,6 +1199,44 @@
 		"tier": "advanced",
 		"type": "weapon",
 		"weapon_class": "secondary"
+	},
+	"mobius_thruster": {
+		"buy_price": 650.0,
+		"description": "Exotic folded-space thruster ring. Extremely expensive, extremely fast, and not remotely standard issue.",
+		"hex_shape": [
+			[
+				0.0,
+				0.0
+			],
+			[
+				-1.0,
+				0.0
+			],
+			[
+				1.0,
+				0.0
+			],
+			[
+				-1.0,
+				1.0
+			],
+			[
+				1.0,
+				-1.0
+			]
+		],
+		"hex_size": 5.0,
+		"name": "Mobius Thruster",
+		"sell_price": 325.0,
+		"sprite": "mobiusthruster",
+		"stats": {
+			"boost_impulse_bonus": 140.0,
+			"power_draw": 16.0,
+			"thrust": 620.0
+		},
+		"subtype": "warp_thruster",
+		"tier": "elite",
+		"type": "engine"
 	},
 	"observation_deck_mk1": {
 		"buy_price": 90.0,
@@ -1557,6 +1596,37 @@
 		"tier": "advanced",
 		"type": "engine"
 	},
+	"torpedo_launcher_mk1": {
+		"buy_price": 450.0,
+		"description": "Slow-tracking torpedo. Devastating hull damage on impact.",
+		"hex_shape": [
+			[
+				0.0,
+				0.0
+			],
+			[
+				0.0,
+				-1.0
+			]
+		],
+		"hex_size": 2.0,
+		"name": "Torpedo Launcher",
+		"sell_price": 225.0,
+		"sprite": "torpedobattery",
+		"stats": {
+			"damage": 450.0,
+			"fire_rate": 4.0,
+			"power_draw": 8.0,
+			"projectile_speed": 300.0,
+			"range": 1000.0,
+			"splash_radius": 80.0,
+			"tracking": 0.4
+		},
+		"subtype": "torpedo",
+		"tier": "advanced",
+		"type": "weapon",
+		"weapon_class": "secondary"
+	},
 	"warp_thruster_mk1": {
 		"buy_price": 260.0,
 		"description": "Long warp-assisted drive bank for ships that need serious straight-line thrust.",
@@ -1618,75 +1688,6 @@
 		"subtype": "warp_thruster",
 		"tier": "advanced",
 		"type": "engine"
-	},
-	"mobius_thruster": {
-		"buy_price": 650.0,
-		"description": "Exotic folded-space thruster ring. Extremely expensive, extremely fast, and not remotely standard issue.",
-		"hex_shape": [
-			[
-				0.0,
-				0.0
-			],
-			[
-				-1.0,
-				0.0
-			],
-			[
-				1.0,
-				0.0
-			],
-			[
-				-1.0,
-				1.0
-			],
-			[
-				1.0,
-				-1.0
-			]
-		],
-		"hex_size": 5.0,
-		"name": "Mobius Thruster",
-		"sell_price": 325.0,
-		"sprite": "mobiusthruster",
-		"stats": {
-			"boost_impulse_bonus": 140.0,
-			"power_draw": 16.0,
-			"thrust": 620.0
-		},
-		"subtype": "warp_thruster",
-		"tier": "elite",
-		"type": "engine"
-	},
-	"torpedo_launcher_mk1": {
-		"buy_price": 450.0,
-		"description": "Slow-tracking torpedo. Devastating hull damage on impact.",
-		"hex_shape": [
-			[
-				0.0,
-				0.0
-			],
-			[
-				0.0,
-				-1.0
-			]
-		],
-		"hex_size": 2.0,
-		"name": "Torpedo Launcher",
-		"sell_price": 225.0,
-		"sprite": "torpedobattery",
-		"stats": {
-			"damage": 450.0,
-			"fire_rate": 4.0,
-			"power_draw": 8.0,
-			"projectile_speed": 300.0,
-			"range": 1000.0,
-			"splash_radius": 80.0,
-			"tracking": 0.4
-		},
-		"subtype": "torpedo",
-		"tier": "advanced",
-		"type": "weapon",
-		"weapon_class": "secondary"
 	},
 	"wretched_harpoon_mk1": {
 		"buy_price": 400.0,

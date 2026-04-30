@@ -32,20 +32,20 @@ func _build_ui() -> void:
     var header := HBoxContainer.new()
     add_child(header)
     var lbl := Label.new()
-    lbl.text = "Rule:"
-    lbl.tooltip_text = "Choose the requirement that decides whether this line or choice is allowed."
+    lbl.text = "Only if:"
+    lbl.tooltip_text = "Choose the requirement that must be true before this can happen."
     header.add_child(lbl)
     _type_option = OptionButton.new()
-    _type_option.add_item("(none)")
+    _type_option.add_item("(always allowed)")
     for label in EcaSchemaLib.condition_labels():
         _type_option.add_item(str(label))
-    _type_option.tooltip_text = "Choose the requirement that decides whether this line or choice is allowed."
+    _type_option.tooltip_text = "Choose the requirement that must be true before this can happen."
     _type_option.item_selected.connect(_on_type_changed)
     header.add_child(_type_option)
 
     _raw_toggle = CheckBox.new()
-    _raw_toggle.text = "Raw JSON"
-    _raw_toggle.tooltip_text = "Advanced mode for nested logic. Most dialogue should stay in the normal picker above."
+    _raw_toggle.text = "Advanced"
+    _raw_toggle.tooltip_text = "Advanced mode for nested AND / OR / NOT logic. Most rules should use the normal picker."
     _raw_toggle.toggled.connect(_on_raw_toggled)
     header.add_child(_raw_toggle)
 
@@ -62,8 +62,8 @@ func _build_ui() -> void:
     _raw_box.visible = false
     add_child(_raw_box)
     var raw_lbl := Label.new()
-    raw_lbl.text = "Advanced condition JSON"
-    raw_lbl.tooltip_text = "Use this only when you need nested AND/OR/NOT logic that the simple picker cannot express."
+    raw_lbl.text = "Advanced requirement text"
+    raw_lbl.tooltip_text = "Use this only when you need nested AND / OR / NOT logic that the simple picker cannot express."
     _raw_box.add_child(raw_lbl)
     _raw_edit = TextEdit.new()
     _raw_edit.custom_minimum_size = Vector2(0, 96)
@@ -387,14 +387,22 @@ func _update_help_label() -> void:
     if _help_label == null:
         return
     if _is_raw_mode():
-        _help_label.text = "Raw JSON is only for advanced nested logic like and/or/not trees."
+        _help_label.text = "Advanced mode is only for nested logic like AND / OR / NOT groups."
         return
     if _current_type.is_empty():
         _help_label.text = "Leave this empty if the line, choice, or trigger should always be allowed."
         return
     var help_text: String = EcaSchemaLib.condition_help(_current_type)
+    var natural_text: String = EcaSchemaLib.condition_summary(_build_simple_value())
     var example_text: String = _condition_example(_current_type)
-    _help_label.text = help_text if example_text.is_empty() else "%s Example: %s" % [help_text, example_text]
+    var parts: Array = []
+    if not natural_text.is_empty():
+        parts.append("Reads as: %s." % natural_text)
+    if not help_text.is_empty():
+        parts.append(help_text)
+    if not example_text.is_empty():
+        parts.append("Example: %s" % example_text)
+    _help_label.text = " ".join(parts)
 
 
 func _condition_example(condition_type: String) -> String:

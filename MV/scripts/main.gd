@@ -4,6 +4,7 @@ extends Node2D
 signal camera_focus_finished
 
 const RegIO = preload("res://Space/scripts/editor/reg/reg_io.gd")
+const OverworldLayout = preload("res://MV/scripts/overworld_layout.gd")
 const OVERWORLD_BLOCK_SIZE: float = 16.0
 const HUD_SCRIPT = preload("res://MV/scripts/hud.gd")
 
@@ -589,9 +590,10 @@ func _resolve_overworld_spawn_for_region(pack_id: String, realm_id: String, regi
                 continue
             var col: int = int(entry.get("col", 0))
             var row: int = int(entry.get("row", 0))
-            return Vector2(
-                (float(col) + 0.5) * OVERWORLD_BLOCK_SIZE,
-                (float(row) + 0.5) * OVERWORLD_BLOCK_SIZE
+            var span_w: int = maxi(1, int(entry.get("span_w", 1)))
+            var span_h: int = maxi(1, int(entry.get("span_h", 1)))
+            return OverworldLayout.shifted_region_center_world_pos(
+                col, row, span_w, span_h, realm, OVERWORLD_BLOCK_SIZE
             )
     return Vector2(-1, -1)
 

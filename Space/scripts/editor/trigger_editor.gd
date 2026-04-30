@@ -185,8 +185,8 @@ func _build_ui() -> void:
     btn_row.add_child(save_btn)
 
     var add_rule_btn := Button.new()
-    add_rule_btn.text = "+ Rule"
-    add_rule_btn.tooltip_text = "Append a new trigger rule in the currently selected scope."
+    add_rule_btn.text = "+ New Rule"
+    add_rule_btn.tooltip_text = "Add a new: When this happens, if these checks pass, do these actions."
     add_rule_btn.pressed.connect(_on_add_rule)
     btn_row.add_child(add_rule_btn)
 
@@ -236,22 +236,22 @@ func _build_ui() -> void:
     left.add_child(_build_scope_row("Folder", false))
 
     var scope_tree_label := Label.new()
-    scope_tree_label.text = "Scope Tree"
+    scope_tree_label.text = "Trigger folders"
     left.add_child(scope_tree_label)
 
     _scope_tree = Tree.new()
     _scope_tree.custom_minimum_size = Vector2(0, 170)
-    _scope_tree.tooltip_text = "Hierarchy of root rules, libraries, and nested folders. Select a scope here to edit the rules stored under it."
+    _scope_tree.tooltip_text = "Folders for organizing trigger rules. Select a folder to edit the rules stored inside it."
     _scope_tree.item_selected.connect(_on_scope_tree_selected)
     left.add_child(_scope_tree)
 
     var list_label := Label.new()
-    list_label.text = "Rules In Scope"
+    list_label.text = "Rules here"
     left.add_child(list_label)
 
     _list = ItemList.new()
     _list.size_flags_vertical = Control.SIZE_EXPAND_FILL
-    _list.tooltip_text = "Rules that belong to the currently selected scope. Select one to edit its event, locals, conditions, and actions."
+    _list.tooltip_text = "Rules in the selected folder. Select one to edit its event, checks, and actions."
     _list.item_selected.connect(_on_select)
     left.add_child(_list)
 
@@ -298,24 +298,24 @@ func _build_ui() -> void:
     _detail.add_child(_workflow_label)
     _refresh_workflow_help()
 
-    _add_label("ID")
+    _add_label("Rule name")
     _id_edit = LineEdit.new()
     _id_edit.placeholder_text = "intro_bootstrap"
-    _id_edit.tooltip_text = "Stable unique identifier for this rule. Use something descriptive because breakpoints and debug history reference this id."
+    _id_edit.tooltip_text = "Stable name for this rule. Use something descriptive because breakpoints and debug history reference it."
     _id_edit.text_changed.connect(_on_rule_field_changed)
     _detail.add_child(_id_edit)
 
-    _add_label("Event")
+    _add_label("When should this rule start?")
     _event_edit = OptionButton.new()
     for ev in EcaSchema.event_type_names():
-        _event_edit.add_item(str(ev))
-    _event_edit.tooltip_text = "Choose the event that starts this rule. For intro flow, use game_started."
+        _event_edit.add_item(EcaSchema.event_label(str(ev)))
+    _event_edit.tooltip_text = "Choose what has to happen before this rule is considered."
     _event_edit.item_selected.connect(_on_event_field_changed)
     _detail.add_child(_event_edit)
 
     _event_custom_edit = LineEdit.new()
-    _event_custom_edit.placeholder_text = "Custom event name (optional)"
-    _event_custom_edit.tooltip_text = "Optional custom event name. Leave blank to use the selected built-in event."
+    _event_custom_edit.placeholder_text = "Advanced: custom event name"
+    _event_custom_edit.tooltip_text = "Advanced custom event name. Leave blank to use the selected built-in event."
     _event_custom_edit.text_changed.connect(_on_event_field_changed)
     _detail.add_child(_event_custom_edit)
 
@@ -342,12 +342,12 @@ func _build_ui() -> void:
     _summary_label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
     _summary_label.add_theme_font_size_override("font_size", 10)
     _summary_label.add_theme_color_override("font_color", Color(0.65, 0.78, 0.9))
-    _summary_label.tooltip_text = "Human-readable summary of the selected rule's scope, event, and clause counts."
+    _summary_label.tooltip_text = "Readable summary of what starts this rule and what it does."
     _detail.add_child(_summary_label)
 
-    _add_label("Local Vars")
+    _add_label("Temporary memory")
     var locals_hint := Label.new()
-    locals_hint.text = "Per-trigger execution locals. These reset each time the rule fires."
+    locals_hint.text = "Optional values this rule can remember while it is running. They reset each time the rule starts."
     locals_hint.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
     locals_hint.add_theme_font_size_override("font_size", 10)
     locals_hint.add_theme_color_override("font_color", Color(0.6, 0.7, 0.8))
@@ -356,9 +356,9 @@ func _build_ui() -> void:
     _locals_form.changed.connect(_on_rule_field_changed)
     _detail.add_child(_locals_form)
 
-    _add_label("Conditions")
+    _add_label("Only run if")
     var cond_hint := Label.new()
-    cond_hint.text = "Each clause is a readable row. Use raw mode only for compound logic like and/or/not."
+    cond_hint.text = "Add checks here when the event should only matter in certain cases."
     cond_hint.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
     cond_hint.add_theme_font_size_override("font_size", 10)
     cond_hint.add_theme_color_override("font_color", Color(0.6, 0.7, 0.8))
@@ -367,9 +367,9 @@ func _build_ui() -> void:
     _cond_form.changed.connect(_on_rule_field_changed)
     _detail.add_child(_cond_form)
 
-    _add_label("Actions")
+    _add_label("Do these actions")
     var act_hint := Label.new()
-    act_hint.text = "Actions run top-to-bottom. Delay and wait actions suspend the sequence like WC3/SC trigger waits."
+    act_hint.text = "Actions run from top to bottom. Wait actions pause this rule before continuing."
     act_hint.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
     act_hint.add_theme_font_size_override("font_size", 10)
     act_hint.add_theme_color_override("font_color", Color(0.6, 0.7, 0.8))
@@ -623,7 +623,7 @@ func _populate_folder_selector() -> void:
     if _folder_option == null:
         return
     _folder_option.clear()
-    _folder_option.add_item("Use Scope Tree")
+    _folder_option.add_item("Use trigger folders")
     _folder_option.select(0)
     _folder_option.disabled = true
     if _folder_name_edit != null:
@@ -638,7 +638,10 @@ func _rebuild_list() -> void:
     var rules := _current_rules_array()
     for rule_v in rules:
         var rule: Dictionary = rule_v if typeof(rule_v) == TYPE_DICTIONARY else {}
-        var label := "%s (%s)" % [str(rule.get("id", "?")), str(rule.get("event", ""))]
+        var label := "%s - %s" % [
+            str(rule.get("id", "?")),
+            EcaSchema.event_label(str(rule.get("event", ""))),
+        ]
         if _rule_has_breakpoint(rule):
             label = "[BP] " + label
         if bool(rule.get("once", false)):
@@ -661,11 +664,11 @@ func _populate_scope_tree() -> void:
     _suppress = true
     _scope_tree.clear()
     var root_item := _scope_tree.create_item()
-    root_item.set_text(0, "Trigger Scopes")
+    root_item.set_text(0, "Trigger Folders")
     root_item.set_selectable(0, false)
 
     var root_rules := _scope_tree.create_item(root_item)
-    root_rules.set_text(0, "Root Rules")
+    root_rules.set_text(0, "Rules not in a folder")
     root_rules.set_metadata(0, {"library_idx": -1, "folder_path": []})
 
     var libs := _library_array()
@@ -798,12 +801,12 @@ func _update_event_control_tooltips() -> void:
     var event_name: String = _selected_event_name()
     var help_text: String = EcaSchema.event_help(event_name)
     if help_text.is_empty():
-        help_text = "Choose the event that starts this rule."
+        help_text = "Choose what has to happen before this rule is considered."
     _event_edit.tooltip_text = help_text
     if _event_custom_edit != null:
-        var custom_hint := "Optional custom event name. Leave blank to use the selected built-in event."
+        var custom_hint := "Advanced custom event name. Leave blank to use the selected built-in event."
         if not event_name.is_empty():
-            custom_hint += " Current event: %s." % event_name
+            custom_hint += " Current event: %s." % EcaSchema.event_label(event_name)
         if not help_text.is_empty():
             custom_hint += " " + help_text
         _event_custom_edit.tooltip_text = custom_hint
@@ -1182,12 +1185,12 @@ func _refresh_workflow_help(rule: Dictionary = {}) -> void:
     var event_name: String = str(rule.get("event", "")).strip_edges()
     if event_name.is_empty():
         event_name = _selected_event_name()
-    var message := "How to author this: pick what starts the rule, add optional checks, then add the actions that should happen."
+    var message := "Build this like a sentence: When something happens, only if these checks pass, do these actions."
     match event_name:
         "interact":
             message = "Interact rules run when the player uses an interactable. Simplest NPC dialogue does not need a trigger at all: set the entity's `dialogue_id`. Use an `interact` trigger when you need extra checks or side effects before or after dialogue. The payload includes `entity_id`, `entity_type`, tags, and authored entity properties."
         "zone_enter", "zone_exit":
-            message = "Zone rules come from named `trigger_volume` entities in a room. Give the zone a `zone_id`, then use `%s` here for cutscenes, ambushes, camera moves, spawns, or room logic tied to crossing that area." % event_name
+            message = "Zone rules come from named trigger-volume entities in a room. Give the zone a zone_id, then use %s here for cutscenes, ambushes, camera moves, spawns, or room logic tied to crossing that area." % EcaSchema.event_label(event_name)
         "dialogue_choice":
             message = "Dialogue-choice rules let conversations branch into game logic. When a player picks a response, the payload includes `dialogue_id`, `line_index`, `choice_index`, and `choice_text`."
         "ui_button":
@@ -1195,11 +1198,11 @@ func _refresh_workflow_help(rule: Dictionary = {}) -> void:
         "game_started":
             message = "Game-start rules are the clean entry point for boot-time setup, opening cinematics, or starting the first dialogue after the room is fully loaded."
         "":
-            message = "Common recipes: `interact -> start_dialogue`, `zone_enter -> camera/action sequence`, `dialogue_choice -> set flag / fire event`, `ui_button -> fire event`."
+            message = "Common recipes: talk to an NPC -> start a conversation, enter a zone -> run a cutscene, choose dialogue -> set a flag, press a UI button -> start another event."
         _:
             var help_text: String = EcaSchema.event_help(event_name)
             if not help_text.is_empty():
-                message = "Event `%s`: %s" % [event_name, help_text]
+                message = "%s: %s" % [EcaSchema.event_label(event_name), help_text]
     _workflow_label.text = message
 
 
@@ -1237,18 +1240,48 @@ func _refresh_summary(rule: Dictionary) -> void:
     state_bits.append("enabled" if bool(rule.get("enabled", true)) else "disabled")
     if bool(rule.get("once", false)):
         state_bits.append("once")
-    _summary_label.text = "Scope: %s. Rule %s on %s, %d local%s, %d condition%s, %d action%s [%s]." % [
+    var condition_preview := _preview_conditions(conditions)
+    var action_preview := _preview_actions(actions)
+    _summary_label.text = "In %s, %s starts on: %s. It has %d temporary value%s, %d check%s, and %d action%s. %s%s State: %s." % [
         scope_name,
         rule_id if not rule_id.is_empty() else "(unnamed)",
-        event_name,
+        EcaSchema.event_label(event_name),
         locals_count,
         "" if locals_count == 1 else "s",
         conditions.size(),
         "" if conditions.size() == 1 else "s",
         actions.size(),
         "" if actions.size() == 1 else "s",
+        condition_preview,
+        action_preview,
         ", ".join(state_bits),
     ]
+
+
+func _preview_conditions(conditions: Array) -> String:
+    if conditions.is_empty():
+        return "No checks are required. "
+    var lines: Array = []
+    for i in range(mini(conditions.size(), 2)):
+        var cond_v: Variant = conditions[i]
+        if typeof(cond_v) == TYPE_DICTIONARY:
+            lines.append(EcaSchema.condition_summary(cond_v))
+    if conditions.size() > 2:
+        lines.append("and %d more" % (conditions.size() - 2))
+    return "Checks: %s. " % "; ".join(lines)
+
+
+func _preview_actions(actions: Array) -> String:
+    if actions.is_empty():
+        return "No actions yet. "
+    var lines: Array = []
+    for i in range(mini(actions.size(), 2)):
+        var action_v: Variant = actions[i]
+        if typeof(action_v) == TYPE_DICTIONARY:
+            lines.append(EcaSchema.action_summary(action_v))
+    if actions.size() > 2:
+        lines.append("and %d more" % (actions.size() - 2))
+    return "Actions: %s. " % "; ".join(lines)
 
 
 func _refresh_debug_view() -> void:

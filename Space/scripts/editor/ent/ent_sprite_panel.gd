@@ -33,6 +33,7 @@ var _frame_index: int = 0
 var _frame_time: float = 0.0
 var _playing: bool = true
 var _play_rect: Rect2 = Rect2()
+var _preview_frame_rect: Rect2 = Rect2()
 
 var _pose_field_rects: Array = []  # [{field, rect}]
 
@@ -231,6 +232,7 @@ func _draw():
 
     if _selected_png == "":
         _play_rect = Rect2()
+        _preview_frame_rect = Rect2()
         var hint := "No PNG selected."
         if _current_set == "":
             hint = "Pick a sprite set above to browse PNGs."
@@ -243,7 +245,8 @@ func _draw():
         var tex := _tex_for(_selected_png)
         if tex != null:
             var frames := _frame_count_for_selected()
-            _draw_preview_texture(preview_rect, tex, frames, _frame_index)
+            _preview_frame_rect = _draw_preview_texture(preview_rect, tex, frames, _frame_index)
+            _draw_combat_preview(font, preview_rect, e)
             draw_string(font, Vector2(preview_rect.position.x + 8,
                 preview_rect.position.y + preview_rect.size.y - 8),
                 "%s   %dx%d   frame %d/%d" % [_selected_png,
@@ -273,6 +276,7 @@ func _draw():
                 EditorTooltip.show_text("Toggle animation playback. Frame rate is taken from the pose's FPS field below — adjust it to preview at different speeds.")
         else:
             _play_rect = Rect2()
+            _preview_frame_rect = Rect2()
             draw_string(font, preview_rect.position + Vector2(12, 22),
                 "Failed to load %s" % _selected_png, HORIZONTAL_ALIGNMENT_LEFT, -1, 12,
                 Color(1, 0.5, 0.5, 1))
@@ -338,11 +342,11 @@ func _draw():
             Color(0.55, 0.68, 0.85, 1))
 
 
-func _draw_preview_texture(rect: Rect2, tex: Texture2D, frames: int, frame_idx: int) -> void:
+func _draw_preview_texture(rect: Rect2, tex: Texture2D, frames: int, frame_idx: int) -> Rect2:
     var tw_total := float(tex.get_width())
     var th := float(tex.get_height())
     if tw_total <= 0.0 or th <= 0.0:
-        return
+        return Rect2()
     var frame_count: float = float(max(1, frames))
     var fw := tw_total / frame_count
     var idx: int = clamp(frame_idx, 0, max(0, frames - 1))
@@ -365,6 +369,59 @@ func _draw_preview_texture(rect: Rect2, tex: Texture2D, frames: int, frame_idx: 
     var dst := Rect2(dx, dy, dw, dh)
     draw_texture_rect_region(tex, dst, src_rect)
     draw_rect(dst, Color(0.45, 0.65, 0.9, 0.7), false, 1.0)
+    return dst
+
+
+func _draw_combat_preview(font: Font, preview_rect: Rect2, entity: Dictionary) -> void:
+    if _preview_frame_rect == Rect2():
+        return
+    var melee_range := maxf(0.0, float(entity.get("melee_range", 24.0)))
+    var projectile_range := maxf(0.0, float(entity.get("projectile_range", 220.0)))
+    var melee_trigger := int(entity.get("melee_attack_trigger_frame", -1))
+    var projectile_trigger := int(entity.get("projectile_attack_trigger_frame", -1))
+    var frames := maxi(1, _frame_count_for_selected())
+    var resolved_melee_trigger := frames - 1 if melee_trigger < 0 else clampi(melee_trigger, 0, frames - 1)
+    var resolved_projectile_trigger := frames - 1 if projectile_trigger < 0 else clampi(projectile_trigger, 0, frames - 1)
+
+    var box_h: float = 54.0
+    var box := Rect2(
+        preview_rect.position.x + 8.0,
+        preview_rect.position.y + 8.0,
+        minf(230.0, preview_rect.size.x - 16.0),
+        box_h
+    )
+    draw_rect(box, Color(0.04, 0.06, 0.1, 0.78))
+    draw_rect(box, Color(0.32, 0.48, 0.72, 0.7), false, 1.0)
+
+    var label_col := Color(0.66, 0.78, 0.94, 1.0)
+    var text_col := Color(0.93, 0.97, 1.0, 1.0)
+    draw_string(font, box.position + Vector2(8, 14),
+        "COMBAT PREVIEW", HORIZONTAL_ALIGNMENT_LEFT, -1, 10, label_col)
+    draw_string(font, box.position + Vector2(8, 30),
+        "Melee: %d px  frame %d/%d" % [int(round(melee_range)), resolved_melee_trigger + 1, frames],
+        HORIZONTAL_ALIGNMENT_LEFT, -1, 11, Color(1.0, 0.72, 0.72, 1.0))
+    draw_string(font, box.position + Vector2(8, 46),
+        "Shot: %d px  frame %d/%d" % [int(round(projectile_range)), resolved_projectile_trigger + 1, frames],
+        HORIZONTAL_ALIGNMENT_LEFT, -1, 11, Color(0.72, 0.88, 1.0, 1.0))
+
+    var base_y := _preview_frame_rect.position.y + _preview_frame_rect.size.y * 0.62
+    var origin := Vector2(_preview_frame_rect.position.x + _preview_frame_rect.size.x * 0.5, base_y)
+    var range_max := maxf(1.0, maxf(melee_range, projectile_range))
+    var avail_w := maxf(40.0, preview_rect.position.x + preview_rect.size.x - 18.0 - origin.x)
+    var melee_len := avail_w * clampf(melee_range / range_max, 0.0, 1.0)
+    var projectile_len := avail_w * clampf(projectile_range / range_max, 0.0, 1.0)
+
+    draw_line(origin + Vector2(0, 10), origin + Vector2(projectile_len, 10), Color(0.55, 0.85, 1.0, 0.95), 3.0)
+    draw_circle(origin + Vector2(projectile_len, 10), 4.0, Color(0.55, 0.85, 1.0, 0.95))
+    draw_line(origin + Vector2(0, -6), origin + Vector2(melee_len, -6), Color(1.0, 0.55, 0.55, 0.95), 4.0)
+    draw_circle(origin + Vector2(melee_len, -6), 4.0, Color(1.0, 0.55, 0.55, 0.95))
+    draw_circle(origin, 3.0, Color(1, 1, 1, 0.95))
+
+    if _selected_png.get_basename().to_lower().contains("attack"):
+        if _frame_index == resolved_melee_trigger:
+            draw_rect(_preview_frame_rect.grow(2.0), Color(1.0, 0.45, 0.45, 0.95), false, 2.0)
+        elif _frame_index == resolved_projectile_trigger:
+            draw_rect(_preview_frame_rect.grow(2.0), Color(0.55, 0.85, 1.0, 0.95), false, 2.0)
 
 
 func _draw_pose_field_row(font: Font, mouse_pos: Vector2, y: float) -> void:

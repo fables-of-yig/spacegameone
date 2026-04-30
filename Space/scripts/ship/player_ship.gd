@@ -2296,21 +2296,11 @@ func _rebuild_hull_cache():
         var mod_data = mod.get("data", {})
         var mod_rot = int(mod.get("rotation", 0)) * PI / 3.0
         var anchor_local = _hex_to_local(mod.get("grid_pos", Vector2i.ZERO))
-        var shape = mod_data.get("hex_shape", HexUtil.default_shape(mod_data.get("hex_size", 1)))
-        var sp0 = HexUtil.hex_to_pixel(Vector2i(shape[0][0], shape[0][1]), MCELL)
-        var smin = sp0
-        var smax = sp0
-        for sc in shape:
-            var sp = HexUtil.hex_to_pixel(Vector2i(sc[0], sc[1]), MCELL)
-            smin.x = minf(smin.x, sp.x)
-            smin.y = minf(smin.y, sp.y)
-            smax.x = maxf(smax.x, sp.x)
-            smax.y = maxf(smax.y, sp.y)
-        var hex_offset = (smin + smax) * 0.5
+        var hex_offset = ModuleVisuals.get_canonical_sprite_center(mod_data, MCELL)
         var local_offset = Vector2(-hex_offset.y, hex_offset.x).rotated(mod_rot)
         var center = anchor_local + local_offset
-        var spr_scale = MCELL / 50.0
-        _cached_sprite_draws.append({tex = tex, pos = center, spr_scale = spr_scale, rot = mod_rot + PI / 2.0, mod_ref = mod})
+        var spr_scale = ModuleVisuals.get_sprite_scale(mod_data, MCELL)
+        _cached_sprite_draws.append({tex = tex, pos = center, spr_scale = spr_scale, rot = mod_rot + PI / 2.0 + ModuleVisuals.get_sprite_rotation_rad(mod_data), mod_ref = mod})
 
     var nb_map: Array = [
         Vector2i(1, 0), Vector2i(0, 1), Vector2i(-1, 1),

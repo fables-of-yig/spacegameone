@@ -29,8 +29,8 @@ const DEFAULT_CELL_BLOCKS_X: int = 1
 const DEFAULT_CELL_BLOCKS_Y: int = 1
 const DEFAULT_REGION_GRID_X: int = 128
 const DEFAULT_REGION_GRID_Y: int = 96
-const DEFAULT_REALM_GRID_X: int = 32
-const DEFAULT_REALM_GRID_Y: int = 32
+const DEFAULT_REALM_GRID_X: int = 102
+const DEFAULT_REALM_GRID_Y: int = 102
 
 
 static func sanitize_content_id(raw_name: String, fallback: String = "item") -> String:
@@ -267,6 +267,8 @@ static func create_realm(pack_id: String, realm_id: String, realm_name: String) 
             "name": initial_region_name,
             "col": 0,
             "row": 0,
+            "span_w": 1,
+            "span_h": 1,
         },
     ]
     var ok := save_realm(pack_id, rid, realm)
@@ -632,10 +634,13 @@ static func default_realm(realm_id: String = DEFAULT_REALM_ID, realm_name: Strin
         "start_region": DEFAULT_REGION_ID,
         "realm_grid_cells_x": DEFAULT_REALM_GRID_X,
         "realm_grid_cells_y": DEFAULT_REALM_GRID_Y,
+        "sky_preset": "midnight",
+        "sky_top_color": "#050814",
+        "sky_bottom_color": "#152743",
         "realm_tile_layers": [
-            {"name": "Ground", "tiles": []},
-            {"name": "Structure", "tiles": []},
-            {"name": "Sky", "tiles": []},
+            {"name": "Ground", "tiles": [], "animations": {}},
+            {"name": "Structure", "tiles": [], "animations": {}},
+            {"name": "Sky", "tiles": [], "animations": {}},
         ],
         "regions": [
             {
@@ -643,6 +648,8 @@ static func default_realm(realm_id: String = DEFAULT_REALM_ID, realm_name: Strin
                 "name": "Default",
                 "col": 0,
                 "row": 0,
+                "span_w": 1,
+                "span_h": 1,
             },
         ],
     }
@@ -814,6 +821,45 @@ static func _migrate_realm_meta(realm: Dictionary, realm_id: String) -> void:
     realm["id"] = realm_id
     if str(realm.get("realm_name", "")).strip_edges().is_empty():
         realm["realm_name"] = str(realm.get("name", DEFAULT_REALM_NAME))
+    realm["realm_grid_cells_x"] = maxi(1, int(realm.get("realm_grid_cells_x", DEFAULT_REALM_GRID_X)))
+    realm["realm_grid_cells_y"] = maxi(1, int(realm.get("realm_grid_cells_y", DEFAULT_REALM_GRID_Y)))
+    realm["sky_preset"] = str(realm.get("sky_preset", "midnight")).strip_edges()
+    realm["sky_top_color"] = str(realm.get("sky_top_color", "#050814")).strip_edges()
+    realm["sky_bottom_color"] = str(realm.get("sky_bottom_color", "#152743")).strip_edges()
+    var normalized_layers: Array = []
+    var layers_v: Variant = realm.get("realm_tile_layers", [])
+    if typeof(layers_v) == TYPE_ARRAY:
+        for layer_v in layers_v:
+            if typeof(layer_v) != TYPE_DICTIONARY:
+                continue
+            var layer: Dictionary = (layer_v as Dictionary).duplicate(true)
+            if typeof(layer.get("tiles", [])) != TYPE_ARRAY:
+                layer["tiles"] = []
+            if typeof(layer.get("animations", {})) != TYPE_DICTIONARY:
+                layer["animations"] = {}
+            normalized_layers.append(layer)
+    while normalized_layers.size() < 3:
+        normalized_layers.append((defaults.get("realm_tile_layers", [])[normalized_layers.size()] as Dictionary).duplicate(true))
+    realm["realm_tile_layers"] = normalized_layers
+    var normalized_regions: Array = []
+    var regions_v: Variant = realm.get("regions", [])
+    if typeof(regions_v) == TYPE_ARRAY:
+        for entry_v in regions_v:
+            if typeof(entry_v) != TYPE_DICTIONARY:
+                continue
+            var entry: Dictionary = (entry_v as Dictionary).duplicate(true)
+            entry["col"] = int(entry.get("col", 0))
+            entry["row"] = int(entry.get("row", 0))
+            entry["span_w"] = maxi(1, int(entry.get("span_w", 1)))
+            entry["span_h"] = maxi(1, int(entry.get("span_h", 1)))
+            normalized_regions.append(entry)
+    if normalized_regions.is_empty():
+        var default_regions: Array = defaults.get("regions", [])
+        normalized_regions = default_regions.duplicate(true)
+    realm["regions"] = normalized_regions
+    var start_region_id := str(realm.get("start_region", "")).strip_edges()
+    if start_region_id.is_empty():
+        realm["start_region"] = str((normalized_regions[0] as Dictionary).get("id", DEFAULT_REGION_ID))
 
 
 static func _prefix_room_door_targets(room: Dictionary, realm_id: String, region_id: String) -> void:

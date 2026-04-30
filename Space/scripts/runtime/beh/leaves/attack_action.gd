@@ -27,7 +27,10 @@ func tick(actor: Node, _blackboard: Blackboard) -> int:
     if tree == null:
         return FAILURE
     var params := _params()
-    var range_px: float = float(params.get("range", 24.0))
+    var range_default: float = 24.0
+    if actor.has_method("default_melee_range"):
+        range_default = float(actor.call("default_melee_range"))
+    var range_px: float = float(params.get("range", range_default))
     var cooldown: float = float(params.get("cooldown", 0.8))
     var dmg_default: int = 1
     if "attack_damage" in actor:
@@ -45,9 +48,9 @@ func tick(actor: Node, _blackboard: Blackboard) -> int:
             actor.call("ai_face_dir", dir)
         if now < _next_ok_at:
             return SUCCESS
-        if actor.has_method("ai_request_pose"):
-            actor.call("ai_request_pose", "attack", maxf(0.18, cooldown * 0.6), false, 1.0)
-        if p.has_method("take_damage"):
+        if actor.has_method("queue_melee_attack"):
+            actor.call("queue_melee_attack", p, range_px, dmg)
+        elif p.has_method("take_damage"):
             p.take_damage(dmg, "enemy", a_pos)
         _next_ok_at = now + cooldown
         return SUCCESS

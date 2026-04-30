@@ -4,6 +4,7 @@ extends Area2D
 const _MvBulletImpactFx := preload("res://MV/scripts/bullet_impact_fx.gd")
 
 const MAX_TRAIL_POINTS: int = 8
+const WORLD_COLLISION_PROBE_INSET: float = 2.5
 
 var _velocity: Vector2 = Vector2.ZERO
 var _gravity: float = 0.0
@@ -401,26 +402,24 @@ func _overlaps_world_at(center: Vector2, room: Node) -> bool:
 
 
 func _world_probe_points(center: Vector2) -> Array:
-	var rect := _world_hit_rect_at(center)
-	var top_left := rect.position
-	var bottom_right := rect.position + rect.size
-	var top_right := Vector2(bottom_right.x, top_left.y)
-	var bottom_left := Vector2(top_left.x, bottom_right.y)
-	var mid_top := Vector2(rect.position.x + rect.size.x * 0.5, rect.position.y)
-	var mid_bottom := Vector2(rect.position.x + rect.size.x * 0.5, rect.position.y + rect.size.y)
-	var mid_left := Vector2(rect.position.x, rect.position.y + rect.size.y * 0.5)
-	var mid_right := Vector2(rect.position.x + rect.size.x, rect.position.y + rect.size.y * 0.5)
-	return [
-		center,
-		top_left,
-		top_right,
-		bottom_left,
-		bottom_right,
-		mid_top,
-		mid_bottom,
-		mid_left,
-		mid_right,
-	]
+	var rect := _hitbox_local_rect()
+	var front_inset := minf(WORLD_COLLISION_PROBE_INSET, rect.size.x * 0.35)
+	var inset_y := minf(1.5, rect.size.y * 0.25)
+	var front_x := rect.position.x + rect.size.x - front_inset
+	var top_y := rect.position.y + inset_y
+	var mid_y := rect.position.y + rect.size.y * 0.5
+	var bottom_y := rect.position.y + rect.size.y - inset_y
+	var angle := global_rotation
+	if _velocity.length_squared() > 0.0001:
+		angle = _velocity.angle()
+	var out: Array = []
+	for local_point in [
+		Vector2(front_x, top_y),
+		Vector2(front_x, mid_y),
+		Vector2(front_x, bottom_y),
+	]:
+		out.append(center + local_point.rotated(angle))
+	return out
 
 
 func _world_hit_rect_at(center: Vector2) -> Rect2:
@@ -428,6 +427,13 @@ func _world_hit_rect_at(center: Vector2) -> Rect2:
 	if _shape != null and _shape.shape is RectangleShape2D:
 		size = (_shape.shape as RectangleShape2D).size
 	return Rect2(center - size * 0.5, size)
+
+
+func _hitbox_local_rect() -> Rect2:
+	var size := Vector2(8.0, 8.0)
+	if _shape != null and _shape.shape is RectangleShape2D:
+		size = (_shape.shape as RectangleShape2D).size
+	return Rect2(-size * 0.5, size)
 
 
 func _refine_world_collision(safe_pos: Vector2, blocked_pos: Vector2, room: Node) -> Vector2:

@@ -33,7 +33,7 @@ var _link_help: Label = null
 var _cond_form: DlgConditionForm = null
 var _action_form: DlgActionsForm = null
 var _choices_box: VBoxContainer = null
-var _choice_rows: Array = []  # [{"row": HBoxContainer, "text": LineEdit, "cond": ConditionForm, "actions": ActionsForm, "expanded": bool, "detail": VBoxContainer}]
+var _choice_rows: Array = []  # [{"row": VBoxContainer, "text": LineEdit, "next": OptionButton, "cond": ConditionForm, "actions": ActionsForm}]
 
 
 signal closed
@@ -403,7 +403,7 @@ func _flush_line() -> bool:
         var c_acts: Array = acts_node.get_value() if acts_node != null else []
         if not c_acts.is_empty():
             entry["actions"] = c_acts
-        if not _apply_next_line_field(entry, row.get("next"), "Choice"):
+        if not _apply_next_line_option(entry, row.get("next"), "Choice"):
             return false
         choices_out.append(entry)
     if choices_out.is_empty():
@@ -484,16 +484,15 @@ func _append_choice_row(seed_data: Dictionary) -> void:
     var next_row := HBoxContainer.new()
     row.add_child(next_row)
     var next_lbl := Label.new()
-    next_lbl.text = "  Next:"
-    next_lbl.tooltip_text = "Optional branch target after this choice is picked. Leave blank for the next numbered line, or use `end` to close the conversation."
+    next_lbl.text = "  After this choice:"
+    next_lbl.tooltip_text = "Choose where the conversation goes after this response is picked."
     next_lbl.add_theme_font_size_override("font_size", 10)
     next_row.add_child(next_lbl)
-    var next_edit := LineEdit.new()
-    next_edit.text = _format_next_line_value(seed_data.get("next_line", null))
-    next_edit.custom_minimum_size = Vector2(180, 0)
-    next_edit.placeholder_text = "Blank / #4 / end"
-    next_edit.tooltip_text = "Branch target for this choice. Use a zero-based line number like `4` or `#4`, matching the # labels in the line list."
-    next_edit.text_changed.connect(func(_t): _mark_dirty())
+    var next_edit := OptionButton.new()
+    next_edit.custom_minimum_size = Vector2(260, 0)
+    next_edit.tooltip_text = "Choose a line to jump to, continue normally, or end the conversation."
+    _populate_next_option(next_edit, seed_data.get("next_line", null))
+    next_edit.item_selected.connect(func(_idx): _mark_dirty())
     next_row.add_child(next_edit)
 
     var cond_lbl := Label.new()
@@ -653,41 +652,71 @@ func _mark_dirty() -> void:
     _dirty = true
 
 
-func _format_next_line_value(value: Variant) -> String:
+func _populate_next_option(option: OptionButton, value: Variant) -> void:
+    if option == null:
+        return
+    option.clear()
+    option.add_item("Continue to the next line")
+    option.set_item_metadata(0, "__continue__")
+    option.add_item("End the conversation")
+    option.set_item_metadata(1, "__end__")
+    for i in range(_lines.size()):
+        var line: Dictionary = _lines[i] if typeof(_lines[i]) == TYPE_DICTIONARY else {}
+        var preview := str(line.get("text", "")).strip_edges()
+        if preview.is_empty():
+            preview = "(blank line)"
+        if preview.length() > 42:
+            preview = preview.substr(0, 39) + "..."
+        option.add_item("Jump to #%d: %s" % [i, preview])
+        option.set_item_metadata(option.item_count - 1, i)
+    option.select(_next_option_index(option, value))
+
+
+func _next_option_index(option: OptionButton, value: Variant) -> int:
     if value == null:
-        return ""
-    match typeof(value):
-        TYPE_INT:
-            return str(int(value))
-        TYPE_FLOAT:
-            return str(int(value))
-        TYPE_STRING:
-            return str(value).strip_edges()
-        _:
-            return ""
+        return 0
+    if typeof(value) == TYPE_STRING:
+        var lower := str(value).strip_edges().to_lower()
+        if lower == "end" or lower == "stop" or lower == "close":
+            return 1
+        if lower.begins_with("#"):
+            var trimmed := lower.substr(1).strip_edges()
+            if trimmed.is_valid_int():
+                value = int(trimmed)
+        elif lower.is_valid_int():
+            value = int(lower)
+    if typeof(value) == TYPE_FLOAT:
+        value = int(value)
+    if typeof(value) == TYPE_INT:
+        var wanted := int(value)
+        for idx in range(option.item_count):
+            var meta: Variant = option.get_item_metadata(idx)
+            if typeof(meta) == TYPE_INT and int(meta) == wanted:
+                return idx
+    return 0
 
 
-func _apply_next_line_field(target: Dictionary, field: LineEdit, label: String) -> bool:
-    if field == null:
+func _apply_next_line_option(target: Dictionary, option: OptionButton, label: String) -> bool:
+    if option == null:
         target.erase("next_line")
         return true
-    var raw := field.text.strip_edges()
-    if raw.is_empty():
+    var idx := option.get_selected()
+    if idx < 0 or idx >= option.item_count:
         target.erase("next_line")
         return true
-    if raw.is_valid_int():
-        target["next_line"] = int(raw)
-        return true
-    if raw.begins_with("#"):
-        var trimmed := raw.substr(1).strip_edges()
-        if trimmed.is_valid_int():
-            target["next_line"] = int(trimmed)
+    var meta: Variant = option.get_item_metadata(idx)
+    if typeof(meta) == TYPE_STRING:
+        var value := str(meta)
+        if value == "__continue__":
+            target.erase("next_line")
             return true
-    var lower := raw.to_lower()
-    if lower == "end" or lower == "stop" or lower == "close":
-        target["next_line"] = "end"
+        if value == "__end__":
+            target["next_line"] = "end"
+            return true
+    if typeof(meta) == TYPE_INT:
+        target["next_line"] = int(meta)
         return true
-    status_changed.emit("%s next line must be blank, a number like 4 or #4, or 'end'" % label)
+    status_changed.emit("%s branch target is invalid" % label)
     return false
 
 
@@ -726,4 +755,4 @@ func _refresh_link_help() -> void:
     if _link_help == null:
         return
     var dialogue_ref: String = _current_id if not _current_id.is_empty() else "shopkeep_intro"
-    _link_help.text = "How this conversation connects: the simplest NPC path is an interactable entity with `dialogue_id = %s`, which opens automatically on interact. If you need extra logic, use a trigger action `Start Dialogue` with id `%s`. Branching lives on choices only: each choice can jump to a zero-based `#` line number from the list, or use `end` to stop. Lines without choices just continue sequentially. Dialogue choices also emit `dialogue_choice` with `dialogue_id`, `line_index`, and `choice_index`, so triggers can react to specific answers." % [dialogue_ref, dialogue_ref]
+    _link_help.text = "How this conversation connects: the simplest NPC path is an interactable entity whose dialogue_id is %s, which opens automatically when the player talks to it. If you need extra logic, use a trigger action named Start Dialogue with id %s. Lines without choices continue in order. Choices can now pick a target from the branch dropdown, end the conversation, or continue normally. Dialogue choices also fire the event 'When the player picks a dialogue choice' so triggers can react to specific answers." % [dialogue_ref, dialogue_ref]

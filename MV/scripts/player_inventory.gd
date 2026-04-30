@@ -58,6 +58,9 @@ func get_abilities() -> Array:
 func add_item(id: String, count: int = 1) -> void:
 	if id.is_empty() or count <= 0:
 		return
+	var def := get_item_definition(id)
+	if bool(def.get("auto_use_on_gain", false)) and _apply_item_effect(def, count):
+		return
 	_items[id] = _items.get(id, 0) + count
 	item_changed.emit(id, _items[id])
 
@@ -210,6 +213,19 @@ func use_item_definition(item_id: String, count: int = 1) -> bool:
 	var def := get_item_definition(item_id)
 	if def.is_empty():
 		return false
+	if not _apply_item_effect(def, count):
+		return false
+	remove_item(item_id, count)
+	return true
+
+
+func apply_item_effect_definition(def: Dictionary, count: int = 1) -> bool:
+	if count <= 0:
+		return false
+	return _apply_item_effect(def, count)
+
+
+func _apply_item_effect(def: Dictionary, count: int = 1) -> bool:
 	var effect := str(def.get("use_effect", "")).strip_edges()
 	if effect.is_empty():
 		return false
@@ -226,6 +242,25 @@ func use_item_definition(item_id: String, count: int = 1) -> bool:
 				return false
 			player.max_hp += maxi(amount, 0) * count
 			player.hp = mini(player.hp + maxi(amount, 0) * count, player.max_hp)
+		"add_gold":
+			add_var("gold", float(amount) * count)
+		"add_ammo":
+			if arg.is_empty():
+				return false
+			add_var("ammo_%s" % arg, float(amount) * count)
+		"max_ammo_up":
+			if arg.is_empty():
+				return false
+			add_var("max_ammo_%s" % arg, float(amount) * count)
+		"damage_up":
+			add_var("mv_melee_damage_bonus", float(amount) * count)
+			add_var("mv_projectile_damage_bonus", float(amount) * count)
+		"melee_damage_up":
+			add_var("mv_melee_damage_bonus", float(amount) * count)
+		"projectile_damage_up":
+			add_var("mv_projectile_damage_bonus", float(amount) * count)
+		"inventory_slots_up":
+			add_var("inventory_slots_bonus", float(amount) * count)
 		"grant_ability":
 			if arg.is_empty():
 				return false
@@ -235,6 +270,23 @@ func use_item_definition(item_id: String, count: int = 1) -> bool:
 			if arg.is_empty():
 				return false
 			add_var(arg, float(amount) * count)
+		"set_flag":
+			if arg.is_empty():
+				return false
+			set_var("flag_%s" % arg, amount != 0)
+		"add_tag":
+			if arg.is_empty() or MvTriggerEngine == null:
+				return false
+			var tag_value: Variant = true if amount <= 0 else amount * count
+			MvTriggerEngine.set_global_tag(arg, tag_value)
+		"fire_event":
+			if arg.is_empty() or MvTriggerEngine == null:
+				return false
+			MvTriggerEngine.fire_event(arg, {
+				"item_id": str(def.get("id", "")),
+				"stock_id": str(def.get("stock_id", "")),
+				"count": count,
+			})
 		"set_weapon":
 			if _attack_defs_cache.has(arg):
 				set_active_attack_id(arg)
@@ -242,7 +294,6 @@ func use_item_definition(item_id: String, count: int = 1) -> bool:
 				set_active_weapon_type(_weapon_type_from_name(arg))
 		_:
 			return false
-	remove_item(item_id, count)
 	return true
 
 

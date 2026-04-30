@@ -4,6 +4,7 @@ const RegIO = preload("res://Space/scripts/editor/reg/reg_io.gd")
 const OverworldAtlas = preload("res://MV/scripts/overworld_atlas.gd")
 const OverworldShip = preload("res://MV/scripts/overworld_ship.gd")
 const OverworldBillboards = preload("res://MV/scripts/overworld_billboards.gd")
+const OverworldLayout = preload("res://MV/scripts/overworld_layout.gd")
 const BLOCK_SIZE: int = 16
 const LAND_INTERACT_RADIUS: float = 22.0
 const LANDING_DURATION: float = 0.42
@@ -71,8 +72,9 @@ func enter_overworld(p_pack_id: String, p_realm_id: String = "", spawn_pos: Vect
     _screen_size = get_viewport_rect().size
     _build_scene()
 
-    var grid_w: int = int(realm_data.get("realm_grid_cells_x", 32))
-    var grid_h: int = int(realm_data.get("realm_grid_cells_y", 32))
+    var expanded_grid := OverworldLayout.expanded_grid_size(realm_data)
+    var grid_w: int = expanded_grid.x
+    var grid_h: int = expanded_grid.y
     (_ship as OverworldShip).grid_cells_x = grid_w
     (_ship as OverworldShip).grid_cells_y = grid_h
 
@@ -188,9 +190,10 @@ func _process(_delta: float) -> void:
 
 
 func _build_scene() -> void:
+    var sky_top := _realm_sky_top_color()
     _sky_bg = ColorRect.new()
     _sky_bg.size = _screen_size
-    _sky_bg.color = Color(0.04, 0.06, 0.14, 1.0)
+    _sky_bg.color = sky_top
     add_child(_sky_bg)
 
     _build_sky_gradient()
@@ -221,8 +224,8 @@ func _build_sky_gradient() -> void:
     if grad_h <= 0:
         return
     var img := Image.create(1, grad_h, false, Image.FORMAT_RGBA8)
-    var top_col := Color(0.02, 0.03, 0.08, 1.0)
-    var bot_col := Color(0.08, 0.12, 0.22, 1.0)
+    var top_col := _realm_sky_top_color()
+    var bot_col := _realm_sky_bottom_color()
     for y in grad_h:
         var t := float(y) / float(grad_h)
         img.set_pixel(0, y, top_col.lerp(bot_col, t))
@@ -235,18 +238,47 @@ func _build_sky_gradient() -> void:
     add_child(grad_rect)
 
 
+func _parse_realm_sky_color(raw_color: String, fallback: Color) -> Color:
+    var trimmed := raw_color.strip_edges()
+    if trimmed.is_empty():
+        return fallback
+    if not trimmed.begins_with("#"):
+        trimmed = "#" + trimmed
+    return Color.from_string(trimmed, fallback)
+
+
+func _realm_sky_top_color() -> Color:
+    return _parse_realm_sky_color(str(realm_data.get("sky_top_color", "#050814")), Color(0.02, 0.03, 0.08, 1.0))
+
+
+func _realm_sky_bottom_color() -> Color:
+    return _parse_realm_sky_color(str(realm_data.get("sky_bottom_color", "#152743")), Color(0.08, 0.12, 0.22, 1.0))
+
+
 func _build_region_lookup() -> void:
     _region_lookup.clear()
     var regions_v: Variant = realm_data.get("regions", [])
     if typeof(regions_v) != TYPE_ARRAY:
         return
+    var offset := OverworldLayout.content_offset(realm_data)
     for entry_v in regions_v:
         if typeof(entry_v) != TYPE_DICTIONARY:
             continue
-        var entry: Dictionary = entry_v
-        var col: int = int(entry.get("col", 0))
-        var row: int = int(entry.get("row", 0))
-        _region_lookup["%d,%d" % [col, row]] = entry
+        var entry: Dictionary = (entry_v as Dictionary).duplicate(true)
+        var col: int = int(entry.get("col", 0)) + offset.x
+        var row: int = int(entry.get("row", 0)) + offset.y
+        var span_w: int = maxi(1, int(entry.get("span_w", 1)))
+        var span_h: int = maxi(1, int(entry.get("span_h", 1)))
+        entry["col"] = col
+        entry["row"] = row
+        entry["span_w"] = span_w
+        entry["span_h"] = span_h
+        for dy in range(span_h):
+            for dx in range(span_w):
+                var cell_entry: Dictionary = entry.duplicate(true)
+                cell_entry["cell_col"] = col + dx
+                cell_entry["cell_row"] = row + dy
+                _region_lookup["%d,%d" % [col + dx, row + dy]] = cell_entry
 
 
 func _update_near_region(ship_ref: OverworldShip) -> void:
@@ -256,13 +288,17 @@ func _update_near_region(ship_ref: OverworldShip) -> void:
     var nearest_distance: float = LAND_INTERACT_RADIUS
     var max_x: float = float(ship_ref.grid_cells_x * BLOCK_SIZE)
     var max_y: float = float(ship_ref.grid_cells_y * BLOCK_SIZE)
+    var current_key := "%d,%d" % [ship_ref.grid_col(), ship_ref.grid_row()]
+    if _region_lookup.has(current_key):
+        nearest_region = _region_lookup[current_key]
+        nearest_distance = 0.0
     for region_v in _region_lookup.values():
         if typeof(region_v) != TYPE_DICTIONARY:
             continue
         var region: Dictionary = region_v
         var center := Vector2(
-            (float(int(region.get("col", 0))) + 0.5) * BLOCK_SIZE,
-            (float(int(region.get("row", 0))) + 0.5) * BLOCK_SIZE
+            (float(int(region.get("cell_col", int(region.get("col", 0))))) + 0.5) * BLOCK_SIZE,
+            (float(int(region.get("cell_row", int(region.get("row", 0))))) + 0.5) * BLOCK_SIZE
         )
         var delta := _wrapped_world_delta(ship_ref.world_pos, center, max_x, max_y)
         var dist := delta.length()

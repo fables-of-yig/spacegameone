@@ -163,7 +163,7 @@ func _draw():
 		var layer_v: Variant = layers[i]
 		if typeof(layer_v) != TYPE_DICTIONARY:
 			continue
-		var tiles: Array = (layer_v as Dictionary).get("tiles", [])
+		var layer: Dictionary = layer_v as Dictionary
 		var alpha: float
 		if i == active_layer:
 			alpha = 1.0
@@ -171,7 +171,7 @@ func _draw():
 			alpha = 0.35
 		else:
 			alpha = RlmTypes.layer_alpha(i) * 0.5
-		_draw_realm_tile_layer(tiles, alpha)
+		_draw_realm_tile_layer(layer, alpha)
 
 	_draw_region_overlays()
 	_draw_grid_lines(grid_w, grid_h)
@@ -190,6 +190,10 @@ func copy_selection_to_clipboard() -> bool:
 	if editor == null or _copied_rect.size.x <= 0 or _copied_rect.size.y <= 0:
 		return false
 	return editor.copy_realm_region(_copied_rect)
+
+
+func get_hover_cell() -> Vector2i:
+	return _hover_cell
 
 
 func _normalized_cell_rect(a: Vector2i, b: Vector2i) -> Rect2i:
@@ -244,10 +248,16 @@ func _draw_grid_background(grid_w: int, grid_h: int) -> void:
 	draw_rect(grid_rect, Color(0.35, 0.5, 0.75, 0.8), false, 2.0)
 
 
-func _draw_realm_tile_layer(tiles: Array, alpha: float) -> void:
+func _draw_realm_tile_layer(layer: Dictionary, alpha: float) -> void:
+	var tiles: Array = layer.get("tiles", [])
 	if tiles.is_empty():
 		return
+	var animations_v: Variant = layer.get("animations", {})
+	var animations: Dictionary = {}
+	if typeof(animations_v) == TYPE_DICTIONARY:
+		animations = animations_v
 	var cell_size := float(BLOCK_SIZE) * zoom
+	var anim_time := float(Time.get_ticks_msec()) / 1000.0
 	for entry_v in tiles:
 		if typeof(entry_v) != TYPE_DICTIONARY:
 			continue
@@ -262,12 +272,37 @@ func _draw_realm_tile_layer(tiles: Array, alpha: float) -> void:
 			var fallback_col := Color(0.4, 0.3, 0.5, alpha)
 			draw_rect(Rect2(_cell_to_screen(col, row), Vector2(cell_size, cell_size)), fallback_col)
 			continue
+		var key := "%d,%d" % [col, row]
+		var is_animated := false
+		if animations.has(key) and maxi(int(entry.get("placement_w", 1)), 1) == 1 and maxi(int(entry.get("placement_h", 1)), 1) == 1:
+			var anim_v: Variant = animations[key]
+			if typeof(anim_v) == TYPE_DICTIONARY:
+				var anim: Dictionary = anim_v
+				var frames_v: Variant = anim.get("frames", [])
+				if typeof(frames_v) == TYPE_ARRAY and (frames_v as Array).size() >= 2:
+					var frames: Array = frames_v
+					var fps: float = maxf(float(anim.get("fps", 8.0)), 0.01)
+					var loop: bool = bool(anim.get("loop", true))
+					@warning_ignore("integer_division")
+					var tex_cols: int = maxi(tex.get_width() / BLOCK_SIZE, 1)
+					var frame_idx := int(floor(anim_time * fps))
+					if loop:
+						frame_idx = frame_idx % frames.size()
+					else:
+						frame_idx = mini(frame_idx, frames.size() - 1)
+					var atlas_idx := int(frames[frame_idx])
+					atlas_x = atlas_idx % tex_cols
+					@warning_ignore("integer_division")
+					atlas_y = atlas_idx / tex_cols
+					is_animated = true
 		var src_rect := Rect2(
 			Vector2(float(atlas_x * BLOCK_SIZE), float(atlas_y * BLOCK_SIZE)),
 			Vector2(float(BLOCK_SIZE), float(BLOCK_SIZE)))
 		var dst_pos := _cell_to_screen(col, row)
 		var dst_rect := Rect2(dst_pos, Vector2(cell_size, cell_size))
 		draw_texture_rect_region(tex, dst_rect, src_rect, Color(1, 1, 1, alpha))
+		if is_animated:
+			draw_rect(dst_rect.grow(-2.0), Color(0.48, 0.9, 1.0, 0.9), false, 1.0)
 
 
 func _draw_region_overlays() -> void:
@@ -284,16 +319,18 @@ func _draw_region_overlays() -> void:
 		var region_id := str(entry.get("id", ""))
 		var col: int = int(entry.get("col", 0))
 		var row: int = int(entry.get("row", 0))
+		var span_w: int = maxi(1, int(entry.get("span_w", 1)))
+		var span_h: int = maxi(1, int(entry.get("span_h", 1)))
 		var rname := str(entry.get("name", str(entry.get("id", "?"))))
 		var pos := _cell_to_screen(col, row)
-		var rect := Rect2(pos, Vector2(cell_size, cell_size))
+		var rect := Rect2(pos, Vector2(float(span_w) * cell_size, float(span_h) * cell_size))
 		var active := region_id == selected_region_id
 		draw_rect(rect, Color(0.4, 0.95, 0.6, 0.33) if active else Color(0.3, 0.85, 0.5, 0.25))
 		draw_rect(rect, Color(0.85, 1.0, 0.9, 0.95) if active else Color(0.3, 0.85, 0.5, 0.7), false, 2.0)
 		if zoom >= 1.5:
 			var label_size: int = clampi(int(8.0 * zoom), 8, 14)
 			draw_string(font, pos + Vector2(3, float(label_size) + 2),
-				rname, HORIZONTAL_ALIGNMENT_LEFT, cell_size - 4, label_size,
+				"%s %dx%d" % [rname, span_w, span_h], HORIZONTAL_ALIGNMENT_LEFT, rect.size.x - 6.0, label_size,
 				Color(0.9, 1.0, 0.9, 0.9))
 
 

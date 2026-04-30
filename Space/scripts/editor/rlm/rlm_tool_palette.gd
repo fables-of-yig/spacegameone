@@ -12,6 +12,7 @@ const GAP_LG: float = 14.0
 
 var _tool_rects: Array = []
 var _layer_rects: Array = []
+var _action_rects: Array = []
 
 
 func _ready():
@@ -39,6 +40,15 @@ func _gui_input(event):
 					editor.active_realm_layer = int(entry["layer"])
 					accept_event()
 					return
+			for entry in _action_rects:
+				if (entry["rect"] as Rect2).has_point(mb.position):
+					var action := str(entry["action"])
+					if action == "apply_anim" and editor.has_method("apply_selected_animation_to_hover_cell"):
+						editor.apply_selected_animation_to_hover_cell()
+					elif action == "clear_anim" and editor.has_method("clear_hover_cell_animation"):
+						editor.clear_hover_cell_animation()
+					accept_event()
+					return
 
 
 func _draw():
@@ -54,6 +64,7 @@ func _draw():
 
 	_tool_rects.clear()
 	_layer_rects.clear()
+	_action_rects.clear()
 
 	_draw_section_label(font, y, "TOOLS")
 	y += 18.0
@@ -101,6 +112,26 @@ func _draw():
 			RlmTypes.layer_name(i), HORIZONTAL_ALIGNMENT_LEFT, -1, 12, label_col)
 		if hover:
 			EditorTooltip.show_text("Switch to the %s layer. Only the active layer is painted/erased; other layers are dimmed for reference." % RlmTypes.layer_name(i))
+		y += ROW_H + GAP_SM
+
+	y += GAP_LG
+	_draw_section_label(font, y, "ANIMATION")
+	y += 18.0
+	var action_defs := [
+		{"action": "apply_anim", "label": "SET ANIM", "tint": Color(0.5, 0.82, 1.0),
+			"tip": "Apply an animation to the last realm cell you hovered. The current tileset selection becomes the frame strip."},
+		{"action": "clear_anim", "label": "CLEAR ANIM", "tint": Color(0.86, 0.5, 0.42),
+			"tip": "Remove animation data from the last realm cell you hovered without erasing its tile."},
+	]
+	for def in action_defs:
+		var rect := Rect2(PAD_X, y, btn_w, ROW_H)
+		_action_rects.append({"action": def["action"], "rect": rect})
+		var hover := rect.has_point(mouse_pos)
+		UIPanels.draw_button_bg(self, rect, hover, def["tint"])
+		draw_string(font, Vector2(rect.position.x + 12, rect.position.y + 20),
+			str(def["label"]), HORIZONTAL_ALIGNMENT_LEFT, -1, 12, Color(1, 1, 1, 1))
+		if hover:
+			EditorTooltip.show_text(str(def["tip"]))
 		y += ROW_H + GAP_SM
 
 	var hint := "MMB: pan  Wheel: zoom"

@@ -1,6 +1,7 @@
 extends RefCounted
 
 const EnvIO = preload("res://Space/scripts/editor/env/env_io.gd")
+const OverworldLayout = preload("res://MV/scripts/overworld_layout.gd")
 const BLOCK_SIZE: int = 16
 
 
@@ -13,8 +14,11 @@ static var _ground_tex_cache: Dictionary = {}
 
 
 static func bake_ground_atlas(pack_id: String, realm_data: Dictionary) -> ImageTexture:
-	var grid_w: int = int(realm_data.get("realm_grid_cells_x", 32))
-	var grid_h: int = int(realm_data.get("realm_grid_cells_y", 32))
+	var authored_grid := OverworldLayout.authored_grid_size(realm_data)
+	var expanded_grid := OverworldLayout.expanded_grid_size(realm_data)
+	var offset := OverworldLayout.content_offset(realm_data)
+	var grid_w: int = expanded_grid.x
+	var grid_h: int = expanded_grid.y
 	var img_w: int = grid_w * BLOCK_SIZE
 	var img_h: int = grid_h * BLOCK_SIZE
 	var img := Image.create(img_w, img_h, false, Image.FORMAT_RGBA8)
@@ -39,7 +43,7 @@ static func bake_ground_atlas(pack_id: String, realm_data: Dictionary) -> ImageT
 		var entry: Dictionary = entry_v
 		var col: int = int(entry.get("col", 0))
 		var row: int = int(entry.get("row", 0))
-		if col < 0 or col >= grid_w or row < 0 or row >= grid_h:
+		if col < 0 or col >= authored_grid.x or row < 0 or row >= authored_grid.y:
 			continue
 		var tileset_name: String = str(entry.get("tileset", ""))
 		var atlas_x: int = int(entry.get("atlas_x", 0))
@@ -54,7 +58,7 @@ static func bake_ground_atlas(pack_id: String, realm_data: Dictionary) -> ImageT
 		if src_x + BLOCK_SIZE > src_img.get_width() or src_y + BLOCK_SIZE > src_img.get_height():
 			continue
 		var src_rect := Rect2i(src_x, src_y, BLOCK_SIZE, BLOCK_SIZE)
-		var dst := Vector2i(col * BLOCK_SIZE, row * BLOCK_SIZE)
+		var dst := Vector2i((col + offset.x) * BLOCK_SIZE, (row + offset.y) * BLOCK_SIZE)
 		img.blit_rect(src_img, src_rect, dst)
 
 	# Scan ground layer for animation entries.
@@ -105,8 +109,8 @@ static func bake_ground_atlas(pack_id: String, realm_data: Dictionary) -> ImageT
 					"atlas_y": mi / ts_cols,
 				})
 			_animated_ground_cells.append({
-				"col": acol,
-				"row": arow,
+				"col": acol + offset.x,
+				"row": arow + offset.y,
 				"tileset_name": ts_name,
 				"frame_coords": frame_coords,
 				"fps": float(anim.get("fps", 8.0)),

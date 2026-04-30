@@ -1,6 +1,8 @@
 extends Control
 
 
+const ModuleVisuals = preload("res://Space/scripts/autoload/module_visuals.gd")
+
 
 
 
@@ -2001,24 +2003,14 @@ func _draw_grid(font: Font):
         if sprite_name != "":
             var stex = GameManager.get_module_sprite(sprite_name)
             if stex != null:
-                var spr_s = HEX_SIZE / 50.0
                 var mod_rot = int(pm.get("rotation", 0)) * PI / 3.0
                 var spr_anchor = grid_origin + HexUtil.hex_to_pixel(pm.get("grid_pos", Vector2i.ZERO), HEX_SIZE)
-                var shape = mod_data.get("hex_shape", HexUtil.default_shape(mod_data.get("hex_size", 1)))
-                var sp0 = HexUtil.hex_to_pixel(Vector2i(shape[0][0], shape[0][1]), HEX_SIZE)
-                var smin = sp0
-                var smax = sp0
-                for sc in shape:
-                    var sp = HexUtil.hex_to_pixel(Vector2i(sc[0], sc[1]), HEX_SIZE)
-                    smin.x = minf(smin.x, sp.x)
-                    smin.y = minf(smin.y, sp.y)
-                    smax.x = maxf(smax.x, sp.x)
-                    smax.y = maxf(smax.y, sp.y)
-                var sprite_offset = ((smin + smax) * 0.5).rotated(mod_rot)
+                var sprite_offset = ModuleVisuals.get_canonical_sprite_center(mod_data, HEX_SIZE).rotated(mod_rot)
                 var sprite_pos = spr_anchor + sprite_offset
                 var shw = stex.get_width() * 0.5
                 var shh = stex.get_height() * 0.5
-                draw_set_transform(sprite_pos, mod_rot, Vector2(spr_s, spr_s))
+                var spr_s = ModuleVisuals.get_sprite_scale(mod_data, HEX_SIZE)
+                draw_set_transform(sprite_pos, mod_rot + ModuleVisuals.get_sprite_rotation_rad(mod_data), Vector2(spr_s, spr_s))
                 draw_texture(stex, Vector2(-shw, -shh))
                 draw_set_transform(Vector2.ZERO, 0, Vector2.ONE)
 

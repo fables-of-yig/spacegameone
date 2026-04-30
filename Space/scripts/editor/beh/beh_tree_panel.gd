@@ -252,10 +252,10 @@ func _draw_tree_row(font: Font, rect: Rect2, node: Dictionary, depth: int,
     draw_rect(swatch_rect, BehTypes.category_color(cat))
 
     var label_x: float = swatch_x + 18.0
-    var display_name := str(node.get("name", type_str))
+    var display_name := str(node.get("name", BehTypes.type_label(type_str)))
     var label := "%s" % display_name
     if display_name != type_str:
-        label = "%s  (%s)" % [display_name, type_str]
+        label = "%s  (%s)" % [display_name, BehTypes.type_label(type_str)]
     var unregistered: bool = false
     var leaf_name: String = ""
     if cat == BehTypes.CAT_LEAF:
@@ -269,6 +269,16 @@ func _draw_tree_row(font: Font, rect: Rect2, node: Dictionary, depth: int,
             label += "  ?  %s" % leaf_name
             if BehLeafSchema.find_schema("condition", leaf_name).is_empty():
                 unregistered = true
+    if not leaf_name.is_empty() and not unregistered:
+        var leaf_schema := BehLeafSchema.find_schema(type_str, leaf_name)
+        if not leaf_schema.is_empty():
+            var joiner := " -> " if type_str == "action" else " ? "
+            label = "%s (%s)%s%s" % [
+                display_name,
+                BehTypes.type_label(type_str),
+                joiner,
+                str(leaf_schema.get("label", leaf_name)),
+            ]
     if unregistered:
         label += "  [!] unregistered"
 
@@ -297,7 +307,7 @@ func _draw_tree_row(font: Font, rect: Rect2, node: Dictionary, depth: int,
             var fallback: String = "idle" if type_str == "action" else "always"
             EditorTooltip.show_text("[!] Leaf name \"%s\" is not registered in the runtime. At runtime this node silently falls back to '%s' and emits a push_warning. Edit the node and pick a registered %s." % [leaf_name, fallback, type_str])
         else:
-            EditorTooltip.show_text("Tree node \"%s\" (type: %s, category: %s). Click to select and edit its properties in the right panel." % [display_name, type_str, cat])
+            EditorTooltip.show_text("%s Click to select and edit details on the right. Internal type: %s." % [BehTypes.type_help(type_str), type_str])
 
 
 func _paths_equal(a: Array, b: Array) -> bool:
