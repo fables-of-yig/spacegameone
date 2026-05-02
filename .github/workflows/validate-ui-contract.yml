@@ -14,13 +14,13 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - uses: firebelley/setup-godot@v2
+      - uses: chickensoft-games/setup-godot@v2
         with:
-          version: 4.6-stable
+          version: 4.6.0
           use-dotnet: false
 
       - name: Check generated supported-features doc
-        run: godot --headless --path . --script res://tools/ui_contract_cli.gd sync-docs --check
+        run: godot --headless --path . --script res://tools/ui_contract_cli.gd -- sync-docs --check
 
       - name: Validate smoke pack
-        run: godot --headless --path . --script res://tools/ui_contract_cli.gd validate-smoke-pack
+        run: godot --headless --path . --script res://tools/ui_contract_cli.gd -- validate-smoke-pack
