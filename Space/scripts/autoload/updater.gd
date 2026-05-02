@@ -7,11 +7,10 @@ signal update_check_complete(has_update: bool, latest_version: String)
 signal download_progress(percent: float)
 signal download_complete(success: bool, message: String)
 
-const GITHUB_REPO: String = "v-vult/superspaceboat"
-const RELEASES_URL: String = "https://api.github.com/repos/v-vult/superspaceboat/releases/latest"
+const GITHUB_REPO: String = "fables-of-yig/spacegameone"
+const RELEASES_URL: String = "https://api.github.com/repos/%s/releases/latest" % GITHUB_REPO
 const PCK_ASSET_NAME: String = "ssb.pck"
 const VERSION_FILE: String = "res://version.txt"
-const _GH_TOKEN: String = "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"
 const CHECK_TIMEOUT: float = 20.0
 const DOWNLOAD_TIMEOUT: float = 300.0
 
@@ -98,7 +97,7 @@ func check_for_update():
     add_child(_check_request)
     _check_request.request_completed.connect(_on_check_complete)
 
-    var headers = ["User-Agent: Abysson-Updater", "Accept: application/vnd.github.v3+json", "Authorization: Bearer %s" % _GH_TOKEN]
+    var headers = ["User-Agent: Abysson-Updater", "Accept: application/vnd.github.v3+json"]
     var err = _check_request.request(RELEASES_URL, headers)
     if err != OK:
         _log("Failed to send request, error code: %d" % err)
@@ -201,7 +200,7 @@ func start_download():
     add_child(_download_request)
     _download_request.request_completed.connect(_on_download_redirect_or_complete)
 
-    var headers = ["User-Agent: Abysson-Updater", "Accept: application/octet-stream", "Authorization: Bearer %s" % _GH_TOKEN]
+    var headers = ["User-Agent: Abysson-Updater", "Accept: application/octet-stream"]
     var err = _download_request.request(latest_pck_url, headers)
     if err != OK:
         _fail_download("Failed to start download (error %d)" % err)
