@@ -1,6 +1,10 @@
 extends SceneTree
 
 
+const MvPackLoaderLib := preload("res://MV/scripts/pack_loader.gd")
+const UiContractLib := preload("res://Space/scripts/ui/ui_contract.gd")
+const ContentValidatorLib := preload("res://Space/scripts/editor/content_validator.gd")
+
 const SUPPORTED_FEATURES_PATH := "res://SUPPORTED_FEATURES.md"
 const DEFAULT_SMOKE_PACK := "phase1_bootstrap"
 
@@ -19,7 +23,7 @@ func _init() -> void:
 		"validate-pack":
 			_handle_validate_pack(args.slice(1))
 		"validate-smoke-pack":
-			if not MvPackLoader.create_empty_pack(DEFAULT_SMOKE_PACK, "Phase 1 Bootstrap"):
+			if not MvPackLoaderLib.create_empty_pack(DEFAULT_SMOKE_PACK, "Phase 1 Bootstrap"):
 				push_error("Could not bootstrap smoke pack '%s'" % DEFAULT_SMOKE_PACK)
 				quit(1)
 				return
@@ -37,7 +41,7 @@ func _handle_sync_docs(args: Array) -> void:
 	for arg_v in args:
 		if str(arg_v) == "--check":
 			check_only = true
-	var rendered := UiContract.render_supported_features_markdown()
+	var rendered: String = UiContractLib.render_supported_features_markdown()
 	var current := _read_text(SUPPORTED_FEATURES_PATH)
 	if check_only:
 		if current == rendered:
@@ -63,7 +67,7 @@ func _handle_validate_pack(args: Array) -> void:
 		push_error("validate-pack requires a pack id")
 		quit(2)
 		return
-	var issues: Array = ContentValidator.validate(pack_id)
+	var issues: Array = ContentValidatorLib.validate(pack_id)
 	var errors: int = 0
 	var warnings: int = 0
 	for issue_v in issues:
@@ -93,7 +97,7 @@ func _handle_bootstrap_pack(args: Array) -> void:
 	var display_name := pack_id
 	if args.size() >= 2:
 		display_name = str(args[1]).strip_edges()
-	var ok := MvPackLoader.create_empty_pack(pack_id, display_name)
+	var ok: bool = MvPackLoaderLib.create_empty_pack(pack_id, display_name)
 	if not ok:
 		push_error("Failed to bootstrap pack '%s'" % pack_id)
 		quit(1)

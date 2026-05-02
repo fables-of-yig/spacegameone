@@ -9,8 +9,10 @@ var _custom_types: Array[StringName] = []
 
 func _init():
 	name = "BeehavePlugin"
-	add_autoload_singleton("BeehaveGlobalMetrics", "metrics/beehave_global_metrics.gd")
-	add_autoload_singleton("BeehaveGlobalDebugger", "debug/global_debugger.gd")
+	if not ProjectSettings.has_setting("autoload/BeehaveGlobalMetrics"):
+		add_autoload_singleton("BeehaveGlobalMetrics", "metrics/beehave_global_metrics.gd")
+	if not ProjectSettings.has_setting("autoload/BeehaveGlobalDebugger"):
+		add_autoload_singleton("BeehaveGlobalDebugger", "debug/global_debugger.gd")
 	
 	# Add project settings
 	if not ProjectSettings.has_setting("beehave/debugger/start_detached"):

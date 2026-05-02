@@ -39,8 +39,8 @@ MvMapScreen="*res://MV/scripts/map_screen.gd"
 MvSaveManager="*res://MV/scripts/save_manager.gd"
 MvGameOver="*res://MV/scripts/game_over.gd"
 MvShopUI="*res://MV/scripts/shop_ui.gd"
-BeehaveGlobalMetrics="*uid://c3ktl6ontsdt7"
-BeehaveGlobalDebugger="*uid://bl3ma400hpvsh"
+BeehaveGlobalMetrics="*res://addons/beehave/metrics/beehave_global_metrics.gd"
+BeehaveGlobalDebugger="*res://addons/beehave/debug/global_debugger.gd"
 EditorTooltip="*res://Space/scripts/editor/editor_tooltip.gd"
 
 [display]
