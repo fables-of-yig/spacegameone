@@ -35,6 +35,7 @@ static func load_pack(pack_id: String) -> MvPackRef:
 	var user_path := "user://Packs/%s/" % pack_id
 
 	_ensure_user_pack_dir(user_path)
+	repair_shipped_pack(pack_id)
 
 	var manifest_path := _resolve_read_static(user_path, shipped, "Pack.json")
 	var manifest := read_json_dict(manifest_path)
@@ -411,6 +412,16 @@ static func clone_shipped_pack(pack_id: String) -> bool:
 	_copy_dir_recursive(shipped_path, user_path)
 	print("[MvPackLoader] cloned shipped pack '%s' into user layer" % pack_id)
 	return true
+
+
+# Repair an existing user override for a shipped pack by copying any missing
+# bundled files into user://. Existing user-edited files are left untouched.
+static func repair_shipped_pack(pack_id: String) -> bool:
+	if pack_id.is_empty():
+		return false
+	if not _shipped_pack_exists(pack_id):
+		return true
+	return clone_shipped_pack(pack_id)
 
 
 static func export_portable_pack(pack_id: String, archive_path: String) -> Dictionary:

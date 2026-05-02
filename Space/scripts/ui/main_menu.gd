@@ -405,6 +405,8 @@ func _start_play_pack_menu(pack_id: String) -> void:
     var pid: String = pack_id.strip_edges()
     if pid.is_empty():
         return
+    if not MvPackLoader.repair_shipped_pack(pid):
+        return
     UIIo.ensure_stock_screens(pid)
     MvPackLoader.reset_last_loaded_pack_id()
     var pack := MvPackLoader.load_pack(pid)
@@ -494,6 +496,8 @@ func _on_campaign_name_submitted(text: String) -> void:
 
 func _choose_subeditor(kind: String):
     var pid := _selected_pack_id
+    if not MvPackLoader.repair_shipped_pack(pid):
+        return
     _editor_modal = EditorModal.CLOSED
     _selected_pack_id = ""
     visible = false
