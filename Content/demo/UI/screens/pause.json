@@ -1,0 +1,194 @@
+{
+	"anchor": "top_left",
+	"anchor_offset": {
+		"x": 0,
+		"y": 0
+	},
+	"children": [
+		{
+			"anchor": "top_left",
+			"anchor_offset": {
+				"x": 0,
+				"y": 0
+			},
+			"children": [],
+			"id": "pause_title",
+			"properties": {
+				"alignment": "left",
+				"bind_var": "",
+				"decimal_places": 0,
+				"format": "{value}",
+				"static_text": "PAUSED",
+				"tab_group": "default",
+				"tab_id": "",
+				"text_role": "title",
+				"wrap": false
+			},
+			"rect": {
+				"h": 24,
+				"w": 200,
+				"x": 18,
+				"y": 16
+			},
+			"type": "label"
+		},
+		{
+			"anchor": "top_left",
+			"anchor_offset": {
+				"x": 0,
+				"y": 0
+			},
+			"children": [],
+			"id": "pause_resume",
+			"properties": {
+				"action_args": "",
+				"action_id": "resume",
+				"enabled_condition": "",
+				"label": "RESUME",
+				"show_label": true,
+				"sprite_hover": "",
+				"sprite_normal": "",
+				"sprite_pressed": "",
+				"sprite_tint": "#ffffff",
+				"tab_group": "default",
+				"tab_id": ""
+			},
+			"rect": {
+				"h": 28,
+				"w": 120,
+				"x": 18,
+				"y": 50
+			},
+			"type": "button"
+		},
+		{
+			"anchor": "top_left",
+			"anchor_offset": {
+				"x": 0,
+				"y": 0
+			},
+			"children": [],
+			"id": "pause_inventory",
+			"properties": {
+				"action_args": "inventory",
+				"action_id": "open_screen",
+				"enabled_condition": "",
+				"label": "INVENTORY",
+				"show_label": true,
+				"sprite_hover": "",
+				"sprite_normal": "",
+				"sprite_pressed": "",
+				"sprite_tint": "#ffffff",
+				"tab_group": "default",
+				"tab_id": ""
+			},
+			"rect": {
+				"h": 28,
+				"w": 140,
+				"x": 150,
+				"y": 50
+			},
+			"type": "button"
+		},
+		{
+			"anchor": "top_left",
+			"anchor_offset": {
+				"x": 0,
+				"y": 0
+			},
+			"children": [],
+			"id": "pause_map",
+			"properties": {
+				"action_args": "map",
+				"action_id": "open_screen",
+				"enabled_condition": "",
+				"label": "MAP",
+				"show_label": true,
+				"sprite_hover": "",
+				"sprite_normal": "",
+				"sprite_pressed": "",
+				"sprite_tint": "#ffffff",
+				"tab_group": "default",
+				"tab_id": ""
+			},
+			"rect": {
+				"h": 28,
+				"w": 100,
+				"x": 302,
+				"y": 50
+			},
+			"type": "button"
+		},
+		{
+			"anchor": "top_left",
+			"anchor_offset": {
+				"x": 0,
+				"y": 0
+			},
+			"children": [],
+			"id": "pause_quit",
+			"properties": {
+				"action_args": "",
+				"action_id": "quit_to_menu",
+				"enabled_condition": "",
+				"label": "QUIT TO MENU",
+				"show_label": true,
+				"sprite_hover": "",
+				"sprite_normal": "",
+				"sprite_pressed": "",
+				"sprite_tint": "#ffffff",
+				"tab_group": "default",
+				"tab_id": ""
+			},
+			"rect": {
+				"h": 28,
+				"w": 170,
+				"x": 18,
+				"y": 88
+			},
+			"type": "button"
+		},
+		{
+			"anchor": "top_left",
+			"anchor_offset": {
+				"x": 0,
+				"y": 0
+			},
+			"children": [],
+			"id": "pause_note",
+			"properties": {
+				"alignment": "left",
+				"bind_var": "",
+				"decimal_places": 0,
+				"format": "{value}",
+				"static_text": "Stock pause screen. Swap art, relabel actions, or add trigger events from buttons.",
+				"tab_group": "default",
+				"tab_id": "",
+				"text_role": "dim",
+				"wrap": false
+			},
+			"rect": {
+				"h": 18,
+				"w": 420,
+				"x": 18,
+				"y": 128
+			},
+			"type": "label"
+		}
+	],
+	"id": "pause_root",
+	"properties": {
+		"padding": 8,
+		"scroll": "none",
+		"tab_group": "default",
+		"tab_id": "",
+		"variant": "dark"
+	},
+	"rect": {
+		"h": 272,
+		"w": 480,
+		"x": 0,
+		"y": 0
+	},
+	"type": "panel"
+}

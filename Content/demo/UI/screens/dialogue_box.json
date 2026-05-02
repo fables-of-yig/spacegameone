@@ -1,0 +1,138 @@
+{
+	"anchor": "top_left",
+	"anchor_offset": {
+		"x": 0.0,
+		"y": 0.0
+	},
+	"children": [
+		{
+			"anchor": "top_left",
+			"anchor_offset": {
+				"x": 0.0,
+				"y": 0.0
+			},
+			"children": [],
+			"id": "dialogue_speaker",
+			"properties": {
+				"alignment": "left",
+				"bind_var": "dialogue.speaker",
+				"decimal_places": 0.0,
+				"format": "{value}",
+				"opacity": 1.0,
+				"static_text": "",
+				"tab_group": "default",
+				"tab_id": "",
+				"text_role": "title",
+				"wrap": false
+			},
+			"rect": {
+				"h": 19.0,
+				"w": 368.0,
+				"x": 14.0,
+				"y": 10.0
+			},
+			"type": "label"
+		},
+		{
+			"anchor": "top_left",
+			"anchor_offset": {
+				"x": 0.0,
+				"y": 0.0
+			},
+			"children": [],
+			"id": "dialogue_text",
+			"properties": {
+				"alignment": "left",
+				"bind_var": "dialogue.text",
+				"decimal_places": 0.0,
+				"format": "{value}",
+				"opacity": 1.0,
+				"static_text": "",
+				"tab_group": "default",
+				"tab_id": "",
+				"text_role": "body",
+				"wrap": true
+			},
+			"rect": {
+				"h": 54.0,
+				"w": 373.0,
+				"x": 14.0,
+				"y": 32.0
+			},
+			"type": "label"
+		},
+		{
+			"anchor": "top_left",
+			"anchor_offset": {
+				"x": 0.0,
+				"y": 0.0
+			},
+			"children": [],
+			"id": "dialogue_choices",
+			"properties": {
+				"bind_array": "dialogue.choices",
+				"item_action_arg_key": "choice_index",
+				"item_action_id": "choose_dialogue",
+				"item_min_height": 20.0,
+				"item_template": "{  }",
+				"item_wrap": true,
+				"max_visible": 10.0,
+				"spacing": 6.0,
+				"tab_group": "default",
+				"tab_id": ""
+			},
+			"rect": {
+				"h": 52.0,
+				"w": 452.0,
+				"x": 14.0,
+				"y": 90.0
+			},
+			"type": "list"
+		},
+		{
+			"anchor": "top_left",
+			"anchor_offset": {
+				"x": 0.0,
+				"y": 0.0
+			},
+			"children": [],
+			"id": "icon_3951",
+			"properties": {
+				"bind_sprite": "",
+				"scale": 1.0,
+				"sprite_source": "",
+				"tab_group": "default",
+				"tab_id": "",
+				"tint": "#ffffff"
+			},
+			"rect": {
+				"h": 72.0,
+				"w": 82.0,
+				"x": 390.0,
+				"y": 10.0
+			},
+			"type": "icon"
+		}
+	],
+	"id": "dialogue_box_root",
+	"properties": {
+		"opacity": 1.0,
+		"padding": 8.0,
+		"scroll": "none",
+		"sprite_mode": "9slice",
+		"sprite_slice_x": 48.0,
+		"sprite_slice_y": 48.0,
+		"sprite_source": "user://Packs/demo/Assets/UI/9-tilescroll_3.png",
+		"sprite_tint": "#000000",
+		"tab_group": "default",
+		"tab_id": "",
+		"variant": ""
+	},
+	"rect": {
+		"h": 156.0,
+		"w": 480.0,
+		"x": 1.0,
+		"y": 124.0
+	},
+	"type": "panel"
+}

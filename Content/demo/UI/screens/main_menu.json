@@ -1,0 +1,194 @@
+{
+	"anchor": "top_left",
+	"anchor_offset": {
+		"x": 0.0,
+		"y": 0.0
+	},
+	"children": [
+		{
+			"anchor": "top_left",
+			"anchor_offset": {
+				"x": 0.0,
+				"y": 0.0
+			},
+			"children": [],
+			"id": "main_menu_title",
+			"properties": {
+				"alignment": "left",
+				"bind_var": "",
+				"decimal_places": 0.0,
+				"format": "{value}",
+				"static_text": "NEW PACK MENU",
+				"tab_group": "default",
+				"tab_id": "",
+				"text_role": "title",
+				"wrap": false
+			},
+			"rect": {
+				"h": 28.0,
+				"w": 240.0,
+				"x": 118.0,
+				"y": 24.0
+			},
+			"type": "label"
+		},
+		{
+			"anchor": "top_left",
+			"anchor_offset": {
+				"x": 0.0,
+				"y": 0.0
+			},
+			"children": [],
+			"id": "main_menu_hint",
+			"properties": {
+				"alignment": "left",
+				"bind_var": "",
+				"decimal_places": 0.0,
+				"format": "{value}",
+				"static_text": "Edit these buttons, replace the art, then wire your own pack flow.",
+				"tab_group": "default",
+				"tab_id": "",
+				"text_role": "dim",
+				"wrap": false
+			},
+			"rect": {
+				"h": 18.0,
+				"w": 308.0,
+				"x": 88.0,
+				"y": 54.0
+			},
+			"type": "label"
+		},
+		{
+			"anchor": "top_left",
+			"anchor_offset": {
+				"x": 0.0,
+				"y": 0.0
+			},
+			"children": [],
+			"id": "main_menu_new_game",
+			"properties": {
+				"action_args": "",
+				"action_id": "new_game",
+				"enabled_condition": "",
+				"label": "NEW GAME",
+				"show_label": true,
+				"sprite_hover": "",
+				"sprite_normal": "",
+				"sprite_pressed": "",
+				"sprite_tint": "#ffffff",
+				"tab_group": "default",
+				"tab_id": ""
+			},
+			"rect": {
+				"h": 32.0,
+				"w": 172.0,
+				"x": 154.0,
+				"y": 92.0
+			},
+			"type": "button"
+		},
+		{
+			"anchor": "top_left",
+			"anchor_offset": {
+				"x": 0.0,
+				"y": 0.0
+			},
+			"children": [],
+			"id": "main_menu_load",
+			"properties": {
+				"action_args": "1",
+				"action_id": "load_slot",
+				"enabled_condition": "",
+				"label": "LOAD SLOT 1",
+				"show_label": true,
+				"sprite_hover": "",
+				"sprite_normal": "",
+				"sprite_pressed": "",
+				"sprite_tint": "#ffffff",
+				"tab_group": "default",
+				"tab_id": ""
+			},
+			"rect": {
+				"h": 32.0,
+				"w": 172.0,
+				"x": 154.0,
+				"y": 132.0
+			},
+			"type": "button"
+		},
+		{
+			"anchor": "top_left",
+			"anchor_offset": {
+				"x": 0.0,
+				"y": 0.0
+			},
+			"children": [],
+			"id": "main_menu_settings",
+			"properties": {
+				"action_args": "inventory",
+				"action_id": "open_screen",
+				"enabled_condition": "",
+				"label": "OPEN INVENTORY",
+				"show_label": true,
+				"sprite_hover": "",
+				"sprite_normal": "",
+				"sprite_pressed": "",
+				"sprite_tint": "#ffffff",
+				"tab_group": "default",
+				"tab_id": ""
+			},
+			"rect": {
+				"h": 32.0,
+				"w": 172.0,
+				"x": 154.0,
+				"y": 172.0
+			},
+			"type": "button"
+		},
+		{
+			"anchor": "top_left",
+			"anchor_offset": {
+				"x": 0.0,
+				"y": 0.0
+			},
+			"children": [],
+			"id": "main_menu_quit",
+			"properties": {
+				"action_args": "",
+				"action_id": "quit_to_menu",
+				"enabled_condition": "",
+				"label": "QUIT TO LAUNCHER",
+				"show_label": true,
+				"sprite_hover": "",
+				"sprite_normal": "",
+				"sprite_pressed": "",
+				"sprite_tint": "#ffffff",
+				"tab_group": "default",
+				"tab_id": ""
+			},
+			"rect": {
+				"h": 32.0,
+				"w": 172.0,
+				"x": 154.0,
+				"y": 212.0
+			},
+			"type": "button"
+		}
+	],
+	"id": "main_menu_root",
+	"properties": {
+		"padding": 8.0,
+		"scroll": "none",
+		"tab_group": "default",
+		"tab_id": "",
+		"variant": "dark"
+	},
+	"rect": {
+		"h": 272.0,
+		"w": 480.0,
+		"x": 0.0,
+		"y": 0.0
+	},
+	"type": "panel"
+}

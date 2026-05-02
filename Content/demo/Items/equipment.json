@@ -2,19 +2,6 @@
   "_comment": "Phase 7 equipment registry. Each piece occupies a slot; equipping it grants any abilities listed in grants_abilities. Slot enum values: Head, Body, LeftHand, RightHand, Accessory1, Accessory2, Cloak.",
   "equipment": [
     {
-      "id": "cadet_blade",
-      "name": "Cadet Blade",
-      "description": "Starter melee weapon wired to the default three-hit authored combo.",
-      "slot": "RightHand",
-      "grants_abilities": [],
-      "stat_mods": {},
-      "weapon": "combo_slash_1",
-      "sprite_sheet": "",
-      "frame_width": 16,
-      "frame_height": 16,
-      "frame_index": 0
-    },
-    {
       "id": "varia_suit",
       "name": "Varia Suit",
       "description": "Insulated body armor. Halves environmental damage.",

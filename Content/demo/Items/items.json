@@ -1,51 +1,74 @@
 {
-  "_comment": "Phase 5e item registry. Items are referenced by id from pickups, shops, and trigger actions.",
   "items": [
     {
-      "id": "coin",
-      "name": "Coin",
+      "category": "currency",
       "description": "Currency. Used at shops.",
-      "max_stack": 9999,
-      "price": 1,
-      "category": "currency"
+      "id": "coin",
+      "max_stack": 9999.0,
+      "name": "Coin",
+      "price": 1.0
     },
     {
-      "id": "potion",
-      "name": "Potion",
-      "description": "Restores 25 HP when used.",
-      "max_stack": 9,
-      "price": 10,
       "category": "consumable",
-      "use_effect": "heal_hp",
+      "description": "Restores 25 HP when used.",
+      "id": "potion",
+      "max_stack": 9,
+      "name": "Potion",
+      "price": 10,
       "use_amount": 25,
-      "use_arg": ""
+      "use_arg": "",
+      "use_effect": "heal_hp"
     },
     {
-      "id": "key_silver",
-      "name": "Silver Key",
+      "category": "key",
       "description": "Opens silver-locked doors.",
-      "max_stack": 9,
-      "price": 0,
-      "category": "key"
+      "id": "key_silver",
+      "max_stack": 9.0,
+      "name": "Silver Key",
+      "price": 0.0
     },
     {
-      "id": "key_gold",
-      "name": "Gold Key",
+      "category": "key",
       "description": "Opens gold-locked doors.",
+      "id": "key_gold",
       "max_stack": 9,
-      "price": 0,
-      "category": "key"
+      "name": "Gold Key",
+      "price": 0
     },
     {
-      "id": "heart_container",
-      "name": "Heart Container",
-      "description": "Permanently increases max HP by 1.",
-      "max_stack": 99,
-      "price": 0,
       "category": "upgrade",
-      "use_effect": "max_hp_up",
+      "description": "Permanently increases max HP by 1.",
+      "id": "heart_container",
+      "max_stack": 99,
+      "name": "Heart Container",
+      "price": 0,
       "use_amount": 1,
-      "use_arg": ""
+      "use_arg": "",
+      "use_effect": "max_hp_up"
+    },
+    {
+      "auto_use_on_gain": true,
+      "category": "ammo",
+      "description": "Adds 5 missile ammo.",
+      "id": "missile_ammo_pickup",
+      "max_stack": 99,
+      "name": "Missile Ammo",
+      "price": 8,
+      "use_amount": 5,
+      "use_arg": "missile",
+      "use_effect": "add_ammo"
+    },
+    {
+      "auto_use_on_gain": true,
+      "category": "ammo",
+      "description": "Adds 5 missile ammo.",
+      "id": "missile_ammo_pickup_1",
+      "max_stack": 99,
+      "name": "Missile Ammo",
+      "price": 8,
+      "use_amount": 5,
+      "use_arg": "missile",
+      "use_effect": "add_ammo"
     }
   ]
 }

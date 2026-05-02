@@ -1,0 +1,23 @@
+{
+	"anchor": "top_left",
+	"anchor_offset": {
+		"x": 0.0,
+		"y": 0.0
+	},
+	"children": [],
+	"id": "hud_root",
+	"properties": {
+		"padding": 8.0,
+		"scroll": "none",
+		"tab_group": "default",
+		"tab_id": "",
+		"variant": "main"
+	},
+	"rect": {
+		"h": 8.0,
+		"w": 479.0,
+		"x": 1.0,
+		"y": 264.0
+	},
+	"type": "panel"
+}

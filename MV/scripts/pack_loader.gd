@@ -395,14 +395,14 @@ static func list_all_packs() -> Array:
 
 
 # Clone a shipped pack into the user layer so the author can start editing
-# it. Copies res://Content/<pack_id>/ recursively to user://Packs/<pack_id>/.
-# Skips if the user pack already exists. Returns true on success.
+# it. Copies missing files from res://Content/<pack_id>/ recursively to
+# user://Packs/<pack_id>/ without overwriting user edits. This is also a
+# repair pass for exported builds that previously created a partial user
+# pack before all raw authoring assets were bundled.
 static func clone_shipped_pack(pack_id: String) -> bool:
 	if pack_id.is_empty():
 		return false
 	var user_path := "user://Packs/%s/" % pack_id
-	if DirAccess.dir_exists_absolute(user_path) and FileAccess.file_exists(user_path + "Pack.json"):
-		return true
 	var shipped_path := "res://Content/%s/" % pack_id
 	if not DirAccess.dir_exists_absolute(shipped_path):
 		push_error("MvPackLoader.clone_shipped_pack: no shipped pack '%s'" % pack_id)

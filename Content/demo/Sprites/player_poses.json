@@ -1,68 +1,141 @@
 ﻿{
-    "seed_version":  4,
     "poses":  {
                   "0":  {
-                            "name":  "forward",
-                            "dir":  1,
-                            "mvtype":  0,
-                            "y_radius":  16,
-                            "y_offset":  0,
-                            "collision_x":  0,
-                            "collision_width":  24,
-                            "hurtbox_x":  0,
-                            "hurtbox_y":  -16,
-                            "hurtbox_w":  24,
-                            "hurtbox_h":  32,
-                            "weapon_anchor_x":  0,
-                            "weapon_anchor_y":  -24,
-                            "timing":  [
-                                           60
-                                       ],
+                            "anim_speed":  1.0,
+                            "collision_width":  11,
+                            "collision_x":  1,
+                            "dir":  -1,
+                            "frame_boxes":  [
+                                                {
+                                                    "collision_width":  11,
+                                                    "collision_x":  1,
+                                                    "hurtbox_h":  22,
+                                                    "hurtbox_w":  11,
+                                                    "hurtbox_x":  1,
+                                                    "hurtbox_y":  -11,
+                                                    "y_offset":  -1,
+                                                    "y_radius":  11
+                                                },
+                                                {
+
+                                                },
+                                                {
+
+                                                },
+                                                {
+
+                                                },
+                                                {
+
+                                                },
+                                                {
+
+                                                },
+                                                {
+
+                                                },
+                                                {
+
+                                                }
+                                            ],
+                            "hurtbox_h":  22,
+                            "hurtbox_w":  11,
+                            "hurtbox_x":  1,
+                            "hurtbox_y":  -11,
                             "loop_from":  0,
-                            "transition_to":  -1
+                            "mvtype":  0,
+                            "name":  "forward",
+                            "timing":  [
+                                           60,
+                                           10,
+                                           10,
+                                           10,
+                                           10,
+                                           10,
+                                           10,
+                                           10
+                                       ],
+                            "transition_to":  -1,
+                            "weapon_anchor_x":  9,
+                            "weapon_anchor_y":  -9,
+                            "y_offset":  -1,
+                            "y_radius":  11
                         },
                   "1":  {
-                            "name":  "stand_right",
-                            "dir":  1,
-                            "mvtype":  0,
-                            "y_radius":  16,
-                            "y_offset":  0,
-                            "collision_x":  0,
-                            "collision_width":  24,
-                            "hurtbox_x":  0,
-                            "hurtbox_y":  -16,
-                            "hurtbox_w":  24,
-                            "hurtbox_h":  32,
-                            "weapon_anchor_x":  0,
-                            "weapon_anchor_y":  -24,
-                            "timing":  [
-                                           10,
-                                           10,
-                                           10,
-                                           10,
-                                           10,
-                                           10,
-                                           10
-                                       ],
-                            "loop_from":  0,
-                            "transition_to":  -1
-                        },
-                  "2":  {
-                            "name":  "stand_left",
+                            "anim_speed":  1.0,
+                            "collision_width":  11,
+                            "collision_x":  1,
                             "dir":  -1,
+                            "frame_boxes":  [
+                                                {
+                                                    "collision_width":  11,
+                                                    "collision_x":  1,
+                                                    "hurtbox_h":  22,
+                                                    "hurtbox_w":  11,
+                                                    "hurtbox_x":  1,
+                                                    "hurtbox_y":  -11,
+                                                    "y_offset":  -1,
+                                                    "y_radius":  11
+                                                },
+                                                {
+                                                    "collision_width":  11,
+                                                    "collision_x":  1,
+                                                    "hurtbox_h":  22,
+                                                    "hurtbox_w":  11,
+                                                    "hurtbox_x":  1,
+                                                    "hurtbox_y":  -11,
+                                                    "y_offset":  -1,
+                                                    "y_radius":  11
+                                                },
+                                                {
+                                                    "collision_width":  11,
+                                                    "collision_x":  1,
+                                                    "hurtbox_h":  22,
+                                                    "hurtbox_w":  11,
+                                                    "hurtbox_x":  1,
+                                                    "hurtbox_y":  -11,
+                                                    "y_offset":  -1,
+                                                    "y_radius":  11
+                                                },
+                                                {
+                                                    "collision_width":  11,
+                                                    "collision_x":  1,
+                                                    "hurtbox_h":  22,
+                                                    "hurtbox_w":  11,
+                                                    "hurtbox_x":  1,
+                                                    "hurtbox_y":  -11,
+                                                    "y_offset":  -1,
+                                                    "y_radius":  11
+                                                },
+                                                {
+                                                    "collision_width":  11,
+                                                    "collision_x":  1,
+                                                    "hurtbox_h":  22,
+                                                    "hurtbox_w":  11,
+                                                    "hurtbox_x":  1,
+                                                    "hurtbox_y":  -11,
+                                                    "y_offset":  -1,
+                                                    "y_radius":  11
+                                                },
+                                                {
+                                                    "collision_width":  11,
+                                                    "collision_x":  1,
+                                                    "hurtbox_h":  22,
+                                                    "hurtbox_w":  11,
+                                                    "hurtbox_x":  1,
+                                                    "hurtbox_y":  -11,
+                                                    "y_offset":  -1,
+                                                    "y_radius":  11
+                                                }
+                                            ],
+                            "hurtbox_h":  22,
+                            "hurtbox_w":  11,
+                            "hurtbox_x":  1,
+                            "hurtbox_y":  -11,
+                            "loop_from":  0,
                             "mvtype":  0,
-                            "y_radius":  16,
-                            "y_offset":  0,
-                            "collision_x":  0,
-                            "collision_width":  24,
-                            "hurtbox_x":  0,
-                            "hurtbox_y":  -16,
-                            "hurtbox_w":  24,
-                            "hurtbox_h":  32,
-                            "weapon_anchor_x":  0,
-                            "weapon_anchor_y":  -24,
+                            "name":  "stand_right",
                             "timing":  [
-                                           10,
                                            10,
                                            10,
                                            10,
@@ -70,53 +143,87 @@
                                            10,
                                            10
                                        ],
-                            "loop_from":  0,
-                            "transition_to":  -1
-                        },
-                  "9":  {
-                            "name":  "run_right",
-                            "dir":  1,
-                            "mvtype":  1,
-                            "y_radius":  16,
-                            "y_offset":  0,
-                            "collision_x":  0,
-                            "collision_width":  24,
-                            "hurtbox_x":  0,
-                            "hurtbox_y":  -16,
-                            "hurtbox_w":  24,
-                            "hurtbox_h":  32,
+                            "transition_to":  -1,
                             "weapon_anchor_x":  0,
                             "weapon_anchor_y":  -24,
-                            "timing":  [
-                                           6,
-                                           6,
-                                           6,
-                                           6,
-                                           6,
-                                           6,
-                                           6,
-                                           6
-                                       ],
-                            "loop_from":  0,
-                            "transition_to":  -1
+                            "y_offset":  -1,
+                            "y_radius":  11
                         },
                   "10":  {
-                             "name":  "run_left",
+                             "anim_speed":  1.0,
+                             "collision_width":  11,
+                             "collision_x":  -1,
                              "dir":  -1,
+                             "frame_boxes":  [
+                                                 {
+                                                     "collision_width":  11,
+                                                     "collision_x":  -1,
+                                                     "hurtbox_h":  22,
+                                                     "hurtbox_w":  11,
+                                                     "hurtbox_x":  -1,
+                                                     "hurtbox_y":  -11,
+                                                     "y_offset":  -1,
+                                                     "y_radius":  11
+                                                 },
+                                                 {
+                                                     "collision_width":  11,
+                                                     "collision_x":  -1,
+                                                     "hurtbox_h":  22,
+                                                     "hurtbox_w":  11,
+                                                     "hurtbox_x":  -1,
+                                                     "hurtbox_y":  -11,
+                                                     "y_offset":  -1,
+                                                     "y_radius":  11
+                                                 },
+                                                 {
+                                                     "collision_width":  11,
+                                                     "collision_x":  -1,
+                                                     "hurtbox_h":  22,
+                                                     "hurtbox_w":  11,
+                                                     "hurtbox_x":  -1,
+                                                     "hurtbox_y":  -11,
+                                                     "y_offset":  -1,
+                                                     "y_radius":  11
+                                                 },
+                                                 {
+                                                     "collision_width":  11,
+                                                     "collision_x":  -1,
+                                                     "hurtbox_h":  22,
+                                                     "hurtbox_w":  11,
+                                                     "hurtbox_x":  -1,
+                                                     "hurtbox_y":  -11,
+                                                     "y_offset":  -1,
+                                                     "y_radius":  11
+                                                 },
+                                                 {
+                                                     "collision_width":  11,
+                                                     "collision_x":  -1,
+                                                     "hurtbox_h":  22,
+                                                     "hurtbox_w":  11,
+                                                     "hurtbox_x":  -1,
+                                                     "hurtbox_y":  -11,
+                                                     "y_offset":  -1,
+                                                     "y_radius":  11
+                                                 },
+                                                 {
+                                                     "collision_width":  11,
+                                                     "collision_x":  -1,
+                                                     "hurtbox_h":  22,
+                                                     "hurtbox_w":  11,
+                                                     "hurtbox_x":  -1,
+                                                     "hurtbox_y":  -11,
+                                                     "y_offset":  -1,
+                                                     "y_radius":  11
+                                                 }
+                                             ],
+                             "hurtbox_h":  22,
+                             "hurtbox_w":  11,
+                             "hurtbox_x":  -1,
+                             "hurtbox_y":  -11,
+                             "loop_from":  0,
                              "mvtype":  1,
-                             "y_radius":  16,
-                             "y_offset":  0,
-                             "collision_x":  0,
-                             "collision_width":  24,
-                             "hurtbox_x":  0,
-                             "hurtbox_y":  -16,
-                             "hurtbox_w":  24,
-                             "hurtbox_h":  32,
-                             "weapon_anchor_x":  0,
-                             "weapon_anchor_y":  -24,
+                             "name":  "run_left",
                              "timing":  [
-                                            6,
-                                            6,
                                             6,
                                             6,
                                             6,
@@ -124,501 +231,359 @@
                                             6,
                                             6
                                         ],
-                             "loop_from":  0,
-                             "transition_to":  -1
-                         },
-                  "25":  {
-                             "name":  "spin_right",
-                             "dir":  1,
-                             "mvtype":  3,
-                             "y_radius":  16,
-                             "y_offset":  0,
-                             "collision_x":  0,
-                             "collision_width":  24,
-                             "hurtbox_x":  0,
-                             "hurtbox_y":  -16,
-                             "hurtbox_w":  24,
-                             "hurtbox_h":  32,
+                             "transition_to":  -1,
                              "weapon_anchor_x":  0,
                              "weapon_anchor_y":  -24,
-                             "timing":  [
-                                            5,
-                                            5,
-                                            5,
-                                            5,
-                                            5,
-                                            5,
-                                            5,
-                                            5
-                                        ],
-                             "loop_from":  0,
-                             "transition_to":  -1
-                         },
-                  "26":  {
-                             "name":  "spin_left",
-                             "dir":  -1,
-                             "mvtype":  3,
-                             "y_radius":  16,
-                             "y_offset":  0,
-                             "collision_x":  0,
-                             "collision_width":  24,
-                             "hurtbox_x":  0,
-                             "hurtbox_y":  -16,
-                             "hurtbox_w":  24,
-                             "hurtbox_h":  32,
-                             "weapon_anchor_x":  0,
-                             "weapon_anchor_y":  -24,
-                             "timing":  [
-                                            5,
-                                            5,
-                                            5,
-                                            5,
-                                            5,
-                                            5,
-                                            5,
-                                            5
-                                        ],
-                             "loop_from":  0,
-                             "transition_to":  -1
-                         },
-                  "37":  {
-                             "name":  "turn_right",
-                             "dir":  1,
-                             "mvtype":  14,
-                             "y_radius":  16,
-                             "y_offset":  0,
-                             "collision_x":  0,
-                             "collision_width":  24,
-                             "hurtbox_x":  0,
-                             "hurtbox_y":  -16,
-                             "hurtbox_w":  24,
-                             "hurtbox_h":  32,
-                             "weapon_anchor_x":  0,
-                             "weapon_anchor_y":  -24,
-                             "timing":  [
-                                            4,
-                                            4,
-                                            4
-                                        ],
-                             "loop_from":  -1,
-                             "transition_to":  2
-                         },
-                  "38":  {
-                             "name":  "turn_left",
-                             "dir":  -1,
-                             "mvtype":  14,
-                             "y_radius":  16,
-                             "y_offset":  0,
-                             "collision_x":  0,
-                             "collision_width":  24,
-                             "hurtbox_x":  0,
-                             "hurtbox_y":  -16,
-                             "hurtbox_w":  24,
-                             "hurtbox_h":  32,
-                             "weapon_anchor_x":  0,
-                             "weapon_anchor_y":  -24,
-                             "timing":  [
-                                            4,
-                                            4,
-                                            4
-                                        ],
-                             "loop_from":  -1,
-                             "transition_to":  1
-                         },
-                  "41":  {
-                             "name":  "fall_right",
-                             "dir":  1,
-                             "mvtype":  6,
-                             "y_radius":  16,
-                             "y_offset":  0,
-                             "collision_x":  0,
-                             "collision_width":  24,
-                             "hurtbox_x":  0,
-                             "hurtbox_y":  -16,
-                             "hurtbox_w":  24,
-                             "hurtbox_h":  32,
-                             "weapon_anchor_x":  0,
-                             "weapon_anchor_y":  -24,
-                             "timing":  [
-                                            60
-                                        ],
-                             "loop_from":  0,
-                             "transition_to":  -1
-                         },
-                  "42":  {
-                             "name":  "fall_left",
-                             "dir":  -1,
-                             "mvtype":  6,
-                             "y_radius":  16,
-                             "y_offset":  0,
-                             "collision_x":  0,
-                             "collision_width":  24,
-                             "hurtbox_x":  0,
-                             "hurtbox_y":  -16,
-                             "hurtbox_w":  24,
-                             "hurtbox_h":  32,
-                             "weapon_anchor_x":  0,
-                             "weapon_anchor_y":  -24,
-                             "timing":  [
-                                            60
-                                        ],
-                             "loop_from":  0,
-                             "transition_to":  -1
-                         },
-                  "47":  {
-                             "name":  "turn_air_right",
-                             "dir":  1,
-                             "mvtype":  23,
-                             "y_radius":  16,
-                             "y_offset":  0,
-                             "collision_x":  0,
-                             "collision_width":  24,
-                             "hurtbox_x":  0,
-                             "hurtbox_y":  -16,
-                             "hurtbox_w":  24,
-                             "hurtbox_h":  32,
-                             "weapon_anchor_x":  0,
-                             "weapon_anchor_y":  -24,
-                             "timing":  [
-                                            4,
-                                            4,
-                                            4
-                                        ],
-                             "loop_from":  -1,
-                             "transition_to":  42
-                         },
-                  "48":  {
-                             "name":  "turn_air_left",
-                             "dir":  -1,
-                             "mvtype":  23,
-                             "y_radius":  16,
-                             "y_offset":  0,
-                             "collision_x":  0,
-                             "collision_width":  24,
-                             "hurtbox_x":  0,
-                             "hurtbox_y":  -16,
-                             "hurtbox_w":  24,
-                             "hurtbox_h":  32,
-                             "weapon_anchor_x":  0,
-                             "weapon_anchor_y":  -24,
-                             "timing":  [
-                                            4,
-                                            4,
-                                            4
-                                        ],
-                             "loop_from":  -1,
-                             "transition_to":  41
-                         },
-                  "53":  {
-                             "name":  "crouch_transition_right",
-                             "dir":  1,
-                             "mvtype":  15,
-                             "y_radius":  16,
-                             "y_offset":  0,
-                             "collision_x":  0,
-                             "collision_width":  24,
-                             "hurtbox_x":  0,
-                             "hurtbox_y":  -16,
-                             "hurtbox_w":  24,
-                             "hurtbox_h":  32,
-                             "weapon_anchor_x":  0,
-                             "weapon_anchor_y":  -24,
-                             "timing":  [
-                                            5,
-                                            5,
-                                            5
-                                        ],
-                             "loop_from":  -1,
-                             "transition_to":  67
-                         },
-                  "54":  {
-                             "name":  "crouch_transition_left",
-                             "dir":  -1,
-                             "mvtype":  15,
-                             "y_radius":  16,
-                             "y_offset":  0,
-                             "collision_x":  0,
-                             "collision_width":  24,
-                             "hurtbox_x":  0,
-                             "hurtbox_y":  -16,
-                             "hurtbox_w":  24,
-                             "hurtbox_h":  32,
-                             "weapon_anchor_x":  0,
-                             "weapon_anchor_y":  -24,
-                             "timing":  [
-                                            5,
-                                            5,
-                                            5
-                                        ],
-                             "loop_from":  -1,
-                             "transition_to":  68
-                         },
-                  "59":  {
-                             "name":  "crouch_aim_up_right",
-                             "dir":  1,
-                             "mvtype":  5,
-                             "y_radius":  16,
-                             "y_offset":  0,
-                             "collision_x":  0,
-                             "collision_width":  24,
-                             "hurtbox_x":  0,
-                             "hurtbox_y":  -16,
-                             "hurtbox_w":  24,
-                             "hurtbox_h":  32,
-                             "weapon_anchor_x":  0,
-                             "weapon_anchor_y":  -24,
-                             "timing":  [
-                                            12,
-                                            12,
-                                            12
-                                        ],
-                             "loop_from":  0,
-                             "transition_to":  -1
-                         },
-                  "60":  {
-                             "name":  "crouch_aim_up_left",
-                             "dir":  -1,
-                             "mvtype":  5,
-                             "y_radius":  16,
-                             "y_offset":  0,
-                             "collision_x":  0,
-                             "collision_width":  24,
-                             "hurtbox_x":  0,
-                             "hurtbox_y":  -16,
-                             "hurtbox_w":  24,
-                             "hurtbox_h":  32,
-                             "weapon_anchor_x":  0,
-                             "weapon_anchor_y":  -24,
-                             "timing":  [
-                                            12,
-                                            12,
-                                            12
-                                        ],
-                             "loop_from":  0,
-                             "transition_to":  -1
-                         },
-                  "67":  {
-                             "name":  "crouch_right",
-                             "dir":  1,
-                             "mvtype":  5,
-                             "y_radius":  16,
-                             "y_offset":  0,
-                             "collision_x":  0,
-                             "collision_width":  24,
-                             "hurtbox_x":  0,
-                             "hurtbox_y":  -16,
-                             "hurtbox_w":  24,
-                             "hurtbox_h":  32,
-                             "weapon_anchor_x":  0,
-                             "weapon_anchor_y":  -24,
-                             "timing":  [
-                                            60
-                                        ],
-                             "loop_from":  0,
-                             "transition_to":  -1
-                         },
-                  "68":  {
-                             "name":  "crouch_left",
-                             "dir":  -1,
-                             "mvtype":  5,
-                             "y_radius":  16,
-                             "y_offset":  0,
-                             "collision_x":  0,
-                             "collision_width":  24,
-                             "hurtbox_x":  0,
-                             "hurtbox_y":  -16,
-                             "hurtbox_w":  24,
-                             "hurtbox_h":  32,
-                             "weapon_anchor_x":  0,
-                             "weapon_anchor_y":  -24,
-                             "timing":  [
-                                            60
-                                        ],
-                             "loop_from":  0,
-                             "transition_to":  -1
-                         },
-                  "75":  {
-                             "name":  "jump_rise_right",
-                             "dir":  1,
-                             "mvtype":  2,
-                             "y_radius":  16,
-                             "y_offset":  0,
-                             "collision_x":  0,
-                             "collision_width":  24,
-                             "hurtbox_x":  0,
-                             "hurtbox_y":  -16,
-                             "hurtbox_w":  24,
-                             "hurtbox_h":  32,
-                             "weapon_anchor_x":  0,
-                             "weapon_anchor_y":  -24,
-                             "timing":  [
-                                            60
-                                        ],
-                             "loop_from":  0,
-                             "transition_to":  -1
-                         },
-                  "76":  {
-                             "name":  "jump_rise_left",
-                             "dir":  -1,
-                             "mvtype":  2,
-                             "y_radius":  16,
-                             "y_offset":  0,
-                             "collision_x":  0,
-                             "collision_width":  24,
-                             "hurtbox_x":  0,
-                             "hurtbox_y":  -16,
-                             "hurtbox_w":  24,
-                             "hurtbox_h":  32,
-                             "weapon_anchor_x":  0,
-                             "weapon_anchor_y":  -24,
-                             "timing":  [
-                                            60
-                                        ],
-                             "loop_from":  0,
-                             "transition_to":  -1
+                             "y_offset":  -1,
+                             "y_radius":  11
                          },
                   "135":  {
-                              "name":  "turn_fall_right",
-                              "dir":  1,
+                              "anim_speed":  1.0,
+                              "collision_width":  11,
+                              "collision_x":  1,
+                              "dir":  -1,
+                              "frame_boxes":  [
+                                                  {
+
+                                                  },
+                                                  {
+
+                                                  },
+                                                  {
+
+                                                  },
+                                                  {
+
+                                                  }
+                                              ],
+                              "hurtbox_h":  22,
+                              "hurtbox_w":  11,
+                              "hurtbox_x":  1,
+                              "hurtbox_y":  -11,
+                              "loop_from":  -1,
                               "mvtype":  24,
-                              "y_radius":  16,
-                              "y_offset":  0,
-                              "collision_x":  0,
-                              "collision_width":  24,
-                              "hurtbox_x":  0,
-                              "hurtbox_y":  -16,
-                              "hurtbox_w":  24,
-                              "hurtbox_h":  32,
+                              "name":  "turn_fall_right",
+                              "timing":  [
+                                             10,
+                                             10,
+                                             10,
+                                             10
+                                         ],
+                              "transition_to":  42,
                               "weapon_anchor_x":  0,
                               "weapon_anchor_y":  -24,
-                              "timing":  [
-                                             4,
-                                             4,
-                                             4
-                                         ],
-                              "loop_from":  -1,
-                              "transition_to":  42
+                              "y_offset":  -1,
+                              "y_radius":  11
                           },
                   "136":  {
-                              "name":  "turn_fall_left",
+                              "anim_speed":  1.0,
+                              "collision_width":  11,
+                              "collision_x":  -1,
                               "dir":  -1,
+                              "frame_boxes":  [
+
+                                              ],
+                              "hurtbox_h":  22,
+                              "hurtbox_w":  11,
+                              "hurtbox_x":  -1,
+                              "hurtbox_y":  -11,
+                              "loop_from":  -1,
                               "mvtype":  24,
-                              "y_radius":  16,
-                              "y_offset":  0,
-                              "collision_x":  0,
-                              "collision_width":  24,
-                              "hurtbox_x":  0,
-                              "hurtbox_y":  -16,
-                              "hurtbox_w":  24,
-                              "hurtbox_h":  32,
+                              "name":  "turn_fall_left",
+                              "timing":  [
+                                             10,
+                                             10,
+                                             10,
+                                             10
+                                         ],
+                              "transition_to":  41,
                               "weapon_anchor_x":  0,
                               "weapon_anchor_y":  -24,
-                              "timing":  [
-                                             4,
-                                             4,
-                                             4
-                                         ],
-                              "loop_from":  -1,
-                              "transition_to":  41
+                              "y_offset":  -1,
+                              "y_radius":  11
                           },
                   "164":  {
-                              "name":  "land_right",
+                              "anim_speed":  1.0,
+                              "collision_width":  11,
+                              "collision_x":  1,
                               "dir":  1,
+                              "frame_boxes":  [
+                                                  {
+
+                                                  },
+                                                  {
+
+                                                  },
+                                                  {
+
+                                                  }
+                                              ],
+                              "hurtbox_h":  22,
+                              "hurtbox_w":  11,
+                              "hurtbox_x":  1,
+                              "hurtbox_y":  -11,
+                              "loop_from":  -1,
                               "mvtype":  15,
-                              "y_radius":  16,
-                              "y_offset":  0,
-                              "collision_x":  0,
-                              "collision_width":  24,
-                              "hurtbox_x":  0,
-                              "hurtbox_y":  -16,
-                              "hurtbox_w":  24,
-                              "hurtbox_h":  32,
+                              "name":  "land_right",
+                              "timing":  [
+                                             10,
+                                             10,
+                                             10
+                                         ],
+                              "transition_to":  1,
                               "weapon_anchor_x":  0,
                               "weapon_anchor_y":  -24,
-                              "timing":  [
-                                             6,
-                                             6
-                                         ],
-                              "loop_from":  -1,
-                              "transition_to":  1
+                              "y_offset":  -1,
+                              "y_radius":  11
                           },
                   "165":  {
-                              "name":  "land_left",
+                              "anim_speed":  1.0,
+                              "collision_width":  11,
+                              "collision_x":  -1,
                               "dir":  -1,
+                              "frame_boxes":  [
+
+                                              ],
+                              "hurtbox_h":  22,
+                              "hurtbox_w":  11,
+                              "hurtbox_x":  -1,
+                              "hurtbox_y":  -11,
+                              "loop_from":  -1,
                               "mvtype":  15,
-                              "y_radius":  16,
-                              "y_offset":  0,
-                              "collision_x":  0,
-                              "collision_width":  24,
-                              "hurtbox_x":  0,
-                              "hurtbox_y":  -16,
-                              "hurtbox_w":  24,
-                              "hurtbox_h":  32,
+                              "name":  "land_left",
+                              "timing":  [
+                                             10,
+                                             10,
+                                             10
+                                         ],
+                              "transition_to":  2,
                               "weapon_anchor_x":  0,
                               "weapon_anchor_y":  -24,
-                              "timing":  [
-                                             6,
-                                             6
-                                         ],
-                              "loop_from":  -1,
-                              "transition_to":  2
+                              "y_offset":  -1,
+                              "y_radius":  11
                           },
                   "166":  {
-                              "name":  "land_spin_right",
+                              "anim_speed":  1.0,
+                              "collision_width":  11,
+                              "collision_x":  1,
                               "dir":  1,
+                              "frame_boxes":  [
+                                                  {
+
+                                                  },
+                                                  {
+
+                                                  },
+                                                  {
+
+                                                  }
+                                              ],
+                              "hurtbox_h":  22,
+                              "hurtbox_w":  11,
+                              "hurtbox_x":  1,
+                              "hurtbox_y":  -11,
+                              "loop_from":  -1,
                               "mvtype":  15,
-                              "y_radius":  16,
-                              "y_offset":  0,
-                              "collision_x":  0,
-                              "collision_width":  24,
-                              "hurtbox_x":  0,
-                              "hurtbox_y":  -16,
-                              "hurtbox_w":  24,
-                              "hurtbox_h":  32,
+                              "name":  "land_spin_right",
+                              "timing":  [
+                                             10,
+                                             10,
+                                             10
+                                         ],
+                              "transition_to":  1,
                               "weapon_anchor_x":  0,
                               "weapon_anchor_y":  -24,
-                              "timing":  [
-                                             6,
-                                             6
-                                         ],
-                              "loop_from":  -1,
-                              "transition_to":  1
+                              "y_offset":  -1,
+                              "y_radius":  11
                           },
                   "167":  {
-                              "name":  "land_spin_left",
+                              "anim_speed":  1.0,
+                              "collision_width":  11,
+                              "collision_x":  -1,
                               "dir":  -1,
-                              "mvtype":  15,
-                              "y_radius":  16,
-                              "y_offset":  0,
-                              "collision_x":  0,
-                              "collision_width":  24,
-                              "hurtbox_x":  0,
-                              "hurtbox_y":  -16,
-                              "hurtbox_w":  24,
-                              "hurtbox_h":  32,
-                              "weapon_anchor_x":  0,
-                              "weapon_anchor_y":  -24,
-                              "timing":  [
-                                             6,
-                                             6
-                                         ],
+                              "frame_boxes":  [
+
+                                              ],
+                              "hurtbox_h":  22,
+                              "hurtbox_w":  11,
+                              "hurtbox_x":  -1,
+                              "hurtbox_y":  -11,
                               "loop_from":  -1,
-                              "transition_to":  2
-                          },
-                  "201":  {
-                              "name":  "melee_1_right",
-                              "dir":  1,
                               "mvtype":  15,
-                              "y_radius":  16,
-                              "y_offset":  0,
-                              "collision_x":  0,
-                              "collision_width":  24,
-                              "hurtbox_x":  0,
-                              "hurtbox_y":  -16,
-                              "hurtbox_w":  24,
-                              "hurtbox_h":  32,
+                              "name":  "land_spin_left",
+                              "timing":  [
+                                             10,
+                                             10,
+                                             10
+                                         ],
+                              "transition_to":  2,
                               "weapon_anchor_x":  0,
                               "weapon_anchor_y":  -24,
+                              "y_offset":  -1,
+                              "y_radius":  11
+                          },
+                  "2":  {
+                            "anim_speed":  1.0,
+                            "collision_width":  11,
+                            "collision_x":  -1,
+                            "dir":  -1,
+                            "frame_boxes":  [
+                                                {
+                                                    "collision_width":  11,
+                                                    "collision_x":  -1,
+                                                    "hurtbox_h":  22,
+                                                    "hurtbox_w":  11,
+                                                    "hurtbox_x":  -1,
+                                                    "hurtbox_y":  -11,
+                                                    "y_offset":  -1,
+                                                    "y_radius":  11
+                                                },
+                                                {
+                                                    "collision_width":  11,
+                                                    "collision_x":  -1,
+                                                    "hurtbox_h":  22,
+                                                    "hurtbox_w":  11,
+                                                    "hurtbox_x":  -1,
+                                                    "hurtbox_y":  -11,
+                                                    "y_offset":  -1,
+                                                    "y_radius":  11
+                                                },
+                                                {
+                                                    "collision_width":  11,
+                                                    "collision_x":  -1,
+                                                    "hurtbox_h":  22,
+                                                    "hurtbox_w":  11,
+                                                    "hurtbox_x":  -1,
+                                                    "hurtbox_y":  -11,
+                                                    "y_offset":  -1,
+                                                    "y_radius":  11
+                                                },
+                                                {
+                                                    "collision_width":  11,
+                                                    "collision_x":  -1,
+                                                    "hurtbox_h":  22,
+                                                    "hurtbox_w":  11,
+                                                    "hurtbox_x":  -1,
+                                                    "hurtbox_y":  -11,
+                                                    "y_offset":  -1,
+                                                    "y_radius":  11
+                                                },
+                                                {
+                                                    "collision_width":  11,
+                                                    "collision_x":  -1,
+                                                    "hurtbox_h":  22,
+                                                    "hurtbox_w":  11,
+                                                    "hurtbox_x":  -1,
+                                                    "hurtbox_y":  -11,
+                                                    "y_offset":  -1,
+                                                    "y_radius":  11
+                                                },
+                                                {
+                                                    "collision_width":  11,
+                                                    "collision_x":  -1,
+                                                    "hurtbox_h":  22,
+                                                    "hurtbox_w":  11,
+                                                    "hurtbox_x":  -1,
+                                                    "hurtbox_y":  -11,
+                                                    "y_offset":  -1,
+                                                    "y_radius":  11
+                                                }
+                                            ],
+                            "hurtbox_h":  22,
+                            "hurtbox_w":  11,
+                            "hurtbox_x":  -1,
+                            "hurtbox_y":  -11,
+                            "loop_from":  0,
+                            "mvtype":  0,
+                            "name":  "stand_left",
+                            "timing":  [
+                                           10,
+                                           10,
+                                           10,
+                                           10,
+                                           10,
+                                           10
+                                       ],
+                            "transition_to":  -1,
+                            "weapon_anchor_x":  0,
+                            "weapon_anchor_y":  -24,
+                            "y_offset":  -1,
+                            "y_radius":  11
+                        },
+                  "201":  {
+                              "anim_speed":  1.0,
+                              "collision_width":  11,
+                              "collision_x":  1,
+                              "dir":  1,
+                              "frame_boxes":  [
+                                                  {
+                                                      "collision_width":  11,
+                                                      "collision_x":  1,
+                                                      "hurtbox_h":  22,
+                                                      "hurtbox_w":  11,
+                                                      "hurtbox_x":  1,
+                                                      "hurtbox_y":  -11,
+                                                      "y_offset":  -1,
+                                                      "y_radius":  11
+                                                  },
+                                                  {
+                                                      "collision_width":  11,
+                                                      "collision_x":  1,
+                                                      "hurtbox_h":  22,
+                                                      "hurtbox_w":  11,
+                                                      "hurtbox_x":  1,
+                                                      "hurtbox_y":  -11,
+                                                      "y_offset":  -1,
+                                                      "y_radius":  11
+                                                  },
+                                                  {
+                                                      "collision_width":  11,
+                                                      "collision_x":  1,
+                                                      "hurtbox_h":  22,
+                                                      "hurtbox_w":  11,
+                                                      "hurtbox_x":  1,
+                                                      "hurtbox_y":  -11,
+                                                      "y_offset":  -1,
+                                                      "y_radius":  11
+                                                  },
+                                                  {
+                                                      "collision_width":  11,
+                                                      "collision_x":  1,
+                                                      "hurtbox_h":  22,
+                                                      "hurtbox_w":  11,
+                                                      "hurtbox_x":  1,
+                                                      "hurtbox_y":  -11,
+                                                      "y_offset":  -1,
+                                                      "y_radius":  11
+                                                  },
+                                                  {
+                                                      "collision_width":  11,
+                                                      "collision_x":  1,
+                                                      "hurtbox_h":  22,
+                                                      "hurtbox_w":  11,
+                                                      "hurtbox_x":  1,
+                                                      "hurtbox_y":  -11,
+                                                      "y_offset":  -1,
+                                                      "y_radius":  11
+                                                  },
+                                                  {
+                                                      "collision_width":  11,
+                                                      "collision_x":  1,
+                                                      "hurtbox_h":  22,
+                                                      "hurtbox_w":  11,
+                                                      "hurtbox_x":  1,
+                                                      "hurtbox_y":  -11,
+                                                      "y_offset":  -1,
+                                                      "y_radius":  11
+                                                  }
+                                              ],
+                              "hurtbox_h":  22,
+                              "hurtbox_w":  11,
+                              "hurtbox_x":  1,
+                              "hurtbox_y":  -11,
+                              "loop_from":  -1,
+                              "mvtype":  15,
+                              "name":  "melee_1_right",
                               "timing":  [
                                              4,
                                              4,
@@ -627,23 +592,27 @@
                                              4,
                                              4
                                          ],
-                              "loop_from":  -1,
-                              "transition_to":  1
+                              "transition_to":  1,
+                              "weapon_anchor_x":  0,
+                              "weapon_anchor_y":  -24,
+                              "y_offset":  -1,
+                              "y_radius":  11
                           },
                   "202":  {
-                              "name":  "melee_1_left",
+                              "anim_speed":  1.0,
+                              "collision_width":  11,
+                              "collision_x":  -1,
                               "dir":  -1,
+                              "frame_boxes":  [
+
+                                              ],
+                              "hurtbox_h":  22,
+                              "hurtbox_w":  11,
+                              "hurtbox_x":  -1,
+                              "hurtbox_y":  -11,
+                              "loop_from":  -1,
                               "mvtype":  15,
-                              "y_radius":  16,
-                              "y_offset":  0,
-                              "collision_x":  0,
-                              "collision_width":  24,
-                              "hurtbox_x":  0,
-                              "hurtbox_y":  -16,
-                              "hurtbox_w":  24,
-                              "hurtbox_h":  32,
-                              "weapon_anchor_x":  0,
-                              "weapon_anchor_y":  -24,
+                              "name":  "melee_1_left",
                               "timing":  [
                                              4,
                                              4,
@@ -652,259 +621,1413 @@
                                              4,
                                              4
                                          ],
-                              "loop_from":  -1,
-                              "transition_to":  2
+                              "transition_to":  2,
+                              "weapon_anchor_x":  0,
+                              "weapon_anchor_y":  -24,
+                              "y_offset":  -1,
+                              "y_radius":  11
                           },
                   "203":  {
-                              "name":  "melee_2_right",
+                              "anim_speed":  1.0,
+                              "collision_width":  11,
+                              "collision_x":  1,
                               "dir":  1,
+                              "frame_boxes":  [
+                                                  {
+
+                                                  },
+                                                  {
+
+                                                  },
+                                                  {
+
+                                                  },
+                                                  {
+
+                                                  }
+                                              ],
+                              "hurtbox_h":  22,
+                              "hurtbox_w":  11,
+                              "hurtbox_x":  1,
+                              "hurtbox_y":  -11,
+                              "loop_from":  -1,
                               "mvtype":  15,
-                              "y_radius":  16,
-                              "y_offset":  0,
-                              "collision_x":  0,
-                              "collision_width":  24,
-                              "hurtbox_x":  0,
-                              "hurtbox_y":  -16,
-                              "hurtbox_w":  24,
-                              "hurtbox_h":  32,
+                              "name":  "melee_2_right",
+                              "timing":  [
+                                             10,
+                                             10,
+                                             10,
+                                             10
+                                         ],
+                              "transition_to":  1,
                               "weapon_anchor_x":  0,
                               "weapon_anchor_y":  -24,
-                              "timing":  [
-                                             4,
-                                             4,
-                                             4,
-                                             4,
-                                             4
-                                         ],
-                              "loop_from":  -1,
-                              "transition_to":  1
+                              "y_offset":  -1,
+                              "y_radius":  11
                           },
                   "204":  {
-                              "name":  "melee_2_left",
+                              "anim_speed":  1.0,
+                              "collision_width":  11,
+                              "collision_x":  -1,
                               "dir":  -1,
+                              "frame_boxes":  [
+                                                  {
+                                                      "collision_width":  11,
+                                                      "collision_x":  -1,
+                                                      "hurtbox_h":  22,
+                                                      "hurtbox_w":  11,
+                                                      "hurtbox_x":  -1,
+                                                      "hurtbox_y":  -11,
+                                                      "y_offset":  -1,
+                                                      "y_radius":  11
+                                                  },
+                                                  {
+                                                      "collision_width":  11,
+                                                      "collision_x":  -1,
+                                                      "hurtbox_h":  22,
+                                                      "hurtbox_w":  11,
+                                                      "hurtbox_x":  -1,
+                                                      "hurtbox_y":  -11,
+                                                      "y_offset":  -1,
+                                                      "y_radius":  11
+                                                  },
+                                                  {
+                                                      "collision_width":  11,
+                                                      "collision_x":  -1,
+                                                      "hurtbox_h":  22,
+                                                      "hurtbox_w":  11,
+                                                      "hurtbox_x":  -1,
+                                                      "hurtbox_y":  -11,
+                                                      "y_offset":  -1,
+                                                      "y_radius":  11
+                                                  },
+                                                  {
+                                                      "collision_width":  11,
+                                                      "collision_x":  -1,
+                                                      "hurtbox_h":  22,
+                                                      "hurtbox_w":  11,
+                                                      "hurtbox_x":  -1,
+                                                      "hurtbox_y":  -11,
+                                                      "y_offset":  -1,
+                                                      "y_radius":  11
+                                                  },
+                                                  {
+                                                      "collision_width":  11,
+                                                      "collision_x":  -1,
+                                                      "hurtbox_h":  22,
+                                                      "hurtbox_w":  11,
+                                                      "hurtbox_x":  -1,
+                                                      "hurtbox_y":  -11,
+                                                      "y_offset":  -1,
+                                                      "y_radius":  11
+                                                  },
+                                                  {
+                                                      "collision_width":  11,
+                                                      "collision_x":  -1,
+                                                      "hurtbox_h":  22,
+                                                      "hurtbox_w":  11,
+                                                      "hurtbox_x":  -1,
+                                                      "hurtbox_y":  -11,
+                                                      "y_offset":  -1,
+                                                      "y_radius":  11
+                                                  }
+                                              ],
+                              "hurtbox_h":  22,
+                              "hurtbox_w":  11,
+                              "hurtbox_x":  -1,
+                              "hurtbox_y":  -11,
+                              "loop_from":  -1,
                               "mvtype":  15,
-                              "y_radius":  16,
-                              "y_offset":  0,
-                              "collision_x":  0,
-                              "collision_width":  24,
-                              "hurtbox_x":  0,
-                              "hurtbox_y":  -16,
-                              "hurtbox_w":  24,
-                              "hurtbox_h":  32,
-                              "weapon_anchor_x":  0,
-                              "weapon_anchor_y":  -24,
+                              "name":  "melee_2_left",
                               "timing":  [
+                                             4,
                                              4,
                                              4,
                                              4,
                                              4,
                                              4
                                          ],
-                              "loop_from":  -1,
-                              "transition_to":  2
+                              "transition_to":  2,
+                              "weapon_anchor_x":  0,
+                              "weapon_anchor_y":  -24,
+                              "y_offset":  -1,
+                              "y_radius":  11
                           },
                   "205":  {
-                              "name":  "melee_3_right",
+                              "anim_speed":  1.0,
+                              "collision_width":  11,
+                              "collision_x":  1,
                               "dir":  1,
+                              "frame_boxes":  [
+                                                  {
+
+                                                  },
+                                                  {
+
+                                                  },
+                                                  {
+
+                                                  },
+                                                  {
+
+                                                  },
+                                                  {
+
+                                                  },
+                                                  {
+
+                                                  },
+                                                  {
+
+                                                  },
+                                                  {
+
+                                                  },
+                                                  {
+
+                                                  },
+                                                  {
+
+                                                  }
+                                              ],
+                              "hurtbox_h":  22,
+                              "hurtbox_w":  11,
+                              "hurtbox_x":  1,
+                              "hurtbox_y":  -11,
+                              "loop_from":  -1,
                               "mvtype":  15,
-                              "y_radius":  16,
-                              "y_offset":  0,
-                              "collision_x":  0,
-                              "collision_width":  24,
-                              "hurtbox_x":  0,
-                              "hurtbox_y":  -16,
-                              "hurtbox_w":  24,
-                              "hurtbox_h":  32,
+                              "name":  "melee_3_right",
+                              "timing":  [
+                                             10,
+                                             10,
+                                             10,
+                                             10,
+                                             10,
+                                             10,
+                                             10,
+                                             10,
+                                             10,
+                                             10
+                                         ],
+                              "transition_to":  1,
                               "weapon_anchor_x":  0,
                               "weapon_anchor_y":  -24,
-                              "timing":  [
-                                             4,
-                                             4,
-                                             4,
-                                             4,
-                                             4
-                                         ],
-                              "loop_from":  -1,
-                              "transition_to":  1
+                              "y_offset":  -1,
+                              "y_radius":  11
                           },
                   "206":  {
-                              "name":  "melee_3_left",
+                              "anim_speed":  1.0,
+                              "collision_width":  11,
+                              "collision_x":  -1,
                               "dir":  -1,
+                              "frame_boxes":  [
+
+                                              ],
+                              "hurtbox_h":  22,
+                              "hurtbox_w":  11,
+                              "hurtbox_x":  -1,
+                              "hurtbox_y":  -11,
+                              "loop_from":  -1,
                               "mvtype":  15,
-                              "y_radius":  16,
-                              "y_offset":  0,
-                              "collision_x":  0,
-                              "collision_width":  24,
-                              "hurtbox_x":  0,
-                              "hurtbox_y":  -16,
-                              "hurtbox_w":  24,
-                              "hurtbox_h":  32,
+                              "name":  "melee_3_left",
+                              "timing":  [
+                                             10,
+                                             10,
+                                             10,
+                                             10,
+                                             10,
+                                             10,
+                                             10,
+                                             10,
+                                             10,
+                                             10
+                                         ],
+                              "transition_to":  2,
                               "weapon_anchor_x":  0,
                               "weapon_anchor_y":  -24,
-                              "timing":  [
-                                             4,
-                                             4,
-                                             4,
-                                             4,
-                                             4
-                                         ],
-                              "loop_from":  -1,
-                              "transition_to":  2
+                              "y_offset":  -1,
+                              "y_radius":  11
                           },
                   "207":  {
-                              "name":  "ranged_right",
+                              "anim_speed":  1.0,
+                              "collision_width":  11,
+                              "collision_x":  1,
                               "dir":  1,
-                              "mvtype":  15,
-                              "y_radius":  16,
-                              "y_offset":  0,
-                              "collision_x":  0,
-                              "collision_width":  24,
-                              "hurtbox_x":  0,
-                              "hurtbox_y":  -16,
-                              "hurtbox_w":  24,
-                              "hurtbox_h":  32,
-                              "weapon_anchor_x":  0,
-                              "weapon_anchor_y":  -24,
-                              "timing":  [
-                                             4,
-                                             4,
-                                             4,
-                                             4,
-                                             4
-                                         ],
+                              "frame_boxes":  [
+                                                  {
+
+                                                  },
+                                                  {
+
+                                                  },
+                                                  {
+
+                                                  },
+                                                  {
+
+                                                  },
+                                                  {
+
+                                                  },
+                                                  {
+
+                                                  },
+                                                  {
+
+                                                  }
+                                              ],
+                              "hurtbox_h":  22,
+                              "hurtbox_w":  11,
+                              "hurtbox_x":  1,
+                              "hurtbox_y":  -11,
                               "loop_from":  -1,
-                              "transition_to":  1
+                              "mvtype":  15,
+                              "name":  "ranged_right",
+                              "timing":  [
+                                             10,
+                                             10,
+                                             10,
+                                             10,
+                                             10,
+                                             10,
+                                             10
+                                         ],
+                              "transition_to":  1,
+                              "weapon_anchor_x":  15,
+                              "weapon_anchor_y":  -12,
+                              "y_offset":  -1,
+                              "y_radius":  11
                           },
                   "208":  {
-                              "name":  "ranged_left",
+                              "anim_speed":  1.0,
+                              "collision_width":  11,
+                              "collision_x":  -1,
                               "dir":  -1,
-                              "mvtype":  15,
-                              "y_radius":  16,
-                              "y_offset":  0,
-                              "collision_x":  0,
-                              "collision_width":  24,
-                              "hurtbox_x":  0,
-                              "hurtbox_y":  -16,
-                              "hurtbox_w":  24,
-                              "hurtbox_h":  32,
-                              "weapon_anchor_x":  0,
-                              "weapon_anchor_y":  -24,
-                              "timing":  [
-                                             4,
-                                             4,
-                                             4,
-                                             4,
-                                             4
-                                         ],
+                              "frame_boxes":  [
+
+                                              ],
+                              "hurtbox_h":  22,
+                              "hurtbox_w":  11,
+                              "hurtbox_x":  -1,
+                              "hurtbox_y":  -11,
                               "loop_from":  -1,
-                              "transition_to":  2
+                              "mvtype":  15,
+                              "name":  "ranged_left",
+                              "timing":  [
+                                             10,
+                                             10,
+                                             10,
+                                             10,
+                                             10,
+                                             10,
+                                             10
+                                         ],
+                              "transition_to":  2,
+                              "weapon_anchor_x":  -15,
+                              "weapon_anchor_y":  -12,
+                              "y_offset":  -1,
+                              "y_radius":  11
                           },
                   "209":  {
-                              "name":  "ranged_charge_right",
+                              "anim_speed":  1.0,
+                              "collision_width":  11,
+                              "collision_x":  1,
                               "dir":  1,
+                              "frame_boxes":  [
+                                                  {
+                                                      "collision_width":  11,
+                                                      "collision_x":  1,
+                                                      "hurtbox_h":  22,
+                                                      "hurtbox_w":  11,
+                                                      "hurtbox_x":  1,
+                                                      "hurtbox_y":  -11,
+                                                      "y_offset":  -1,
+                                                      "y_radius":  11
+                                                  },
+                                                  {
+
+                                                  },
+                                                  {
+
+                                                  },
+                                                  {
+
+                                                  },
+                                                  {
+
+                                                  },
+                                                  {
+
+                                                  },
+                                                  {
+
+                                                  },
+                                                  {
+
+                                                  }
+                                              ],
+                              "hurtbox_h":  22,
+                              "hurtbox_w":  11,
+                              "hurtbox_x":  1,
+                              "hurtbox_y":  -11,
+                              "loop_from":  0,
                               "mvtype":  15,
-                              "y_radius":  16,
-                              "y_offset":  0,
-                              "collision_x":  0,
-                              "collision_width":  24,
-                              "hurtbox_x":  0,
-                              "hurtbox_y":  -16,
-                              "hurtbox_w":  24,
-                              "hurtbox_h":  32,
-                              "weapon_anchor_x":  0,
-                              "weapon_anchor_y":  -24,
+                              "name":  "ranged_charge_right",
                               "timing":  [
-                                             4,
-                                             4,
-                                             4,
-                                             4,
-                                             4
+                                             10,
+                                             10,
+                                             10,
+                                             10,
+                                             10,
+                                             10,
+                                             10,
+                                             10
                                          ],
-                              "loop_from":  -1,
-                              "transition_to":  1
+                              "transition_to":  -1,
+                              "weapon_anchor_x":  15,
+                              "weapon_anchor_y":  -12,
+                              "y_offset":  -1,
+                              "y_radius":  11
                           },
                   "210":  {
-                              "name":  "ranged_charge_left",
+                              "anim_speed":  1.0,
+                              "collision_width":  11,
+                              "collision_x":  -1,
                               "dir":  -1,
+                              "frame_boxes":  [
+
+                                              ],
+                              "hurtbox_h":  22,
+                              "hurtbox_w":  11,
+                              "hurtbox_x":  -1,
+                              "hurtbox_y":  -11,
+                              "loop_from":  0,
                               "mvtype":  15,
-                              "y_radius":  16,
-                              "y_offset":  0,
-                              "collision_x":  0,
-                              "collision_width":  24,
-                              "hurtbox_x":  0,
-                              "hurtbox_y":  -16,
-                              "hurtbox_w":  24,
-                              "hurtbox_h":  32,
-                              "weapon_anchor_x":  0,
-                              "weapon_anchor_y":  -24,
+                              "name":  "ranged_charge_left",
                               "timing":  [
-                                             4,
-                                             4,
-                                             4,
-                                             4,
-                                             4
+                                             10,
+                                             10,
+                                             10,
+                                             10,
+                                             10,
+                                             10,
+                                             10,
+                                             10
                                          ],
-                              "loop_from":  -1,
-                              "transition_to":  2
+                              "transition_to":  -1,
+                              "weapon_anchor_x":  -15,
+                              "weapon_anchor_y":  -12,
+                              "y_offset":  -1,
+                              "y_radius":  11
                           },
                   "211":  {
-                              "name":  "dodge_roll_right",
+                              "anim_speed":  8.0,
+                              "collision_width":  11,
+                              "collision_x":  1,
                               "dir":  1,
+                              "frame_boxes":  [
+                                                  {
+                                                      "collision_width":  11,
+                                                      "collision_x":  1,
+                                                      "hurtbox_h":  22,
+                                                      "hurtbox_w":  11,
+                                                      "hurtbox_x":  1,
+                                                      "hurtbox_y":  -11,
+                                                      "y_offset":  -1,
+                                                      "y_radius":  11
+                                                  },
+                                                  {
+
+                                                  },
+                                                  {
+
+                                                  },
+                                                  {
+
+                                                  },
+                                                  {
+
+                                                  },
+                                                  {
+
+                                                  },
+                                                  {
+
+                                                  },
+                                                  {
+
+                                                  },
+                                                  {
+
+                                                  },
+                                                  {
+
+                                                  },
+                                                  {
+
+                                                  },
+                                                  {
+
+                                                  },
+                                                  {
+
+                                                  },
+                                                  {
+
+                                                  },
+                                                  {
+
+                                                  },
+                                                  {
+
+                                                  },
+                                                  {
+                                                      "collision_width":  11,
+                                                      "collision_x":  1,
+                                                      "hurtbox_h":  22,
+                                                      "hurtbox_w":  11,
+                                                      "hurtbox_x":  1,
+                                                      "hurtbox_y":  -11,
+                                                      "y_offset":  -1,
+                                                      "y_radius":  11
+                                                  }
+                                              ],
+                              "hurtbox_h":  22,
+                              "hurtbox_w":  11,
+                              "hurtbox_x":  1,
+                              "hurtbox_y":  -11,
+                              "loop_from":  -1,
                               "mvtype":  15,
-                              "y_radius":  16,
-                              "y_offset":  0,
-                              "collision_x":  0,
-                              "collision_width":  24,
-                              "hurtbox_x":  0,
-                              "hurtbox_y":  -16,
-                              "hurtbox_w":  24,
-                              "hurtbox_h":  32,
-                              "weapon_anchor_x":  0,
-                              "weapon_anchor_y":  -24,
+                              "name":  "dodge_roll_right",
                               "timing":  [
                                              4,
-                                             4,
-                                             4,
-                                             4,
-                                             4,
-                                             4,
-                                             4,
-                                             4,
-                                             4,
-                                             4
+                                             10,
+                                             10,
+                                             10,
+                                             10,
+                                             10,
+                                             10,
+                                             10,
+                                             10,
+                                             10,
+                                             10,
+                                             10,
+                                             10,
+                                             10,
+                                             10,
+                                             10,
+                                             10
                                          ],
-                              "loop_from":  -1,
-                              "transition_to":  1
+                              "transition_to":  1,
+                              "weapon_anchor_x":  0,
+                              "weapon_anchor_y":  -24,
+                              "y_offset":  -1,
+                              "y_radius":  11
                           },
                   "212":  {
-                              "name":  "dodge_roll_left",
+                              "anim_speed":  8.0,
+                              "collision_width":  11,
+                              "collision_x":  -1,
                               "dir":  -1,
+                              "frame_boxes":  [
+
+                                              ],
+                              "hurtbox_h":  22,
+                              "hurtbox_w":  11,
+                              "hurtbox_x":  -1,
+                              "hurtbox_y":  -11,
+                              "loop_from":  -1,
                               "mvtype":  15,
-                              "y_radius":  16,
-                              "y_offset":  0,
-                              "collision_x":  0,
-                              "collision_width":  24,
-                              "hurtbox_x":  0,
-                              "hurtbox_y":  -16,
-                              "hurtbox_w":  24,
-                              "hurtbox_h":  32,
+                              "name":  "dodge_roll_left",
+                              "timing":  [
+                                             10
+                                         ],
+                              "transition_to":  2,
                               "weapon_anchor_x":  0,
                               "weapon_anchor_y":  -24,
-                              "timing":  [
-                                             4,
-                                             4,
-                                             4,
-                                             4,
-                                             4,
-                                             4,
-                                             4,
-                                             4,
-                                             4,
-                                             4
-                                         ],
-                              "loop_from":  -1,
-                              "transition_to":  2
-                          }
+                              "y_offset":  -1,
+                              "y_radius":  11
+                          },
+                  "25":  {
+                             "anim_speed":  6.0,
+                             "collision_width":  11,
+                             "collision_x":  1,
+                             "dir":  1,
+                             "frame_boxes":  [
+                                                 {
+                                                     "collision_width":  11,
+                                                     "collision_x":  1,
+                                                     "hurtbox_h":  22,
+                                                     "hurtbox_w":  11,
+                                                     "hurtbox_x":  1,
+                                                     "hurtbox_y":  -11,
+                                                     "y_offset":  -1,
+                                                     "y_radius":  11
+                                                 },
+                                                 {
+
+                                                 },
+                                                 {
+
+                                                 },
+                                                 {
+
+                                                 },
+                                                 {
+
+                                                 },
+                                                 {
+
+                                                 },
+                                                 {
+
+                                                 },
+                                                 {
+
+                                                 },
+                                                 {
+
+                                                 },
+                                                 {
+
+                                                 },
+                                                 {
+
+                                                 },
+                                                 {
+
+                                                 },
+                                                 {
+
+                                                 },
+                                                 {
+
+                                                 },
+                                                 {
+
+                                                 },
+                                                 {
+
+                                                 }
+                                             ],
+                             "hurtbox_h":  22,
+                             "hurtbox_w":  11,
+                             "hurtbox_x":  1,
+                             "hurtbox_y":  -11,
+                             "loop_from":  0,
+                             "mvtype":  3,
+                             "name":  "spin_right",
+                             "timing":  [
+                                            10,
+                                            10,
+                                            10,
+                                            10,
+                                            10,
+                                            10,
+                                            10,
+                                            10,
+                                            10,
+                                            10,
+                                            10,
+                                            10,
+                                            10,
+                                            10,
+                                            10,
+                                            10
+                                        ],
+                             "transition_to":  -1,
+                             "weapon_anchor_x":  0,
+                             "weapon_anchor_y":  -24,
+                             "y_offset":  -1,
+                             "y_radius":  11
+                         },
+                  "26":  {
+                             "anim_speed":  1.0,
+                             "collision_width":  11,
+                             "collision_x":  -1,
+                             "dir":  -1,
+                             "frame_boxes":  [
+
+                                             ],
+                             "hurtbox_h":  22,
+                             "hurtbox_w":  11,
+                             "hurtbox_x":  -1,
+                             "hurtbox_y":  -11,
+                             "loop_from":  0,
+                             "mvtype":  3,
+                             "name":  "spin_left",
+                             "timing":  [
+                                            10,
+                                            10,
+                                            10,
+                                            10,
+                                            10,
+                                            10,
+                                            10,
+                                            10,
+                                            10,
+                                            10,
+                                            10,
+                                            10,
+                                            10,
+                                            10,
+                                            10,
+                                            10
+                                        ],
+                             "transition_to":  -1,
+                             "weapon_anchor_x":  0,
+                             "weapon_anchor_y":  -24,
+                             "y_offset":  -1,
+                             "y_radius":  11
+                         },
+                  "37":  {
+                             "anim_speed":  1.0,
+                             "collision_width":  11,
+                             "collision_x":  1,
+                             "dir":  1,
+                             "frame_boxes":  [
+                                                 {
+                                                     "collision_width":  11,
+                                                     "collision_x":  1,
+                                                     "hurtbox_h":  22,
+                                                     "hurtbox_w":  11,
+                                                     "hurtbox_x":  1,
+                                                     "hurtbox_y":  -11,
+                                                     "y_offset":  -1,
+                                                     "y_radius":  11
+                                                 },
+                                                 {
+                                                     "collision_width":  11,
+                                                     "collision_x":  1,
+                                                     "hurtbox_h":  22,
+                                                     "hurtbox_w":  11,
+                                                     "hurtbox_x":  1,
+                                                     "hurtbox_y":  -11,
+                                                     "y_offset":  -1,
+                                                     "y_radius":  11
+                                                 },
+                                                 {
+                                                     "collision_width":  11,
+                                                     "collision_x":  1,
+                                                     "hurtbox_h":  22,
+                                                     "hurtbox_w":  11,
+                                                     "hurtbox_x":  1,
+                                                     "hurtbox_y":  -11,
+                                                     "y_offset":  -1,
+                                                     "y_radius":  11
+                                                 },
+                                                 {
+                                                     "collision_width":  11,
+                                                     "collision_x":  1,
+                                                     "hurtbox_h":  22,
+                                                     "hurtbox_w":  11,
+                                                     "hurtbox_x":  1,
+                                                     "hurtbox_y":  -11,
+                                                     "y_offset":  -1,
+                                                     "y_radius":  11
+                                                 }
+                                             ],
+                             "hurtbox_h":  22,
+                             "hurtbox_w":  11,
+                             "hurtbox_x":  1,
+                             "hurtbox_y":  -11,
+                             "loop_from":  -1,
+                             "mvtype":  14,
+                             "name":  "turn_right",
+                             "timing":  [
+                                            10,
+                                            10,
+                                            10,
+                                            10
+                                        ],
+                             "transition_to":  2,
+                             "weapon_anchor_x":  0,
+                             "weapon_anchor_y":  -24,
+                             "y_offset":  -1,
+                             "y_radius":  11
+                         },
+                  "38":  {
+                             "anim_speed":  1.0,
+                             "collision_width":  11,
+                             "collision_x":  -1,
+                             "dir":  -1,
+                             "frame_boxes":  [
+
+                                             ],
+                             "hurtbox_h":  22,
+                             "hurtbox_w":  11,
+                             "hurtbox_x":  -1,
+                             "hurtbox_y":  -11,
+                             "loop_from":  -1,
+                             "mvtype":  14,
+                             "name":  "turn_left",
+                             "timing":  [
+                                            10,
+                                            10,
+                                            10,
+                                            10
+                                        ],
+                             "transition_to":  1,
+                             "weapon_anchor_x":  0,
+                             "weapon_anchor_y":  -24,
+                             "y_offset":  -1,
+                             "y_radius":  11
+                         },
+                  "41":  {
+                             "anim_speed":  1.0,
+                             "collision_width":  11,
+                             "collision_x":  1,
+                             "dir":  1,
+                             "frame_boxes":  [
+                                                 {
+                                                     "collision_width":  11,
+                                                     "collision_x":  1,
+                                                     "hurtbox_h":  22,
+                                                     "hurtbox_w":  11,
+                                                     "hurtbox_x":  1,
+                                                     "hurtbox_y":  -11,
+                                                     "y_offset":  -1,
+                                                     "y_radius":  11
+                                                 },
+                                                 {
+                                                     "collision_width":  11,
+                                                     "collision_x":  1,
+                                                     "hurtbox_h":  22,
+                                                     "hurtbox_w":  11,
+                                                     "hurtbox_x":  1,
+                                                     "hurtbox_y":  -11,
+                                                     "y_offset":  -1,
+                                                     "y_radius":  11
+                                                 },
+                                                 {
+                                                     "collision_width":  11,
+                                                     "collision_x":  1,
+                                                     "hurtbox_h":  22,
+                                                     "hurtbox_w":  11,
+                                                     "hurtbox_x":  1,
+                                                     "hurtbox_y":  -11,
+                                                     "y_offset":  -1,
+                                                     "y_radius":  11
+                                                 }
+                                             ],
+                             "hurtbox_h":  22,
+                             "hurtbox_w":  11,
+                             "hurtbox_x":  1,
+                             "hurtbox_y":  -11,
+                             "loop_from":  0,
+                             "mvtype":  6,
+                             "name":  "fall_right",
+                             "timing":  [
+                                            10,
+                                            10,
+                                            10
+                                        ],
+                             "transition_to":  -1,
+                             "weapon_anchor_x":  0,
+                             "weapon_anchor_y":  -24,
+                             "y_offset":  -1,
+                             "y_radius":  11
+                         },
+                  "42":  {
+                             "anim_speed":  1.0,
+                             "collision_width":  11,
+                             "collision_x":  -1,
+                             "dir":  -1,
+                             "frame_boxes":  [
+
+                                             ],
+                             "hurtbox_h":  22,
+                             "hurtbox_w":  11,
+                             "hurtbox_x":  -1,
+                             "hurtbox_y":  -11,
+                             "loop_from":  0,
+                             "mvtype":  6,
+                             "name":  "fall_left",
+                             "timing":  [
+                                            10,
+                                            10,
+                                            10
+                                        ],
+                             "transition_to":  -1,
+                             "weapon_anchor_x":  0,
+                             "weapon_anchor_y":  -24,
+                             "y_offset":  -1,
+                             "y_radius":  11
+                         },
+                  "47":  {
+                             "anim_speed":  1.0,
+                             "collision_width":  11,
+                             "collision_x":  1,
+                             "dir":  1,
+                             "frame_boxes":  [
+                                                 {
+                                                     "collision_width":  11,
+                                                     "collision_x":  1,
+                                                     "hurtbox_h":  22,
+                                                     "hurtbox_w":  11,
+                                                     "hurtbox_x":  1,
+                                                     "hurtbox_y":  -11,
+                                                     "y_offset":  -1,
+                                                     "y_radius":  11
+                                                 }
+                                             ],
+                             "hurtbox_h":  22,
+                             "hurtbox_w":  11,
+                             "hurtbox_x":  1,
+                             "hurtbox_y":  -11,
+                             "loop_from":  -1,
+                             "mvtype":  23,
+                             "name":  "turn_air_right",
+                             "timing":  [
+                                            4
+                                        ],
+                             "transition_to":  42,
+                             "weapon_anchor_x":  0,
+                             "weapon_anchor_y":  -24,
+                             "y_offset":  -1,
+                             "y_radius":  11
+                         },
+                  "48":  {
+                             "anim_speed":  1.0,
+                             "collision_width":  11,
+                             "collision_x":  -1,
+                             "dir":  -1,
+                             "frame_boxes":  [
+                                                 {
+                                                     "collision_width":  11,
+                                                     "collision_x":  -1,
+                                                     "hurtbox_h":  22,
+                                                     "hurtbox_w":  11,
+                                                     "hurtbox_x":  -1,
+                                                     "hurtbox_y":  -11,
+                                                     "y_offset":  -1,
+                                                     "y_radius":  11
+                                                 }
+                                             ],
+                             "hurtbox_h":  22,
+                             "hurtbox_w":  11,
+                             "hurtbox_x":  -1,
+                             "hurtbox_y":  -11,
+                             "loop_from":  -1,
+                             "mvtype":  23,
+                             "name":  "turn_air_left",
+                             "timing":  [
+                                            4
+                                        ],
+                             "transition_to":  41,
+                             "weapon_anchor_x":  0,
+                             "weapon_anchor_y":  -24,
+                             "y_offset":  -1,
+                             "y_radius":  11
+                         },
+                  "53":  {
+                             "anim_speed":  1.0,
+                             "collision_width":  11,
+                             "collision_x":  1,
+                             "dir":  1,
+                             "frame_boxes":  [
+                                                 {
+                                                     "collision_width":  11,
+                                                     "collision_x":  1,
+                                                     "hurtbox_h":  22,
+                                                     "hurtbox_w":  11,
+                                                     "hurtbox_x":  1,
+                                                     "hurtbox_y":  -11,
+                                                     "y_offset":  -1,
+                                                     "y_radius":  11
+                                                 },
+                                                 {
+                                                     "collision_width":  11,
+                                                     "collision_x":  1,
+                                                     "hurtbox_h":  22,
+                                                     "hurtbox_w":  11,
+                                                     "hurtbox_x":  1,
+                                                     "hurtbox_y":  -11,
+                                                     "y_offset":  -1,
+                                                     "y_radius":  11
+                                                 }
+                                             ],
+                             "hurtbox_h":  22,
+                             "hurtbox_w":  11,
+                             "hurtbox_x":  1,
+                             "hurtbox_y":  -11,
+                             "loop_from":  -1,
+                             "mvtype":  15,
+                             "name":  "crouch_transition_right",
+                             "timing":  [
+                                            10,
+                                            10
+                                        ],
+                             "transition_to":  67,
+                             "weapon_anchor_x":  0,
+                             "weapon_anchor_y":  -24,
+                             "y_offset":  -1,
+                             "y_radius":  11
+                         },
+                  "54":  {
+                             "anim_speed":  1.0,
+                             "collision_width":  11,
+                             "collision_x":  -1,
+                             "dir":  -1,
+                             "frame_boxes":  [
+
+                                             ],
+                             "hurtbox_h":  22,
+                             "hurtbox_w":  11,
+                             "hurtbox_x":  -1,
+                             "hurtbox_y":  -11,
+                             "loop_from":  -1,
+                             "mvtype":  15,
+                             "name":  "crouch_transition_left",
+                             "timing":  [
+                                            10,
+                                            10
+                                        ],
+                             "transition_to":  68,
+                             "weapon_anchor_x":  0,
+                             "weapon_anchor_y":  -24,
+                             "y_offset":  -1,
+                             "y_radius":  11
+                         },
+                  "59":  {
+                             "anim_speed":  1.0,
+                             "collision_width":  11,
+                             "collision_x":  1,
+                             "dir":  1,
+                             "frame_boxes":  [
+                                                 {
+                                                     "collision_width":  11,
+                                                     "collision_x":  1,
+                                                     "hurtbox_h":  22,
+                                                     "hurtbox_w":  11,
+                                                     "hurtbox_x":  1,
+                                                     "hurtbox_y":  -11,
+                                                     "y_offset":  -1,
+                                                     "y_radius":  11
+                                                 },
+                                                 {
+                                                     "collision_width":  11,
+                                                     "collision_x":  1,
+                                                     "hurtbox_h":  22,
+                                                     "hurtbox_w":  11,
+                                                     "hurtbox_x":  1,
+                                                     "hurtbox_y":  -11,
+                                                     "y_offset":  -1,
+                                                     "y_radius":  11
+                                                 },
+                                                 {
+                                                     "collision_width":  11,
+                                                     "collision_x":  1,
+                                                     "hurtbox_h":  22,
+                                                     "hurtbox_w":  11,
+                                                     "hurtbox_x":  1,
+                                                     "hurtbox_y":  -11,
+                                                     "y_offset":  -1,
+                                                     "y_radius":  11
+                                                 },
+                                                 {
+                                                     "collision_width":  11,
+                                                     "collision_x":  1,
+                                                     "hurtbox_h":  22,
+                                                     "hurtbox_w":  11,
+                                                     "hurtbox_x":  1,
+                                                     "hurtbox_y":  -11,
+                                                     "y_offset":  -1,
+                                                     "y_radius":  11
+                                                 },
+                                                 {
+                                                     "collision_width":  11,
+                                                     "collision_x":  1,
+                                                     "hurtbox_h":  22,
+                                                     "hurtbox_w":  11,
+                                                     "hurtbox_x":  1,
+                                                     "hurtbox_y":  -11,
+                                                     "y_offset":  -1,
+                                                     "y_radius":  11
+                                                 },
+                                                 {
+                                                     "collision_width":  11,
+                                                     "collision_x":  1,
+                                                     "hurtbox_h":  22,
+                                                     "hurtbox_w":  11,
+                                                     "hurtbox_x":  1,
+                                                     "hurtbox_y":  -11,
+                                                     "y_offset":  -1,
+                                                     "y_radius":  11
+                                                 }
+                                             ],
+                             "hurtbox_h":  22,
+                             "hurtbox_w":  11,
+                             "hurtbox_x":  1,
+                             "hurtbox_y":  -11,
+                             "loop_from":  0,
+                             "mvtype":  5,
+                             "name":  "crouch_aim_up_right",
+                             "timing":  [
+                                            10,
+                                            10,
+                                            10,
+                                            10,
+                                            10,
+                                            10
+                                        ],
+                             "transition_to":  -1,
+                             "weapon_anchor_x":  0,
+                             "weapon_anchor_y":  -24,
+                             "y_offset":  -1,
+                             "y_radius":  11
+                         },
+                  "60":  {
+                             "anim_speed":  1.0,
+                             "collision_width":  11,
+                             "collision_x":  -1,
+                             "dir":  -1,
+                             "frame_boxes":  [
+                                                 {
+                                                     "collision_width":  11,
+                                                     "collision_x":  -1,
+                                                     "hurtbox_h":  22,
+                                                     "hurtbox_w":  11,
+                                                     "hurtbox_x":  -1,
+                                                     "hurtbox_y":  -11,
+                                                     "y_offset":  -1,
+                                                     "y_radius":  11
+                                                 },
+                                                 {
+                                                     "collision_width":  11,
+                                                     "collision_x":  -1,
+                                                     "hurtbox_h":  22,
+                                                     "hurtbox_w":  11,
+                                                     "hurtbox_x":  -1,
+                                                     "hurtbox_y":  -11,
+                                                     "y_offset":  -1,
+                                                     "y_radius":  11
+                                                 },
+                                                 {
+                                                     "collision_width":  11,
+                                                     "collision_x":  -1,
+                                                     "hurtbox_h":  22,
+                                                     "hurtbox_w":  11,
+                                                     "hurtbox_x":  -1,
+                                                     "hurtbox_y":  -11,
+                                                     "y_offset":  -1,
+                                                     "y_radius":  11
+                                                 },
+                                                 {
+                                                     "collision_width":  11,
+                                                     "collision_x":  -1,
+                                                     "hurtbox_h":  22,
+                                                     "hurtbox_w":  11,
+                                                     "hurtbox_x":  -1,
+                                                     "hurtbox_y":  -11,
+                                                     "y_offset":  -1,
+                                                     "y_radius":  11
+                                                 },
+                                                 {
+                                                     "collision_width":  11,
+                                                     "collision_x":  -1,
+                                                     "hurtbox_h":  22,
+                                                     "hurtbox_w":  11,
+                                                     "hurtbox_x":  -1,
+                                                     "hurtbox_y":  -11,
+                                                     "y_offset":  -1,
+                                                     "y_radius":  11
+                                                 },
+                                                 {
+                                                     "collision_width":  11,
+                                                     "collision_x":  -1,
+                                                     "hurtbox_h":  22,
+                                                     "hurtbox_w":  11,
+                                                     "hurtbox_x":  -1,
+                                                     "hurtbox_y":  -11,
+                                                     "y_offset":  -1,
+                                                     "y_radius":  11
+                                                 }
+                                             ],
+                             "hurtbox_h":  22,
+                             "hurtbox_w":  11,
+                             "hurtbox_x":  -1,
+                             "hurtbox_y":  -11,
+                             "loop_from":  0,
+                             "mvtype":  5,
+                             "name":  "crouch_aim_up_left",
+                             "timing":  [
+                                            10,
+                                            10,
+                                            10,
+                                            10,
+                                            10,
+                                            10
+                                        ],
+                             "transition_to":  -1,
+                             "weapon_anchor_x":  0,
+                             "weapon_anchor_y":  -24,
+                             "y_offset":  -1,
+                             "y_radius":  11
+                         },
+                  "67":  {
+                             "anim_speed":  1.0,
+                             "collision_width":  11,
+                             "collision_x":  1,
+                             "dir":  1,
+                             "frame_boxes":  [
+                                                 {
+                                                     "collision_width":  11,
+                                                     "collision_x":  1,
+                                                     "hurtbox_h":  22,
+                                                     "hurtbox_w":  11,
+                                                     "hurtbox_x":  1,
+                                                     "hurtbox_y":  -11,
+                                                     "y_offset":  -1,
+                                                     "y_radius":  11
+                                                 },
+                                                 {
+                                                     "collision_width":  11,
+                                                     "collision_x":  1,
+                                                     "hurtbox_h":  22,
+                                                     "hurtbox_w":  11,
+                                                     "hurtbox_x":  1,
+                                                     "hurtbox_y":  -11,
+                                                     "y_offset":  -1,
+                                                     "y_radius":  11
+                                                 },
+                                                 {
+                                                     "collision_width":  11,
+                                                     "collision_x":  1,
+                                                     "hurtbox_h":  22,
+                                                     "hurtbox_w":  11,
+                                                     "hurtbox_x":  1,
+                                                     "hurtbox_y":  -11,
+                                                     "y_offset":  -1,
+                                                     "y_radius":  11
+                                                 }
+                                             ],
+                             "hurtbox_h":  22,
+                             "hurtbox_w":  11,
+                             "hurtbox_x":  1,
+                             "hurtbox_y":  -11,
+                             "loop_from":  0,
+                             "mvtype":  5,
+                             "name":  "crouch_right",
+                             "timing":  [
+                                            10,
+                                            10,
+                                            10
+                                        ],
+                             "transition_to":  -1,
+                             "weapon_anchor_x":  0,
+                             "weapon_anchor_y":  -24,
+                             "y_offset":  -1,
+                             "y_radius":  11
+                         },
+                  "68":  {
+                             "anim_speed":  1.0,
+                             "collision_width":  11,
+                             "collision_x":  -1,
+                             "dir":  -1,
+                             "frame_boxes":  [
+                                                 {
+                                                     "collision_width":  11,
+                                                     "collision_x":  -1,
+                                                     "hurtbox_h":  22,
+                                                     "hurtbox_w":  11,
+                                                     "hurtbox_x":  -1,
+                                                     "hurtbox_y":  -11,
+                                                     "y_offset":  -1,
+                                                     "y_radius":  11
+                                                 },
+                                                 {
+                                                     "collision_width":  11,
+                                                     "collision_x":  -1,
+                                                     "hurtbox_h":  22,
+                                                     "hurtbox_w":  11,
+                                                     "hurtbox_x":  -1,
+                                                     "hurtbox_y":  -11,
+                                                     "y_offset":  -1,
+                                                     "y_radius":  11
+                                                 },
+                                                 {
+                                                     "collision_width":  11,
+                                                     "collision_x":  -1,
+                                                     "hurtbox_h":  22,
+                                                     "hurtbox_w":  11,
+                                                     "hurtbox_x":  -1,
+                                                     "hurtbox_y":  -11,
+                                                     "y_offset":  -1,
+                                                     "y_radius":  11
+                                                 }
+                                             ],
+                             "hurtbox_h":  22,
+                             "hurtbox_w":  11,
+                             "hurtbox_x":  -1,
+                             "hurtbox_y":  -11,
+                             "loop_from":  0,
+                             "mvtype":  5,
+                             "name":  "crouch_left",
+                             "timing":  [
+                                            10,
+                                            10,
+                                            10
+                                        ],
+                             "transition_to":  -1,
+                             "weapon_anchor_x":  0,
+                             "weapon_anchor_y":  -24,
+                             "y_offset":  -1,
+                             "y_radius":  11
+                         },
+                  "75":  {
+                             "anim_speed":  1.0,
+                             "collision_width":  11,
+                             "collision_x":  1,
+                             "dir":  1,
+                             "frame_boxes":  [
+                                                 {
+
+                                                 },
+                                                 {
+
+                                                 },
+                                                 {
+
+                                                 },
+                                                 {
+
+                                                 }
+                                             ],
+                             "hurtbox_h":  22,
+                             "hurtbox_w":  11,
+                             "hurtbox_x":  1,
+                             "hurtbox_y":  -11,
+                             "loop_from":  0,
+                             "mvtype":  2,
+                             "name":  "jump_rise_right",
+                             "timing":  [
+                                            10,
+                                            10,
+                                            10,
+                                            10
+                                        ],
+                             "transition_to":  -1,
+                             "weapon_anchor_x":  0,
+                             "weapon_anchor_y":  -24,
+                             "y_offset":  -1,
+                             "y_radius":  11
+                         },
+                  "76":  {
+                             "anim_speed":  1.0,
+                             "collision_width":  11,
+                             "collision_x":  -1,
+                             "dir":  -1,
+                             "frame_boxes":  [
+
+                                             ],
+                             "hurtbox_h":  22,
+                             "hurtbox_w":  11,
+                             "hurtbox_x":  -1,
+                             "hurtbox_y":  -11,
+                             "loop_from":  0,
+                             "mvtype":  2,
+                             "name":  "jump_rise_left",
+                             "timing":  [
+                                            10,
+                                            10,
+                                            10,
+                                            10
+                                        ],
+                             "transition_to":  -1,
+                             "weapon_anchor_x":  0,
+                             "weapon_anchor_y":  -24,
+                             "y_offset":  -1,
+                             "y_radius":  11
+                         },
+                  "9":  {
+                            "anim_speed":  1.0,
+                            "collision_width":  11,
+                            "collision_x":  1,
+                            "dir":  1,
+                            "frame_boxes":  [
+                                                {
+                                                    "collision_width":  11,
+                                                    "collision_x":  1,
+                                                    "hurtbox_h":  22,
+                                                    "hurtbox_w":  11,
+                                                    "hurtbox_x":  1,
+                                                    "hurtbox_y":  -11,
+                                                    "y_offset":  -1,
+                                                    "y_radius":  11
+                                                },
+                                                {
+                                                    "collision_width":  11,
+                                                    "collision_x":  1,
+                                                    "hurtbox_h":  22,
+                                                    "hurtbox_w":  11,
+                                                    "hurtbox_x":  1,
+                                                    "hurtbox_y":  -11,
+                                                    "y_offset":  -1,
+                                                    "y_radius":  11
+                                                },
+                                                {
+                                                    "collision_width":  11,
+                                                    "collision_x":  1,
+                                                    "hurtbox_h":  22,
+                                                    "hurtbox_w":  11,
+                                                    "hurtbox_x":  1,
+                                                    "hurtbox_y":  -11,
+                                                    "y_offset":  -1,
+                                                    "y_radius":  11
+                                                },
+                                                {
+                                                    "collision_width":  11,
+                                                    "collision_x":  1,
+                                                    "hurtbox_h":  22,
+                                                    "hurtbox_w":  11,
+                                                    "hurtbox_x":  1,
+                                                    "hurtbox_y":  -11,
+                                                    "y_offset":  -1,
+                                                    "y_radius":  11
+                                                },
+                                                {
+                                                    "collision_width":  11,
+                                                    "collision_x":  1,
+                                                    "hurtbox_h":  22,
+                                                    "hurtbox_w":  11,
+                                                    "hurtbox_x":  1,
+                                                    "hurtbox_y":  -11,
+                                                    "y_offset":  -1,
+                                                    "y_radius":  11
+                                                },
+                                                {
+                                                    "collision_width":  11,
+                                                    "collision_x":  1,
+                                                    "hurtbox_h":  22,
+                                                    "hurtbox_w":  11,
+                                                    "hurtbox_x":  1,
+                                                    "hurtbox_y":  -11,
+                                                    "y_offset":  -1,
+                                                    "y_radius":  11
+                                                }
+                                            ],
+                            "hurtbox_h":  22,
+                            "hurtbox_w":  11,
+                            "hurtbox_x":  1,
+                            "hurtbox_y":  -11,
+                            "loop_from":  0,
+                            "mvtype":  1,
+                            "name":  "run_right",
+                            "timing":  [
+                                           6,
+                                           6,
+                                           6,
+                                           6,
+                                           6,
+                                           6
+                                       ],
+                            "transition_to":  -1,
+                            "weapon_anchor_x":  0,
+                            "weapon_anchor_y":  -24,
+                            "y_offset":  -1,
+                            "y_radius":  11
+                        }
               },
-    "_comment":  "Starter player pose scaffold generated from the labeled Pixel Prototype Player folder sequences. Timing arrays match the imported frame counts from those source folders."
+    "seed_version":  5.0
 }

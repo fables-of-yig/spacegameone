@@ -1,1131 +1,1607 @@
-﻿{
-    "frame_height":  84,
-    "sheet_cols":  1,
-    "seed_version":  4,
-    "center_x":  48,
-    "center_y":  42,
-    "frame_width":  96,
-    "frames":  [
-                   {
-                       "pose":  0,
-                       "layers":  [
-                                      {
-                                          "sheet":  "src_idle_idle01",
-                                          "index":  0
-                                      }
-                                  ]
-                   },
-                   {
-                       "pose":  1,
-                       "layers":  [
-                                      {
-                                          "sheet":  "src_idle_idle01",
-                                          "index":  0
-                                      }
-                                  ]
-                   },
-                   {
-                       "pose":  1,
-                       "layers":  [
-                                      {
-                                          "sheet":  "src_idle_idle02",
-                                          "index":  0
-                                      }
-                                  ]
-                   },
-                   {
-                       "pose":  1,
-                       "layers":  [
-                                      {
-                                          "sheet":  "src_idle_idle03",
-                                          "index":  0
-                                      }
-                                  ]
-                   },
-                   {
-                       "pose":  1,
-                       "layers":  [
-                                      {
-                                          "sheet":  "src_idle_idle04",
-                                          "index":  0
-                                      }
-                                  ]
-                   },
-                   {
-                       "pose":  1,
-                       "layers":  [
-                                      {
-                                          "sheet":  "src_idle_idle05",
-                                          "index":  0
-                                      }
-                                  ]
-                   },
-                   {
-                       "pose":  1,
-                       "layers":  [
-                                      {
-                                          "sheet":  "src_idle_idle06",
-                                          "index":  0
-                                      }
-                                  ]
-                   },
-                   {
-                       "pose":  1,
-                       "layers":  [
-                                      {
-                                          "sheet":  "src_idle_idle07",
-                                          "index":  0
-                                      }
-                                  ]
-                   },
-                   {
-                       "pose":  9,
-                       "layers":  [
-                                      {
-                                          "sheet":  "src_run_run01",
-                                          "index":  0
-                                      }
-                                  ]
-                   },
-                   {
-                       "pose":  9,
-                       "layers":  [
-                                      {
-                                          "sheet":  "src_run_run02",
-                                          "index":  0
-                                      }
-                                  ]
-                   },
-                   {
-                       "pose":  9,
-                       "layers":  [
-                                      {
-                                          "sheet":  "src_run_run03",
-                                          "index":  0
-                                      }
-                                  ]
-                   },
-                   {
-                       "pose":  9,
-                       "layers":  [
-                                      {
-                                          "sheet":  "src_run_run04",
-                                          "index":  0
-                                      }
-                                  ]
-                   },
-                   {
-                       "pose":  9,
-                       "layers":  [
-                                      {
-                                          "sheet":  "src_run_run05",
-                                          "index":  0
-                                      }
-                                  ]
-                   },
-                   {
-                       "pose":  9,
-                       "layers":  [
-                                      {
-                                          "sheet":  "src_run_run06",
-                                          "index":  0
-                                      }
-                                  ]
-                   },
-                   {
-                       "pose":  9,
-                       "layers":  [
-                                      {
-                                          "sheet":  "src_run_run07",
-                                          "index":  0
-                                      }
-                                  ]
-                   },
-                   {
-                       "pose":  9,
-                       "layers":  [
-                                      {
-                                          "sheet":  "src_run_run08",
-                                          "index":  0
-                                      }
-                                  ]
-                   },
-                   {
-                       "pose":  25,
-                       "layers":  [
-                                      {
-                                          "sheet":  "src_spin_spin01",
-                                          "index":  0
-                                      }
-                                  ]
-                   },
-                   {
-                       "pose":  25,
-                       "layers":  [
-                                      {
-                                          "sheet":  "src_spin_spin02",
-                                          "index":  0
-                                      }
-                                  ]
-                   },
-                   {
-                       "pose":  25,
-                       "layers":  [
-                                      {
-                                          "sheet":  "src_spin_spin03",
-                                          "index":  0
-                                      }
-                                  ]
-                   },
-                   {
-                       "pose":  25,
-                       "layers":  [
-                                      {
-                                          "sheet":  "src_spin_spin04",
-                                          "index":  0
-                                      }
-                                  ]
-                   },
-                   {
-                       "pose":  25,
-                       "layers":  [
-                                      {
-                                          "sheet":  "src_spin_spin05",
-                                          "index":  0
-                                      }
-                                  ]
-                   },
-                   {
-                       "pose":  25,
-                       "layers":  [
-                                      {
-                                          "sheet":  "src_spin_spin06",
-                                          "index":  0
-                                      }
-                                  ]
-                   },
-                   {
-                       "pose":  25,
-                       "layers":  [
-                                      {
-                                          "sheet":  "src_spin_spin07",
-                                          "index":  0
-                                      }
-                                  ]
-                   },
-                   {
-                       "pose":  25,
-                       "layers":  [
-                                      {
-                                          "sheet":  "src_spin_spin08",
-                                          "index":  0
-                                      }
-                                  ]
-                   },
-                   {
-                       "pose":  37,
-                       "layers":  [
-                                      {
-                                          "sheet":  "src_runtoidle_runtoidle01",
-                                          "index":  0
-                                      }
-                                  ]
-                   },
-                   {
-                       "pose":  37,
-                       "layers":  [
-                                      {
-                                          "sheet":  "src_runtoidle_runtoidle02",
-                                          "index":  0
-                                      }
-                                  ]
-                   },
-                   {
-                       "pose":  37,
-                       "layers":  [
-                                      {
-                                          "sheet":  "src_runtoidle_runtoidle03",
-                                          "index":  0
-                                      }
-                                  ]
-                   },
-                   {
-                       "pose":  41,
-                       "layers":  [
-                                      {
-                                          "sheet":  "src_jumpfall_jumpfall01",
-                                          "index":  0
-                                      }
-                                  ]
-                   },
-                   {
-                       "pose":  47,
-                       "layers":  [
-                                      {
-                                          "sheet":  "src_jump_jump01",
-                                          "index":  0
-                                      }
-                                  ]
-                   },
-                   {
-                       "pose":  47,
-                       "layers":  [
-                                      {
-                                          "sheet":  "src_jump_jump02",
-                                          "index":  0
-                                      }
-                                  ]
-                   },
-                   {
-                       "pose":  47,
-                       "layers":  [
-                                      {
-                                          "sheet":  "src_jump_jump03",
-                                          "index":  0
-                                      }
-                                  ]
-                   },
-                   {
-                       "pose":  53,
-                       "layers":  [
-                                      {
-                                          "sheet":  "src_crouch_crouch01",
-                                          "index":  0
-                                      }
-                                  ]
-                   },
-                   {
-                       "pose":  53,
-                       "layers":  [
-                                      {
-                                          "sheet":  "src_crouch_crouch02",
-                                          "index":  0
-                                      }
-                                  ]
-                   },
-                   {
-                       "pose":  53,
-                       "layers":  [
-                                      {
-                                          "sheet":  "src_crouch_crouch03",
-                                          "index":  0
-                                      }
-                                  ]
-                   },
-                   {
-                       "pose":  59,
-                       "layers":  [
-                                      {
-                                          "sheet":  "src_lookup_lookup01",
-                                          "index":  0
-                                      }
-                                  ]
-                   },
-                   {
-                       "pose":  59,
-                       "layers":  [
-                                      {
-                                          "sheet":  "src_lookup_lookup02",
-                                          "index":  0
-                                      }
-                                  ]
-                   },
-                   {
-                       "pose":  59,
-                       "layers":  [
-                                      {
-                                          "sheet":  "src_lookup_lookup03",
-                                          "index":  0
-                                      }
-                                  ]
-                   },
-                   {
-                       "pose":  67,
-                       "layers":  [
-                                      {
-                                          "sheet":  "src_crouch_crouch06",
-                                          "index":  0
-                                      }
-                                  ]
-                   },
-                   {
-                       "pose":  75,
-                       "layers":  [
-                                      {
-                                          "sheet":  "src_jumprise_jumprise01",
-                                          "index":  0
-                                      }
-                                  ]
-                   },
-                   {
-                       "pose":  135,
-                       "layers":  [
-                                      {
-                                          "sheet":  "src_jump_jump01",
-                                          "index":  0
-                                      }
-                                  ]
-                   },
-                   {
-                       "pose":  135,
-                       "layers":  [
-                                      {
-                                          "sheet":  "src_jump_jump02",
-                                          "index":  0
-                                      }
-                                  ]
-                   },
-                   {
-                       "pose":  135,
-                       "layers":  [
-                                      {
-                                          "sheet":  "src_jump_jump03",
-                                          "index":  0
-                                      }
-                                  ]
-                   },
-                   {
-                       "pose":  164,
-                       "layers":  [
-                                      {
-                                          "sheet":  "src_land_land01",
-                                          "index":  0
-                                      }
-                                  ]
-                   },
-                   {
-                       "pose":  164,
-                       "layers":  [
-                                      {
-                                          "sheet":  "src_land_land02",
-                                          "index":  0
-                                      }
-                                  ]
-                   },
-                   {
-                       "pose":  166,
-                       "layers":  [
-                                      {
-                                          "sheet":  "src_land_land01",
-                                          "index":  0
-                                      }
-                                  ]
-                   },
-                   {
-                       "pose":  166,
-                       "layers":  [
-                                      {
-                                          "sheet":  "src_land_land02",
-                                          "index":  0
-                                      }
-                                  ]
-                   },
-                   {
-                       "pose":  201,
-                       "layers":  [
-                                      {
-                                          "sheet":  "src_combat_swordcombo01_swordcombo0101",
-                                          "index":  0
-                                      }
-                                  ]
-                   },
-                   {
-                       "pose":  201,
-                       "layers":  [
-                                      {
-                                          "sheet":  "src_combat_swordcombo01_swordcombo0102",
-                                          "index":  0
-                                      }
-                                  ]
-                   },
-                   {
-                       "pose":  201,
-                       "layers":  [
-                                      {
-                                          "sheet":  "src_combat_swordcombo01_swordcombo0103",
-                                          "index":  0
-                                      }
-                                  ]
-                   },
-                   {
-                       "pose":  201,
-                       "layers":  [
-                                      {
-                                          "sheet":  "src_combat_swordcombo01_swordcombo0104",
-                                          "index":  0
-                                      }
-                                  ]
-                   },
-                   {
-                       "pose":  201,
-                       "layers":  [
-                                      {
-                                          "sheet":  "src_combat_swordcombo01_swordcombo0105",
-                                          "index":  0
-                                      }
-                                  ]
-                   },
-                   {
-                       "pose":  201,
-                       "layers":  [
-                                      {
-                                          "sheet":  "src_combat_swordcombo01_swordcombo0106",
-                                          "index":  0
-                                      }
-                                  ]
-                   },
-                   {
-                       "pose":  203,
-                       "layers":  [
-                                      {
-                                          "sheet":  "src_combat_swordcombo02_swordcombo0201",
-                                          "index":  0
-                                      }
-                                  ]
-                   },
-                   {
-                       "pose":  203,
-                       "layers":  [
-                                      {
-                                          "sheet":  "src_combat_swordcombo02_swordcombo0202",
-                                          "index":  0
-                                      }
-                                  ]
-                   },
-                   {
-                       "pose":  203,
-                       "layers":  [
-                                      {
-                                          "sheet":  "src_combat_swordcombo02_swordcombo0203",
-                                          "index":  0
-                                      }
-                                  ]
-                   },
-                   {
-                       "pose":  203,
-                       "layers":  [
-                                      {
-                                          "sheet":  "src_combat_swordcombo02_swordcombo0204",
-                                          "index":  0
-                                      }
-                                  ]
-                   },
-                   {
-                       "pose":  203,
-                       "layers":  [
-                                      {
-                                          "sheet":  "src_combat_swordcombo02_swordcombo0205",
-                                          "index":  0
-                                      }
-                                  ]
-                   },
-                   {
-                       "pose":  205,
-                       "layers":  [
-                                      {
-                                          "sheet":  "src_combat_swordcombo03_swordcombo0301",
-                                          "index":  0
-                                      }
-                                  ]
-                   },
-                   {
-                       "pose":  205,
-                       "layers":  [
-                                      {
-                                          "sheet":  "src_combat_swordcombo03_swordcombo0302",
-                                          "index":  0
-                                      }
-                                  ]
-                   },
-                   {
-                       "pose":  205,
-                       "layers":  [
-                                      {
-                                          "sheet":  "src_combat_swordcombo03_swordcombo0303",
-                                          "index":  0
-                                      }
-                                  ]
-                   },
-                   {
-                       "pose":  205,
-                       "layers":  [
-                                      {
-                                          "sheet":  "src_combat_swordcombo03_swordcombo0304",
-                                          "index":  0
-                                      }
-                                  ]
-                   },
-                   {
-                       "pose":  205,
-                       "layers":  [
-                                      {
-                                          "sheet":  "src_combat_swordcombo03_swordcombo0305",
-                                          "index":  0
-                                      }
-                                  ]
-                   },
-                   {
-                       "pose":  207,
-                       "layers":  [
-                                      {
-                                          "sheet":  "src_combat_gunfire_gunfire01",
-                                          "index":  0
-                                      }
-                                  ]
-                   },
-                   {
-                       "pose":  207,
-                       "layers":  [
-                                      {
-                                          "sheet":  "src_combat_gunfire_gunfire02",
-                                          "index":  0
-                                      }
-                                  ]
-                   },
-                   {
-                       "pose":  207,
-                       "layers":  [
-                                      {
-                                          "sheet":  "src_combat_gunfire_gunfire03",
-                                          "index":  0
-                                      }
-                                  ]
-                   },
-                   {
-                       "pose":  207,
-                       "layers":  [
-                                      {
-                                          "sheet":  "src_combat_gunfire_gunfire04",
-                                          "index":  0
-                                      }
-                                  ]
-                   },
-                   {
-                       "pose":  207,
-                       "layers":  [
-                                      {
-                                          "sheet":  "src_combat_gunfire_gunfire05",
-                                          "index":  0
-                                      }
-                                  ]
-                   },
-                   {
-                       "pose":  209,
-                       "layers":  [
-                                      {
-                                          "sheet":  "src_combat_gunfire2h_gunfire2h01",
-                                          "index":  0
-                                      }
-                                  ]
-                   },
-                   {
-                       "pose":  209,
-                       "layers":  [
-                                      {
-                                          "sheet":  "src_combat_gunfire2h_gunfire2h02",
-                                          "index":  0
-                                      }
-                                  ]
-                   },
-                   {
-                       "pose":  209,
-                       "layers":  [
-                                      {
-                                          "sheet":  "src_combat_gunfire2h_gunfire2h03",
-                                          "index":  0
-                                      }
-                                  ]
-                   },
-                   {
-                       "pose":  209,
-                       "layers":  [
-                                      {
-                                          "sheet":  "src_combat_gunfire2h_gunfire2h04",
-                                          "index":  0
-                                      }
-                                  ]
-                   },
-                   {
-                       "pose":  209,
-                       "layers":  [
-                                      {
-                                          "sheet":  "src_combat_gunfire2h_gunfire2h05",
-                                          "index":  0
-                                      }
-                                  ]
-                   },
-                   {
-                       "pose":  211,
-                       "layers":  [
-                                      {
-                                          "sheet":  "src_roll_roll01",
-                                          "index":  0
-                                      }
-                                  ]
-                   },
-                   {
-                       "pose":  211,
-                       "layers":  [
-                                      {
-                                          "sheet":  "src_roll_roll02",
-                                          "index":  0
-                                      }
-                                  ]
-                   },
-                   {
-                       "pose":  211,
-                       "layers":  [
-                                      {
-                                          "sheet":  "src_roll_roll03",
-                                          "index":  0
-                                      }
-                                  ]
-                   },
-                   {
-                       "pose":  211,
-                       "layers":  [
-                                      {
-                                          "sheet":  "src_roll_roll04",
-                                          "index":  0
-                                      }
-                                  ]
-                   },
-                   {
-                       "pose":  211,
-                       "layers":  [
-                                      {
-                                          "sheet":  "src_roll_roll05",
-                                          "index":  0
-                                      }
-                                  ]
-                   },
-                   {
-                       "pose":  211,
-                       "layers":  [
-                                      {
-                                          "sheet":  "src_roll_roll06",
-                                          "index":  0
-                                      }
-                                  ]
-                   },
-                   {
-                       "pose":  211,
-                       "layers":  [
-                                      {
-                                          "sheet":  "src_roll_roll07",
-                                          "index":  0
-                                      }
-                                  ]
-                   },
-                   {
-                       "pose":  211,
-                       "layers":  [
-                                      {
-                                          "sheet":  "src_roll_roll08",
-                                          "index":  0
-                                      }
-                                  ]
-                   },
-                   {
-                       "pose":  211,
-                       "layers":  [
-                                      {
-                                          "sheet":  "src_roll_roll09",
-                                          "index":  0
-                                      }
-                                  ]
-                   },
-                   {
-                       "pose":  211,
-                       "layers":  [
-                                      {
-                                          "sheet":  "src_roll_roll10",
-                                          "index":  0
-                                      }
-                                  ]
-                   }
-               ],
-    "_comment":  "Default baseline generated from labeled source folders under Pixel Prototype Player/Sprites. Each frame points at the copied source PNG assigned to that pose instead of a baked combined sheet. Left-facing poses intentionally keep empty strips so editor/runtime mirroring can drive them from the right-facing source poses.",
-    "sheets":  [
-                   {
-                       "id":  "src_idle_idle01",
-                       "file":  "default_player/Idle/Idle01.png",
-                       "z":  0
-                   },
-                   {
-                       "id":  "src_idle_idle02",
-                       "file":  "default_player/Idle/Idle02.png",
-                       "z":  0
-                   },
-                   {
-                       "id":  "src_idle_idle03",
-                       "file":  "default_player/Idle/Idle03.png",
-                       "z":  0
-                   },
-                   {
-                       "id":  "src_idle_idle04",
-                       "file":  "default_player/Idle/Idle04.png",
-                       "z":  0
-                   },
-                   {
-                       "id":  "src_idle_idle05",
-                       "file":  "default_player/Idle/Idle05.png",
-                       "z":  0
-                   },
-                   {
-                       "id":  "src_idle_idle06",
-                       "file":  "default_player/Idle/Idle06.png",
-                       "z":  0
-                   },
-                   {
-                       "id":  "src_idle_idle07",
-                       "file":  "default_player/Idle/Idle07.png",
-                       "z":  0
-                   },
-                   {
-                       "id":  "src_run_run01",
-                       "file":  "default_player/Run/Run01.png",
-                       "z":  0
-                   },
-                   {
-                       "id":  "src_run_run02",
-                       "file":  "default_player/Run/Run02.png",
-                       "z":  0
-                   },
-                   {
-                       "id":  "src_run_run03",
-                       "file":  "default_player/Run/Run03.png",
-                       "z":  0
-                   },
-                   {
-                       "id":  "src_run_run04",
-                       "file":  "default_player/Run/Run04.png",
-                       "z":  0
-                   },
-                   {
-                       "id":  "src_run_run05",
-                       "file":  "default_player/Run/Run05.png",
-                       "z":  0
-                   },
-                   {
-                       "id":  "src_run_run06",
-                       "file":  "default_player/Run/Run06.png",
-                       "z":  0
-                   },
-                   {
-                       "id":  "src_run_run07",
-                       "file":  "default_player/Run/Run07.png",
-                       "z":  0
-                   },
-                   {
-                       "id":  "src_run_run08",
-                       "file":  "default_player/Run/Run08.png",
-                       "z":  0
-                   },
-                   {
-                       "id":  "src_spin_spin01",
-                       "file":  "default_player/Spin/Spin01.png",
-                       "z":  0
-                   },
-                   {
-                       "id":  "src_spin_spin02",
-                       "file":  "default_player/Spin/Spin02.png",
-                       "z":  0
-                   },
-                   {
-                       "id":  "src_spin_spin03",
-                       "file":  "default_player/Spin/Spin03.png",
-                       "z":  0
-                   },
-                   {
-                       "id":  "src_spin_spin04",
-                       "file":  "default_player/Spin/Spin04.png",
-                       "z":  0
-                   },
-                   {
-                       "id":  "src_spin_spin05",
-                       "file":  "default_player/Spin/Spin05.png",
-                       "z":  0
-                   },
-                   {
-                       "id":  "src_spin_spin06",
-                       "file":  "default_player/Spin/Spin06.png",
-                       "z":  0
-                   },
-                   {
-                       "id":  "src_spin_spin07",
-                       "file":  "default_player/Spin/Spin07.png",
-                       "z":  0
-                   },
-                   {
-                       "id":  "src_spin_spin08",
-                       "file":  "default_player/Spin/Spin08.png",
-                       "z":  0
-                   },
-                   {
-                       "id":  "src_runtoidle_runtoidle01",
-                       "file":  "default_player/RunToIdle/RunToIdle01.png",
-                       "z":  0
-                   },
-                   {
-                       "id":  "src_runtoidle_runtoidle02",
-                       "file":  "default_player/RunToIdle/RunToIdle02.png",
-                       "z":  0
-                   },
-                   {
-                       "id":  "src_runtoidle_runtoidle03",
-                       "file":  "default_player/RunToIdle/RunToIdle03.png",
-                       "z":  0
-                   },
-                   {
-                       "id":  "src_jumpfall_jumpfall01",
-                       "file":  "default_player/JumpFall/JumpFall01.png",
-                       "z":  0
-                   },
-                   {
-                       "id":  "src_jump_jump01",
-                       "file":  "default_player/Jump/Jump01.png",
-                       "z":  0
-                   },
-                   {
-                       "id":  "src_jump_jump02",
-                       "file":  "default_player/Jump/Jump02.png",
-                       "z":  0
-                   },
-                   {
-                       "id":  "src_jump_jump03",
-                       "file":  "default_player/Jump/Jump03.png",
-                       "z":  0
-                   },
-                   {
-                       "id":  "src_crouch_crouch01",
-                       "file":  "default_player/Crouch/Crouch01.png",
-                       "z":  0
-                   },
-                   {
-                       "id":  "src_crouch_crouch02",
-                       "file":  "default_player/Crouch/Crouch02.png",
-                       "z":  0
-                   },
-                   {
-                       "id":  "src_crouch_crouch03",
-                       "file":  "default_player/Crouch/Crouch03.png",
-                       "z":  0
-                   },
-                   {
-                       "id":  "src_lookup_lookup01",
-                       "file":  "default_player/LookUp/LookUp01.png",
-                       "z":  0
-                   },
-                   {
-                       "id":  "src_lookup_lookup02",
-                       "file":  "default_player/LookUp/LookUp02.png",
-                       "z":  0
-                   },
-                   {
-                       "id":  "src_lookup_lookup03",
-                       "file":  "default_player/LookUp/LookUp03.png",
-                       "z":  0
-                   },
-                   {
-                       "id":  "src_crouch_crouch06",
-                       "file":  "default_player/Crouch/Crouch06.png",
-                       "z":  0
-                   },
-                   {
-                       "id":  "src_jumprise_jumprise01",
-                       "file":  "default_player/JumpRise/JumpRise01.png",
-                       "z":  0
-                   },
-                   {
-                       "id":  "src_land_land01",
-                       "file":  "default_player/Land/Land01.png",
-                       "z":  0
-                   },
-                   {
-                       "id":  "src_land_land02",
-                       "file":  "default_player/Land/Land02.png",
-                       "z":  0
-                   },
-                   {
-                       "id":  "src_combat_swordcombo01_swordcombo0101",
-                       "file":  "default_player/Combat/SwordCombo01/SwordCombo0101.png",
-                       "z":  0
-                   },
-                   {
-                       "id":  "src_combat_swordcombo01_swordcombo0102",
-                       "file":  "default_player/Combat/SwordCombo01/SwordCombo0102.png",
-                       "z":  0
-                   },
-                   {
-                       "id":  "src_combat_swordcombo01_swordcombo0103",
-                       "file":  "default_player/Combat/SwordCombo01/SwordCombo0103.png",
-                       "z":  0
-                   },
-                   {
-                       "id":  "src_combat_swordcombo01_swordcombo0104",
-                       "file":  "default_player/Combat/SwordCombo01/SwordCombo0104.png",
-                       "z":  0
-                   },
-                   {
-                       "id":  "src_combat_swordcombo01_swordcombo0105",
-                       "file":  "default_player/Combat/SwordCombo01/SwordCombo0105.png",
-                       "z":  0
-                   },
-                   {
-                       "id":  "src_combat_swordcombo01_swordcombo0106",
-                       "file":  "default_player/Combat/SwordCombo01/SwordCombo0106.png",
-                       "z":  0
-                   },
-                   {
-                       "id":  "src_combat_swordcombo02_swordcombo0201",
-                       "file":  "default_player/Combat/SwordCombo02/SwordCombo0201.png",
-                       "z":  0
-                   },
-                   {
-                       "id":  "src_combat_swordcombo02_swordcombo0202",
-                       "file":  "default_player/Combat/SwordCombo02/SwordCombo0202.png",
-                       "z":  0
-                   },
-                   {
-                       "id":  "src_combat_swordcombo02_swordcombo0203",
-                       "file":  "default_player/Combat/SwordCombo02/SwordCombo0203.png",
-                       "z":  0
-                   },
-                   {
-                       "id":  "src_combat_swordcombo02_swordcombo0204",
-                       "file":  "default_player/Combat/SwordCombo02/SwordCombo0204.png",
-                       "z":  0
-                   },
-                   {
-                       "id":  "src_combat_swordcombo02_swordcombo0205",
-                       "file":  "default_player/Combat/SwordCombo02/SwordCombo0205.png",
-                       "z":  0
-                   },
-                   {
-                       "id":  "src_combat_swordcombo03_swordcombo0301",
-                       "file":  "default_player/Combat/SwordCombo03/SwordCombo0301.png",
-                       "z":  0
-                   },
-                   {
-                       "id":  "src_combat_swordcombo03_swordcombo0302",
-                       "file":  "default_player/Combat/SwordCombo03/SwordCombo0302.png",
-                       "z":  0
-                   },
-                   {
-                       "id":  "src_combat_swordcombo03_swordcombo0303",
-                       "file":  "default_player/Combat/SwordCombo03/SwordCombo0303.png",
-                       "z":  0
-                   },
-                   {
-                       "id":  "src_combat_swordcombo03_swordcombo0304",
-                       "file":  "default_player/Combat/SwordCombo03/SwordCombo0304.png",
-                       "z":  0
-                   },
-                   {
-                       "id":  "src_combat_swordcombo03_swordcombo0305",
-                       "file":  "default_player/Combat/SwordCombo03/SwordCombo0305.png",
-                       "z":  0
-                   },
-                   {
-                       "id":  "src_combat_gunfire_gunfire01",
-                       "file":  "default_player/Combat/GunFire/GunFire01.png",
-                       "z":  0
-                   },
-                   {
-                       "id":  "src_combat_gunfire_gunfire02",
-                       "file":  "default_player/Combat/GunFire/GunFire02.png",
-                       "z":  0
-                   },
-                   {
-                       "id":  "src_combat_gunfire_gunfire03",
-                       "file":  "default_player/Combat/GunFire/GunFire03.png",
-                       "z":  0
-                   },
-                   {
-                       "id":  "src_combat_gunfire_gunfire04",
-                       "file":  "default_player/Combat/GunFire/GunFire04.png",
-                       "z":  0
-                   },
-                   {
-                       "id":  "src_combat_gunfire_gunfire05",
-                       "file":  "default_player/Combat/GunFire/GunFire05.png",
-                       "z":  0
-                   },
-                   {
-                       "id":  "src_combat_gunfire2h_gunfire2h01",
-                       "file":  "default_player/Combat/GunFire2H/GunFire2H01.png",
-                       "z":  0
-                   },
-                   {
-                       "id":  "src_combat_gunfire2h_gunfire2h02",
-                       "file":  "default_player/Combat/GunFire2H/GunFire2H02.png",
-                       "z":  0
-                   },
-                   {
-                       "id":  "src_combat_gunfire2h_gunfire2h03",
-                       "file":  "default_player/Combat/GunFire2H/GunFire2H03.png",
-                       "z":  0
-                   },
-                   {
-                       "id":  "src_combat_gunfire2h_gunfire2h04",
-                       "file":  "default_player/Combat/GunFire2H/GunFire2H04.png",
-                       "z":  0
-                   },
-                   {
-                       "id":  "src_combat_gunfire2h_gunfire2h05",
-                       "file":  "default_player/Combat/GunFire2H/GunFire2H05.png",
-                       "z":  0
-                   },
-                   {
-                       "id":  "src_roll_roll01",
-                       "file":  "default_player/Roll/Roll01.png",
-                       "z":  0
-                   },
-                   {
-                       "id":  "src_roll_roll02",
-                       "file":  "default_player/Roll/Roll02.png",
-                       "z":  0
-                   },
-                   {
-                       "id":  "src_roll_roll03",
-                       "file":  "default_player/Roll/Roll03.png",
-                       "z":  0
-                   },
-                   {
-                       "id":  "src_roll_roll04",
-                       "file":  "default_player/Roll/Roll04.png",
-                       "z":  0
-                   },
-                   {
-                       "id":  "src_roll_roll05",
-                       "file":  "default_player/Roll/Roll05.png",
-                       "z":  0
-                   },
-                   {
-                       "id":  "src_roll_roll06",
-                       "file":  "default_player/Roll/Roll06.png",
-                       "z":  0
-                   },
-                   {
-                       "id":  "src_roll_roll07",
-                       "file":  "default_player/Roll/Roll07.png",
-                       "z":  0
-                   },
-                   {
-                       "id":  "src_roll_roll08",
-                       "file":  "default_player/Roll/Roll08.png",
-                       "z":  0
-                   },
-                   {
-                       "id":  "src_roll_roll09",
-                       "file":  "default_player/Roll/Roll09.png",
-                       "z":  0
-                   },
-                   {
-                       "id":  "src_roll_roll10",
-                       "file":  "default_player/Roll/Roll10.png",
-                       "z":  0
-                   }
-               ]
+{
+  "center_x": 24.0,
+  "center_y": 32.0,
+  "frame_height": 64.0,
+  "frame_width": 48.0,
+  "frames": [
+    {
+      "layers": [
+        {
+          "index": 0.0,
+          "sheet": "src_idle_normal_idle_down"
+        }
+      ],
+      "pose": 0.0,
+      "rotation_deg": 0.0
+    },
+    {
+      "layers": [
+        {
+          "index": 1.0,
+          "sheet": "src_idle_normal_idle_down"
+        }
+      ],
+      "pose": 0.0,
+      "rotation_deg": 0.0
+    },
+    {
+      "layers": [
+        {
+          "index": 2.0,
+          "sheet": "src_idle_normal_idle_down"
+        }
+      ],
+      "pose": 0.0,
+      "rotation_deg": 0.0
+    },
+    {
+      "layers": [
+        {
+          "index": 3.0,
+          "sheet": "src_idle_normal_idle_down"
+        }
+      ],
+      "pose": 0.0,
+      "rotation_deg": 0.0
+    },
+    {
+      "layers": [
+        {
+          "index": 4.0,
+          "sheet": "src_idle_normal_idle_down"
+        }
+      ],
+      "pose": 0.0,
+      "rotation_deg": 0.0
+    },
+    {
+      "layers": [
+        {
+          "index": 5.0,
+          "sheet": "src_idle_normal_idle_down"
+        }
+      ],
+      "pose": 0.0,
+      "rotation_deg": 0.0
+    },
+    {
+      "layers": [
+        {
+          "index": 6.0,
+          "sheet": "src_idle_normal_idle_down"
+        }
+      ],
+      "pose": 0.0,
+      "rotation_deg": 0.0
+    },
+    {
+      "layers": [
+        {
+          "index": 7.0,
+          "sheet": "src_idle_normal_idle_down"
+        }
+      ],
+      "pose": 0.0,
+      "rotation_deg": 0.0
+    },
+    {
+      "layers": [
+        {
+          "index": 0.0,
+          "sheet": "src_idle_normal_idle_right_down"
+        }
+      ],
+      "pose": 1.0,
+      "rotation_deg": 0.0
+    },
+    {
+      "layers": [
+        {
+          "index": 1.0,
+          "sheet": "src_idle_normal_idle_right_down"
+        }
+      ],
+      "pose": 1.0,
+      "rotation_deg": 0.0
+    },
+    {
+      "layers": [
+        {
+          "index": 2.0,
+          "sheet": "src_idle_normal_idle_right_down"
+        }
+      ],
+      "pose": 1.0,
+      "rotation_deg": 0.0
+    },
+    {
+      "layers": [
+        {
+          "index": 3.0,
+          "sheet": "src_idle_normal_idle_right_down"
+        }
+      ],
+      "pose": 1.0,
+      "rotation_deg": 0.0
+    },
+    {
+      "layers": [
+        {
+          "index": 4.0,
+          "sheet": "src_idle_normal_idle_right_down"
+        }
+      ],
+      "pose": 1.0,
+      "rotation_deg": 0.0
+    },
+    {
+      "layers": [
+        {
+          "index": 5.0,
+          "sheet": "src_idle_normal_idle_right_down"
+        }
+      ],
+      "pose": 1.0,
+      "rotation_deg": 0.0
+    },
+    {
+      "layers": [
+        {
+          "index": 0.0,
+          "sheet": "src_idle_normal_idle_left_down"
+        }
+      ],
+      "pose": 2.0,
+      "rotation_deg": 0.0
+    },
+    {
+      "layers": [
+        {
+          "index": 1.0,
+          "sheet": "src_idle_normal_idle_left_down"
+        }
+      ],
+      "pose": 2.0,
+      "rotation_deg": 0.0
+    },
+    {
+      "layers": [
+        {
+          "index": 2.0,
+          "sheet": "src_idle_normal_idle_left_down"
+        }
+      ],
+      "pose": 2.0,
+      "rotation_deg": 0.0
+    },
+    {
+      "layers": [
+        {
+          "index": 3.0,
+          "sheet": "src_idle_normal_idle_left_down"
+        }
+      ],
+      "pose": 2.0,
+      "rotation_deg": 0.0
+    },
+    {
+      "layers": [
+        {
+          "index": 4.0,
+          "sheet": "src_idle_normal_idle_left_down"
+        }
+      ],
+      "pose": 2.0,
+      "rotation_deg": 0.0
+    },
+    {
+      "layers": [
+        {
+          "index": 5.0,
+          "sheet": "src_idle_normal_idle_left_down"
+        }
+      ],
+      "pose": 2.0,
+      "rotation_deg": 0.0
+    },
+    {
+      "layers": [
+        {
+          "index": 0.0,
+          "sheet": "src_run_normal_run_right_down"
+        }
+      ],
+      "pose": 9.0,
+      "rotation_deg": 0.0
+    },
+    {
+      "layers": [
+        {
+          "index": 1.0,
+          "sheet": "src_run_normal_run_right_down"
+        }
+      ],
+      "pose": 9.0,
+      "rotation_deg": 0.0
+    },
+    {
+      "layers": [
+        {
+          "index": 2.0,
+          "sheet": "src_run_normal_run_right_down"
+        }
+      ],
+      "pose": 9.0,
+      "rotation_deg": 0.0
+    },
+    {
+      "layers": [
+        {
+          "index": 3.0,
+          "sheet": "src_run_normal_run_right_down"
+        }
+      ],
+      "pose": 9.0,
+      "rotation_deg": 0.0
+    },
+    {
+      "layers": [
+        {
+          "index": 4.0,
+          "sheet": "src_run_normal_run_right_down"
+        }
+      ],
+      "pose": 9.0,
+      "rotation_deg": 0.0
+    },
+    {
+      "layers": [
+        {
+          "index": 5.0,
+          "sheet": "src_run_normal_run_right_down"
+        }
+      ],
+      "pose": 9.0,
+      "rotation_deg": 0.0
+    },
+    {
+      "layers": [
+        {
+          "index": 0.0,
+          "sheet": "src_run_normal_run_left_down"
+        }
+      ],
+      "pose": 10.0,
+      "rotation_deg": 0.0
+    },
+    {
+      "layers": [
+        {
+          "index": 1.0,
+          "sheet": "src_run_normal_run_left_down"
+        }
+      ],
+      "pose": 10.0,
+      "rotation_deg": 0.0
+    },
+    {
+      "layers": [
+        {
+          "index": 2.0,
+          "sheet": "src_run_normal_run_left_down"
+        }
+      ],
+      "pose": 10.0,
+      "rotation_deg": 0.0
+    },
+    {
+      "layers": [
+        {
+          "index": 3.0,
+          "sheet": "src_run_normal_run_left_down"
+        }
+      ],
+      "pose": 10.0,
+      "rotation_deg": 0.0
+    },
+    {
+      "layers": [
+        {
+          "index": 4.0,
+          "sheet": "src_run_normal_run_left_down"
+        }
+      ],
+      "pose": 10.0,
+      "rotation_deg": 0.0
+    },
+    {
+      "layers": [
+        {
+          "index": 5.0,
+          "sheet": "src_run_normal_run_left_down"
+        }
+      ],
+      "pose": 10.0,
+      "rotation_deg": 0.0
+    },
+    {
+      "layers": [
+        {
+          "index": 2.0,
+          "sheet": "src_jump_normal_jump_right_down"
+        }
+      ],
+      "pose": 25.0,
+      "rotation_deg": 0.0
+    },
+    {
+      "layers": [
+        {
+          "index": 1.0,
+          "sheet": "src_jump_normal_jump_right_down"
+        }
+      ],
+      "pose": 25.0,
+      "rotation_deg": 22.5
+    },
+    {
+      "layers": [
+        {
+          "index": 1.0,
+          "sheet": "src_jump_normal_jump_right_down"
+        }
+      ],
+      "pose": 25.0,
+      "rotation_deg": 45.0
+    },
+    {
+      "layers": [
+        {
+          "index": 1.0,
+          "sheet": "src_jump_normal_jump_right_down"
+        }
+      ],
+      "pose": 25.0,
+      "rotation_deg": 90.0
+    },
+    {
+      "layers": [
+        {
+          "index": 1.0,
+          "sheet": "src_jump_normal_jump_right_down"
+        }
+      ],
+      "pose": 25.0,
+      "rotation_deg": 112.5
+    },
+    {
+      "layers": [
+        {
+          "index": 1.0,
+          "sheet": "src_jump_normal_jump_right_down"
+        }
+      ],
+      "pose": 25.0,
+      "rotation_deg": 135.0
+    },
+    {
+      "layers": [
+        {
+          "index": 1.0,
+          "sheet": "src_jump_normal_jump_right_down"
+        }
+      ],
+      "pose": 25.0,
+      "rotation_deg": 157.5
+    },
+    {
+      "layers": [
+        {
+          "index": 1.0,
+          "sheet": "src_jump_normal_jump_right_down"
+        }
+      ],
+      "pose": 25.0,
+      "rotation_deg": 180.0
+    },
+    {
+      "layers": [
+        {
+          "index": 1.0,
+          "sheet": "src_jump_normal_jump_right_down"
+        }
+      ],
+      "pose": 25.0,
+      "rotation_deg": -157.5
+    },
+    {
+      "layers": [
+        {
+          "index": 1.0,
+          "sheet": "src_jump_normal_jump_right_down"
+        }
+      ],
+      "pose": 25.0,
+      "rotation_deg": -135.0
+    },
+    {
+      "layers": [
+        {
+          "index": 1.0,
+          "sheet": "src_jump_normal_jump_right_down"
+        }
+      ],
+      "pose": 25.0,
+      "rotation_deg": -112.5
+    },
+    {
+      "layers": [
+        {
+          "index": 1.0,
+          "sheet": "src_jump_normal_jump_right_down"
+        }
+      ],
+      "pose": 25.0,
+      "rotation_deg": -90.0
+    },
+    {
+      "layers": [
+        {
+          "index": 1.0,
+          "sheet": "src_jump_normal_jump_right_down"
+        }
+      ],
+      "pose": 25.0,
+      "rotation_deg": -67.5
+    },
+    {
+      "layers": [
+        {
+          "index": 1.0,
+          "sheet": "src_jump_normal_jump_right_down"
+        }
+      ],
+      "pose": 25.0,
+      "rotation_deg": -45.0
+    },
+    {
+      "layers": [
+        {
+          "index": 1.0,
+          "sheet": "src_jump_normal_jump_right_down"
+        }
+      ],
+      "pose": 25.0,
+      "rotation_deg": 0.0
+    },
+    {
+      "layers": [
+        {
+          "index": 1.0,
+          "sheet": "src_jump_normal_jump_right_down"
+        }
+      ],
+      "pose": 25.0,
+      "rotation_deg": 0.0
+    },
+    {
+      "layers": [
+        {
+          "index": 0.0,
+          "sheet": "src_idle_normal_idle_down"
+        }
+      ],
+      "pose": 37.0,
+      "rotation_deg": 0.0
+    },
+    {
+      "layers": [
+        {
+          "index": 1.0,
+          "sheet": "src_idle_normal_idle_down"
+        }
+      ],
+      "pose": 37.0,
+      "rotation_deg": 0.0
+    },
+    {
+      "layers": [
+        {
+          "index": 0.0,
+          "sheet": "src_idle_normal_idle_right_down"
+        }
+      ],
+      "pose": 37.0,
+      "rotation_deg": 0.0
+    },
+    {
+      "layers": [
+        {
+          "index": 1.0,
+          "sheet": "src_idle_normal_idle_right_down"
+        }
+      ],
+      "pose": 37.0,
+      "rotation_deg": 0.0
+    },
+    {
+      "layers": [
+        {
+          "index": 2.0,
+          "sheet": "src_dash_normal_dash_right_down"
+        }
+      ],
+      "pose": 41.0,
+      "rotation_deg": 0.0
+    },
+    {
+      "layers": [
+        {
+          "index": 3.0,
+          "sheet": "src_dash_normal_dash_right_down"
+        }
+      ],
+      "pose": 41.0,
+      "rotation_deg": 0.0
+    },
+    {
+      "layers": [
+        {
+          "index": 4.0,
+          "sheet": "src_dash_normal_dash_right_down"
+        }
+      ],
+      "pose": 41.0,
+      "rotation_deg": 0.0
+    },
+    {
+      "layers": [
+        {
+          "index": 2.0,
+          "sheet": "src_jump_normal_jump_right_down"
+        }
+      ],
+      "pose": 47.0,
+      "rotation_deg": 0.0
+    },
+    {
+      "layers": [
+        {
+          "index": 2.0,
+          "sheet": "src_jump_normal_jump_left_down"
+        }
+      ],
+      "pose": 48.0,
+      "rotation_deg": 0.0
+    },
+    {
+      "layers": [
+        {
+          "index": 0.0,
+          "sheet": "src_jump_normal_jump_right_down"
+        }
+      ],
+      "pose": 53.0,
+      "rotation_deg": 0.0
+    },
+    {
+      "layers": [
+        {
+          "index": 1.0,
+          "sheet": "src_jump_normal_jump_right_down"
+        }
+      ],
+      "pose": 53.0,
+      "rotation_deg": 0.0
+    },
+    {
+      "layers": [
+        {
+          "index": 0.0,
+          "sheet": "src_idle_gun_idle_gun_right_up"
+        }
+      ],
+      "pose": 59.0,
+      "rotation_deg": 0.0
+    },
+    {
+      "layers": [
+        {
+          "index": 1.0,
+          "sheet": "src_idle_gun_idle_gun_right_up"
+        }
+      ],
+      "pose": 59.0,
+      "rotation_deg": 0.0
+    },
+    {
+      "layers": [
+        {
+          "index": 2.0,
+          "sheet": "src_idle_gun_idle_gun_right_up"
+        }
+      ],
+      "pose": 59.0,
+      "rotation_deg": 0.0
+    },
+    {
+      "layers": [
+        {
+          "index": 3.0,
+          "sheet": "src_idle_gun_idle_gun_right_up"
+        }
+      ],
+      "pose": 59.0,
+      "rotation_deg": 0.0
+    },
+    {
+      "layers": [
+        {
+          "index": 4.0,
+          "sheet": "src_idle_gun_idle_gun_right_up"
+        }
+      ],
+      "pose": 59.0,
+      "rotation_deg": 0.0
+    },
+    {
+      "layers": [
+        {
+          "index": 5.0,
+          "sheet": "src_idle_gun_idle_gun_right_up"
+        }
+      ],
+      "pose": 59.0,
+      "rotation_deg": 0.0
+    },
+    {
+      "layers": [
+        {
+          "index": 0.0,
+          "sheet": "src_idle_gun_idle_gun_left_up"
+        }
+      ],
+      "pose": 60.0,
+      "rotation_deg": 0.0
+    },
+    {
+      "layers": [
+        {
+          "index": 1.0,
+          "sheet": "src_idle_gun_idle_gun_left_up"
+        }
+      ],
+      "pose": 60.0,
+      "rotation_deg": 0.0
+    },
+    {
+      "layers": [
+        {
+          "index": 2.0,
+          "sheet": "src_idle_gun_idle_gun_left_up"
+        }
+      ],
+      "pose": 60.0,
+      "rotation_deg": 0.0
+    },
+    {
+      "layers": [
+        {
+          "index": 3.0,
+          "sheet": "src_idle_gun_idle_gun_left_up"
+        }
+      ],
+      "pose": 60.0,
+      "rotation_deg": 0.0
+    },
+    {
+      "layers": [
+        {
+          "index": 4.0,
+          "sheet": "src_idle_gun_idle_gun_left_up"
+        }
+      ],
+      "pose": 60.0,
+      "rotation_deg": 0.0
+    },
+    {
+      "layers": [
+        {
+          "index": 5.0,
+          "sheet": "src_idle_gun_idle_gun_left_up"
+        }
+      ],
+      "pose": 60.0,
+      "rotation_deg": 0.0
+    },
+    {
+      "layers": [
+        {
+          "index": 0.0,
+          "sheet": "src_idle_normal_idle_right_down"
+        }
+      ],
+      "pose": 67.0,
+      "rotation_deg": 0.0
+    },
+    {
+      "layers": [
+        {
+          "index": 1.0,
+          "sheet": "src_idle_normal_idle_right_down"
+        }
+      ],
+      "pose": 67.0,
+      "rotation_deg": 0.0
+    },
+    {
+      "layers": [
+        {
+          "index": 2.0,
+          "sheet": "src_idle_normal_idle_right_down"
+        }
+      ],
+      "pose": 67.0,
+      "rotation_deg": 0.0
+    },
+    {
+      "layers": [
+        {
+          "index": 0.0,
+          "sheet": "src_idle_normal_idle_left_down"
+        }
+      ],
+      "pose": 68.0,
+      "rotation_deg": 0.0
+    },
+    {
+      "layers": [
+        {
+          "index": 1.0,
+          "sheet": "src_idle_normal_idle_left_down"
+        }
+      ],
+      "pose": 68.0,
+      "rotation_deg": 0.0
+    },
+    {
+      "layers": [
+        {
+          "index": 2.0,
+          "sheet": "src_idle_normal_idle_left_down"
+        }
+      ],
+      "pose": 68.0,
+      "rotation_deg": 0.0
+    },
+    {
+      "layers": [
+        {
+          "index": 0.0,
+          "sheet": "src_jump_normal_jump_right_down"
+        }
+      ],
+      "pose": 75.0,
+      "rotation_deg": 0.0
+    },
+    {
+      "layers": [
+        {
+          "index": 1.0,
+          "sheet": "src_jump_normal_jump_right_down"
+        }
+      ],
+      "pose": 75.0,
+      "rotation_deg": 0.0
+    },
+    {
+      "layers": [
+        {
+          "index": 2.0,
+          "sheet": "src_jump_normal_jump_right_down"
+        }
+      ],
+      "pose": 75.0,
+      "rotation_deg": 0.0
+    },
+    {
+      "layers": [
+        {
+          "index": 3.0,
+          "sheet": "src_jump_normal_jump_right_down"
+        }
+      ],
+      "pose": 75.0,
+      "rotation_deg": 0.0
+    },
+    {
+      "layers": [
+        {
+          "index": 3.0,
+          "sheet": "src_jump_normal_jump_right_down"
+        }
+      ],
+      "pose": 135.0,
+      "rotation_deg": 0.0
+    },
+    {
+      "layers": [
+        {
+          "index": 4.0,
+          "sheet": "src_jump_normal_jump_right_down"
+        }
+      ],
+      "pose": 135.0,
+      "rotation_deg": 0.0
+    },
+    {
+      "layers": [
+        {
+          "index": 5.0,
+          "sheet": "src_jump_normal_jump_right_down"
+        }
+      ],
+      "pose": 135.0,
+      "rotation_deg": 0.0
+    },
+    {
+      "layers": [
+        {
+          "index": 5.0,
+          "sheet": "src_jump_normal_jump_left_down"
+        }
+      ],
+      "pose": 135.0,
+      "rotation_deg": 0.0
+    },
+    {
+      "layers": [
+        {
+          "index": 1.0,
+          "sheet": "src_jump_normal_jump_right_down"
+        }
+      ],
+      "pose": 164.0,
+      "rotation_deg": 0.0
+    },
+    {
+      "layers": [
+        {
+          "index": 7.0,
+          "sheet": "src_jump_normal_jump_right_down"
+        }
+      ],
+      "pose": 164.0,
+      "rotation_deg": 0.0
+    },
+    {
+      "layers": [
+        {
+          "index": 0.0,
+          "sheet": "src_jump_normal_jump_right_down"
+        }
+      ],
+      "pose": 164.0,
+      "rotation_deg": 0.0
+    },
+    {
+      "layers": [
+        {
+          "index": 1.0,
+          "sheet": "src_jump_normal_jump_right_down"
+        }
+      ],
+      "pose": 166.0,
+      "rotation_deg": 0.0
+    },
+    {
+      "layers": [
+        {
+          "index": 7.0,
+          "sheet": "src_jump_normal_jump_right_down"
+        }
+      ],
+      "pose": 166.0,
+      "rotation_deg": 0.0
+    },
+    {
+      "layers": [
+        {
+          "index": 0.0,
+          "sheet": "src_jump_normal_jump_right_down"
+        }
+      ],
+      "pose": 166.0,
+      "rotation_deg": 0.0
+    },
+    {
+      "layers": [
+        {
+          "index": 0.0,
+          "sheet": "src_attack_spear_attack_spear_right"
+        }
+      ],
+      "pose": 201.0,
+      "rotation_deg": 0.0
+    },
+    {
+      "layers": [
+        {
+          "index": 1.0,
+          "sheet": "src_attack_spear_attack_spear_right"
+        }
+      ],
+      "pose": 201.0,
+      "rotation_deg": 0.0
+    },
+    {
+      "layers": [
+        {
+          "index": 2.0,
+          "sheet": "src_attack_spear_attack_spear_right"
+        }
+      ],
+      "pose": 201.0,
+      "rotation_deg": 0.0
+    },
+    {
+      "layers": [
+        {
+          "index": 3.0,
+          "sheet": "src_attack_spear_attack_spear_right"
+        }
+      ],
+      "pose": 201.0,
+      "rotation_deg": 0.0
+    },
+    {
+      "layers": [
+        {
+          "index": 4.0,
+          "sheet": "src_attack_spear_attack_spear_right"
+        }
+      ],
+      "pose": 201.0,
+      "rotation_deg": 0.0
+    },
+    {
+      "layers": [
+        {
+          "index": 5.0,
+          "sheet": "src_attack_spear_attack_spear_right"
+        }
+      ],
+      "pose": 201.0,
+      "rotation_deg": 0.0
+    },
+    {
+      "layers": [
+        {
+          "index": 3.0,
+          "sheet": "src_attack_spear_attack_spear_right"
+        }
+      ],
+      "pose": 203.0,
+      "rotation_deg": 0.0
+    },
+    {
+      "layers": [
+        {
+          "index": 4.0,
+          "sheet": "src_attack_spear_attack_spear_right"
+        }
+      ],
+      "pose": 203.0,
+      "rotation_deg": 0.0
+    },
+    {
+      "layers": [
+        {
+          "index": 5.0,
+          "sheet": "src_attack_spear_attack_spear_right"
+        }
+      ],
+      "pose": 203.0,
+      "rotation_deg": 0.0
+    },
+    {
+      "layers": [
+        {
+          "index": 6.0,
+          "sheet": "src_attack_spear_attack_spear_right"
+        }
+      ],
+      "pose": 203.0,
+      "rotation_deg": 0.0
+    },
+    {
+      "layers": [
+        {
+          "index": 0.0,
+          "sheet": "src_attack_spear_attack_spear_left"
+        }
+      ],
+      "pose": 204.0,
+      "rotation_deg": 0.0
+    },
+    {
+      "layers": [
+        {
+          "index": 1.0,
+          "sheet": "src_attack_spear_attack_spear_left"
+        }
+      ],
+      "pose": 204.0,
+      "rotation_deg": 0.0
+    },
+    {
+      "layers": [
+        {
+          "index": 2.0,
+          "sheet": "src_attack_spear_attack_spear_left"
+        }
+      ],
+      "pose": 204.0,
+      "rotation_deg": 0.0
+    },
+    {
+      "layers": [
+        {
+          "index": 3.0,
+          "sheet": "src_attack_spear_attack_spear_left"
+        }
+      ],
+      "pose": 204.0,
+      "rotation_deg": 0.0
+    },
+    {
+      "layers": [
+        {
+          "index": 4.0,
+          "sheet": "src_attack_spear_attack_spear_left"
+        }
+      ],
+      "pose": 204.0,
+      "rotation_deg": 0.0
+    },
+    {
+      "layers": [
+        {
+          "index": 5.0,
+          "sheet": "src_attack_spear_attack_spear_left"
+        }
+      ],
+      "pose": 204.0,
+      "rotation_deg": 0.0
+    },
+    {
+      "layers": [
+        {
+          "index": 7.0,
+          "sheet": "src_dash_normal_dash_right_down"
+        }
+      ],
+      "pose": 205.0,
+      "rotation_deg": 0.0
+    },
+    {
+      "layers": [
+        {
+          "index": 7.0,
+          "sheet": "src_idle_normal_idle_down"
+        }
+      ],
+      "pose": 205.0,
+      "rotation_deg": 0.0
+    },
+    {
+      "layers": [
+        {
+          "index": 1.0,
+          "sheet": "src_dash_normal_dash_left_down"
+        }
+      ],
+      "pose": 205.0,
+      "rotation_deg": 0.0
+    },
+    {
+      "layers": [
+        {
+          "index": 2.0,
+          "sheet": "src_jump_normal_jump_left_up"
+        }
+      ],
+      "pose": 205.0,
+      "rotation_deg": 0.0
+    },
+    {
+      "layers": [
+        {
+          "index": 3.0,
+          "sheet": "src_jump_normal_jump_right_up"
+        }
+      ],
+      "pose": 205.0,
+      "rotation_deg": 0.0
+    },
+    {
+      "layers": [
+        {
+          "index": 3.0,
+          "sheet": "src_jump_normal_jump_right_down"
+        }
+      ],
+      "pose": 205.0,
+      "rotation_deg": 0.0
+    },
+    {
+      "layers": [
+        {
+          "index": 3.0,
+          "sheet": "src_attack_spear_attack_spear_right"
+        }
+      ],
+      "pose": 205.0,
+      "rotation_deg": 0.0
+    },
+    {
+      "layers": [
+        {
+          "index": 5.0,
+          "sheet": "src_attack_spear_attack_spear_right"
+        }
+      ],
+      "pose": 205.0,
+      "rotation_deg": 0.0
+    },
+    {
+      "layers": [
+        {
+          "index": 4.0,
+          "sheet": "src_attack_spear_attack_spear_right"
+        }
+      ],
+      "pose": 205.0,
+      "rotation_deg": 0.0
+    },
+    {
+      "layers": [
+        {
+          "index": 6.0,
+          "sheet": "src_attack_spear_attack_spear_right"
+        }
+      ],
+      "pose": 205.0,
+      "rotation_deg": 0.0
+    },
+    {
+      "layers": [
+        {
+          "index": 4.0,
+          "sheet": "src_idle_gun_idle_gun_right_down"
+        }
+      ],
+      "pose": 207.0,
+      "rotation_deg": 0.0
+    },
+    {
+      "layers": [
+        {
+          "index": 5.0,
+          "sheet": "src_idle_gun_idle_gun_right_down"
+        }
+      ],
+      "pose": 207.0,
+      "rotation_deg": 0.0
+    },
+    {
+      "layers": [
+        {
+          "index": 1.0,
+          "sheet": "src_attack_gun_shooting_right"
+        }
+      ],
+      "pose": 207.0,
+      "rotation_deg": 0.0
+    },
+    {
+      "layers": [
+        {
+          "index": 2.0,
+          "sheet": "src_attack_gun_shooting_right"
+        }
+      ],
+      "pose": 207.0,
+      "rotation_deg": 0.0
+    },
+    {
+      "layers": [
+        {
+          "index": 3.0,
+          "sheet": "src_attack_gun_shooting_right"
+        }
+      ],
+      "pose": 207.0,
+      "rotation_deg": 0.0
+    },
+    {
+      "layers": [
+        {
+          "index": 5.0,
+          "sheet": "src_idle_gun_idle_gun_right_down"
+        }
+      ],
+      "pose": 207.0,
+      "rotation_deg": 0.0
+    },
+    {
+      "layers": [
+        {
+          "index": 4.0,
+          "sheet": "src_idle_gun_idle_gun_right_down"
+        }
+      ],
+      "pose": 207.0,
+      "rotation_deg": 0.0
+    },
+    {
+      "layers": [
+        {
+          "index": 0.0,
+          "sheet": "src_attack_gun_shooting_right"
+        }
+      ],
+      "pose": 209.0,
+      "rotation_deg": 0.0
+    },
+    {
+      "layers": [
+        {
+          "index": 1.0,
+          "sheet": "src_attack_gun_shooting_right"
+        }
+      ],
+      "pose": 209.0,
+      "rotation_deg": 0.0
+    },
+    {
+      "layers": [
+        {
+          "index": 2.0,
+          "sheet": "src_attack_gun_shooting_right"
+        }
+      ],
+      "pose": 209.0,
+      "rotation_deg": 0.0
+    },
+    {
+      "layers": [
+        {
+          "index": 3.0,
+          "sheet": "src_attack_gun_shooting_right"
+        }
+      ],
+      "pose": 209.0,
+      "rotation_deg": 0.0
+    },
+    {
+      "layers": [
+        {
+          "index": 4.0,
+          "sheet": "src_attack_gun_shooting_right"
+        }
+      ],
+      "pose": 209.0,
+      "rotation_deg": 0.0
+    },
+    {
+      "layers": [
+        {
+          "index": 5.0,
+          "sheet": "src_attack_gun_shooting_right"
+        }
+      ],
+      "pose": 209.0,
+      "rotation_deg": 0.0
+    },
+    {
+      "layers": [
+        {
+          "index": 6.0,
+          "sheet": "src_attack_gun_shooting_right"
+        }
+      ],
+      "pose": 209.0,
+      "rotation_deg": 0.0
+    },
+    {
+      "layers": [
+        {
+          "index": 7.0,
+          "sheet": "src_attack_gun_shooting_right"
+        }
+      ],
+      "pose": 209.0,
+      "rotation_deg": 0.0
+    },
+    {
+      "layers": [
+        {
+          "index": 0.0,
+          "sheet": "src_dash_normal_dash_right_down"
+        }
+      ],
+      "pose": 211.0,
+      "rotation_deg": 0.0
+    },
+    {
+      "layers": [
+        {
+          "index": 1.0,
+          "sheet": "src_dash_normal_dash_right_down"
+        }
+      ],
+      "pose": 211.0,
+      "rotation_deg": 0.0
+    },
+    {
+      "layers": [
+        {
+          "index": 2.0,
+          "sheet": "src_dash_normal_dash_right_down"
+        }
+      ],
+      "pose": 211.0,
+      "rotation_deg": 22.5
+    },
+    {
+      "layers": [
+        {
+          "index": 3.0,
+          "sheet": "src_dash_normal_dash_right_down"
+        }
+      ],
+      "pose": 211.0,
+      "rotation_deg": 45.0
+    },
+    {
+      "layers": [
+        {
+          "index": 2.0,
+          "sheet": "src_dash_normal_dash_right_down"
+        }
+      ],
+      "pose": 211.0,
+      "rotation_deg": 90.0
+    },
+    {
+      "layers": [
+        {
+          "index": 3.0,
+          "sheet": "src_dash_normal_dash_right_down"
+        }
+      ],
+      "pose": 211.0,
+      "rotation_deg": 112.5
+    },
+    {
+      "layers": [
+        {
+          "index": 2.0,
+          "sheet": "src_dash_normal_dash_right_down"
+        }
+      ],
+      "pose": 211.0,
+      "rotation_deg": 135.0
+    },
+    {
+      "layers": [
+        {
+          "index": 4.0,
+          "sheet": "src_dash_normal_dash_right_down"
+        }
+      ],
+      "pose": 211.0,
+      "rotation_deg": 157.5
+    },
+    {
+      "layers": [
+        {
+          "index": 5.0,
+          "sheet": "src_dash_normal_dash_right_down"
+        }
+      ],
+      "pose": 211.0,
+      "rotation_deg": 180.0
+    },
+    {
+      "layers": [
+        {
+          "index": 4.0,
+          "sheet": "src_dash_normal_dash_right_down"
+        }
+      ],
+      "pose": 211.0,
+      "rotation_deg": -157.5
+    },
+    {
+      "layers": [
+        {
+          "index": 5.0,
+          "sheet": "src_dash_normal_dash_right_down"
+        }
+      ],
+      "pose": 211.0,
+      "rotation_deg": -135.0
+    },
+    {
+      "layers": [
+        {
+          "index": 4.0,
+          "sheet": "src_dash_normal_dash_right_down"
+        }
+      ],
+      "pose": 211.0,
+      "rotation_deg": -112.5
+    },
+    {
+      "layers": [
+        {
+          "index": 5.0,
+          "sheet": "src_dash_normal_dash_right_down"
+        }
+      ],
+      "pose": 211.0,
+      "rotation_deg": -90.0
+    },
+    {
+      "layers": [
+        {
+          "index": 4.0,
+          "sheet": "src_dash_normal_dash_right_down"
+        }
+      ],
+      "pose": 211.0,
+      "rotation_deg": -67.5
+    },
+    {
+      "layers": [
+        {
+          "index": 5.0,
+          "sheet": "src_dash_normal_dash_right_down"
+        }
+      ],
+      "pose": 211.0,
+      "rotation_deg": -45.0
+    },
+    {
+      "layers": [
+        {
+          "index": 6.0,
+          "sheet": "src_dash_normal_dash_right_down"
+        }
+      ],
+      "pose": 211.0,
+      "rotation_deg": -22.5
+    },
+    {
+      "layers": [
+        {
+          "index": 7.0,
+          "sheet": "src_dash_normal_dash_right_down"
+        }
+      ],
+      "pose": 211.0,
+      "rotation_deg": 0.0
+    }
+  ],
+  "seed_version": 5.0,
+  "sheet_cols": 8.0,
+  "sheets": [
+    {
+      "file": "Idle/Normal/idle_down.png",
+      "id": "src_idle_normal_idle_down",
+      "z": 0.0
+    },
+    {
+      "file": "Idle/Normal/idle_right_down.png",
+      "id": "src_idle_normal_idle_right_down",
+      "z": 0.0
+    },
+    {
+      "file": "Idle/Normal/idle_left_down.png",
+      "id": "src_idle_normal_idle_left_down",
+      "z": 0.0
+    },
+    {
+      "file": "Run/Normal/run_right_down.png",
+      "id": "src_run_normal_run_right_down",
+      "z": 0.0
+    },
+    {
+      "file": "Run/Normal/run_left_down.png",
+      "id": "src_run_normal_run_left_down",
+      "z": 0.0
+    },
+    {
+      "file": "Jump/Normal/Jump_Right_Down.png",
+      "id": "src_jump_normal_jump_right_down",
+      "z": 0.0
+    },
+    {
+      "file": "Jump/Normal/Jump_Left_Down.png",
+      "id": "src_jump_normal_jump_left_down",
+      "z": 0.0
+    },
+    {
+      "file": "Walk/Normal/walk_right_down.png",
+      "id": "src_walk_normal_walk_right_down",
+      "z": 0.0
+    },
+    {
+      "file": "Walk/Normal/walk_left_down.png",
+      "id": "src_walk_normal_walk_left_down",
+      "z": 0.0
+    },
+    {
+      "file": "Idle/Gun/Idle_Gun_right_up.png",
+      "id": "src_idle_gun_idle_gun_right_up",
+      "z": 0.0
+    },
+    {
+      "file": "Idle/Gun/Idle_Gun_left_up.png",
+      "id": "src_idle_gun_idle_gun_left_up",
+      "z": 0.0
+    },
+    {
+      "file": "Jump/Normal/Jump_Right_Up.png",
+      "id": "src_jump_normal_jump_right_up",
+      "z": 0.0
+    },
+    {
+      "file": "Jump/Normal/Jump_Left_Up.png",
+      "id": "src_jump_normal_jump_left_up",
+      "z": 0.0
+    },
+    {
+      "file": "Attack/Spear/attack_spear_right.png",
+      "id": "src_attack_spear_attack_spear_right",
+      "z": 0.0
+    },
+    {
+      "file": "Attack/Spear/attack_spear_left.png",
+      "id": "src_attack_spear_attack_spear_left",
+      "z": 0.0
+    },
+    {
+      "file": "Attack/Gun/Shooting_right.png",
+      "id": "src_attack_gun_shooting_right",
+      "z": 0.0
+    },
+    {
+      "file": "Attack/Gun/Shooting_left.png",
+      "id": "src_attack_gun_shooting_left",
+      "z": 0.0
+    },
+    {
+      "file": "Idle/Gun/Idle_Gun_right_down.png",
+      "id": "src_idle_gun_idle_gun_right_down",
+      "z": 0.0
+    },
+    {
+      "file": "Idle/Gun/Idle_Gun_left_down.png",
+      "id": "src_idle_gun_idle_gun_left_down",
+      "z": 0.0
+    },
+    {
+      "file": "Dash/Normal/Dash_right_Down.png",
+      "id": "src_dash_normal_dash_right_down",
+      "z": 0.0
+    },
+    {
+      "file": "Dash/Normal/Dash_left_Down.png",
+      "id": "src_dash_normal_dash_left_down",
+      "z": 0.0
+    }
+  ]
 }

@@ -1,0 +1,139 @@
+{
+	"anchor": "top_left",
+	"anchor_offset": {
+		"x": 0.0,
+		"y": 0.0
+	},
+	"children": [
+		{
+			"anchor": "top_left",
+			"anchor_offset": {
+				"x": 0.0,
+				"y": 0.0
+			},
+			"children": [],
+			"id": "hud_mv_hp_label",
+			"properties": {
+				"alignment": "left",
+				"bind_var": "",
+				"decimal_places": 0.0,
+				"format": "{value}",
+				"static_text": "HP",
+				"tab_group": "default",
+				"tab_id": "",
+				"text_role": "body",
+				"wrap": false
+			},
+			"rect": {
+				"h": 16.0,
+				"w": 80.0,
+				"x": 12.0,
+				"y": 10.0
+			},
+			"type": "label"
+		},
+		{
+			"anchor": "top_left",
+			"anchor_offset": {
+				"x": 0.0,
+				"y": 0.0
+			},
+			"children": [],
+			"id": "hud_mv_hp_bar",
+			"properties": {
+				"animate_fill": true,
+				"bg_color": "#1f2228",
+				"bind_current": "player.hp",
+				"bind_max": "player.max_hp",
+				"direction": "left_to_right",
+				"fill_color": "#d85353",
+				"pulse_on_low": true,
+				"pulse_threshold": 0.25,
+				"show_label": true,
+				"tab_group": "default",
+				"tab_id": ""
+			},
+			"rect": {
+				"h": 13.0,
+				"w": 175.0,
+				"x": 18.0,
+				"y": 26.0
+			},
+			"type": "progress_bar"
+		},
+		{
+			"anchor": "top_left",
+			"anchor_offset": {
+				"x": 0.0,
+				"y": 0.0
+			},
+			"children": [],
+			"id": "hud_mv_weapon_label",
+			"properties": {
+				"alignment": "left",
+				"bind_var": "current_weapon.name",
+				"decimal_places": 0.0,
+				"format": "{value}",
+				"static_text": "",
+				"tab_group": "default",
+				"tab_id": "",
+				"text_role": "body",
+				"wrap": false
+			},
+			"rect": {
+				"h": 16.0,
+				"w": 100.0,
+				"x": 214.0,
+				"y": 10.0
+			},
+			"type": "label"
+		},
+		{
+			"anchor": "top_left",
+			"anchor_offset": {
+				"x": 0.0,
+				"y": 0.0
+			},
+			"children": [],
+			"id": "hud_mv_room_label",
+			"properties": {
+				"alignment": "left",
+				"bind_var": "room.name",
+				"decimal_places": 0.0,
+				"format": "{value}",
+				"static_text": "",
+				"tab_group": "default",
+				"tab_id": "",
+				"text_role": "dim",
+				"wrap": false
+			},
+			"rect": {
+				"h": 16.0,
+				"w": 140.0,
+				"x": 326.0,
+				"y": 10.0
+			},
+			"type": "label"
+		}
+	],
+	"id": "hud_mv_root",
+	"properties": {
+		"padding": 8.0,
+		"scroll": "none",
+		"sprite_mode": "9slice",
+		"sprite_slice_x": 0.0,
+		"sprite_slice_y": 0.0,
+		"sprite_source": "",
+		"sprite_tint": "#ffffff",
+		"tab_group": "default",
+		"tab_id": "",
+		"variant": "dark"
+	},
+	"rect": {
+		"h": 38.0,
+		"w": 480.0,
+		"x": 0.0,
+		"y": 0.0
+	},
+	"type": "panel"
+}

@@ -1,0 +1,70 @@
+{
+	"systems": {
+		"Ritoghat_IV": {
+			"connections": [],
+			"description": "",
+			"faction": "Castellan",
+			"name": "Ritoghat IV",
+			"placed_npcs": [],
+			"pois": [
+				{
+					"anim_fps": 0.0,
+					"anim_frames": 1.0,
+					"description": "",
+					"event_id": "",
+					"gravity_radius": 0.0,
+					"name": "R-4-88",
+					"orbit_angle": 52.6960517220166,
+					"orbit_dist": 528.0,
+					"planet_data": {
+						"name": "R-4-88",
+						"pack_id": "demo",
+						"realm_id": "realm_01",
+						"region_id": "region_default",
+						"spawn_pos": [
+							0.0,
+							0.0
+						],
+						"spawn_room": "startingscene"
+					},
+					"sprite": "",
+					"type": "planet",
+					"visual_scale": 1.0
+				},
+				{
+					"anim_fps": 0.0,
+					"anim_frames": 1.0,
+					"description": "",
+					"event_id": "",
+					"gravity_radius": 0.0,
+					"name": "Profit Research Station",
+					"orbit_angle": 56.0937230115578,
+					"orbit_dist": 734.982986450195,
+					"planet_data": {
+
+					},
+					"sprite": "",
+					"type": "station",
+					"visual_scale": 1.0
+				}
+			],
+			"position": [
+				500.684931506849,
+				501.043841336117
+			],
+			"spawn_triggers": [],
+			"star_anim_fps": 0.0,
+			"star_anim_frames": 1.0,
+			"star_class": "Primordial",
+			"star_color": [
+				1.0,
+				1.0,
+				0.8
+			],
+			"star_gravity": 0.0,
+			"star_size": 60.0,
+			"star_sprite": "",
+			"threat_level": 1.0
+		}
+	}
+}

@@ -1,73 +1,215 @@
-{
-  "_comment": "Phase 5 global triggers — active in every room. Demo pack ships a few examples to validate the ECA evaluator end-to-end.",
-  "triggers": [
-    {
-      "id": "coin_pickup_grants_gold",
-      "event": "pickup",
-      "conditions": [
-        { "type": "payload_eq", "key": "item_id", "value": "coin" }
-      ],
-      "actions": [
-        { "type": "play_sfx", "name": "pickup" },
-        { "type": "log", "message": "Picked up coin pickup" }
-      ]
-    },
-    {
-      "id": "interact_with_shopkeeper",
-      "event": "interact",
-      "conditions": [
-        { "type": "has_tag", "tag": "shopkeeper" }
-      ],
-      "actions": [
-        { "type": "start_dialogue", "id": "shopkeep_greet" }
-      ]
-    },
-    {
-      "id": "interact_with_sign",
-      "event": "interact",
-      "conditions": [
-        { "type": "payload_eq", "key": "entity_type", "value": "sign" }
-      ],
-      "actions": [
-        { "type": "start_dialogue", "id": "sign_welcome" }
-      ]
-    },
-    {
-      "id": "coin_grants_gold",
-      "event": "item_gain",
-      "conditions": [
-        { "type": "payload_eq", "key": "item_id", "value": "coin" }
-      ],
-      "actions": [
-        { "type": "add_var", "name": "gold", "delta": 5 },
-        { "type": "log", "message": "+5 gold (from coin pickup)" }
-      ]
-    },
-    {
-      "id": "starter_gold_one_shot",
-      "event": "player_spawn",
-      "conditions": [
-        { "type": "var_eq", "name": "got_starter_gold", "value": 0 }
-      ],
-      "actions": [
-        { "type": "add_var", "name": "gold", "delta": 25 },
-        { "type": "set_var", "name": "got_starter_gold", "value": 1 },
-        { "type": "log", "message": "Starter gold granted (one-time)" }
-      ]
-    },
-    {
-      "id": "potion_first_pickup_message",
-      "event": "item_gain",
-      "conditions": [
-        { "type": "and", "children": [
-          { "type": "payload_eq", "key": "item_id", "value": "potion" },
-          { "type": "var_eq", "name": "first_potion_msg", "value": 0 }
-        ]}
-      ],
-      "actions": [
-        { "type": "set_var", "name": "first_potion_msg", "value": 1 },
-        { "type": "log", "message": "First potion! (this only fires once)" }
-      ]
-    }
-  ]
+﻿{
+    "_comment":  "Phase 5 global triggers â€” active in every room. Demo pack ships a few examples to validate the ECA evaluator end-to-end.",
+    "triggers":  [
+                     {
+                         "id":  "coin_pickup_grants_gold",
+                         "event":  "pickup",
+                         "conditions":  [
+                                            {
+                                                "type":  "payload_eq",
+                                                "key":  "item_id",
+                                                "value":  "coin"
+                                            }
+                                        ],
+                         "actions":  [
+                                         {
+                                             "type":  "play_sfx",
+                                             "name":  "pickup"
+                                         },
+                                         {
+                                             "type":  "log",
+                                             "message":  "Picked up coin pickup"
+                                         }
+                                     ]
+                     },
+                     {
+                         "id":  "interact_with_shopkeeper",
+                         "event":  "interact",
+                         "conditions":  [
+                                            {
+                                                "type":  "has_tag",
+                                                "tag":  "shopkeeper"
+                                            }
+                                        ],
+                         "actions":  [
+                                         {
+                                             "type":  "start_dialogue",
+                                             "id":  "shopkeep_greet"
+                                         }
+                                     ]
+                     },
+                     {
+                         "id":  "interact_with_sign",
+                         "event":  "interact",
+                         "conditions":  [
+                                            {
+                                                "type":  "payload_eq",
+                                                "key":  "entity_type",
+                                                "value":  "sign"
+                                            }
+                                        ],
+                         "actions":  [
+                                         {
+                                             "type":  "start_dialogue",
+                                             "id":  "sign_welcome"
+                                         }
+                                     ]
+                     },
+                     {
+                         "id":  "coin_grants_gold",
+                         "event":  "item_gain",
+                         "conditions":  [
+                                            {
+                                                "type":  "payload_eq",
+                                                "key":  "item_id",
+                                                "value":  "coin"
+                                            }
+                                        ],
+                         "actions":  [
+                                         {
+                                             "type":  "add_var",
+                                             "name":  "gold",
+                                             "delta":  5
+                                         },
+                                         {
+                                             "type":  "log",
+                                             "message":  "+5 gold (from coin pickup)"
+                                         }
+                                     ]
+                     },
+                     {
+                         "id":  "starter_gold_one_shot",
+                         "event":  "player_spawn",
+                         "conditions":  [
+                                            {
+                                                "type":  "var_eq",
+                                                "name":  "got_starter_gold",
+                                                "value":  0
+                                            }
+                                        ],
+                         "actions":  [
+                                         {
+                                             "type":  "add_var",
+                                             "name":  "gold",
+                                             "delta":  25
+                                         },
+                                         {
+                                             "type":  "set_var",
+                                             "name":  "got_starter_gold",
+                                             "value":  1
+                                         },
+                                         {
+                                             "type":  "log",
+                                             "message":  "Starter gold granted (one-time)"
+                                         }
+                                     ]
+                     },
+                     {
+                         "id":  "potion_first_pickup_message",
+                         "event":  "item_gain",
+                         "conditions":  [
+                                            {
+                                                "type":  "and",
+                                                "children":  [
+                                                                 {
+                                                                     "type":  "payload_eq",
+                                                                     "key":  "item_id",
+                                                                     "value":  "potion"
+                                                                 },
+                                                                 {
+                                                                     "type":  "var_eq",
+                                                                     "name":  "first_potion_msg",
+                                                                     "value":  0
+                                                                 }
+                                                             ]
+                                            }
+                                        ],
+                         "actions":  [
+                                         {
+                                             "type":  "set_var",
+                                             "name":  "first_potion_msg",
+                                             "value":  1
+                                         },
+                                         {
+                                             "type":  "log",
+                                             "message":  "First potion! (this only fires once)"
+                                         }
+                                     ]
+                     },
+                     {
+                         "id":  "starting_scene_intro",
+                         "event":  "new_game_started",
+                         "conditions":  [
+                                            {
+                                                "type":  "payload_eq",
+                                                "key":  "room",
+                                                "value":  "realm_01/region_default/startingscene"
+                                            },
+                                            {
+                                                "type":  "has_flag",
+                                                "name":  "intro_cinematic_complete",
+                                                "value":  false
+                                            }
+                                        ],
+                         "actions":  [
+                                         {
+                                             "type":  "spawn_player",
+                                             "room":  "realm_01/region_default/startingscene"
+                                         },
+                                         {
+                                             "type":  "camera_focus",
+                                             "mode":  "zone",
+                                             "target":  "zone_9_7",
+                                             "duration":  0
+                                         },
+                                         {
+                                             "type":  "delay",
+                                             "seconds":  0.8
+                                         },
+                                         {
+                                             "type":  "camera_focus",
+                                             "mode":  "zone",
+                                             "target":  "zone_34_7",
+                                             "duration":  4
+                                         },
+                                         {
+                                             "type":  "wait_for_camera"
+                                         },
+                                         {
+                                             "type":  "delay",
+                                             "seconds":  0.5
+                                         },
+                                         {
+                                             "type":  "camera_focus",
+                                             "mode":  "player",
+                                             "duration":  5.5
+                                         },
+                                         {
+                                             "type":  "wait_for_camera"
+                                         },
+                                         {
+                                             "type":  "delay",
+                                             "seconds":  0.35
+                                         },
+                                         {
+                                             "type":  "start_dialogue",
+                                             "id":  "new_dialogue_2"
+                                         },
+                                         {
+                                             "type":  "wait_for_dialogue"
+                                         },
+                                         {
+                                             "type":  "set_flag",
+                                             "name":  "intro_cinematic_complete",
+                                             "value":  true
+                                         },
+                                         {
+                                             "type":  "camera_unlock"
+                                         },
+                                         {
+                                             "type":  "unlock_player"
+                                         }
+                                     ]
+                     }
+                 ]
 }

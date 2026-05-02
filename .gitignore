@@ -16,6 +16,12 @@ mono_crash.*.json
 
 # Export presets + outputs
 /export/
+/build/
+/MVPlusEditor.exe
+/MVPlusEditor.console.exe
+/MVPlusEditor.pck
+/ssb.pck
+/mveditor.zip
 export.cfg
 export_presets.cfg
 

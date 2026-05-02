@@ -1,0 +1,71 @@
+{
+	"buttons": {
+		"hover": {
+			"frame": "user://Packs/demo/Assets/UI/ButtonGreyedOut.png",
+			"margin": [
+				14.0,
+				14.0
+			],
+			"mode": "stretch"
+		},
+		"normal": {
+			"frame": "user://Packs/demo/Assets/UI/ButtonUnpressed.png",
+			"margin": [
+				14.0,
+				14.0
+			],
+			"mode": "stretch"
+		},
+		"pressed": {
+			"frame": "user://Packs/demo/Assets/UI/ButtonPressed.png",
+			"margin": [
+				14.0,
+				14.0
+			],
+			"mode": "stretch"
+		}
+	},
+	"fonts": {
+		"body_size": 12.0,
+		"button_size": 13.0,
+		"hint_size": 10.0,
+		"title_size": 16.0
+	},
+	"frame_stroke": "#6699ee99",
+	"modal_dim_alpha": 0.55,
+	"panels": {
+		"alt": {
+			"frame": "user://Packs/demo/Assets/UI/black-grey-panel9tile.png",
+			"margin": [
+				12.0,
+				12.0
+			],
+			"mode": "9slice"
+		},
+		"dark": {
+			"frame": "user://Packs/demo/Assets/UI/black-grey-panel9tile.png",
+			"margin": [
+				30.0,
+				30.0
+			],
+			"mode": "9slice"
+		},
+		"main": {
+			"frame": "user://Packs/demo/Assets/UI/black-grey-panel9tile.png",
+			"margin": [
+				20.0,
+				20.0
+			],
+			"mode": "9slice"
+		}
+	},
+	"text": {
+		"body": "#ffeb40",
+		"button": "#ffffff",
+		"button_hover": "#ffffff",
+		"dim": "#c7b82d",
+		"error": "#ff7070",
+		"success": "#70ff70",
+		"title": "#ffeb40"
+	}
+}

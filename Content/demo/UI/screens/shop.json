@@ -1,0 +1,273 @@
+{
+	"anchor": "top_left",
+	"anchor_offset": {
+		"x": 0,
+		"y": 0
+	},
+	"children": [
+		{
+			"anchor": "top_left",
+			"anchor_offset": {
+				"x": 0,
+				"y": 0
+			},
+			"children": [],
+			"id": "shop_title",
+			"properties": {
+				"alignment": "left",
+				"bind_var": "",
+				"decimal_places": 0,
+				"format": "{value}",
+				"static_text": "SHOP",
+				"tab_group": "default",
+				"tab_id": "",
+				"text_role": "title",
+				"wrap": false
+			},
+			"rect": {
+				"h": 24,
+				"w": 160,
+				"x": 16,
+				"y": 12
+			},
+			"type": "label"
+		},
+		{
+			"anchor": "top_left",
+			"anchor_offset": {
+				"x": 0,
+				"y": 0
+			},
+			"children": [],
+			"id": "shop_hint",
+			"properties": {
+				"alignment": "left",
+				"bind_var": "",
+				"decimal_places": 0,
+				"format": "{value}",
+				"static_text": "Starter layout only. The runtime exposes shop.items and inventory.items; barter/selection logic still needs authoring work.",
+				"tab_group": "default",
+				"tab_id": "",
+				"text_role": "dim",
+				"wrap": false
+			},
+			"rect": {
+				"h": 18,
+				"w": 448,
+				"x": 16,
+				"y": 36
+			},
+			"type": "label"
+		},
+		{
+			"anchor": "top_left",
+			"anchor_offset": {
+				"x": 0,
+				"y": 0
+			},
+			"children": [],
+			"id": "shop_vendor_lbl",
+			"properties": {
+				"alignment": "left",
+				"bind_var": "",
+				"decimal_places": 0,
+				"format": "{value}",
+				"static_text": "Vendor stock",
+				"tab_group": "default",
+				"tab_id": "",
+				"text_role": "body",
+				"wrap": false
+			},
+			"rect": {
+				"h": 18,
+				"w": 180,
+				"x": 16,
+				"y": 64
+			},
+			"type": "label"
+		},
+		{
+			"anchor": "top_left",
+			"anchor_offset": {
+				"x": 0,
+				"y": 0
+			},
+			"children": [],
+			"id": "shop_vendor_items",
+			"properties": {
+				"bind_array": "shop.items",
+				"columns": 4,
+				"empty_slot_style": "dim",
+				"item_action_arg_key": "id",
+				"item_action_id": "buy_item",
+				"slot_size": 36,
+				"slot_template": {
+
+				},
+				"tab_group": "default",
+				"tab_id": ""
+			},
+			"rect": {
+				"h": 136,
+				"w": 180,
+				"x": 16,
+				"y": 84
+			},
+			"type": "grid"
+		},
+		{
+			"anchor": "top_left",
+			"anchor_offset": {
+				"x": 0,
+				"y": 0
+			},
+			"children": [],
+			"id": "shop_player_lbl",
+			"properties": {
+				"alignment": "left",
+				"bind_var": "",
+				"decimal_places": 0,
+				"format": "{value}",
+				"static_text": "Player inventory",
+				"tab_group": "default",
+				"tab_id": "",
+				"text_role": "body",
+				"wrap": false
+			},
+			"rect": {
+				"h": 18,
+				"w": 180,
+				"x": 214,
+				"y": 64
+			},
+			"type": "label"
+		},
+		{
+			"anchor": "top_left",
+			"anchor_offset": {
+				"x": 0,
+				"y": 0
+			},
+			"children": [],
+			"id": "shop_player_items",
+			"properties": {
+				"bind_array": "inventory.items",
+				"columns": 4,
+				"empty_slot_style": "dim",
+				"item_action_arg_key": "key",
+				"item_action_id": "sell_item",
+				"slot_size": 36,
+				"slot_template": {
+
+				},
+				"tab_group": "default",
+				"tab_id": ""
+			},
+			"rect": {
+				"h": 136,
+				"w": 180,
+				"x": 214,
+				"y": 84
+			},
+			"type": "grid"
+		},
+		{
+			"anchor": "top_left",
+			"anchor_offset": {
+				"x": 0,
+				"y": 0
+			},
+			"children": [],
+			"id": "shop_barter_lbl",
+			"properties": {
+				"alignment": "left",
+				"bind_var": "",
+				"decimal_places": 0,
+				"format": "{value}",
+				"static_text": "Barter offer / notes",
+				"tab_group": "default",
+				"tab_id": "",
+				"text_role": "body",
+				"wrap": false
+			},
+			"rect": {
+				"h": 18,
+				"w": 180,
+				"x": 16,
+				"y": 224
+			},
+			"type": "label"
+		},
+		{
+			"anchor": "top_left",
+			"anchor_offset": {
+				"x": 0,
+				"y": 0
+			},
+			"children": [],
+			"id": "shop_barter_note",
+			"properties": {
+				"alignment": "left",
+				"bind_var": "",
+				"decimal_places": 0,
+				"format": "{value}",
+				"static_text": "Use trigger events or custom buttons here as you flesh out barter.",
+				"tab_group": "default",
+				"tab_id": "",
+				"text_role": "dim",
+				"wrap": false
+			},
+			"rect": {
+				"h": 18,
+				"w": 300,
+				"x": 16,
+				"y": 242
+			},
+			"type": "label"
+		},
+		{
+			"anchor": "top_left",
+			"anchor_offset": {
+				"x": 0,
+				"y": 0
+			},
+			"children": [],
+			"id": "shop_close",
+			"properties": {
+				"action_args": "",
+				"action_id": "close_screen",
+				"enabled_condition": "",
+				"label": "CLOSE",
+				"show_label": true,
+				"sprite_hover": "",
+				"sprite_normal": "",
+				"sprite_pressed": "",
+				"sprite_tint": "#ffffff",
+				"tab_group": "default",
+				"tab_id": ""
+			},
+			"rect": {
+				"h": 28,
+				"w": 108,
+				"x": 356,
+				"y": 232
+			},
+			"type": "button"
+		}
+	],
+	"id": "shop_root",
+	"properties": {
+		"padding": 8,
+		"scroll": "none",
+		"tab_group": "default",
+		"tab_id": "",
+		"variant": "dark"
+	},
+	"rect": {
+		"h": 272,
+		"w": 480,
+		"x": 0,
+		"y": 0
+	},
+	"type": "panel"
+}

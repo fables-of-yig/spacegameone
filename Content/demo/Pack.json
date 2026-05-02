@@ -1,7 +1,15 @@
 {
-  "name": "Demo",
-  "version": "0.1.0",
-  "authors": ["mvmania"],
-  "description": "Phase 1 placeholder demo pack for MVMania. User-made brick tiles (backgroundbrix + basebrickfloor) + placeholder player sheet (Fullmain.png, licensed for user's game only — not redistributable with the toolkit).",
-  "entry_room": "start"
+	"author": "",
+	"authors": [
+		"mvmania"
+	],
+	"description": "Phase 1 placeholder demo pack for MVMania. User-made brick tiles (backgroundbrix + basebrickfloor) + placeholder player sheet (Fullmain.png, licensed for user's game only — not redistributable with the toolkit).",
+	"entry_room": "realm_01/region_default/startingscene",
+	"name": "Demo",
+	"pack_id": "demo",
+	"schema_version": "1.0",
+	"start_realm": "realm_01",
+	"start_ship_template": "gausssentry",
+	"start_system": "Ritoghat_IV",
+	"version": "0.1.0"
 }
