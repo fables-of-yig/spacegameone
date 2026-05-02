@@ -9,7 +9,7 @@ signal download_complete(success: bool, message: String)
 
 const GITHUB_REPO: String = "fables-of-yig/spacegameone"
 const RELEASES_URL: String = "https://api.github.com/repos/%s/releases/latest" % GITHUB_REPO
-const PCK_ASSET_NAME: String = "ssb.pck"
+const PCK_ASSET_NAME: String = "MVPlusEditor.pck"
 const VERSION_FILE: String = "res://version.txt"
 const CHECK_TIMEOUT: float = 20.0
 const DOWNLOAD_TIMEOUT: float = 300.0
@@ -365,12 +365,12 @@ func _get_pck_path() -> String:
     var exe_path = OS.get_executable_path()
     var exe_dir = exe_path.get_base_dir()
 
-    var pck_path = exe_dir.path_join(PCK_ASSET_NAME)
+    var exe_name = exe_path.get_file().get_basename()
+    var pck_path = exe_dir.path_join(exe_name + ".pck")
     if FileAccess.file_exists(pck_path):
         return pck_path
 
-    var exe_name = exe_path.get_file().get_basename()
-    pck_path = exe_dir.path_join(exe_name + ".pck")
+    pck_path = exe_dir.path_join(PCK_ASSET_NAME)
     if FileAccess.file_exists(pck_path):
         return pck_path
 
