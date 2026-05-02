@@ -143,21 +143,21 @@ func _ensure_interact_area() -> void:
 	shape.shape = circle
 	_interact_area.add_child(shape)
 	_interact_area.collision_layer = 0
-	_interact_area.collision_mask = 1
+	_interact_area.collision_mask = 0x7fffffff
 	_interact_area.body_entered.connect(_on_body_entered)
 	_interact_area.body_exited.connect(_on_body_exited)
 	add_child(_interact_area)
 
 
 func _on_body_entered(body: Node2D) -> void:
-	if body.is_in_group("player"):
+	if _is_player_body(body):
 		_player_inside = true
 		if _prompt_label != null:
 			_prompt_label.visible = true
 
 
 func _on_body_exited(body: Node2D) -> void:
-	if body.is_in_group("player"):
+	if _is_player_body(body):
 		_player_inside = false
 		if _prompt_label != null:
 			_prompt_label.visible = false
@@ -289,3 +289,7 @@ func _current_pack_id() -> String:
 	if MvPackLoader.current_pack != null:
 		return MvPackLoader.current_pack.pack_id
 	return "demo"
+
+
+func _is_player_body(body: Node) -> bool:
+	return body != null and (body.is_in_group("mv_player") or body.is_in_group("player"))

@@ -29,11 +29,8 @@ static func build_action(action_name: String) -> ActionLeaf:
     _ensure_defaults()
     var script: GDScript = _actions.get(action_name)
     if script == null:
-        push_warning("[BehRegistry] unknown action '%s', falling back to idle"
-            % action_name)
-        script = _actions.get("idle")
-    if script == null:
-        return ActionLeaf.new()
+        push_error("[BehRegistry] unknown action '%s'" % action_name)
+        return null
     return script.new()
 
 
@@ -41,12 +38,33 @@ static func build_condition(condition_name: String) -> ConditionLeaf:
     _ensure_defaults()
     var script: GDScript = _conditions.get(condition_name)
     if script == null:
-        push_warning("[BehRegistry] unknown condition '%s', falling back to always"
-            % condition_name)
-        script = _conditions.get("always")
-    if script == null:
-        return ConditionLeaf.new()
+        push_error("[BehRegistry] unknown condition '%s'" % condition_name)
+        return null
     return script.new()
+
+
+static func has_action(action_name: String) -> bool:
+    _ensure_defaults()
+    return _actions.has(action_name)
+
+
+static func has_condition(condition_name: String) -> bool:
+    _ensure_defaults()
+    return _conditions.has(condition_name)
+
+
+static func action_names() -> Array:
+    _ensure_defaults()
+    var names := _actions.keys()
+    names.sort()
+    return names
+
+
+static func condition_names() -> Array:
+    _ensure_defaults()
+    var names := _conditions.keys()
+    names.sort()
+    return names
 
 
 static func _ensure_defaults() -> void:

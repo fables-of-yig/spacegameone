@@ -195,7 +195,7 @@ func _sync_host_rect() -> void:
     var viewport_size := get_viewport_rect().size
     var parent_control := get_parent() as Control
     if parent_control != null:
-        set_anchors_preset(PRESET_FULL_RECT)
+        set_anchors_preset(PRESET_TOP_LEFT)
         position = Vector2.ZERO
         size = parent_control.size
         if size.x < 1.0 or size.y < 1.0:

@@ -2,10 +2,35 @@ class_name ContentValidator
 extends RefCounted
 
 const PedIO := preload("res://Space/scripts/editor/ped/ped_io.gd")
-const PspIO := preload("res://Space/scripts/editor/psp/psp_io.gd")
 const RegIO := preload("res://Space/scripts/editor/reg/reg_io.gd")
-const SystemIO := preload("res://Space/scripts/editor/system_io.gd")
 const UIIo := preload("res://Space/scripts/editor/ui/ui_io.gd")
+const BehLoader := preload("res://Space/scripts/runtime/beh/beh_loader.gd")
+
+const BOOTSTRAP_SCHEMA_VERSION: String = "1.0"
+const BOOTSTRAP_REQUIRED_PACK_FIELDS: Array = [
+	"schema_version",
+	"pack_id",
+	"start_system",
+	"start_ship_template",
+	"start_realm",
+	"entry_room",
+]
+const BOOTSTRAP_REQUIRED_FILES: Array = [
+	"Systems/systems.json",
+	"Rooms/rooms.json",
+	"Player/stats.json",
+	"Player/attacks.json",
+	"Items/items.json",
+	"Items/equipment.json",
+	"Abilities/abilities.json",
+	"Projectiles/projectiles.json",
+	"Entities/entities.json",
+	"Entities/behaviors.json",
+	"Triggers/global.json",
+	"Sprites/player_frames.json",
+	"Sprites/player_poses.json",
+	"UI/input_map.json",
+]
 
 # Cross-references all JSON data in a content pack and reports dangling
 # references, missing required fields, and type mismatches.
@@ -34,17 +59,21 @@ static func validate(pack_id: String) -> Array:
 	var triggers := TriggerRoot.flatten_rules(trigger_root)
 	var abilities := _load_json_array(pack_id, "Abilities", "abilities.json", "abilities")
 	var projectiles := _load_json_array(pack_id, "Projectiles", "projectiles.json", "projectiles")
-	var items: Array = PedIO.load_items(pack_id).get("items", [])
-	var equipment: Array = PedIO.load_equipment(pack_id).get("equipment", [])
-	var attacks: Array = PedIO.load_attacks(pack_id).get("attacks", [])
-	var poses_root: Dictionary = PspIO.load_or_init(pack_id).get("poses", {})
-	var systems: Dictionary = SystemIO.load_or_init(pack_id)
+	var items := _load_json_array(pack_id, "Items", "items.json", "items")
+	var equipment := _load_json_array(pack_id, "Items", "equipment.json", "equipment")
+	var attacks := _load_json_array(pack_id, "Player", "attacks.json", "attacks")
+	var quests := _load_json_array(pack_id, "Quests", "quests.json", "quests")
+	var poses_root := _load_json_root(pack_id, "Sprites", "player_poses.json")
+	var systems := _load_systems_existing(pack_id, issues)
 
 	var room_addrs: Dictionary = {}
 	for r in rooms:
 		var addr: String = str(r.get("addr", ""))
 		if not addr.is_empty():
 			room_addrs[addr] = true
+		var flat_addr: String = str(r.get("_flat_addr", ""))
+		if not flat_addr.is_empty():
+			room_addrs[flat_addr] = true
 
 	var entity_ids: Dictionary = {}
 	for e in entities:
@@ -70,6 +99,12 @@ static func validate(pack_id: String) -> Array:
 		if not item_id.is_empty():
 			item_ids[item_id] = true
 
+	var equipment_ids: Dictionary = {}
+	for entry in equipment:
+		var equipment_id := str(entry.get("id", ""))
+		if not equipment_id.is_empty():
+			equipment_ids[equipment_id] = true
+
 	var projectile_ids: Dictionary = {}
 	for p in projectiles:
 		var pid: String = str(p.get("id", ""))
@@ -81,6 +116,14 @@ static func validate(pack_id: String) -> Array:
 		var attack_id := str(attack.get("id", ""))
 		if not attack_id.is_empty():
 			attack_ids[attack_id] = true
+
+	var quest_ids: Dictionary = {}
+	for quest in quests:
+		if typeof(quest) != TYPE_DICTIONARY:
+			continue
+		var quest_id := str((quest as Dictionary).get("id", "")).strip_edges()
+		if not quest_id.is_empty():
+			quest_ids[quest_id] = true
 
 	var pose_ids: Dictionary = {}
 	var poses_v: Variant = poses_root.get("poses", {})
@@ -94,24 +137,33 @@ static func validate(pack_id: String) -> Array:
 	var shop_ids := _list_shop_ids(pack_id)
 
 	_validate_pack_manifest(pack_id, issues)
+	_validate_required_bootstrap_files(pack_id, issues)
 	_validate_ui_screens(pack_id, issues)
 	_validate_systems(pack_id, systems, room_addrs, issues)
 	_validate_world_hierarchy(pack_id, flat_rooms_root, room_addrs, issues)
-	_validate_rooms(rooms, entity_ids, room_addrs, dialogue_ids, shop_ids, ability_ids, item_ids, issues)
-	_validate_triggers(triggers, dialogue_ids, shop_ids, ability_ids, item_ids, entity_ids, room_addrs, issues)
+	_validate_rooms(rooms, entity_ids, room_addrs, dialogue_ids, shop_ids, ability_ids, item_ids, quest_ids, quests, issues)
+	_validate_triggers(triggers, dialogue_ids, shop_ids, ability_ids, item_ids, entity_ids, room_addrs, quest_ids, quests, issues)
+	_validate_behaviors(behaviors, issues)
 	_validate_entities(entities, behavior_ids, item_ids, issues)
 	_validate_abilities(abilities, projectile_ids, issues)
-	_validate_items(items, ability_ids, attack_ids, issues)
+	_validate_items(items, ability_ids, attack_ids, equipment_ids, issues)
 	_validate_equipment(equipment, ability_ids, attack_ids, issues)
 	_validate_attacks(attacks, projectile_ids, pose_ids, issues)
 	_validate_projectiles(projectiles, issues)
-	_validate_dialogues(pack_id, dialogue_ids, shop_ids, ability_ids, item_ids, entity_ids, room_addrs, issues)
-	_validate_shops(pack_id, item_ids, issues)
+	_validate_dialogues(pack_id, dialogue_ids, shop_ids, ability_ids, item_ids, entity_ids, room_addrs, quest_ids, quests, issues)
+	_validate_shops(pack_id, item_ids, equipment_ids, issues)
+	_validate_quests(quests, item_ids, ability_ids, entity_ids, room_addrs, dialogue_ids, shop_ids, issues)
 
 	return issues
 
 
 static func _validate_ui_screens(pack_id: String, issues: Array) -> void:
+	for required_screen_v in UiContract.screen_ids():
+		var required_screen := str(required_screen_v)
+		if not _pack_file_exists(pack_id, "UI/screens/%s.json" % required_screen):
+			issues.append(Issue.new("error", "UI screen '%s'" % required_screen,
+				"required stock screen file is missing"))
+
 	for screen_id_v in UIIo.list_screens(pack_id):
 		var screen_id := str(screen_id_v)
 		var data: Dictionary = UIIo.load_screen(pack_id, screen_id)
@@ -130,21 +182,40 @@ static func _validate_ui_screens(pack_id: String, issues: Array) -> void:
 			issues.append(Issue.new("error", "UI input_map",
 				"action '%s' targets unknown screen '%s'" % [str(action_name_v), screen_id]))
 		elif not UiContract.screen_mount_is_supported(screen_id):
-			issues.append(Issue.new("warning", "UI input_map",
+			issues.append(Issue.new("error", "UI input_map",
 				"action '%s' targets screen '%s' which has no mounted runtime host" % [str(action_name_v), screen_id]))
 
 
 static func _validate_pack_manifest(pack_id: String, issues: Array) -> void:
 	var manifest := _load_pack_manifest(pack_id)
 	if manifest.is_empty():
+		issues.append(Issue.new("error", "Pack", "Pack.json is missing or malformed"))
 		return
+	for field_v in BOOTSTRAP_REQUIRED_PACK_FIELDS:
+		var field := str(field_v)
+		if not manifest.has(field) or str(manifest.get(field, "")).strip_edges().is_empty():
+			issues.append(Issue.new("error", "Pack", "Pack.json is missing required field '%s'" % field))
+	var schema_v: Variant = manifest.get("schema_version", "")
+	if not _schema_version_is_supported(schema_v):
+		issues.append(Issue.new("error", "Pack",
+			"schema_version must be %s" % BOOTSTRAP_SCHEMA_VERSION))
+	var manifest_pack_id := str(manifest.get("pack_id", "")).strip_edges()
+	if not manifest_pack_id.is_empty() and manifest_pack_id != pack_id:
+		issues.append(Issue.new("error", "Pack",
+			"pack_id '%s' does not match selected pack '%s'" % [manifest_pack_id, pack_id]))
 	var starter_id := _normalize_ship_template_id(str(manifest.get("start_ship_template", "")))
 	if starter_id.is_empty():
 		return
-	var known_ids := _known_ship_template_ids()
-	if not known_ids.has(starter_id):
+	if not _ship_template_exists(pack_id, starter_id):
 		issues.append(Issue.new("error", "Pack",
 			"start_ship_template '%s' does not match any known ship template" % starter_id))
+
+
+static func _validate_required_bootstrap_files(pack_id: String, issues: Array) -> void:
+	for rel_path_v in BOOTSTRAP_REQUIRED_FILES:
+		var rel_path := str(rel_path_v)
+		if not _pack_file_exists(pack_id, rel_path):
+			issues.append(Issue.new("error", rel_path, "required bootstrap file is missing"))
 
 
 static func _validate_systems(pack_id: String, systems: Dictionary,
@@ -152,13 +223,11 @@ static func _validate_systems(pack_id: String, systems: Dictionary,
 	var manifest := _load_pack_manifest(pack_id)
 	var start_system := str(manifest.get("start_system", "")).strip_edges()
 	if systems.is_empty():
-		if not start_system.is_empty():
-			issues.append(Issue.new("error", "Pack",
-				"start_system '%s' is set but the pack has no authored systems" % start_system))
+		issues.append(Issue.new("error", "Systems",
+			"Systems/systems.json must contain at least one authored system"))
 		return
 	if start_system.is_empty():
-		issues.append(Issue.new("warning", "Pack",
-			"pack has authored systems but start_system is empty"))
+		issues.append(Issue.new("error", "Pack", "start_system is empty"))
 	elif not systems.has(start_system):
 		issues.append(Issue.new("error", "Pack",
 			"start_system '%s' does not exist in Systems/systems.json" % start_system))
@@ -171,9 +240,17 @@ static func _validate_systems(pack_id: String, systems: Dictionary,
 			issues.append(Issue.new("error", src, "system entry is not a dictionary"))
 			continue
 		var sys: Dictionary = sys_v
+		if str(sys.get("name", "")).strip_edges().is_empty():
+			issues.append(Issue.new("error", src, "name is required"))
 		var pos_v: Variant = sys.get("position", [])
 		if typeof(pos_v) != TYPE_ARRAY or (pos_v as Array).size() < 2:
 			issues.append(Issue.new("error", src, "position must be a [x, y] array"))
+		if float(sys.get("star_size", 0.0)) <= 0.0:
+			issues.append(Issue.new("error", src, "star_size must be > 0"))
+		if int(sys.get("threat_level", 0)) < 0:
+			issues.append(Issue.new("error", src, "threat_level must be >= 0"))
+		_validate_optional_texture(pack_id, src, "star_sprite", str(sys.get("star_sprite", "")), issues)
+		_validate_optional_texture(pack_id, src, "background_image", str(sys.get("background_image", "")), issues)
 		var conns_v: Variant = sys.get("connections", [])
 		if typeof(conns_v) != TYPE_ARRAY:
 			issues.append(Issue.new("error", src, "connections must be an array"))
@@ -183,19 +260,39 @@ static func _validate_systems(pack_id: String, systems: Dictionary,
 				if not conn_id.is_empty() and not systems.has(conn_id):
 					issues.append(Issue.new("error", src,
 						"connection references unknown system '%s'" % conn_id))
+		_validate_spawn_triggers(sys.get("spawn_triggers", []), src, issues)
+		_validate_placed_npcs(pack_id, sys.get("placed_npcs", []), src, issues)
 		var pois_v: Variant = sys.get("pois", [])
 		if typeof(pois_v) != TYPE_ARRAY:
 			issues.append(Issue.new("error", src, "pois must be an array"))
 			continue
+		var seen_planet_keys: Dictionary = {}
 		for i in range((pois_v as Array).size()):
 			var poi_v: Variant = (pois_v as Array)[i]
 			if typeof(poi_v) != TYPE_DICTIONARY:
 				issues.append(Issue.new("error", src, "poi #%d is not a dictionary" % i))
 				continue
 			var poi: Dictionary = poi_v
-			if str(poi.get("type", "")).strip_edges() != "planet":
+			var poi_type := str(poi.get("type", "")).strip_edges()
+			var poi_src := "%s POI #%d" % [src, i]
+			if str(poi.get("name", "")).strip_edges().is_empty():
+				issues.append(Issue.new("error", poi_src, "name is required"))
+			if poi_type.is_empty():
+				issues.append(Issue.new("error", poi_src, "type is required"))
+			_validate_optional_texture(pack_id, poi_src, "sprite", str(poi.get("sprite", "")), issues)
+			if float(poi.get("orbit_dist", 0.0)) < 0.0:
+				issues.append(Issue.new("error", poi_src, "orbit_dist must be >= 0"))
+			if float(poi.get("visual_scale", 1.0)) <= 0.0:
+				issues.append(Issue.new("error", poi_src, "visual_scale must be > 0"))
+			if int(poi.get("anim_frames", 1)) < 1:
+				issues.append(Issue.new("error", poi_src, "anim_frames must be >= 1"))
+			var event_id := str(poi.get("event_id", "")).strip_edges()
+			if not event_id.is_empty() and not _space_event_exists(event_id):
+				issues.append(Issue.new("error", poi_src,
+					"event_id '%s' does not exist" % event_id))
+			if poi_type != "planet":
 				continue
-			var poi_src := "%s planet POI #%d" % [src, i]
+			poi_src = "%s planet POI #%d" % [src, i]
 			var planet_v: Variant = poi.get("planet_data", {})
 			if typeof(planet_v) != TYPE_DICTIONARY or (planet_v as Dictionary).is_empty():
 				issues.append(Issue.new("error", poi_src, "planet_data is missing"))
@@ -203,33 +300,130 @@ static func _validate_systems(pack_id: String, systems: Dictionary,
 			var planet_data: Dictionary = planet_v
 			var target_pack: String = str(planet_data.get("pack_id", "")).strip_edges()
 			if target_pack.is_empty():
-				target_pack = pack_id
+				issues.append(Issue.new("error", poi_src, "planet_data.pack_id is required"))
+				continue
 			var target_realm: String = str(planet_data.get("realm_id", "")).strip_edges()
-			var target_realms: Dictionary = _realm_ids_for_pack(target_pack)
 			if target_realm.is_empty():
-				target_realm = _start_realm_for_pack(target_pack)
-			elif not target_realms.has(target_realm):
+				issues.append(Issue.new("error", poi_src, "planet_data.realm_id is required"))
+				continue
+			var target_realms: Dictionary = _realm_ids_for_pack(target_pack)
+			if not target_realms.has(target_realm):
 				issues.append(Issue.new("error", poi_src,
 					"planet_data.realm_id '%s' does not exist in target pack '%s'" % [target_realm, target_pack]))
+			var target_region := str(planet_data.get("region_id", "")).strip_edges()
+			if target_region.is_empty():
+				issues.append(Issue.new("error", poi_src, "planet_data.region_id is required"))
+			var raw_spawn_room := str(planet_data.get("spawn_room", "")).strip_edges()
+			if raw_spawn_room.is_empty():
+				issues.append(Issue.new("error", poi_src, "planet_data.spawn_room is required"))
+				continue
+			var spawn_pos_v: Variant = planet_data.get("spawn_pos", null)
+			if spawn_pos_v != null and not _is_vec2_like(spawn_pos_v):
+				issues.append(Issue.new("error", poi_src, "planet_data.spawn_pos must be [x, y] or {x, y}"))
+			var planet_key := str(planet_data.get("snapshot_key",
+				planet_data.get("planet_key", ""))).strip_edges()
+			if planet_key.is_empty():
+				planet_key = "%s/%s" % [system_id, str(poi.get("name", i)).strip_edges()]
+			if seen_planet_keys.has(planet_key):
+				issues.append(Issue.new("error", poi_src,
+					"duplicate planet snapshot key '%s' in this system" % planet_key))
+			seen_planet_keys[planet_key] = true
 			var spawn_room: String = _expand_room_addr_for_validation(
 				target_pack,
 				target_realm,
-				str(planet_data.get("spawn_room", "")).strip_edges())
-			if spawn_room.is_empty():
-				continue
+				raw_spawn_room)
 			var target_rooms: Dictionary = current_pack_room_addrs if target_pack == pack_id else _room_addrs_for_pack(target_pack)
 			if target_rooms.is_empty():
-				issues.append(Issue.new("warning", poi_src,
+				issues.append(Issue.new("error", poi_src,
 					"spawn_room '%s' could not be validated because target pack '%s' has no readable rooms" %
 					[spawn_room, target_pack]))
 			elif not target_rooms.has(spawn_room):
 				issues.append(Issue.new("error", poi_src,
 					"spawn_room '%s' does not exist in target pack '%s'" % [spawn_room, target_pack]))
+			else:
+				var target_room := _room_for_pack(target_pack, spawn_room)
+				if not target_room.is_empty() and not _room_has_player_spawn(target_room):
+					issues.append(Issue.new("error", poi_src,
+						"spawn_room '%s' has no player_spawn entity" % spawn_room))
+
+
+static func _validate_spawn_triggers(triggers_v: Variant, system_src: String, issues: Array) -> void:
+	if typeof(triggers_v) != TYPE_ARRAY:
+		issues.append(Issue.new("error", system_src, "spawn_triggers must be an array"))
+		return
+	var allowed_events := {
+		"enter": true,
+		"proximity": true,
+		"station_destroyed": true,
+	}
+	for i in range((triggers_v as Array).size()):
+		var trigger_v: Variant = (triggers_v as Array)[i]
+		var src := "%s spawn_trigger #%d" % [system_src, i]
+		if typeof(trigger_v) != TYPE_DICTIONARY:
+			issues.append(Issue.new("error", src, "entry is not a dictionary"))
+			continue
+		var trigger: Dictionary = trigger_v
+		var on_event := str(trigger.get("on", "enter")).strip_edges().to_lower()
+		if not allowed_events.has(on_event):
+			issues.append(Issue.new("error", src, "unknown on event '%s'" % on_event))
+		if not _numeric_pair_is_valid(trigger.get("dist", [400, 800])):
+			issues.append(Issue.new("error", src, "dist must be [min, max] with max >= min"))
+		var spawns_v: Variant = trigger.get("spawns", [])
+		if typeof(spawns_v) != TYPE_ARRAY or (spawns_v as Array).is_empty():
+			issues.append(Issue.new("error", src, "spawns must be a non-empty array"))
+			continue
+		for spawn_i in range((spawns_v as Array).size()):
+			var spawn_v: Variant = (spawns_v as Array)[spawn_i]
+			if typeof(spawn_v) != TYPE_DICTIONARY:
+				issues.append(Issue.new("error", src, "spawn #%d is not a dictionary" % spawn_i))
+				continue
+			var spawn: Dictionary = spawn_v
+			var class_id := str(spawn.get("class", "")).strip_edges()
+			if class_id.is_empty():
+				issues.append(Issue.new("error", src, "spawn #%d missing class" % spawn_i))
+			elif not _enemy_class_exists(class_id):
+				issues.append(Issue.new("error", src,
+					"spawn #%d references unknown enemy class '%s'" % [spawn_i, class_id]))
+			if int(spawn.get("count", 1)) < 1:
+				issues.append(Issue.new("error", src, "spawn #%d count must be >= 1" % spawn_i))
+
+
+static func _validate_placed_npcs(pack_id: String, placed_v: Variant, system_src: String,
+		issues: Array) -> void:
+	if typeof(placed_v) != TYPE_ARRAY:
+		issues.append(Issue.new("error", system_src, "placed_npcs must be an array"))
+		return
+	var seen_ids: Dictionary = {}
+	for i in range((placed_v as Array).size()):
+		var npc_v: Variant = (placed_v as Array)[i]
+		var src := "%s placed_npc #%d" % [system_src, i]
+		if typeof(npc_v) != TYPE_DICTIONARY:
+			issues.append(Issue.new("error", src, "entry is not a dictionary"))
+			continue
+		var npc: Dictionary = npc_v
+		var npc_id := str(npc.get("id", "")).strip_edges()
+		if npc_id.is_empty():
+			issues.append(Issue.new("error", src, "id is required"))
+		elif seen_ids.has(npc_id):
+			issues.append(Issue.new("error", src, "duplicate id '%s'" % npc_id))
+		seen_ids[npc_id] = true
+		var template_id := _normalize_ship_template_id(str(npc.get("template", "")))
+		if not template_id.is_empty() and not _ship_template_exists(pack_id, template_id):
+			issues.append(Issue.new("error", src,
+				"template '%s' does not match any known ship template" % template_id))
+		var hail_event_id := str(npc.get("hail_event_id", "")).strip_edges()
+		if not hail_event_id.is_empty() and not _space_event_exists(hail_event_id):
+			issues.append(Issue.new("error", src,
+				"hail_event_id '%s' does not exist" % hail_event_id))
+		_validate_optional_texture(pack_id, src, "static_hull_path",
+			str(npc.get("static_hull_path", "")), issues)
+		if float(npc.get("orbit_dist", 0.0)) < 0.0:
+			issues.append(Issue.new("error", src, "orbit_dist must be >= 0"))
 
 
 static func _validate_rooms(rooms: Array, entity_ids: Dictionary,
 		room_addrs: Dictionary, dialogue_ids: Dictionary, shop_ids: Dictionary,
-		ability_ids: Dictionary, item_ids: Dictionary,
+		ability_ids: Dictionary, item_ids: Dictionary, quest_ids: Dictionary, quests: Array,
 		issues: Array) -> void:
 	for r in rooms:
 		var addr := str(r.get("addr", ""))
@@ -331,12 +525,12 @@ static func _validate_rooms(rooms: Array, entity_ids: Dictionary,
 		if r.has("triggers") and typeof(room_triggers) != TYPE_ARRAY and typeof(room_triggers) != TYPE_DICTIONARY:
 			issues.append(Issue.new("error", src, "triggers must be an array or trigger-root dictionary"))
 		else:
-			_validate_triggers(TriggerRoot.flatten_rules(room_triggers), dialogue_ids, shop_ids, ability_ids, item_ids, entity_ids, room_addrs, issues, src)
+			_validate_triggers(TriggerRoot.flatten_rules(room_triggers), dialogue_ids, shop_ids, ability_ids, item_ids, entity_ids, room_addrs, quest_ids, quests, issues, src)
 
 
 static func _validate_triggers(triggers: Array, dialogue_ids: Dictionary,
 		shop_ids: Dictionary, ability_ids: Dictionary, item_ids: Dictionary,
-		entity_ids: Dictionary, room_addrs: Dictionary, issues: Array,
+		entity_ids: Dictionary, room_addrs: Dictionary, quest_ids: Dictionary, quests: Array, issues: Array,
 		scope_src: String = "") -> void:
 	for rule in triggers:
 		var rid := str(rule.get("id", "(unnamed)"))
@@ -358,7 +552,7 @@ static func _validate_triggers(triggers: Array, dialogue_ids: Dictionary,
 			if typeof(act) != TYPE_DICTIONARY:
 				issues.append(Issue.new("error", src, "action entry is not a dictionary"))
 				continue
-			_validate_action_refs(act, src, dialogue_ids, shop_ids, ability_ids, item_ids, entity_ids, room_addrs, issues)
+			_validate_action_refs(act, src, dialogue_ids, shop_ids, ability_ids, item_ids, entity_ids, room_addrs, quest_ids, quests, issues)
 
 		_validate_conditions_recursive(conditions_v, src, ability_ids, item_ids, issues)
 
@@ -509,6 +703,25 @@ static func _validate_entities(entities: Array, behavior_ids: Dictionary, item_i
 					issues.append(Issue.new("error", "Entity '%s'" % eid, "item_drops chance must be 0..1"))
 
 
+static func _validate_behaviors(behaviors: Array, issues: Array) -> void:
+	var seen_ids: Dictionary = {}
+	for i in range(behaviors.size()):
+		var behavior_v: Variant = behaviors[i]
+		if typeof(behavior_v) != TYPE_DICTIONARY:
+			issues.append(Issue.new("error", "Behaviors", "entry #%d is not a dictionary" % i))
+			continue
+		var behavior: Dictionary = behavior_v
+		var behavior_id := str(behavior.get("id", "")).strip_edges()
+		var source := "Behavior '%s'" % behavior_id if not behavior_id.is_empty() else "Behavior #%d" % i
+		if behavior_id.is_empty():
+			issues.append(Issue.new("error", "Behaviors", "entry #%d missing 'id'" % i))
+		elif seen_ids.has(behavior_id):
+			issues.append(Issue.new("error", source, "duplicate id"))
+		seen_ids[behavior_id] = true
+		for error_v in BehLoader.validate_behavior(behavior):
+			issues.append(Issue.new("error", source, str(error_v)))
+
+
 static func _validate_abilities(abilities: Array, projectile_ids: Dictionary,
 		issues: Array) -> void:
 	for a in abilities:
@@ -525,7 +738,7 @@ static func _validate_abilities(abilities: Array, projectile_ids: Dictionary,
 
 
 static func _validate_items(items: Array, ability_ids: Dictionary,
-		attack_ids: Dictionary, issues: Array) -> void:
+		attack_ids: Dictionary, equipment_ids: Dictionary, issues: Array) -> void:
 	for item in items:
 		var item_id := str(item.get("id", ""))
 		if item_id.is_empty():
@@ -538,7 +751,10 @@ static func _validate_items(items: Array, ability_ids: Dictionary,
 		elif effect == "set_weapon" and not arg.is_empty() and not attack_ids.has(arg) and not _legacy_weapon_ids().has(arg.to_lower()):
 			issues.append(Issue.new("error", "Item '%s'" % item_id,
 				"set_weapon references unknown attack '%s'" % arg))
-		elif (effect == "add_ammo" or effect == "max_ammo_up" or effect == "add_var" or effect == "set_flag" or effect == "add_tag" or effect == "fire_event") and arg.is_empty():
+		elif effect == "equip_item" and not arg.is_empty() and not equipment_ids.has(arg):
+			issues.append(Issue.new("error", "Item '%s'" % item_id,
+				"equip_item references unknown equipment '%s'" % arg))
+		elif (effect == "add_ammo" or effect == "max_ammo_up" or effect == "add_var" or effect == "set_flag" or effect == "add_tag" or effect == "fire_event" or effect == "equip_item") and arg.is_empty():
 			issues.append(Issue.new("error", "Item '%s'" % item_id,
 				"%s requires use_arg" % effect))
 
@@ -557,6 +773,13 @@ static func _validate_equipment(equipment: Array, ability_ids: Dictionary,
 		if not weapon.is_empty() and not attack_ids.has(weapon) and not _legacy_weapon_ids().has(weapon.to_lower()):
 			issues.append(Issue.new("error", "Equipment '%s'" % eq_id,
 				"weapon references unknown attack '%s'" % weapon))
+		var secondary_attack := str(entry.get("secondary_attack", "")).strip_edges()
+		if not secondary_attack.is_empty() and not attack_ids.has(secondary_attack):
+			issues.append(Issue.new("error", "Equipment '%s'" % eq_id,
+				"secondary_attack references unknown attack '%s'" % secondary_attack))
+		if int(entry.get("secondary_ammo_cost", 1)) < 0:
+			issues.append(Issue.new("error", "Equipment '%s'" % eq_id,
+				"secondary_ammo_cost cannot be negative"))
 
 
 static func _validate_attacks(attacks: Array, projectile_ids: Dictionary,
@@ -652,9 +875,9 @@ static func _validate_room_entity_properties(room_src: String, index: int,
 
 static func _validate_dialogues(pack_id: String, dialogue_ids: Dictionary,
 		shop_ids: Dictionary, ability_ids: Dictionary, item_ids: Dictionary,
-		entity_ids: Dictionary, room_addrs: Dictionary, issues: Array) -> void:
+		entity_ids: Dictionary, room_addrs: Dictionary, quest_ids: Dictionary, quests: Array, issues: Array) -> void:
 	for dialogue_id in dialogue_ids.keys():
-		var data := PedIO.load_dialogue(pack_id, str(dialogue_id))
+		var data := _load_json_root(pack_id, "Dialogue", "%s.json" % str(dialogue_id))
 		var lines_v: Variant = data.get("lines", [])
 		var src := "Dialogue '%s'" % dialogue_id
 		if typeof(lines_v) != TYPE_ARRAY or (lines_v as Array).is_empty():
@@ -679,7 +902,7 @@ static func _validate_dialogues(pack_id: String, dialogue_ids: Dictionary,
 			if typeof(actions_v) == TYPE_ARRAY:
 				for act_v in actions_v:
 					if typeof(act_v) == TYPE_DICTIONARY:
-						_validate_action_refs(act_v, line_src, dialogue_ids, shop_ids, ability_ids, item_ids, entity_ids, room_addrs, issues)
+						_validate_action_refs(act_v, line_src, dialogue_ids, shop_ids, ability_ids, item_ids, entity_ids, room_addrs, quest_ids, quests, issues)
 					else:
 						issues.append(Issue.new("error", line_src, "action entry is not a dictionary"))
 			var choices_v: Variant = line.get("choices", [])
@@ -705,14 +928,15 @@ static func _validate_dialogues(pack_id: String, dialogue_ids: Dictionary,
 				if typeof(choice_actions_v) == TYPE_ARRAY:
 					for act_v in choice_actions_v:
 						if typeof(act_v) == TYPE_DICTIONARY:
-							_validate_action_refs(act_v, choice_src, dialogue_ids, shop_ids, ability_ids, item_ids, entity_ids, room_addrs, issues)
+							_validate_action_refs(act_v, choice_src, dialogue_ids, shop_ids, ability_ids, item_ids, entity_ids, room_addrs, quest_ids, quests, issues)
 						else:
 							issues.append(Issue.new("error", choice_src, "action entry is not a dictionary"))
 
 
-static func _validate_shops(pack_id: String, item_ids: Dictionary, issues: Array) -> void:
+static func _validate_shops(pack_id: String, item_ids: Dictionary,
+		equipment_ids: Dictionary, issues: Array) -> void:
 	for shop_id in _list_shop_ids(pack_id).keys():
-		var data := PedIO.load_shop(pack_id, str(shop_id))
+		var data := _load_json_root(pack_id, "Shops", "%s.json" % str(shop_id))
 		var items_v: Variant = data.get("items", [])
 		var src := "Shop '%s'" % shop_id
 		if typeof(items_v) != TYPE_ARRAY:
@@ -741,13 +965,212 @@ static func _validate_shops(pack_id: String, item_ids: Dictionary, issues: Array
 				issues.append(Issue.new("error", src, "item row #%d has count < 1" % i))
 			var effect := str(entry.get("use_effect", "")).strip_edges()
 			var arg := str(entry.get("use_arg", "")).strip_edges()
-			if (effect == "add_ammo" or effect == "max_ammo_up" or effect == "add_var" or effect == "set_flag" or effect == "add_tag" or effect == "fire_event" or effect == "grant_ability" or effect == "set_weapon") and arg.is_empty():
+			if (effect == "add_ammo" or effect == "max_ammo_up" or effect == "add_var" or effect == "set_flag" or effect == "add_tag" or effect == "fire_event" or effect == "grant_ability" or effect == "set_weapon" or effect == "equip_item") and arg.is_empty():
 				issues.append(Issue.new("error", src, "item row #%d effect '%s' requires use_arg" % [i, effect]))
+			elif effect == "equip_item" and not equipment_ids.has(arg):
+				issues.append(Issue.new("error", src,
+					"item row #%d equip_item references unknown equipment '%s'" % [i, arg]))
+
+
+static func _validate_quests(quests: Array, item_ids: Dictionary,
+		ability_ids: Dictionary, entity_ids: Dictionary, room_addrs: Dictionary,
+		dialogue_ids: Dictionary, shop_ids: Dictionary, issues: Array) -> void:
+	var seen_quest_ids: Dictionary = {}
+	for i in range(quests.size()):
+		var quest_v: Variant = quests[i]
+		if typeof(quest_v) != TYPE_DICTIONARY:
+			issues.append(Issue.new("error", "Quests", "quest #%d is not a dictionary" % i))
+			continue
+		var quest: Dictionary = quest_v
+		var quest_id := str(quest.get("id", "")).strip_edges()
+		var src := "Quest '%s'" % quest_id if not quest_id.is_empty() else "Quest #%d" % i
+		if quest_id.is_empty():
+			issues.append(Issue.new("error", src, "missing id"))
+		elif seen_quest_ids.has(quest_id):
+			issues.append(Issue.new("error", src, "duplicate id"))
+		seen_quest_ids[quest_id] = true
+		if str(quest.get("title", "")).strip_edges().is_empty():
+			issues.append(Issue.new("error", src, "missing title"))
+		var stages_v: Variant = quest.get("stages", [])
+		if typeof(stages_v) != TYPE_ARRAY or (stages_v as Array).is_empty():
+			issues.append(Issue.new("error", src, "stages must be a non-empty array"))
+			continue
+		var seen_stage_ids: Dictionary = {}
+		var stages: Array = stages_v
+		for stage_i in range(stages.size()):
+			var stage_v: Variant = stages[stage_i]
+			if typeof(stage_v) != TYPE_DICTIONARY:
+				issues.append(Issue.new("error", src, "stage #%d is not a dictionary" % stage_i))
+				continue
+			var stage: Dictionary = stage_v
+			var stage_id := str(stage.get("id", "")).strip_edges()
+			var stage_src := "%s stage '%s'" % [src, stage_id] if not stage_id.is_empty() else "%s stage #%d" % [src, stage_i]
+			if stage_id.is_empty():
+				issues.append(Issue.new("error", stage_src, "missing id"))
+			elif seen_stage_ids.has(stage_id):
+				issues.append(Issue.new("error", stage_src, "duplicate id"))
+			seen_stage_ids[stage_id] = true
+			if str(stage.get("title", "")).strip_edges().is_empty():
+				issues.append(Issue.new("error", stage_src, "missing title"))
+			_validate_quest_objectives(stage.get("objectives", []), stage_src,
+				item_ids, entity_ids, room_addrs, dialogue_ids, shop_ids, issues)
+			_validate_quest_rewards(stage.get("rewards", {}), stage_src,
+				item_ids, ability_ids, issues)
+
+
+static func _validate_quest_objectives(objectives_v: Variant, stage_src: String,
+		item_ids: Dictionary, entity_ids: Dictionary, room_addrs: Dictionary,
+		dialogue_ids: Dictionary, shop_ids: Dictionary, issues: Array) -> void:
+	if typeof(objectives_v) != TYPE_ARRAY:
+		issues.append(Issue.new("error", stage_src, "objectives must be an array"))
+		return
+	var objectives: Array = objectives_v
+	var seen_objective_ids: Dictionary = {}
+	var supported_types := {
+		"collect_item": true,
+		"have_item": true,
+		"kill_entity": true,
+		"visit_room": true,
+		"talk_dialogue": true,
+		"open_shop": true,
+		"trigger_event": true,
+		"set_flag": true,
+		"reach_var": true,
+	}
+	for i in range(objectives.size()):
+		var objective_v: Variant = objectives[i]
+		if typeof(objective_v) != TYPE_DICTIONARY:
+			issues.append(Issue.new("error", stage_src, "objective #%d is not a dictionary" % i))
+			continue
+		var objective: Dictionary = objective_v
+		var objective_id := str(objective.get("id", "")).strip_edges()
+		var objective_src := "%s objective '%s'" % [stage_src, objective_id] if not objective_id.is_empty() else "%s objective #%d" % [stage_src, i]
+		if objective_id.is_empty():
+			issues.append(Issue.new("error", objective_src, "missing id"))
+		elif seen_objective_ids.has(objective_id):
+			issues.append(Issue.new("error", objective_src, "duplicate id"))
+		seen_objective_ids[objective_id] = true
+		var objective_type := str(objective.get("type", "")).strip_edges()
+		if objective_type.is_empty():
+			issues.append(Issue.new("error", objective_src, "missing type"))
+			continue
+		if not supported_types.has(objective_type):
+			issues.append(Issue.new("error", objective_src, "unknown type '%s'" % objective_type))
+			continue
+		match objective_type:
+			"collect_item", "have_item":
+				_validate_quest_ref(objective, ["item_id", "target_item", "id"], "item",
+					item_ids, objective_src, issues)
+				_validate_positive_int_field(objective, ["count", "target_count"], objective_src, issues)
+			"kill_entity":
+				_validate_quest_ref(objective, ["entity_id", "target_entity", "id"], "entity",
+					entity_ids, objective_src, issues)
+				_validate_positive_int_field(objective, ["count", "target_count"], objective_src, issues)
+			"visit_room":
+				_validate_quest_ref(objective, ["room", "room_id", "room_addr", "target_room"], "room",
+					room_addrs, objective_src, issues)
+			"talk_dialogue":
+				_validate_quest_ref(objective, ["dialogue_id", "target_dialogue", "id"], "dialogue",
+					dialogue_ids, objective_src, issues)
+			"open_shop":
+				_validate_quest_ref(objective, ["shop_id", "target_shop", "id"], "shop",
+					shop_ids, objective_src, issues)
+			"trigger_event":
+				if _first_nonempty(objective, ["event", "event_id", "target_event", "id"]).is_empty():
+					issues.append(Issue.new("error", objective_src, "missing event target"))
+			"set_flag":
+				if _first_nonempty(objective, ["flag", "flag_name", "name", "id"]).is_empty():
+					issues.append(Issue.new("error", objective_src, "missing flag target"))
+			"reach_var":
+				if _first_nonempty(objective, ["var", "var_name", "name", "id"]).is_empty():
+					issues.append(Issue.new("error", objective_src, "missing variable target"))
+				if not objective.has("value") and not objective.has("target_value"):
+					issues.append(Issue.new("error", objective_src, "missing target value"))
+
+
+static func _validate_quest_rewards(rewards_v: Variant, stage_src: String,
+		item_ids: Dictionary, ability_ids: Dictionary, issues: Array) -> void:
+	if typeof(rewards_v) == TYPE_NIL:
+		return
+	if typeof(rewards_v) != TYPE_DICTIONARY:
+		issues.append(Issue.new("error", stage_src, "rewards must be a dictionary"))
+		return
+	var rewards: Dictionary = rewards_v
+	var items_v: Variant = rewards.get("items", [])
+	if typeof(items_v) != TYPE_ARRAY:
+		issues.append(Issue.new("error", stage_src, "rewards.items must be an array"))
+	elif typeof(items_v) == TYPE_ARRAY:
+		for i in range((items_v as Array).size()):
+			var item_v: Variant = (items_v as Array)[i]
+			if typeof(item_v) == TYPE_DICTIONARY:
+				var item: Dictionary = item_v
+				var item_id := str(item.get("id", item.get("item_id", ""))).strip_edges()
+				if item_id.is_empty():
+					issues.append(Issue.new("error", stage_src, "reward item #%d is missing id" % i))
+				elif not item_ids.has(item_id):
+					issues.append(Issue.new("error", stage_src, "reward item #%d references unknown item '%s'" % [i, item_id]))
+				if int(item.get("count", 1)) < 1:
+					issues.append(Issue.new("error", stage_src, "reward item #%d count must be >= 1" % i))
+			elif typeof(item_v) == TYPE_STRING:
+				var item_id := str(item_v).strip_edges()
+				if item_id.is_empty():
+					issues.append(Issue.new("error", stage_src, "reward item #%d is empty" % i))
+				elif not item_ids.has(item_id):
+					issues.append(Issue.new("error", stage_src, "reward item #%d references unknown item '%s'" % [i, item_id]))
+			else:
+				issues.append(Issue.new("error", stage_src, "reward item #%d is not a dictionary or string" % i))
+	var abilities_v: Variant = rewards.get("abilities", [])
+	if typeof(abilities_v) != TYPE_ARRAY:
+		issues.append(Issue.new("error", stage_src, "rewards.abilities must be an array"))
+	elif typeof(abilities_v) == TYPE_ARRAY:
+		for i in range((abilities_v as Array).size()):
+			var ability_id := ""
+			var ability_v: Variant = (abilities_v as Array)[i]
+			if typeof(ability_v) == TYPE_DICTIONARY:
+				ability_id = str((ability_v as Dictionary).get("id", (ability_v as Dictionary).get("ability_id", ""))).strip_edges()
+			else:
+				ability_id = str(ability_v).strip_edges()
+			if ability_id.is_empty():
+				issues.append(Issue.new("error", stage_src, "reward ability #%d is empty" % i))
+			elif not ability_ids.has(ability_id):
+				issues.append(Issue.new("error", stage_src, "reward ability #%d references unknown ability '%s'" % [i, ability_id]))
+	var events_v: Variant = rewards.get("events", [])
+	if typeof(events_v) != TYPE_ARRAY:
+		issues.append(Issue.new("error", stage_src, "rewards.events must be an array"))
+	elif typeof(events_v) == TYPE_ARRAY:
+		for i in range((events_v as Array).size()):
+			if str((events_v as Array)[i]).strip_edges().is_empty():
+				issues.append(Issue.new("error", stage_src, "reward event #%d is empty" % i))
+
+
+static func _validate_quest_ref(data: Dictionary, keys: Array, kind: String,
+		known_ids: Dictionary, src: String, issues: Array) -> void:
+	var id := _first_nonempty(data, keys)
+	if id.is_empty():
+		issues.append(Issue.new("error", src, "missing %s target" % kind))
+	elif not known_ids.has(id):
+		issues.append(Issue.new("error", src, "references unknown %s '%s'" % [kind, id]))
+
+
+static func _validate_positive_int_field(data: Dictionary, keys: Array,
+		src: String, issues: Array) -> void:
+	for key_v in keys:
+		var key := str(key_v)
+		if data.has(key) and int(data.get(key, 1)) < 1:
+			issues.append(Issue.new("error", src, "%s must be >= 1" % key))
+
+
+static func _first_nonempty(data: Dictionary, keys: Array) -> String:
+	for key_v in keys:
+		var value := str(data.get(str(key_v), "")).strip_edges()
+		if not value.is_empty():
+			return value
+	return ""
 
 
 static func _validate_world_hierarchy(pack_id: String, flat_rooms_root: Dictionary,
 		flat_room_addrs: Dictionary, issues: Array) -> void:
-	var all_realms: Dictionary = RegIO.load_all_realms(pack_id)
+	var all_realms: Dictionary = _load_all_realms_existing(pack_id)
 	var realm_list_v: Variant = all_realms.get("realm_list", [])
 	var realms_v: Variant = all_realms.get("realms", {})
 	if typeof(realm_list_v) != TYPE_ARRAY or (realm_list_v as Array).is_empty():
@@ -760,13 +1183,14 @@ static func _validate_world_hierarchy(pack_id: String, flat_rooms_root: Dictiona
 	var manifest: Dictionary = _load_pack_manifest(pack_id)
 	var start_realm: String = str(manifest.get("start_realm", "")).strip_edges()
 	if start_realm.is_empty():
-		start_realm = _start_realm_for_pack(pack_id)
+		issues.append(Issue.new("error", "Pack", "start_realm is empty"))
 	elif not (realms_v as Dictionary).has(start_realm):
 		issues.append(Issue.new("error", "Pack",
 			"start_realm '%s' does not exist in this pack" % start_realm))
 
 	var expected_flat_rooms: Dictionary = {}
 	var expected_start_room := ""
+	var start_room_data: Dictionary = {}
 	for realm_entry_v in realm_list_v:
 		if typeof(realm_entry_v) != TYPE_DICTIONARY:
 			issues.append(Issue.new("error", "World", "realm list entry is not a dictionary"))
@@ -784,6 +1208,7 @@ static func _validate_world_hierarchy(pack_id: String, flat_rooms_root: Dictiona
 		var bundle: Dictionary = bundle_v
 		var realm: Dictionary = bundle.get("realm", {})
 		var regions_meta: Dictionary = bundle.get("regions", {})
+		var region_rooms_roots: Dictionary = bundle.get("rooms", {})
 		var grid_x := int(realm.get("realm_grid_cells_x", 0))
 		var grid_y := int(realm.get("realm_grid_cells_y", 0))
 		if grid_x < 1:
@@ -866,7 +1291,12 @@ static func _validate_world_hierarchy(pack_id: String, flat_rooms_root: Dictiona
 			if region_grid_y < 1:
 				issues.append(Issue.new("error", region_src, "grid_cells_y must be >= 1"))
 
-			var rooms_root: Dictionary = RegIO.load_region_rooms(pack_id, realm_id, region_id)
+			var rooms_root: Dictionary = {}
+			var rooms_root_v: Variant = region_rooms_roots.get(region_id, {})
+			if typeof(rooms_root_v) == TYPE_DICTIONARY:
+				rooms_root = rooms_root_v
+			if not _pack_file_exists(pack_id, "Realms/%s/Regions/%s/rooms.json" % [realm_id, region_id]):
+				issues.append(Issue.new("error", region_src, "rooms.json is missing"))
 			var start_room: String = str(rooms_root.get("start_room", "")).strip_edges()
 			var rooms_v: Variant = rooms_root.get("rooms", {})
 			if typeof(rooms_v) != TYPE_DICTIONARY:
@@ -878,6 +1308,9 @@ static func _validate_world_hierarchy(pack_id: String, flat_rooms_root: Dictiona
 					issues.append(Issue.new("error", region_src, "start region has no start_room"))
 				else:
 					expected_start_room = RegIO.runtime_room_addr(realm_id, region_id, start_room)
+					var start_room_v: Variant = rooms_dict.get(start_room, {})
+					if typeof(start_room_v) == TYPE_DICTIONARY:
+						start_room_data = start_room_v
 			elif not start_room.is_empty() and not rooms_dict.has(start_room):
 				issues.append(Issue.new("error", region_src,
 					"start_room '%s' does not exist in this region" % start_room))
@@ -960,6 +1393,8 @@ static func _validate_world_hierarchy(pack_id: String, flat_rooms_root: Dictiona
 		issues.append(Issue.new("error", "Rooms",
 			"flat start_room '%s' does not match realm/region start '%s'" %
 			[flat_start_room, expected_start_room]))
+	_validate_bootstrap_entry_room(pack_id, manifest, all_realms, flat_room_addrs,
+		expected_start_room, start_room_data, issues)
 
 	for expected_addr in expected_flat_rooms.keys():
 		if not flat_room_addrs.has(expected_addr):
@@ -969,6 +1404,121 @@ static func _validate_world_hierarchy(pack_id: String, flat_rooms_root: Dictiona
 		if not expected_flat_rooms.has(flat_addr):
 			issues.append(Issue.new("warning", "Rooms",
 				"flat rooms.json contains room '%s' not present in realm hierarchy" % str(flat_addr)))
+
+
+static func _validate_bootstrap_entry_room(pack_id: String, manifest: Dictionary,
+		all_realms: Dictionary, flat_room_addrs: Dictionary, expected_start_room: String,
+		start_room_data: Dictionary, issues: Array) -> void:
+	var start_realm := str(manifest.get("start_realm", "")).strip_edges()
+	var entry_room := str(manifest.get("entry_room", "")).strip_edges()
+	if entry_room.is_empty():
+		return
+	var normalized_entry_room := _expand_room_addr_from_realms(all_realms, start_realm, entry_room)
+	if normalized_entry_room.is_empty():
+		issues.append(Issue.new("error", "Pack", "entry_room could not be resolved"))
+		return
+	if not flat_room_addrs.has(normalized_entry_room):
+		issues.append(Issue.new("error", "Pack",
+			"entry_room '%s' resolves to missing room '%s'" % [entry_room, normalized_entry_room]))
+	elif not expected_start_room.is_empty() and normalized_entry_room != expected_start_room:
+		issues.append(Issue.new("error", "Pack",
+			"entry_room '%s' does not match canonical start room '%s'" %
+			[normalized_entry_room, expected_start_room]))
+	if expected_start_room.is_empty():
+		return
+	if not _room_has_player_spawn(start_room_data):
+		issues.append(Issue.new("error", "Room '%s'" % expected_start_room,
+			"start room must contain a player_spawn entity"))
+
+
+static func _room_has_player_spawn(room: Dictionary) -> bool:
+	var entities_v: Variant = room.get("entities", [])
+	if typeof(entities_v) != TYPE_ARRAY:
+		return false
+	for entity_v in entities_v:
+		if typeof(entity_v) != TYPE_DICTIONARY:
+			continue
+		if str((entity_v as Dictionary).get("type", "")).strip_edges() == "player_spawn":
+			return true
+	return false
+
+
+static func _room_for_pack(pack_id: String, room_addr: String) -> Dictionary:
+	var rooms := _load_flat_rooms(_load_json_root(pack_id, "Rooms", "rooms.json"))
+	for room_v in rooms:
+		if typeof(room_v) != TYPE_DICTIONARY:
+			continue
+		var room: Dictionary = room_v
+		var addr := str(room.get("addr", "")).strip_edges()
+		var flat_addr := str(room.get("_flat_addr", "")).strip_edges()
+		if addr == room_addr or flat_addr == room_addr:
+			return room
+	return {}
+
+
+static func _is_vec2_like(value: Variant) -> bool:
+	if value is Vector2 or value is Vector2i:
+		return true
+	if typeof(value) == TYPE_ARRAY:
+		return (value as Array).size() >= 2
+	if typeof(value) == TYPE_DICTIONARY:
+		var dict: Dictionary = value
+		return dict.has("x") and dict.has("y")
+	return false
+
+
+static func _numeric_pair_is_valid(value: Variant) -> bool:
+	if typeof(value) != TYPE_ARRAY:
+		return false
+	var arr: Array = value
+	if arr.size() < 2:
+		return false
+	return float(arr[1]) >= float(arr[0])
+
+
+static func _validate_optional_texture(pack_id: String, source: String, field: String,
+		path: String, issues: Array) -> void:
+	var trimmed := path.strip_edges()
+	if trimmed.is_empty():
+		return
+	if not _asset_path_exists(pack_id, trimmed):
+		issues.append(Issue.new("error", source, "%s '%s' does not exist" % [field, trimmed]))
+
+
+static func _asset_path_exists(pack_id: String, path: String) -> bool:
+	var trimmed := path.strip_edges()
+	if trimmed.is_empty():
+		return true
+	if trimmed.begins_with("res://") or trimmed.begins_with("user://"):
+		return FileAccess.file_exists(trimmed) or ResourceLoader.exists(trimmed)
+	return _pack_file_exists(pack_id, trimmed)
+
+
+static func _space_event_exists(event_id: String) -> bool:
+	var trimmed := event_id.strip_edges()
+	if trimmed.is_empty() or trimmed.begins_with("proc_"):
+		return true
+	var data_manager := _autoload_node("DataManager")
+	if data_manager != null:
+		var events_v: Variant = data_manager.get("events")
+		if typeof(events_v) == TYPE_DICTIONARY and (events_v as Dictionary).has(trimmed):
+			return true
+	return false
+
+
+static func _enemy_class_exists(class_id: String) -> bool:
+	var trimmed := class_id.strip_edges()
+	if trimmed.is_empty():
+		return false
+	var data_manager := _autoload_node("DataManager")
+	if data_manager != null:
+		var classes_v: Variant = data_manager.get("enemy_classes")
+		if typeof(classes_v) == TYPE_DICTIONARY and (classes_v as Dictionary).has(trimmed):
+			return true
+	for built_in in ["fighter", "scout", "interceptor", "gunship", "bomber", "elite", "boss"]:
+		if trimmed == built_in:
+			return true
+	return false
 
 
 static func _legacy_weapon_ids() -> Dictionary:
@@ -989,6 +1539,7 @@ static func _has_attack_id(attacks: Array, attack_id: String) -> bool:
 static func _validate_action_refs(action: Dictionary, src: String,
 		dialogue_ids: Dictionary, shop_ids: Dictionary, ability_ids: Dictionary,
 		item_ids: Dictionary, entity_ids: Dictionary, room_addrs: Dictionary,
+		quest_ids: Dictionary, quests: Array,
 		issues: Array) -> void:
 	var atype := str(action.get("type", "")).strip_edges()
 	if atype.is_empty():
@@ -1039,6 +1590,16 @@ static func _validate_action_refs(action: Dictionary, src: String,
 				issues.append(Issue.new("error", src, "start_shop action is missing id"))
 			elif not shop_ids.has(shop_id):
 				issues.append(Issue.new("error", src, "action references unknown shop '%s'" % shop_id))
+		"quest_start":
+			_validate_quest_action_target(action, src, quest_ids, quests, issues, false, false)
+		"quest_set_stage":
+			_validate_quest_action_target(action, src, quest_ids, quests, issues, true, false)
+		"quest_complete_stage":
+			_validate_quest_action_target(action, src, quest_ids, quests, issues, false, false)
+		"quest_complete_objective":
+			_validate_quest_action_target(action, src, quest_ids, quests, issues, false, true)
+		"quest_complete":
+			_validate_quest_action_target(action, src, quest_ids, quests, issues, false, false)
 		"give_ability", "revoke_ability":
 			var ability_id := str(action.get("id", "")).strip_edges()
 			if ability_id.is_empty():
@@ -1134,6 +1695,78 @@ static func _validate_action_refs(action: Dictionary, src: String,
 				issues.append(Issue.new("warning", src, "log action message is empty"))
 
 
+static func _validate_quest_action_target(action: Dictionary, src: String,
+		quest_ids: Dictionary, quests: Array, issues: Array,
+		stage_required: bool, objective_required: bool) -> void:
+	var action_type := str(action.get("type", "")).strip_edges()
+	var quest_id := str(action.get("quest_id", "")).strip_edges()
+	if quest_id.is_empty():
+		issues.append(Issue.new("error", src, "%s action is missing quest_id" % action_type))
+		return
+	if not quest_ids.has(quest_id):
+		issues.append(Issue.new("error", src, "action references unknown quest '%s'" % quest_id))
+		return
+	var quest := _find_quest(quests, quest_id)
+	var stage_id := str(action.get("stage_id", "")).strip_edges()
+	if stage_required and stage_id.is_empty():
+		issues.append(Issue.new("error", src, "%s action is missing stage_id" % action_type))
+	elif not stage_id.is_empty() and not _quest_has_stage(quest, stage_id):
+		issues.append(Issue.new("error", src, "action references unknown quest stage '%s.%s'" % [quest_id, stage_id]))
+	var objective_id := str(action.get("objective_id", "")).strip_edges()
+	if objective_required and objective_id.is_empty():
+		issues.append(Issue.new("error", src, "%s action is missing objective_id" % action_type))
+	elif not objective_id.is_empty():
+		if not stage_id.is_empty() and not _quest_stage_has_objective(quest, stage_id, objective_id):
+			issues.append(Issue.new("error", src,
+				"action references unknown quest objective '%s.%s.%s'" % [quest_id, stage_id, objective_id]))
+		elif stage_id.is_empty() and not _quest_has_objective(quest, objective_id):
+			issues.append(Issue.new("error", src,
+				"action references unknown quest objective '%s.%s'" % [quest_id, objective_id]))
+
+
+static func _find_quest(quests: Array, quest_id: String) -> Dictionary:
+	for quest_v in quests:
+		if typeof(quest_v) != TYPE_DICTIONARY:
+			continue
+		var quest: Dictionary = quest_v
+		if str(quest.get("id", "")).strip_edges() == quest_id:
+			return quest
+	return {}
+
+
+static func _quest_has_stage(quest: Dictionary, stage_id: String) -> bool:
+	for stage_v in _array_or_empty(quest.get("stages", [])):
+		if typeof(stage_v) == TYPE_DICTIONARY and str((stage_v as Dictionary).get("id", "")).strip_edges() == stage_id:
+			return true
+	return false
+
+
+static func _quest_has_objective(quest: Dictionary, objective_id: String) -> bool:
+	for stage_v in _array_or_empty(quest.get("stages", [])):
+		if typeof(stage_v) == TYPE_DICTIONARY and _quest_stage_has_objective(quest, str((stage_v as Dictionary).get("id", "")).strip_edges(), objective_id):
+			return true
+	return false
+
+
+static func _quest_stage_has_objective(quest: Dictionary, stage_id: String, objective_id: String) -> bool:
+	for stage_v in _array_or_empty(quest.get("stages", [])):
+		if typeof(stage_v) != TYPE_DICTIONARY:
+			continue
+		var stage: Dictionary = stage_v
+		if str(stage.get("id", "")).strip_edges() != stage_id:
+			continue
+		for objective_v in _array_or_empty(stage.get("objectives", [])):
+			if typeof(objective_v) == TYPE_DICTIONARY and str((objective_v as Dictionary).get("id", "")).strip_edges() == objective_id:
+				return true
+	return false
+
+
+static func _array_or_empty(value: Variant) -> Array:
+	if typeof(value) == TYPE_ARRAY:
+		return value
+	return []
+
+
 static func _room_target_from_door(door: Dictionary) -> String:
 	var target := str(door.get("target_room", "")).strip_edges()
 	if target.is_empty():
@@ -1153,11 +1786,11 @@ static func _load_json_array(pack_id: String, folder: String,
 
 
 static func _load_json_root(pack_id: String, folder: String, file_name: String) -> Dictionary:
-	for path in [
-		PedIO.user_file(pack_id, folder, file_name),
-		PedIO.shipped_file(pack_id, folder, file_name),
-		PedIO.demo_file(folder, file_name),
-	]:
+	return _load_pack_json_root(pack_id, "%s/%s" % [folder, file_name])
+
+
+static func _load_pack_json_root(pack_id: String, rel_path: String) -> Dictionary:
+	for path in _pack_file_paths(pack_id, rel_path):
 		if FileAccess.file_exists(path):
 			var f := FileAccess.open(path, FileAccess.READ)
 			if f == null:
@@ -1170,31 +1803,140 @@ static func _load_json_root(pack_id: String, folder: String, file_name: String) 
 
 
 static func _load_pack_manifest(pack_id: String) -> Dictionary:
-	for path in [
-		"user://Packs/%s/Pack.json" % pack_id,
-		"res://Content/%s/Pack.json" % pack_id,
-		"res://Content/demo/Pack.json",
-	]:
+	return _load_pack_json_root(pack_id, "Pack.json")
+
+
+static func _pack_file_paths(pack_id: String, rel_path: String) -> Array:
+	var clean_path := rel_path.strip_edges()
+	if clean_path.begins_with("/"):
+		clean_path = clean_path.substr(1)
+	return [
+		"user://Packs/%s/%s" % [pack_id, clean_path],
+		"res://Content/%s/%s" % [pack_id, clean_path],
+	]
+
+
+static func _pack_dir_paths(pack_id: String, rel_path: String) -> Array:
+	var clean_path := rel_path.strip_edges().rstrip("/")
+	if clean_path.begins_with("/"):
+		clean_path = clean_path.substr(1)
+	return [
+		"user://Packs/%s/%s" % [pack_id, clean_path],
+		"res://Content/%s/%s" % [pack_id, clean_path],
+	]
+
+
+static func _pack_file_exists(pack_id: String, rel_path: String) -> bool:
+	for path in _pack_file_paths(pack_id, rel_path):
 		if FileAccess.file_exists(path):
-			var f := FileAccess.open(path, FileAccess.READ)
-			if f == null:
-				continue
-			var raw = JSON.parse_string(f.get_as_text())
-			f.close()
-			if typeof(raw) == TYPE_DICTIONARY:
-				return raw
-	return {}
+			return true
+	return false
+
+
+static func _load_systems_existing(pack_id: String, issues: Array) -> Dictionary:
+	var root := _load_json_root(pack_id, "Systems", "systems.json")
+	if root.is_empty():
+		return {}
+	var systems_v: Variant = root.get("systems", null)
+	if typeof(systems_v) != TYPE_DICTIONARY:
+		issues.append(Issue.new("error", "Systems/systems.json",
+			"root must contain a 'systems' dictionary"))
+		return {}
+	return (systems_v as Dictionary).duplicate(true)
+
+
+static func _load_all_realms_existing(pack_id: String) -> Dictionary:
+	var realm_list: Array = []
+	var realms: Dictionary = {}
+	for realm_id_v in _list_realm_ids_existing(pack_id):
+		var realm_id := str(realm_id_v)
+		var realm := _load_pack_json_root(pack_id, "Realms/%s/realm.json" % realm_id)
+		realm_list.append({
+			"id": realm_id,
+			"name": str(realm.get("realm_name", realm.get("name", realm_id))),
+		})
+		var regions: Dictionary = {}
+		var rooms: Dictionary = {}
+		var region_ids := _list_region_ids_existing(pack_id, realm_id)
+		var region_entries_v: Variant = realm.get("regions", [])
+		if typeof(region_entries_v) == TYPE_ARRAY:
+			for entry_v in region_entries_v:
+				if typeof(entry_v) != TYPE_DICTIONARY:
+					continue
+				var placed_region_id := str((entry_v as Dictionary).get("id", "")).strip_edges()
+				if not placed_region_id.is_empty() and not region_ids.has(placed_region_id):
+					region_ids.append(placed_region_id)
+		for region_id_v in region_ids:
+			var region_id := str(region_id_v)
+			var region := _load_pack_json_root(pack_id,
+				"Realms/%s/Regions/%s/region.json" % [realm_id, region_id])
+			if not region.is_empty():
+				regions[region_id] = region
+			var rooms_root := _load_pack_json_root(pack_id,
+				"Realms/%s/Regions/%s/rooms.json" % [realm_id, region_id])
+			if not rooms_root.is_empty():
+				rooms[region_id] = rooms_root
+		realms[realm_id] = {
+			"realm": realm,
+			"regions": regions,
+			"rooms": rooms,
+			"realm_id": realm_id,
+		}
+	realm_list.sort_custom(func(a: Dictionary, b: Dictionary): return str(a.get("id", "")) < str(b.get("id", "")))
+	return {
+		"realm_list": realm_list,
+		"realms": realms,
+	}
+
+
+static func _list_realm_ids_existing(pack_id: String) -> Array:
+	var ids: Array = []
+	var seen: Dictionary = {}
+	for root in _pack_dir_paths(pack_id, "Realms"):
+		var dir := DirAccess.open(root)
+		if dir == null:
+			continue
+		dir.list_dir_begin()
+		var name := dir.get_next()
+		while not name.is_empty():
+			if dir.current_is_dir() and not name.begins_with(".") and not seen.has(name):
+				seen[name] = true
+				ids.append(name)
+			name = dir.get_next()
+		dir.list_dir_end()
+	return ids
+
+
+static func _list_region_ids_existing(pack_id: String, realm_id: String) -> Array:
+	var ids: Array = []
+	var seen: Dictionary = {}
+	for root in _pack_dir_paths(pack_id, "Realms/%s/Regions" % realm_id):
+		var dir := DirAccess.open(root)
+		if dir == null:
+			continue
+		dir.list_dir_begin()
+		var name := dir.get_next()
+		while not name.is_empty():
+			if dir.current_is_dir() and not name.begins_with(".") and not seen.has(name):
+				seen[name] = true
+				ids.append(name)
+			name = dir.get_next()
+		dir.list_dir_end()
+	return ids
 
 
 static func _known_ship_template_ids() -> Dictionary:
 	var ids: Dictionary = {}
-	if GameManager.has_method("get_builtin_template_names"):
-		for name_v in GameManager.get_builtin_template_names():
+	_collect_ship_template_ids_from_dir("res://Space/data/npc_templates/", ids)
+	_collect_ship_template_ids_from_dir("user://npc_templates/", ids)
+	var game_manager := _autoload_node("GameManager")
+	if game_manager != null and game_manager.has_method("get_builtin_template_names"):
+		for name_v in game_manager.get_builtin_template_names():
 			var builtin_id := _normalize_ship_template_id(str(name_v))
 			if not builtin_id.is_empty():
 				ids[builtin_id] = true
-	if GameManager.has_method("get_template_list"):
-		for entry_v in GameManager.get_template_list():
+	if game_manager != null and game_manager.has_method("get_template_list"):
+		for entry_v in game_manager.get_template_list():
 			if typeof(entry_v) != TYPE_DICTIONARY:
 				continue
 			var entry: Dictionary = entry_v
@@ -1206,6 +1948,48 @@ static func _known_ship_template_ids() -> Dictionary:
 			if not template_id.is_empty():
 				ids[template_id] = true
 	return ids
+
+
+static func _ship_template_exists(pack_id: String, template_id: String) -> bool:
+	if template_id.is_empty():
+		return false
+	for rel_path in [
+		"Ships/%s.json" % template_id,
+		"ShipTemplates/%s.json" % template_id,
+	]:
+		if _pack_file_exists(pack_id, rel_path):
+			return true
+	return _known_ship_template_ids().has(template_id)
+
+
+static func _schema_version_is_supported(value: Variant) -> bool:
+	match typeof(value):
+		TYPE_INT, TYPE_FLOAT:
+			return is_equal_approx(float(value), 1.0)
+		_:
+			return str(value).strip_edges() == BOOTSTRAP_SCHEMA_VERSION
+
+
+static func _collect_ship_template_ids_from_dir(dir_path: String, ids: Dictionary) -> void:
+	var dir := DirAccess.open(dir_path)
+	if dir == null:
+		return
+	dir.list_dir_begin()
+	var file_name := dir.get_next()
+	while not file_name.is_empty():
+		if not dir.current_is_dir() and file_name.ends_with(".json") and not file_name.begins_with("_"):
+			var template_id := _normalize_ship_template_id(file_name)
+			if not template_id.is_empty():
+				ids[template_id] = true
+		file_name = dir.get_next()
+	dir.list_dir_end()
+
+
+static func _autoload_node(node_name: String) -> Node:
+	var tree := Engine.get_main_loop() as SceneTree
+	if tree == null or tree.root == null:
+		return null
+	return tree.root.get_node_or_null(node_name)
 
 
 static func _normalize_ship_template_id(value: String) -> String:
@@ -1233,6 +2017,7 @@ static func _load_flat_rooms(root: Dictionary) -> Array:
 		if typeof(room_v) != TYPE_DICTIONARY:
 			continue
 		var room: Dictionary = (room_v as Dictionary).duplicate(true)
+		room["_flat_addr"] = room_addr
 		if str(room.get("addr", "")).strip_edges().is_empty():
 			room["addr"] = room_addr
 		out.append(room)
@@ -1249,12 +2034,15 @@ static func _room_addrs_for_pack(pack_id: String) -> Dictionary:
 		var addr := str(room.get("addr", "")).strip_edges()
 		if not addr.is_empty():
 			addrs[addr] = true
+		var flat_addr := str(room.get("_flat_addr", "")).strip_edges()
+		if not flat_addr.is_empty():
+			addrs[flat_addr] = true
 	return addrs
 
 
 static func _realm_ids_for_pack(pack_id: String) -> Dictionary:
 	var ids: Dictionary = {}
-	var all_realms: Dictionary = RegIO.load_all_realms(pack_id)
+	var all_realms: Dictionary = _load_all_realms_existing(pack_id)
 	var realm_list_v: Variant = all_realms.get("realm_list", [])
 	if typeof(realm_list_v) != TYPE_ARRAY:
 		return ids
@@ -1270,9 +2058,7 @@ static func _realm_ids_for_pack(pack_id: String) -> Dictionary:
 static func _start_realm_for_pack(pack_id: String) -> String:
 	var manifest: Dictionary = _load_pack_manifest(pack_id)
 	var start_realm: String = str(manifest.get("start_realm", "")).strip_edges()
-	if not start_realm.is_empty():
-		return start_realm
-	return RegIO.default_realm_id(pack_id)
+	return start_realm
 
 
 static func _expand_room_addr_for_validation(pack_id: String, realm_id: String, room_addr: String) -> String:
@@ -1285,16 +2071,40 @@ static func _expand_room_addr_for_validation(pack_id: String, realm_id: String, 
 		return "%s/%s" % [realm_id, trimmed]
 	if realm_id.is_empty():
 		return trimmed
-	var bundle: Dictionary = RegIO.load_realm_bundle(pack_id, realm_id)
+	var all_realms := _load_all_realms_existing(pack_id)
+	return _expand_room_addr_from_realms(all_realms, realm_id, trimmed)
+
+
+static func _expand_room_addr_from_realms(all_realms: Dictionary, realm_id: String, room_addr: String) -> String:
+	var trimmed: String = room_addr.strip_edges()
+	if trimmed.is_empty():
+		return ""
+	if trimmed.count("/") >= 2:
+		return trimmed
+	if trimmed.count("/") == 1 and not realm_id.is_empty():
+		return "%s/%s" % [realm_id, trimmed]
+	if realm_id.is_empty():
+		return trimmed
+	var realms_v: Variant = all_realms.get("realms", {})
+	if typeof(realms_v) != TYPE_DICTIONARY:
+		return trimmed
+	var bundle_v: Variant = (realms_v as Dictionary).get(realm_id, {})
+	if typeof(bundle_v) != TYPE_DICTIONARY:
+		return trimmed
+	var bundle: Dictionary = bundle_v
 	var realm: Dictionary = bundle.get("realm", {})
 	var region_list: Array = realm.get("regions", [])
+	var region_rooms_roots: Dictionary = bundle.get("rooms", {})
 	for region_entry_v in region_list:
 		if typeof(region_entry_v) != TYPE_DICTIONARY:
 			continue
 		var region_id: String = str((region_entry_v as Dictionary).get("id", "")).strip_edges()
 		if region_id.is_empty():
 			continue
-		var rooms_root: Dictionary = RegIO.load_region_rooms(pack_id, realm_id, region_id)
+		var rooms_root_v: Variant = region_rooms_roots.get(region_id, {})
+		if typeof(rooms_root_v) != TYPE_DICTIONARY:
+			continue
+		var rooms_root: Dictionary = rooms_root_v
 		var rooms_v: Variant = rooms_root.get("rooms", {})
 		if typeof(rooms_v) != TYPE_DICTIONARY:
 			continue
@@ -1308,7 +2118,6 @@ static func _list_dialogue_ids(pack_id: String) -> Dictionary:
 	for dir_path in [
 		PedIO.user_file(pack_id, "Dialogue", ""),
 		PedIO.shipped_file(pack_id, "Dialogue", ""),
-		PedIO.demo_file("Dialogue", ""),
 	]:
 		if not DirAccess.dir_exists_absolute(dir_path):
 			continue
@@ -1326,6 +2135,20 @@ static func _list_dialogue_ids(pack_id: String) -> Dictionary:
 
 static func _list_shop_ids(pack_id: String) -> Dictionary:
 	var ids: Dictionary = {}
-	for shop_id in PedIO.list_shops(pack_id):
-		ids[str(shop_id)] = true
+	for dir_path in [
+		"user://Packs/%s/Shops/" % pack_id,
+		"res://Content/%s/Shops/" % pack_id,
+	]:
+		if not DirAccess.dir_exists_absolute(dir_path):
+			continue
+		var da := DirAccess.open(dir_path)
+		if da == null:
+			continue
+		da.list_dir_begin()
+		var fname := da.get_next()
+		while not fname.is_empty():
+			if fname.ends_with(".json") and not fname.begins_with("_"):
+				ids[fname.get_basename()] = true
+			fname = da.get_next()
+		da.list_dir_end()
 	return ids

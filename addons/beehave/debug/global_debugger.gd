@@ -4,10 +4,26 @@ var _registered_trees: Dictionary
 var _active_tree
 var _pending_activation_id: int = -1 # Store the ID if activation arrives before registration
 var _editor_visible: bool = false # Track editor visibility
+var _message_capture_registered: bool = false
 
 
 func _enter_tree() -> void:
+	if _message_capture_registered:
+		return
 	EngineDebugger.register_message_capture("beehave", _on_debug_message)
+	_message_capture_registered = true
+
+
+func _exit_tree() -> void:
+	if _active_tree and is_instance_valid(_active_tree):
+		_active_tree._can_send_message = false
+	_active_tree = null
+	_pending_activation_id = -1
+	_editor_visible = false
+	_registered_trees.clear()
+	if _message_capture_registered:
+		EngineDebugger.unregister_message_capture("beehave")
+		_message_capture_registered = false
 
 
 func _on_debug_message(message: String, data: Array) -> bool:

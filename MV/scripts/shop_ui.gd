@@ -19,6 +19,7 @@ var _shop_items: Array = []
 var _shop_id: String = ""
 var _authored_screen: Control = null
 var _authored_pack_id: String = ""
+var _last_message: String = ""
 static var _singleton = null
 
 
@@ -28,10 +29,13 @@ static func instance():
 func _ready() -> void:
 	_singleton = self
 	layer = 98
+	process_mode = Node.PROCESS_MODE_ALWAYS
+	set_process(true)
 	_build_ui()
 	visible = false
 	_authored_screen = Control.new()
 	_authored_screen.set_script(AuthoredScreenRuntime)
+	_authored_screen.process_mode = Node.PROCESS_MODE_ALWAYS
 	_authored_screen.visible = false
 	add_child(_authored_screen)
 	_authored_screen.action_requested.connect(_on_authored_action)
@@ -39,6 +43,7 @@ func _ready() -> void:
 
 func open_shop(shop_id: String) -> void:
 	_shop_id = shop_id
+	_last_message = ""
 	_shop_items = _load_shop(shop_id)
 	_normalize_shop_items()
 	if _shop_items.is_empty():
@@ -55,13 +60,14 @@ func close_shop() -> void:
 	visible = false
 	MvGame.simulation_paused = false
 	_shop_id = ""
+	_last_message = ""
 	_clear_items()
 
 
 func _refresh() -> void:
 	_clear_items()
 	var gold := int(PlayerInventory.get_var("gold", 0))
-	_gold_label.text = "Gold: %d" % gold
+	_gold_label.text = "Gold: %d%s" % [gold, ("  -  %s" % _last_message) if not _last_message.is_empty() else ""]
 
 	for i in _shop_items.size():
 		var item: Dictionary = _shop_items[i]
@@ -75,6 +81,7 @@ func _refresh() -> void:
 		var lbl := Label.new()
 		var count_suffix := (" x%d" % count) if count > 1 else ""
 		lbl.text = "%s%s - %d gold" % [item_name, count_suffix, price]
+		lbl.tooltip_text = _item_tooltip(item, can_afford)
 		lbl.add_theme_font_size_override("font_size", UIPanels.font_size("hint_size"))
 		lbl.add_theme_color_override("font_color", UIPanels.text_color("success") if can_afford else UIPanels.text_color("dim"))
 		lbl.size_flags_horizontal = Control.SIZE_EXPAND_FILL
@@ -83,6 +90,7 @@ func _refresh() -> void:
 		var buy_btn := Button.new()
 		buy_btn.text = "Buy"
 		buy_btn.disabled = not can_afford
+		buy_btn.tooltip_text = _item_tooltip(item, can_afford)
 		buy_btn.pressed.connect(_on_buy.bind(i))
 		row.add_child(buy_btn)
 		_item_container.add_child(row)
@@ -95,6 +103,8 @@ func _on_buy(index: int) -> void:
 	var price: int = int(item.get("price", 0))
 	var gold := int(PlayerInventory.get_var("gold", 0))
 	if gold < price:
+		_last_message = "Need %d more gold for %s." % [price - gold, str(item.get("name", item.get("id", "")))]
+		_refresh()
 		return
 	PlayerInventory.add_var("gold", -price)
 	var item_id := str(item.get("id", ""))
@@ -116,7 +126,11 @@ func _on_buy(index: int) -> void:
 		"shop_id": _shop_id,
 		"count": count,
 	})
+	_last_message = "Bought %s." % str(item.get("name", item_id))
+	_consume_stock(index)
 	_refresh()
+	if _authored_screen != null:
+		_authored_screen.queue_redraw()
 
 
 func _clear_items() -> void:
@@ -164,7 +178,52 @@ func _current_pack_id() -> String:
 
 
 func current_items() -> Array:
-	return _shop_items.duplicate(true)
+	var out: Array = []
+	for item_v in _shop_items:
+		if typeof(item_v) != TYPE_DICTIONARY:
+			continue
+		var item: Dictionary = (item_v as Dictionary).duplicate(true)
+		var item_id := str(item.get("id", ""))
+		var def := PlayerInventory.get_item_definition(item_id)
+		if not def.is_empty():
+			if not item.has("description") or str(item.get("description", "")).strip_edges().is_empty():
+				item["description"] = str(def.get("description", ""))
+			if not item.has("name") or str(item.get("name", "")).strip_edges().is_empty():
+				item["name"] = str(def.get("name", item_id))
+		out.append(item)
+	return out
+
+
+func status_message() -> String:
+	return _last_message
+
+
+func _consume_stock(index: int) -> void:
+	if index < 0 or index >= _shop_items.size():
+		return
+	var item: Dictionary = _shop_items[index]
+	var count := maxi(1, int(item.get("count", 1)))
+	if count > 1:
+		item["count"] = count - 1
+		_shop_items[index] = item
+	else:
+		_shop_items.remove_at(index)
+
+
+func _item_tooltip(item: Dictionary, can_afford: bool) -> String:
+	var item_id := str(item.get("id", ""))
+	var item_name := str(item.get("name", item_id))
+	var price := int(item.get("price", 0))
+	var desc := str(PlayerInventory.get_item_definition(item_id).get("description", "")).strip_edges()
+	var lines: Array = [item_name, "%d gold" % price]
+	if not desc.is_empty():
+		lines.append(desc)
+	if can_afford:
+		lines.append("Click Buy to purchase.")
+	else:
+		var gold := int(PlayerInventory.get_var("gold", 0))
+		lines.append("Need %d more gold." % maxi(price - gold, 0))
+	return "\n".join(lines)
 
 
 func _build_ui() -> void:

@@ -3,6 +3,7 @@ extends Control
 const PedIO = preload("res://Space/scripts/editor/ped/ped_io.gd")
 const PedUtil = preload("res://Space/scripts/editor/ped/ped_util.gd")
 const PspIO = preload("res://Space/scripts/editor/psp/psp_io.gd")
+const ContentReferenceRefactor = preload("res://Space/scripts/editor/content_reference_refactor.gd")
 
 signal edit_projectile_requested(projectile_id: String)
 
@@ -767,6 +768,16 @@ func _id_taken(id: String) -> bool:
     return false
 
 
+func _id_taken_except(id: String, except_idx: int) -> bool:
+    for i in range(_attacks.size()):
+        if i == except_idx:
+            continue
+        var a: Dictionary = _attacks[i]
+        if str(a.get("id", "")).strip_edges() == id:
+            return true
+    return false
+
+
 func _on_del_pressed() -> void:
     if _selected_idx < 0 or _selected_idx >= _attacks.size():
         return
@@ -875,6 +886,12 @@ func _on_field_edited(field: String, kind: String, text: String) -> void:
     if _selected_idx < 0 or _selected_idx >= _attacks.size():
         return
     var a: Dictionary = _attacks[_selected_idx]
+    if field == "id":
+        var old_id := str(a.get("id", "")).strip_edges()
+        var new_id := text.strip_edges()
+        if not old_id.is_empty() and not new_id.is_empty() and old_id != new_id and not _id_taken_except(new_id, _selected_idx):
+            _rename_attack_references(old_id, new_id)
+            a = _attacks[_selected_idx]
     if kind == "int":
         a[field] = PedUtil.to_int(text, int(a.get(field, 0)))
     else:
@@ -1197,6 +1214,20 @@ func _refresh_list_row(idx: int) -> void:
 
 
 # ─── hit_frames text <-> array ──────────────────────────────────────────
+
+func _rename_attack_references(old_id: String, new_id: String) -> void:
+    for attack_v in _attacks:
+        if typeof(attack_v) != TYPE_DICTIONARY:
+            continue
+        var attack: Dictionary = attack_v
+        if str(attack.get("charged_attack_id", "")).strip_edges() == old_id:
+            attack["charged_attack_id"] = new_id
+        if str(attack.get("combo_next_id", "")).strip_edges() == old_id:
+            attack["combo_next_id"] = new_id
+    var refactor := ContentReferenceRefactor.rename_references(pack_id, "attack", old_id, new_id)
+    if not bool(refactor.get("ok", false)):
+        push_warning("[AttacksTab] attack renamed, but reference update failed: %s" % str(refactor.get("errors", [])))
+
 
 static func _hit_frames_to_text(frames: Array) -> String:
     var parts: Array = []

@@ -31,6 +31,9 @@ const DEFAULT_REGION_GRID_X: int = 128
 const DEFAULT_REGION_GRID_Y: int = 96
 const DEFAULT_REALM_GRID_X: int = 102
 const DEFAULT_REALM_GRID_Y: int = 102
+const STARTER_ROOM_ADDR: String = "start"
+const STARTER_ROOM_NAME: String = "Start Room"
+const STARTER_SOLID_BLOCK: int = 0x8
 
 
 static func sanitize_content_id(raw_name: String, fallback: String = "item") -> String:
@@ -105,6 +108,10 @@ static func region_rooms_json_path(pack_id: String, realm_id: String, region_id:
     return region_dir(pack_id, realm_id, region_id) + "rooms.json"
 
 
+static func flat_rooms_json_path(pack_id: String) -> String:
+    return user_pack_dir(pack_id) + "Rooms/rooms.json"
+
+
 static func runtime_room_addr(realm_id: String, region_id: String, room_addr: String) -> String:
     return "%s/%s/%s" % [realm_id, region_id, room_addr]
 
@@ -153,6 +160,37 @@ static func load_realm_bundle(pack_id: String, realm_id: String) -> Dictionary:
         "realm": realm,
         "regions": regions,
         "realm_id": rid,
+    }
+
+
+static func ensure_starter_world(pack_id: String) -> Dictionary:
+    var pid: String = pack_id.strip_edges()
+    var files_changed: Array = []
+    if pid.is_empty():
+        return {
+            "ok": false,
+            "error": "pack_id_empty",
+            "files_changed": files_changed,
+        }
+
+    _ensure_pack_dirs(pid)
+
+    var ok := true
+    ok = _ensure_starter_realm(pid, files_changed) and ok
+    ok = _ensure_starter_region(pid, files_changed) and ok
+    ok = _ensure_starter_region_rooms(pid, files_changed) and ok
+
+    _ensure_dir(user_pack_dir(pid) + "Rooms")
+    ok = _write_json_if_changed(flat_rooms_json_path(pid), _build_flat_runtime_rooms(pid), files_changed) and ok
+
+    return {
+        "ok": ok,
+        "pack_id": pid,
+        "realm_id": DEFAULT_REALM_ID,
+        "region_id": DEFAULT_REGION_ID,
+        "room_addr": STARTER_ROOM_ADDR,
+        "start_room": runtime_room_addr(DEFAULT_REALM_ID, DEFAULT_REGION_ID, STARTER_ROOM_ADDR),
+        "files_changed": files_changed,
     }
 
 
@@ -538,6 +576,10 @@ static func rename_room(pack_id: String, realm_id: String, region_id: String, ol
 
 static func flatten_to_runtime(pack_id: String) -> void:
     _ensure_dir(user_pack_dir(pack_id) + "Rooms")
+    _save_json(flat_rooms_json_path(pack_id), _build_flat_runtime_rooms(pack_id))
+
+
+static func _build_flat_runtime_rooms(pack_id: String) -> Dictionary:
     var pack_manifest: Dictionary = _load_pack_manifest(pack_id)
     var desired_start_realm: String = str(pack_manifest.get("start_realm", "")).strip_edges()
 
@@ -593,7 +635,7 @@ static func flatten_to_runtime(pack_id: String) -> void:
         "start_room": start_key,
         "rooms": flat_rooms,
     }
-    _save_json(user_pack_dir(pack_id) + "Rooms/rooms.json", flat)
+    return flat
 
 
 static func get_realm_start_room(pack_id: String, realm_id: String) -> String:
@@ -703,6 +745,182 @@ static func make_room_from_mask(addr: String, friendly: String, mask: Array,
     room["region_row"] = origin_row
     room["mask"] = mask.duplicate(true)
     return room
+
+
+static func _ensure_starter_realm(pack_id: String, files_changed: Array) -> bool:
+    var path := realm_json_path(pack_id, DEFAULT_REALM_ID)
+    if not FileAccess.file_exists(path):
+        return _write_json_if_changed(path, _starter_realm(), files_changed)
+
+    var realm := _load_json_dict(path)
+    if realm.is_empty():
+        realm = _starter_realm()
+    else:
+        _migrate_realm_meta(realm, DEFAULT_REALM_ID)
+        var regions: Array = []
+        var regions_v: Variant = realm.get("regions", [])
+        if typeof(regions_v) == TYPE_ARRAY:
+            regions = (regions_v as Array).duplicate(true)
+        var has_default_region := false
+        for entry_v in regions:
+            if typeof(entry_v) != TYPE_DICTIONARY:
+                continue
+            if str((entry_v as Dictionary).get("id", "")).strip_edges() == DEFAULT_REGION_ID:
+                has_default_region = true
+                break
+        if not has_default_region:
+            var free_cell := _first_free_realm_cell(regions,
+                int(realm.get("realm_grid_cells_x", DEFAULT_REALM_GRID_X)),
+                int(realm.get("realm_grid_cells_y", DEFAULT_REALM_GRID_Y)))
+            regions.append(_starter_region_entry(DEFAULT_REGION_ID, "Default", int(free_cell[0]), int(free_cell[1])))
+            realm["regions"] = regions
+        if str(realm.get("start_region", "")).strip_edges().is_empty():
+            realm["start_region"] = DEFAULT_REGION_ID
+
+    return _write_json_if_changed(path, realm, files_changed)
+
+
+static func _ensure_starter_region(pack_id: String, files_changed: Array) -> bool:
+    var path := region_json_path(pack_id, DEFAULT_REALM_ID, DEFAULT_REGION_ID)
+    var region := _starter_region()
+    if FileAccess.file_exists(path):
+        region = _load_json_dict(path)
+        if region.is_empty():
+            region = _starter_region()
+        else:
+            migrate_region_meta(region, DEFAULT_REGION_ID, str(region.get("name", "Default")))
+    return _write_json_if_changed(path, region, files_changed)
+
+
+static func _ensure_starter_region_rooms(pack_id: String, files_changed: Array) -> bool:
+    var path := region_rooms_json_path(pack_id, DEFAULT_REALM_ID, DEFAULT_REGION_ID)
+    if not FileAccess.file_exists(path):
+        return _write_json_if_changed(path, _starter_region_rooms(), files_changed)
+
+    var rooms_root := _load_json_dict(path)
+    if rooms_root.is_empty():
+        rooms_root = _starter_region_rooms()
+    else:
+        rooms_root["version"] = str(rooms_root.get("version", "1.0"))
+        rooms_root["region_id"] = DEFAULT_REGION_ID
+        var rooms: Dictionary = {}
+        var rooms_v: Variant = rooms_root.get("rooms", {})
+        if typeof(rooms_v) == TYPE_DICTIONARY:
+            rooms = rooms_v
+        if rooms.is_empty():
+            rooms[STARTER_ROOM_ADDR] = _starter_room()
+            rooms_root["start_room"] = STARTER_ROOM_ADDR
+        else:
+            for room_key_v in rooms.keys():
+                var room_v: Variant = rooms[room_key_v]
+                if typeof(room_v) == TYPE_DICTIONARY:
+                    EnvIO.migrate_room_to_layers(room_v)
+            var start_room: String = str(rooms_root.get("start_room", "")).strip_edges()
+            if start_room.is_empty() or not rooms.has(start_room):
+                var room_keys: Array = rooms.keys()
+                room_keys.sort()
+                rooms_root["start_room"] = str(room_keys[0])
+        rooms_root["rooms"] = rooms
+
+    return _write_json_if_changed(path, rooms_root, files_changed)
+
+
+static func _starter_realm() -> Dictionary:
+    var realm := default_realm(DEFAULT_REALM_ID, DEFAULT_REALM_NAME)
+    realm["start_region"] = DEFAULT_REGION_ID
+    realm["regions"] = [
+        _starter_region_entry(DEFAULT_REGION_ID, "Default", 0, 0),
+    ]
+    return realm
+
+
+static func _starter_region_entry(region_id: String, region_name: String, col: int, row: int) -> Dictionary:
+    return {
+        "id": region_id,
+        "name": region_name,
+        "col": col,
+        "row": row,
+        "span_w": 1,
+        "span_h": 1,
+    }
+
+
+static func _starter_region() -> Dictionary:
+    return default_region(DEFAULT_REGION_ID, "Default")
+
+
+static func _starter_region_rooms() -> Dictionary:
+    var rooms_root := default_region_rooms(DEFAULT_REGION_ID)
+    rooms_root["start_room"] = STARTER_ROOM_ADDR
+    var rooms: Dictionary = {}
+    rooms[STARTER_ROOM_ADDR] = _starter_room()
+    rooms_root["rooms"] = rooms
+    return rooms_root
+
+
+static func _starter_room() -> Dictionary:
+    var room := make_room_from_mask(STARTER_ROOM_ADDR, STARTER_ROOM_NAME,
+        _rect_mask(EnvIO.DEFAULT_ROOM_W_BLOCKS, EnvIO.DEFAULT_ROOM_H_BLOCKS),
+        0, 0, DEFAULT_CELL_BLOCKS_X, DEFAULT_CELL_BLOCKS_Y, 0)
+    room["entities"] = [_starter_player_spawn()]
+    _paint_starter_floor(room)
+    return room
+
+
+static func _starter_player_spawn() -> Dictionary:
+    var spawn_x := float(EnvIO.BLOCK_SIZE * 5)
+    var spawn_y := float(EnvIO.BLOCK_SIZE * (EnvIO.DEFAULT_ROOM_H_BLOCKS - 4))
+    return {
+        "type": "player_spawn",
+        "x": spawn_x,
+        "y": spawn_y,
+        "position": {
+            "x": spawn_x,
+            "y": spawn_y,
+        },
+        "properties": {
+            "instance_id": "player_spawn",
+        },
+    }
+
+
+static func _paint_starter_floor(room: Dictionary) -> void:
+    var collision_v: Variant = room.get("collision", [])
+    if typeof(collision_v) != TYPE_ARRAY:
+        return
+    var collision: Array = collision_v
+    var start_row: int = maxi(0, collision.size() - 2)
+    for row_idx in range(start_row, collision.size()):
+        var row_v: Variant = collision[row_idx]
+        if typeof(row_v) != TYPE_ARRAY:
+            continue
+        var row: Array = row_v
+        for col_idx in range(row.size()):
+            row[col_idx] = STARTER_SOLID_BLOCK
+
+
+static func _rect_mask(width_cells: int, height_cells: int) -> Array:
+    var mask: Array = []
+    for row in range(maxi(1, height_cells)):
+        for col in range(maxi(1, width_cells)):
+            mask.append([col, row])
+    return mask
+
+
+static func _first_free_realm_cell(regions: Array, grid_x: int, grid_y: int) -> Array:
+    var occupied: Dictionary = {}
+    for entry_v in regions:
+        if typeof(entry_v) != TYPE_DICTIONARY:
+            continue
+        var entry: Dictionary = entry_v
+        var col := int(entry.get("col", 0))
+        var row := int(entry.get("row", 0))
+        occupied["%d,%d" % [col, row]] = true
+    for row in range(maxi(1, grid_y)):
+        for col in range(maxi(1, grid_x)):
+            if not occupied.has("%d,%d" % [col, row]):
+                return [col, row]
+    return [0, 0]
 
 
 static func _ensure_pack_dirs(pack_id: String) -> void:
@@ -1067,6 +1285,17 @@ static func _save_json(path: String, data: Dictionary) -> bool:
         return false
     f.store_string(JSON.stringify(data, "  "))
     f.close()
+    return true
+
+
+static func _write_json_if_changed(path: String, data: Dictionary, files_changed: Array) -> bool:
+    if FileAccess.file_exists(path):
+        var existing := _load_json_dict(path)
+        if existing == data:
+            return true
+    if not _save_json(path, data):
+        return false
+    files_changed.append(path)
     return true
 
 

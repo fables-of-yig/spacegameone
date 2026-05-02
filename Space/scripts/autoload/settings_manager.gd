@@ -311,11 +311,11 @@ func _effective_input_bindings() -> Dictionary:
     var input := _ensure_section("input", {}) as Dictionary
     var bindings_v: Variant = input.get("bindings", {})
     if typeof(bindings_v) != TYPE_DICTIONARY:
-        return merged
+        return InputSetup.sanitize_binding_map(merged)
     var bindings: Dictionary = bindings_v
     for action_v in bindings.keys():
         merged[str(action_v)] = bindings[action_v]
-    return merged
+    return InputSetup.sanitize_binding_map(merged)
 
 
 func _ensure_audio_buses() -> void:

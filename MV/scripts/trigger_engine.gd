@@ -35,6 +35,7 @@ var _action_handlers: Dictionary = {}
 # Entity-scoped tags still travel in the event payload; see
 # `_cond_has_tag` / `_cond_entity_has_tag` for the payload form.
 var global_tags: Dictionary = {}
+var quest_state: Dictionary = {}
 const RESERVED_LOCAL_KEY: String = "__trigger_locals"
 var debug_history: Array = []
 var debug_enabled: bool = true
@@ -108,6 +109,7 @@ func clear() -> void:
 	_pause_reason = ""
 	_step_budget = 0
 	_persistent_rule_locals.clear()
+	quest_state.clear()
 
 
 func get_rules() -> Array:
@@ -251,6 +253,71 @@ func snapshot_global_tags() -> Dictionary:
 
 func restore_global_tags(data: Dictionary) -> void:
 	global_tags = data.duplicate() if data != null else {}
+
+
+func snapshot_runtime_state() -> Dictionary:
+	return {
+		"global_tags": global_tags.duplicate(true),
+		"quest_state": quest_state.duplicate(true),
+		"persistent_rule_locals": _persistent_rule_locals.duplicate(true),
+		"rule_enabled": _rule_enabled_snapshot(),
+	}
+
+
+func restore_runtime_state(data: Dictionary) -> void:
+	if data == null:
+		return
+	var tags_v: Variant = data.get("global_tags", null)
+	if typeof(tags_v) == TYPE_DICTIONARY:
+		global_tags = (tags_v as Dictionary).duplicate(true)
+	var locals_v: Variant = data.get("persistent_rule_locals", {})
+	_persistent_rule_locals = (locals_v as Dictionary).duplicate(true) if typeof(locals_v) == TYPE_DICTIONARY else {}
+	var quests_v: Variant = data.get("quest_state", {})
+	quest_state = (quests_v as Dictionary).duplicate(true) if typeof(quests_v) == TYPE_DICTIONARY else {}
+	var enabled_v: Variant = data.get("rule_enabled", {})
+	if typeof(enabled_v) == TYPE_DICTIONARY:
+		_restore_rule_enabled_states(enabled_v)
+
+
+func snapshot_quest_state() -> Dictionary:
+	return quest_state.duplicate(true)
+
+
+func restore_quest_state(data: Dictionary) -> void:
+	quest_state = data.duplicate(true) if data != null else {}
+
+
+func get_quest_state(quest_id: String = "") -> Dictionary:
+	var qid := quest_id.strip_edges()
+	if qid.is_empty():
+		return quest_state.duplicate(true)
+	var state_v: Variant = quest_state.get(qid, {})
+	return (state_v as Dictionary).duplicate(true) if typeof(state_v) == TYPE_DICTIONARY else {}
+
+
+func quest_status(quest_id: String) -> String:
+	return str(_ensure_quest_state(quest_id, false).get("status", "inactive"))
+
+
+func quest_stage(quest_id: String) -> String:
+	return str(_ensure_quest_state(quest_id, false).get("stage_id", ""))
+
+
+func is_quest_objective_complete(quest_id: String, stage_id: String, objective_id: String) -> bool:
+	var state := _ensure_quest_state(quest_id, false)
+	var stage := stage_id.strip_edges()
+	if stage.is_empty():
+		stage = str(state.get("stage_id", "")).strip_edges()
+	var obj := objective_id.strip_edges()
+	if state.is_empty() or stage.is_empty() or obj.is_empty():
+		return false
+	var completed_v: Variant = state.get("completed_objectives", {})
+	if typeof(completed_v) != TYPE_DICTIONARY:
+		return false
+	var stage_v: Variant = (completed_v as Dictionary).get(stage, {})
+	if typeof(stage_v) != TYPE_DICTIONARY:
+		return false
+	return bool((stage_v as Dictionary).get(obj, false))
 
 
 # ── Condition evaluation ────────────────────────────────────────────────
@@ -440,6 +507,30 @@ func _store_persistent_local(payload: Dictionary, var_name: String, value: Varia
 	_persistent_rule_locals[rule_id] = stored
 
 
+func _ensure_quest_state(quest_id: String, create: bool) -> Dictionary:
+	var qid := quest_id.strip_edges()
+	if qid.is_empty():
+		return {}
+	var state_v: Variant = quest_state.get(qid, {})
+	if typeof(state_v) == TYPE_DICTIONARY:
+		return (state_v as Dictionary).duplicate(true)
+	if not create:
+		return {}
+	return {
+		"status": "inactive",
+		"stage_id": "",
+		"completed_objectives": {},
+		"completed_stages": {},
+	}
+
+
+func _store_quest_state(quest_id: String, state: Dictionary) -> void:
+	var qid := quest_id.strip_edges()
+	if qid.is_empty():
+		return
+	quest_state[qid] = state.duplicate(true)
+
+
 func _set_active_sequence(sequence_id: int, rule: Dictionary, step: int, wait_state: String, payload: Dictionary) -> void:
 	_active_sequences[sequence_id] = {
 		"sequence_id": sequence_id,
@@ -627,6 +718,30 @@ func _find_rule_ref(rule_id: String) -> Dictionary:
 
 # ── Built-in handlers ──────────────────────────────────────────────────
 
+func _rule_enabled_snapshot() -> Dictionary:
+	var out: Dictionary = {}
+	for rule_v in _combined_rules():
+		if typeof(rule_v) != TYPE_DICTIONARY:
+			continue
+		var rule: Dictionary = rule_v
+		var rule_id := str(rule.get("id", "")).strip_edges()
+		if rule_id.is_empty():
+			continue
+		out[rule_id] = bool(rule.get("enabled", true))
+	return out
+
+
+func _restore_rule_enabled_states(states: Dictionary) -> void:
+	for rule_v in _combined_rules():
+		if typeof(rule_v) != TYPE_DICTIONARY:
+			continue
+		var rule: Dictionary = rule_v
+		var rule_id := str(rule.get("id", "")).strip_edges()
+		if rule_id.is_empty() or not states.has(rule_id):
+			continue
+		rule["enabled"] = bool(states.get(rule_id, true))
+
+
 func _register_builtins() -> void:
 	# Conditions
 	register_condition("payload_eq", _cond_payload_eq)
@@ -641,6 +756,9 @@ func _register_builtins() -> void:
 	register_condition("has_item", _cond_has_item)
 	register_condition("has_ability", _cond_has_ability)
 	register_condition("has_flag", _cond_has_flag)
+	register_condition("quest_status", _cond_quest_status)
+	register_condition("quest_stage", _cond_quest_stage)
+	register_condition("quest_objective_done", _cond_quest_objective_done)
 	register_condition("and", _cond_and)
 	register_condition("or", _cond_or)
 	register_condition("not", _cond_not)
@@ -667,6 +785,11 @@ func _register_builtins() -> void:
 	register_action("end_dialogue", _act_end_dialogue)
 	register_action("start_shop", _act_start_shop)
 	register_action("set_flag", _act_set_flag)
+	register_action("quest_start", _act_quest_start)
+	register_action("quest_set_stage", _act_quest_set_stage)
+	register_action("quest_complete_objective", _act_quest_complete_objective)
+	register_action("quest_complete_stage", _act_quest_complete_stage)
+	register_action("quest_complete", _act_quest_complete)
 	register_action("add_tag", _act_add_tag)
 	register_action("remove_tag", _act_remove_tag)
 	register_action("teleport_player", _act_teleport_player)
@@ -688,6 +811,7 @@ func _register_builtins() -> void:
 	register_action("set_door_enabled", _act_set_door_enabled)
 	register_action("set_door_locked", _act_set_door_locked)
 	register_action("save_checkpoint", _act_save_checkpoint)
+	register_action("return_to_space", _act_return_to_space)
 	register_action("return_to_overworld", _act_return_to_overworld)
 
 
@@ -760,6 +884,25 @@ func _cond_has_flag(cond: Dictionary, _payload: Dictionary) -> bool:
 	var expected: Variant = cond.get("value", true)
 	var actual: Variant = PlayerInventory.get_var("flag_" + flag_name, false)
 	return bool(actual) == bool(expected)
+
+
+func _cond_quest_status(cond: Dictionary, _payload: Dictionary) -> bool:
+	var quest_id := str(cond.get("quest_id", "")).strip_edges()
+	var expected := str(cond.get("status", "")).strip_edges()
+	return not quest_id.is_empty() and not expected.is_empty() and quest_status(quest_id) == expected
+
+
+func _cond_quest_stage(cond: Dictionary, _payload: Dictionary) -> bool:
+	var quest_id := str(cond.get("quest_id", "")).strip_edges()
+	var expected := str(cond.get("stage_id", "")).strip_edges()
+	return not quest_id.is_empty() and not expected.is_empty() and quest_stage(quest_id) == expected
+
+
+func _cond_quest_objective_done(cond: Dictionary, _payload: Dictionary) -> bool:
+	return is_quest_objective_complete(
+		str(cond.get("quest_id", "")),
+		str(cond.get("stage_id", "")),
+		str(cond.get("objective_id", "")))
 
 
 func _cond_and(cond: Dictionary, payload: Dictionary) -> bool:
@@ -905,6 +1048,101 @@ func _act_set_flag(action: Dictionary, _payload: Dictionary) -> void:
 	PlayerInventory.set_var(
 		"flag_" + action.get("name", ""),
 		action.get("value", true))
+
+
+func _act_quest_start(action: Dictionary, _payload: Dictionary) -> void:
+	var quest_id := str(action.get("quest_id", "")).strip_edges()
+	if quest_id.is_empty():
+		return
+	var state := _ensure_quest_state(quest_id, true)
+	state["status"] = "active"
+	var stage_id := str(action.get("stage_id", "")).strip_edges()
+	if not stage_id.is_empty():
+		state["stage_id"] = stage_id
+	_store_quest_state(quest_id, state)
+	fire_event("quest_started", {
+		"quest_id": quest_id,
+		"stage_id": str(state.get("stage_id", "")),
+	})
+
+
+func _act_quest_set_stage(action: Dictionary, _payload: Dictionary) -> void:
+	var quest_id := str(action.get("quest_id", "")).strip_edges()
+	var stage_id := str(action.get("stage_id", "")).strip_edges()
+	if quest_id.is_empty() or stage_id.is_empty():
+		return
+	var state := _ensure_quest_state(quest_id, true)
+	state["status"] = "active"
+	state["stage_id"] = stage_id
+	_store_quest_state(quest_id, state)
+	fire_event("quest_stage_changed", {
+		"quest_id": quest_id,
+		"stage_id": stage_id,
+	})
+
+
+func _act_quest_complete_objective(action: Dictionary, _payload: Dictionary) -> void:
+	var quest_id := str(action.get("quest_id", "")).strip_edges()
+	var objective_id := str(action.get("objective_id", "")).strip_edges()
+	if quest_id.is_empty() or objective_id.is_empty():
+		return
+	var state := _ensure_quest_state(quest_id, true)
+	state["status"] = "active"
+	var stage_id := str(action.get("stage_id", "")).strip_edges()
+	if stage_id.is_empty():
+		stage_id = str(state.get("stage_id", "")).strip_edges()
+	if stage_id.is_empty():
+		return
+	state["stage_id"] = stage_id
+	var completed_v: Variant = state.get("completed_objectives", {})
+	var completed: Dictionary = completed_v if typeof(completed_v) == TYPE_DICTIONARY else {}
+	var stage_v: Variant = completed.get(stage_id, {})
+	var stage_completed: Dictionary = stage_v if typeof(stage_v) == TYPE_DICTIONARY else {}
+	stage_completed[objective_id] = true
+	completed[stage_id] = stage_completed
+	state["completed_objectives"] = completed
+	_store_quest_state(quest_id, state)
+	fire_event("quest_objective_completed", {
+		"quest_id": quest_id,
+		"stage_id": stage_id,
+		"objective_id": objective_id,
+	})
+
+
+func _act_quest_complete_stage(action: Dictionary, _payload: Dictionary) -> void:
+	var quest_id := str(action.get("quest_id", "")).strip_edges()
+	if quest_id.is_empty():
+		return
+	var state := _ensure_quest_state(quest_id, true)
+	var stage_id := str(action.get("stage_id", "")).strip_edges()
+	if stage_id.is_empty():
+		stage_id = str(state.get("stage_id", "")).strip_edges()
+	if stage_id.is_empty():
+		return
+	var completed_v: Variant = state.get("completed_stages", {})
+	var completed: Dictionary = completed_v if typeof(completed_v) == TYPE_DICTIONARY else {}
+	completed[stage_id] = true
+	state["status"] = "active"
+	state["stage_id"] = stage_id
+	state["completed_stages"] = completed
+	_store_quest_state(quest_id, state)
+	fire_event("quest_stage_completed", {
+		"quest_id": quest_id,
+		"stage_id": stage_id,
+	})
+
+
+func _act_quest_complete(action: Dictionary, _payload: Dictionary) -> void:
+	var quest_id := str(action.get("quest_id", "")).strip_edges()
+	if quest_id.is_empty():
+		return
+	var state := _ensure_quest_state(quest_id, true)
+	state["status"] = "complete"
+	_store_quest_state(quest_id, state)
+	fire_event("quest_completed", {
+		"quest_id": quest_id,
+		"stage_id": str(state.get("stage_id", "")),
+	})
 
 
 func _act_add_tag(action: Dictionary, _payload: Dictionary) -> void:
@@ -1229,6 +1467,12 @@ func _act_return_to_overworld(action: Dictionary, _payload: Dictionary) -> void:
 			float(y_text)
 		)
 	MvGame.main.call("request_return_to_overworld", region_id, spawn_pos)
+
+
+func _act_return_to_space(_action: Dictionary, _payload: Dictionary) -> void:
+	if MvGame.main == null:
+		return
+	PlanetaryInterface.begin_launch(MvGame.main)
 
 
 func _is_optional_float(text: String) -> bool:

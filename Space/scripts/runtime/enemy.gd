@@ -175,6 +175,8 @@ func take_damage(amount: int, _from_pos = null) -> void:
         return
     hp = maxi(0, hp - amount)
     _hit_flash_timer = 0.15
+    if _sprite == null:
+        queue_redraw()
     ai_request_pose("hurt", 0.14, false, 1.0)
     enemy_damaged.emit(amount, hp)
     if hp == 0:
@@ -244,6 +246,8 @@ func _process(delta: float) -> void:
             var t := _hit_flash_timer / 0.15
             _sprite.modulate = Color(1.0, 1.0 - t, 1.0 - t, 1.0)
         elif _hit_flash_timer == 0.0:
+            queue_redraw()
+        else:
             queue_redraw()
     elif _sprite != null and _sprite.modulate != Color.WHITE:
         _sprite.modulate = Color.WHITE
@@ -359,7 +363,8 @@ func _draw() -> void:
         return
     var half := PLACEHOLDER_SIZE * 0.5
     var rect := Rect2(-half, PLACEHOLDER_SIZE)
-    draw_rect(rect, _placeholder_color)
+    var col := Color(1.0, 0.2, 0.2, 1.0) if _hit_flash_timer > 0.0 else _placeholder_color
+    draw_rect(rect, col)
     draw_rect(rect, Color(1, 1, 1, 0.8), false, 1.0)
 
 
@@ -437,6 +442,8 @@ func _ensure_contact_area() -> void:
     _contact_area.name = "TouchDamageArea"
     _contact_area.monitoring = true
     _contact_area.monitorable = true
+    _contact_area.collision_layer = 0
+    _contact_area.collision_mask = 0x7fffffff
     _contact_area.add_to_group("mv_enemy_hurt")
     _contact_shape = CollisionShape2D.new()
     _contact_area.add_child(_contact_shape)
@@ -453,6 +460,7 @@ func _sync_contact_shape() -> void:
     else:
         rect.size = PLACEHOLDER_SIZE
         _contact_shape.position = Vector2.ZERO
+    rect.size += Vector2(10.0, 10.0)
     _contact_shape.shape = rect
 
 
@@ -490,6 +498,15 @@ func _tick_contact_damage() -> void:
         if player == null or not player.has_method("take_damage"):
             continue
         player.call("take_damage", contact_damage, "enemy_contact", global_position)
+        _contact_cooldown_left = contact_cooldown
+        return
+    for player_v in get_tree().get_nodes_in_group("mv_player"):
+        var player_node := player_v as Node2D
+        if player_node == null or not player_node.has_method("take_damage"):
+            continue
+        if player_node.global_position.distance_to(global_position) > 24.0:
+            continue
+        player_node.call("take_damage", contact_damage, "enemy_contact", global_position)
         _contact_cooldown_left = contact_cooldown
         return
 

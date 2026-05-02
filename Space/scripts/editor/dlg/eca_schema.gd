@@ -26,6 +26,7 @@ const EVENT_TYPES: Array = [
     "boss_arena_lock", "boss_arena_unlock", "boss_phase", "boss_defeated",
     "projectile_explode", "bomb_explode",
     "dialogue_choice",
+    "quest_started", "quest_stage_changed", "quest_objective_completed", "quest_stage_completed", "quest_completed",
     "trigger_sequence_finished",
     "space_system_enter", "space_station_destroyed", "space_poi_interact",
     "save_game", "load_game",
@@ -62,6 +63,11 @@ const EVENT_HELP: Dictionary = {
     "projectile_explode": "Fires when an authored projectile explodes.",
     "bomb_explode": "Fires when a bomb-style explosion occurs.",
     "dialogue_choice": "Fires when the player chooses a dialogue option.",
+    "quest_started": "Fires after a trigger action starts a quest.",
+    "quest_stage_changed": "Fires after a trigger action moves a quest to a new stage.",
+    "quest_objective_completed": "Fires after a trigger action completes one quest objective.",
+    "quest_stage_completed": "Fires after a trigger action completes one quest stage.",
+    "quest_completed": "Fires after a trigger action marks a quest complete.",
     "trigger_sequence_finished": "Fires when a trigger sequence completes execution.",
     "space_system_enter": "Fires when entering a space system in the ship layer.",
     "space_station_destroyed": "Fires when a space station is destroyed.",
@@ -101,6 +107,11 @@ const EVENT_LABELS: Dictionary = {
     "projectile_explode": "When a projectile explodes",
     "bomb_explode": "When a bomb explodes",
     "dialogue_choice": "When the player picks a dialogue choice",
+    "quest_started": "When a quest starts",
+    "quest_stage_changed": "When a quest changes stage",
+    "quest_objective_completed": "When a quest objective completes",
+    "quest_stage_completed": "When a quest stage completes",
+    "quest_completed": "When a quest completes",
     "trigger_sequence_finished": "When another trigger sequence finishes",
     "space_system_enter": "When the ship enters a star system",
     "space_station_destroyed": "When a station is destroyed",
@@ -129,6 +140,15 @@ const CONDITION_TYPES: Array = [
     {"type": "has_flag", "label": "Story flag is on/off",
      "fields": [["name", "flag name", "string"], ["value", "value (true/false)", "bool"]],
      "help": "Only allow this if the named on/off story flag matches the value you choose."},
+    {"type": "quest_status", "label": "Quest status is",
+     "fields": [["quest_id", "quest id", "string"], ["status", "status", "string"]],
+     "help": "Only allow this if a quest is inactive, active, or complete."},
+    {"type": "quest_stage", "label": "Quest stage is",
+     "fields": [["quest_id", "quest id", "string"], ["stage_id", "stage id", "string"]],
+     "help": "Only allow this if the quest's current stage id matches."},
+    {"type": "quest_objective_done", "label": "Quest objective is done",
+     "fields": [["quest_id", "quest id", "string"], ["stage_id", "stage id", "string"], ["objective_id", "objective id", "string"]],
+     "help": "Only allow this after a trigger action has completed the named quest objective."},
     {"type": "var_eq", "label": "Story number equals",
      "fields": [["name", "var name", "string"], ["value", "value", "int"]],
      "help": "Only allow this if the named number variable is exactly this value. Unset vars count as 0."},
@@ -192,6 +212,21 @@ const ACTION_TYPES: Array = [
     {"type": "set_flag", "label": "Turn story flag on/off",
      "fields": [["name", "flag name", "string"], ["value", "value", "bool"]],
      "help": "Turn a named story flag on or off. Good for marking progress like met_mayor = true."},
+    {"type": "quest_start", "label": "Start quest",
+     "fields": [["quest_id", "quest id", "string"], ["stage_id", "stage id", "opt_string"]],
+     "help": "Mark a quest active. Optionally set its starting stage."},
+    {"type": "quest_set_stage", "label": "Set quest stage",
+     "fields": [["quest_id", "quest id", "string"], ["stage_id", "stage id", "string"]],
+     "help": "Move an active quest to a specific stage."},
+    {"type": "quest_complete_objective", "label": "Complete quest objective",
+     "fields": [["quest_id", "quest id", "string"], ["stage_id", "stage id", "opt_string"], ["objective_id", "objective id", "string"]],
+     "help": "Mark one objective complete. Leave stage blank to use the quest's current stage."},
+    {"type": "quest_complete_stage", "label": "Complete quest stage",
+     "fields": [["quest_id", "quest id", "string"], ["stage_id", "stage id", "opt_string"]],
+     "help": "Mark a quest stage complete. Leave stage blank to use the quest's current stage."},
+    {"type": "quest_complete", "label": "Complete quest",
+     "fields": [["quest_id", "quest id", "string"]],
+     "help": "Mark the quest complete."},
     {"type": "set_var", "label": "Set story number",
      "fields": [["name", "var name", "string"], ["value", "value", "int"]],
      "help": "Set a named number variable to an exact value."},
@@ -267,6 +302,8 @@ const ACTION_TYPES: Array = [
     {"type": "save_checkpoint", "label": "Save Checkpoint",
      "fields": [["slot", "save slot", "int"]],
      "help": "Persist the current game state to the given save slot."},
+    {"type": "return_to_space", "label": "Return To Space", "fields": [],
+     "help": "Exit the MV room layer, snapshot the planet state, and return to the ship's orbit position."},
     {"type": "return_to_overworld", "label": "Return To Overworld",
      "fields": [["region_id", "region id", "opt_string"], ["x", "spawn x", "opt_string"], ["y", "spawn y", "opt_string"]],
      "help": "Exit the MV room layer and reopen the current realm's atmosphere overworld. Leave fields blank to return above the current region; set region_id to snap to a specific region cell, or x/y to use an explicit overworld position."},
@@ -373,6 +410,21 @@ static func condition_summary(condition: Dictionary) -> String:
                 _quoted(condition.get("name", "")),
                 "on" if bool(condition.get("value", true)) else "off",
             ]
+        "quest_status":
+            return "Quest %s status is %s" % [
+                _title_from_id(str(condition.get("quest_id", "quest"))),
+                str(condition.get("status", "")),
+            ]
+        "quest_stage":
+            return "Quest %s is on stage %s" % [
+                _title_from_id(str(condition.get("quest_id", "quest"))),
+                _quoted(condition.get("stage_id", "")),
+            ]
+        "quest_objective_done":
+            return "Quest %s objective %s is done" % [
+                _title_from_id(str(condition.get("quest_id", "quest"))),
+                _quoted(condition.get("objective_id", "")),
+            ]
         "var_eq":
             return "Story number %s is %s" % [
                 _quoted(condition.get("name", "")),
@@ -450,6 +502,25 @@ static func action_summary(action: Dictionary) -> String:
                 _quoted(action.get("name", "")),
                 "on" if bool(action.get("value", true)) else "off",
             ]
+        "quest_start":
+            return "Start quest %s" % _title_from_id(str(action.get("quest_id", "quest")))
+        "quest_set_stage":
+            return "Set quest %s to stage %s" % [
+                _title_from_id(str(action.get("quest_id", "quest"))),
+                _quoted(action.get("stage_id", "")),
+            ]
+        "quest_complete_objective":
+            return "Complete quest %s objective %s" % [
+                _title_from_id(str(action.get("quest_id", "quest"))),
+                _quoted(action.get("objective_id", "")),
+            ]
+        "quest_complete_stage":
+            return "Complete quest %s stage %s" % [
+                _title_from_id(str(action.get("quest_id", "quest"))),
+                _quoted(action.get("stage_id", "current")),
+            ]
+        "quest_complete":
+            return "Complete quest %s" % _title_from_id(str(action.get("quest_id", "quest")))
         "set_var":
             return "Set story number %s to %s" % [
                 _quoted(action.get("name", "")),
@@ -543,6 +614,8 @@ static func action_summary(action: Dictionary) -> String:
             return "Play sound %s" % _title_from_id(str(action.get("name", "sound")))
         "save_checkpoint":
             return "Save checkpoint in slot %s" % str(action.get("slot", 0))
+        "return_to_space":
+            return "Return to space"
         "return_to_overworld":
             return "Return to the overworld"
         "end_dialogue":

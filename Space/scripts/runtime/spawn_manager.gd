@@ -125,6 +125,11 @@ func spawn_system_pois(sys_id: String):
     var spawned_markers: Array = []
     for i in pois.size():
         var poi_data = pois[i]
+        if typeof(poi_data) != TYPE_DICTIONARY:
+            continue
+        poi_data = (poi_data as Dictionary).duplicate(true)
+        if str(poi_data.get("type", "")).strip_edges() == "planet":
+            _enrich_planet_destination(poi_data, sys_id, i)
         var eid: String = poi_data.get("event_id", "")
 
 
@@ -169,6 +174,35 @@ func spawn_system_pois(sys_id: String):
                 if other["data"].get("name", "") == oparent:
                     entry["marker"].orbit_parent = other["marker"]
                     break
+
+
+func _enrich_planet_destination(poi_data: Dictionary, sys_id: String, poi_index: int) -> void:
+    var planet_v: Variant = poi_data.get("planet_data", {})
+    var planet_data: Dictionary = {}
+    if typeof(planet_v) == TYPE_DICTIONARY:
+        planet_data = (planet_v as Dictionary).duplicate(true)
+    var poi_name: String = str(poi_data.get("name", "planet_%d" % poi_index)).strip_edges()
+    if poi_name.is_empty():
+        poi_name = "planet_%d" % poi_index
+    planet_data["source_system"] = sys_id
+    planet_data["poi_index"] = poi_index
+    planet_data["poi_name"] = poi_name
+    if str(planet_data.get("planet_key", "")).strip_edges().is_empty():
+        var event_id: String = str(poi_data.get("event_id", "")).strip_edges()
+        var key_src := event_id if not event_id.is_empty() else poi_name
+        planet_data["planet_key"] = "%s/%s" % [sys_id, _snapshot_key_part(key_src)]
+    poi_data["planet_data"] = planet_data
+
+
+func _snapshot_key_part(value: String) -> String:
+    var out := value.strip_edges().to_lower()
+    out = out.replace("\\", "/")
+    out = out.replace("/", "_")
+    out = out.replace(" ", "_")
+    out = out.replace(":", "_")
+    if out.is_empty():
+        return "planet"
+    return out
 
 func spawn_asteroid_fields(sys_id: String):
     var host = _host()

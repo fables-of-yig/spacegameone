@@ -17,6 +17,7 @@ extends Control
 const UIPanels = preload("res://Space/scripts/ui/ui_panels.gd")
 const RegIO = preload("res://Space/scripts/editor/reg/reg_io.gd")
 const EditorUndo = preload("res://Space/scripts/editor/editor_undo.gd")
+const ContentReferenceRefactor = preload("res://Space/scripts/editor/content_reference_refactor.gd")
 
 
 @warning_ignore("unused_signal")
@@ -736,12 +737,31 @@ func _apply_name_edit(new_name: String) -> void:
     var current_name := str(room.get("friendly_name", _selected_room)).strip_edges()
     if trimmed == current_name and new_addr == _selected_room:
         return
+    var old_addr := _selected_room
     if not RegIO.rename_room(pack_id, realm_id, region_id, _selected_room, new_addr, trimmed):
         return
+    _update_room_rename_references(old_addr, new_addr)
     rooms_data = RegIO.load_region_rooms(pack_id, realm_id, region_id)
     _selected_room = new_addr
     _rebuild_cell_index()
     queue_redraw()
+
+
+func _update_room_rename_references(old_addr: String, new_addr: String) -> void:
+    var refactor := ContentReferenceRefactor.rename_room_references(
+        pack_id,
+        realm_id,
+        region_id,
+        old_addr,
+        realm_id,
+        region_id,
+        new_addr
+    )
+    if not bool(refactor.get("ok", false)):
+        push_warning("[RegionEditor] room renamed, but reference update failed: %s" % str(refactor.get("errors", [])))
+        return
+    if int(refactor.get("changed_refs", 0)) > 0:
+        RegIO.flatten_to_runtime(pack_id)
 
 
 func _hide_room_edit() -> void:

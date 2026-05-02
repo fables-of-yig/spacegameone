@@ -2,6 +2,8 @@ extends Control
 
 const EntIO = preload("res://Space/scripts/editor/ent/ent_io.gd")
 const EntTypes = preload("res://Space/scripts/editor/ent/ent_types.gd")
+const ContentReferenceIndex = preload("res://Space/scripts/editor/content_reference_index.gd")
+const ContentReferenceRefactor = preload("res://Space/scripts/editor/content_reference_refactor.gd")
 
 const BehIO = preload("res://Space/scripts/editor/beh/beh_io.gd")
 
@@ -45,6 +47,7 @@ var set_picker: Control = null
 var behavior_picker: Control = null
 var file_dialog: FileDialog = null
 var import_conflict_modal: Control = null
+var delete_confirm_dialog: ConfirmationDialog = null
 
 var _tutorial_btn: Button = null
 var _tutorial_overlay: Control = null
@@ -58,6 +61,7 @@ var _pending_import_files: PackedStringArray = PackedStringArray()
 var _pending_import_set_rel: String = ""
 var _pending_import_fresh: Array = []
 var _pending_import_overwrite: Array = []
+var _pending_delete_entity_id: String = ""
 
 const TOPBAR_H: float = 64.0
 const SIDEBAR_W: float = 280.0
@@ -116,6 +120,11 @@ func _build_layout() -> void:
     import_conflict_modal.visible = false
     add_child(import_conflict_modal)
     import_conflict_modal.chose.connect(_on_import_conflict_chose)
+
+    delete_confirm_dialog = ConfirmationDialog.new()
+    delete_confirm_dialog.title = "Delete Entity"
+    delete_confirm_dialog.confirmed.connect(_on_delete_entity_confirmed)
+    add_child(delete_confirm_dialog)
 
     behavior_picker = Control.new()
     behavior_picker.set_script(preload("res://Space/scripts/editor/ent/ent_behavior_picker.gd"))
@@ -307,8 +316,12 @@ func request_add_entity() -> void:
         Callable(self, "_create_new_entity"))
 
 func request_rename_entity(old_id: String) -> void:
+    var refs := ContentReferenceIndex.find_references(pack_id, "entity", old_id)
+    var prompt := "New id for \"%s\" (must be unique)." % old_id
+    if not refs.is_empty():
+        prompt += "\n\n%s" % _reference_warning_text(refs, "Rename will update these known typed references.")
     show_text_modal("Rename entity", old_id,
-        "New id for \"%s\" (must be unique)." % old_id,
+        prompt,
         Callable(self, "_rename_entity_to").bind(old_id))
 
 func request_edit_field(field: String, title: String, prompt: String) -> void:
@@ -321,6 +334,19 @@ func request_edit_field(field: String, title: String, prompt: String) -> void:
         Callable(self, "_set_field").bind(field))
 
 func delete_entity(id: String) -> void:
+    var refs := ContentReferenceIndex.find_references(pack_id, "entity", id)
+    if not refs.is_empty() and delete_confirm_dialog != null:
+        _pending_delete_entity_id = id
+        delete_confirm_dialog.dialog_text = _reference_warning_text(
+            refs,
+            "Delete \"%s\"? These references will break unless you update them." % id
+        )
+        delete_confirm_dialog.popup_centered(Vector2i(560, 280))
+        return
+    _delete_entity_now(id)
+
+
+func _delete_entity_now(id: String) -> void:
     var arr := get_entities()
     for i in arr.size():
         var e_v: Variant = arr[i]
@@ -342,6 +368,47 @@ func delete_entity(id: String) -> void:
             if _undo != null:
                 _undo.commit("delete entity")
             return
+
+
+func _on_delete_entity_confirmed() -> void:
+    var id := _pending_delete_entity_id
+    _pending_delete_entity_id = ""
+    if not id.is_empty():
+        _delete_entity_now(id)
+
+
+func _reference_warning_text(refs: Array, intro: String) -> String:
+    var lines := PackedStringArray()
+    lines.append(intro)
+    lines.append("")
+    lines.append("%d reference(s) found:" % refs.size())
+    var limit := mini(refs.size(), 8)
+    for i in range(limit):
+        var ref_v: Variant = refs[i]
+        if typeof(ref_v) != TYPE_DICTIONARY:
+            continue
+        var ref: Dictionary = ref_v
+        lines.append("- %s %s (%s)" % [
+            str(ref.get("source", "")),
+            str(ref.get("field", "")),
+            str(ref.get("role", "")),
+        ])
+    if refs.size() > limit:
+        lines.append("- ...and %d more." % (refs.size() - limit))
+    return "\n".join(lines)
+
+
+func _lines_to_text(value: Variant) -> String:
+    var lines := PackedStringArray()
+    for line_v in _as_array(value):
+        lines.append(str(line_v))
+    return "\n".join(lines)
+
+
+func _as_array(value: Variant) -> Array:
+    if typeof(value) == TYPE_ARRAY:
+        return value
+    return []
 
 func cycle_category() -> void:
     var e := get_selected_entity()
@@ -412,6 +479,14 @@ func _rename_entity_to(new_id: String, old_id: String) -> void:
             if _undo != null:
                 _undo.begin()
             e["id"] = new_id
+            var refactor := ContentReferenceRefactor.rename_references(pack_id, "entity", old_id, new_id)
+            if not bool(refactor.get("ok", false)):
+                push_warning("[EntEditor] entity renamed, but reference update failed: %s" % _lines_to_text(refactor.get("errors", [])))
+            elif int(refactor.get("changed_refs", 0)) > 0:
+                print("[EntEditor] updated %d entity reference(s) across %d file(s)" % [
+                    int(refactor.get("changed_refs", 0)),
+                    _as_array(refactor.get("changed_files", [])).size(),
+                ])
             if selected_entity_id == old_id:
                 selected_entity_id = new_id
             dirty = true

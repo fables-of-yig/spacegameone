@@ -100,6 +100,7 @@ var _beam_charge_timer: float = 0.0
 var _was_shoot_held: bool = false
 var _authored_melee_attack: Dictionary = {}
 var _melee_input_locked: bool = false
+var _secondary_mode_active: bool = false
 
 # ===== Bomb state (grenade launcher) =====
 var _bomb_count: int = 0
@@ -321,11 +322,36 @@ func _load_sheet_textures(pack: MvPackRef) -> void:
         var tex_path: String = _sheet_texture_path(pack, file_name)
         if tex_path.is_empty():
             continue
+        if not FileAccess.file_exists(tex_path):
+            _sheet_textures[sheet_id] = _make_placeholder_sheet(sheet_id)
+            continue
         var img := Image.new()
         var err: int = img.load(tex_path)
         if err != OK:
+            _sheet_textures[sheet_id] = _make_placeholder_sheet(sheet_id)
             continue
         _sheet_textures[sheet_id] = ImageTexture.create_from_image(img)
+
+
+func _make_placeholder_sheet(sheet_id: String) -> Texture2D:
+    var cols := maxi(1, _sheet_cols)
+    var rows := 24
+    var cell_w := maxi(1, _frame_width)
+    var cell_h := maxi(1, _frame_height)
+    var img := Image.create(cols * cell_w, rows * cell_h, false, Image.FORMAT_RGBA8)
+    img.fill(Color(0, 0, 0, 0))
+    var fill := Color(0.25, 0.85, 1.0, 1.0) if sheet_id == "base" else Color(1.0, 0.7, 0.25, 0.9)
+    var edge := Color(0.05, 0.08, 0.12, 1.0)
+    for row in range(rows):
+        for col in range(cols):
+            var origin := Vector2i(col * cell_w, row * cell_h)
+            var body := Rect2i(origin + Vector2i(maxi(1, cell_w / 4), maxi(1, cell_h / 6)), Vector2i(maxi(2, cell_w / 2), maxi(2, cell_h * 2 / 3)))
+            img.fill_rect(body, fill)
+            img.fill_rect(Rect2i(body.position, Vector2i(body.size.x, 1)), edge)
+            img.fill_rect(Rect2i(body.position + Vector2i(0, body.size.y - 1), Vector2i(body.size.x, 1)), edge)
+            img.fill_rect(Rect2i(body.position, Vector2i(1, body.size.y)), edge)
+            img.fill_rect(Rect2i(body.position + Vector2i(body.size.x - 1, 0), Vector2i(1, body.size.y)), edge)
+    return ImageTexture.create_from_image(img)
 
 
 func _ensure_layer_sprite(sheet_id: String, z_order: int) -> Sprite2D:
@@ -1008,7 +1034,8 @@ func _physics_process(delta: float) -> void:
     var has_authored_ranged_attack := not active_ranged_attack.is_empty()
     var authored_hold_behavior := _active_ranged_attack_hold_behavior(active_ranged_attack)
     var authored_full_auto := authored_hold_behavior == "full_auto"
-    var ranged_held := Input.is_action_pressed("ranged_attack") and not _melee_input_locked and not _locked
+    var secondary_held := Input.is_action_pressed("fire_secondary") and not _melee_input_locked and not _locked
+    var ranged_held := Input.is_action_pressed("ranged_attack") and not secondary_held and not _melee_input_locked and not _locked
     if _melee_input_locked or _locked:
         jump_held = false
         jump_pressed = false
@@ -1247,12 +1274,16 @@ func _physics_process(delta: float) -> void:
     if _shoot_cooldown > 0.0:
         _shoot_cooldown -= dt
     var melee_pressed := Input.is_action_just_pressed("melee_attack") and not _locked
-    var ranged_pressed := Input.is_action_just_pressed("ranged_attack") and not _melee_input_locked and not _locked
+    var ranged_pressed := Input.is_action_just_pressed("ranged_attack") and not secondary_held and not _melee_input_locked and not _locked
+    var secondary_pressed := Input.is_action_just_pressed("fire_secondary") and not _melee_input_locked and not _locked
     var authored_charge := authored_hold_behavior == "charge_release"
     var charge_feedback_active := authored_charge or not has_authored_ranged_attack
 
     if melee_pressed:
         _try_melee_attack()
+
+    if secondary_pressed:
+        _toggle_secondary_mode()
 
     if has_authored_ranged_attack:
         if authored_full_auto:
@@ -1993,6 +2024,10 @@ func _try_ranged_attack() -> void:
     if not _can_shoot():
         return
 
+    if _secondary_mode_active:
+        if _try_secondary_attack() or _shoot_cooldown > 0.0:
+            return
+
     var ranged_attack_id: String = PlayerInventory.get_ranged_attack_id()
     if not ranged_attack_id.is_empty():
         _try_fire_authored_attack(ranged_attack_id)
@@ -2006,6 +2041,56 @@ func _try_ranged_attack() -> void:
         _fire_grenade_launcher()
     else:
         _fire_beam()
+
+
+func _toggle_secondary_mode() -> void:
+    if _secondary_mode_active:
+        _secondary_mode_active = false
+        return
+    if PlayerInventory.get_secondary_attack_id().is_empty():
+        return
+    if not _secondary_has_ammo():
+        return
+    _secondary_mode_active = true
+
+
+func is_secondary_mode_active() -> bool:
+    return _secondary_mode_active
+
+
+func _try_secondary_attack() -> bool:
+    if not _can_shoot() or _shoot_cooldown > 0.0:
+        return false
+    var attack_id: String = PlayerInventory.get_secondary_attack_id()
+    if attack_id.is_empty() or PlayerInventory.get_attack_definition(attack_id).is_empty():
+        _secondary_mode_active = false
+        return false
+    var ammo_key: String = PlayerInventory.get_secondary_ammo_key()
+    var ammo_cost: int = PlayerInventory.get_secondary_ammo_cost()
+    if ammo_cost > 0:
+        if ammo_key.is_empty():
+            _secondary_mode_active = false
+            return false
+        var max_ammo := int(PlayerInventory.get_var("max_ammo_%s" % ammo_key, 0))
+        var ammo := int(PlayerInventory.get_var("ammo_%s" % ammo_key, max_ammo))
+        if max_ammo <= 0 or ammo < ammo_cost:
+            _secondary_mode_active = false
+            return false
+        PlayerInventory.set_var("ammo_%s" % ammo_key, maxi(0, ammo - ammo_cost))
+    _try_fire_authored_attack(attack_id)
+    return true
+
+
+func _secondary_has_ammo() -> bool:
+    var ammo_cost: int = PlayerInventory.get_secondary_ammo_cost()
+    if ammo_cost <= 0:
+        return true
+    var ammo_key: String = PlayerInventory.get_secondary_ammo_key()
+    if ammo_key.is_empty():
+        return false
+    var max_ammo := int(PlayerInventory.get_var("max_ammo_%s" % ammo_key, 0))
+    var ammo := int(PlayerInventory.get_var("ammo_%s" % ammo_key, max_ammo))
+    return max_ammo > 0 and ammo >= ammo_cost
 
 
 func _fire_beam() -> void:
@@ -2755,6 +2840,8 @@ func _build_interact_zone() -> void:
     s.shape = rect
     s.position = Vector2(0, -16)
     _interact_zone.add_child(s)
+    _interact_zone.collision_layer = 0
+    _interact_zone.collision_mask = 0x7fffffff
     add_child(_interact_zone)
 
 
@@ -2782,6 +2869,13 @@ func _try_interact() -> void:
             if d < best_dist:
                 best_dist = d
                 best = body
+    if best == null:
+        for node in get_tree().get_nodes_in_group("mv_interactable"):
+            if node is Node2D and node.has_method("interact"):
+                var d2: float = (node as Node2D).global_position.distance_squared_to(global_position)
+                if d2 <= 40.0 * 40.0 and d2 < best_dist:
+                    best_dist = d2
+                    best = node
     if best != null:
         best.call("interact")
         return

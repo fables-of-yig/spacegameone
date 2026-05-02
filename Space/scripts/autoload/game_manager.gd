@@ -2116,6 +2116,8 @@ func save_game(slot: int = -1) -> bool:
         "module_inventory": module_inventory, 
         "current_system": current_system, 
         "visited_systems": visited_systems, 
+        "active_pack_id": MvPackLoader.current_pack.pack_id if MvPackLoader.current_pack != null else "",
+        "planetary_state": PlanetaryInterface.snapshot_all() if PlanetaryInterface != null and PlanetaryInterface.has_method("snapshot_all") else {},
         "discovered_pois": discovered_pois, 
         "kill_count": kill_count, 
         "total_kills": total_kills, 
@@ -2184,6 +2186,10 @@ func load_game(slot: int = -1) -> bool:
     module_inventory = data.get("module_inventory", {})
     current_system = data.get("current_system", "")
     visited_systems = data.get("visited_systems", [])
+    if PlanetaryInterface != null and PlanetaryInterface.has_method("restore_all"):
+        var planetary_state_v: Variant = data.get("planetary_state", {})
+        if typeof(planetary_state_v) == TYPE_DICTIONARY:
+            PlanetaryInterface.restore_all(planetary_state_v)
     discovered_pois = data.get("discovered_pois", {})
     kill_count = data.get("kill_count", 0)
     total_kills = data.get("total_kills", 0)

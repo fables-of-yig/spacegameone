@@ -27,6 +27,9 @@ var _name_edit: LineEdit = null
 var _desc_edit: TextEdit = null
 var _slot_option: OptionButton = null
 var _weapon_edit: LineEdit = null
+var _secondary_attack_edit: LineEdit = null
+var _secondary_ammo_key_edit: LineEdit = null
+var _secondary_ammo_cost_edit: LineEdit = null
 
 # Abilities multi-select (left = pool, populated from abilities.json)
 var _abilities_header: Label = null
@@ -42,6 +45,9 @@ var _label_id: Label = null
 var _label_name: Label = null
 var _label_slot: Label = null
 var _label_weapon: Label = null
+var _label_secondary_attack: Label = null
+var _label_secondary_ammo_key: Label = null
+var _label_secondary_ammo_cost: Label = null
 var _label_desc: Label = null
 
 # Sprite
@@ -124,6 +130,12 @@ func _update_tooltips() -> void:
         EditorTooltip.show_text("Equipment slot (SOTN 7-slot layout). Only one piece can occupy each slot at a time.")
     elif _weapon_edit != null and Rect2(_weapon_edit.position, _weapon_edit.size).has_point(mp):
         EditorTooltip.show_text("Attack selector. Use an authored attack id for pack-driven combat, or beam / grenade_launcher for legacy fallback behavior.")
+    elif _secondary_attack_edit != null and Rect2(_secondary_attack_edit.position, _secondary_attack_edit.size).has_point(mp):
+        EditorTooltip.show_text("Authored attack id fired by the Secondary Fire input while this equipment is worn.")
+    elif _secondary_ammo_key_edit != null and Rect2(_secondary_ammo_key_edit.position, _secondary_ammo_key_edit.size).has_point(mp):
+        EditorTooltip.show_text("Ammo pool name consumed by secondary fire. 'missile' reads ammo_missile and max_ammo_missile.")
+    elif _secondary_ammo_cost_edit != null and Rect2(_secondary_ammo_cost_edit.position, _secondary_ammo_cost_edit.size).has_point(mp):
+        EditorTooltip.show_text("Amount of the secondary ammo pool spent per shot. Use 0 for no ammo cost.")
     elif _abilities_list != null and Rect2(_abilities_list.position, _abilities_list.size).has_point(mp):
         EditorTooltip.show_text("Abilities granted while this equipment is worn. Multi-select from the pool defined in the Abilities tab. These act as binary unlocks via has_ability().")
     elif _stat_mods_edit != null and Rect2(_stat_mods_edit.position, _stat_mods_edit.size).has_point(mp):
@@ -199,6 +211,24 @@ func _build_layout() -> void:
     _weapon_edit.placeholder_text = "beam_shot | beam | grenade_launcher | blank"
     _weapon_edit.text_changed.connect(func(t): _on_field_edited("weapon", t))
     add_child(_weapon_edit)
+
+    _label_secondary_attack = _make_label("Secondary")
+    _secondary_attack_edit = LineEdit.new()
+    _secondary_attack_edit.placeholder_text = "missile_shot | blank"
+    _secondary_attack_edit.text_changed.connect(func(t): _on_field_edited("secondary_attack", t))
+    add_child(_secondary_attack_edit)
+
+    _label_secondary_ammo_key = _make_label("Ammo key")
+    _secondary_ammo_key_edit = LineEdit.new()
+    _secondary_ammo_key_edit.placeholder_text = "missile"
+    _secondary_ammo_key_edit.text_changed.connect(func(t): _on_field_edited("secondary_ammo_key", t))
+    add_child(_secondary_ammo_key_edit)
+
+    _label_secondary_ammo_cost = _make_label("Ammo cost")
+    _secondary_ammo_cost_edit = LineEdit.new()
+    _secondary_ammo_cost_edit.placeholder_text = "1"
+    _secondary_ammo_cost_edit.text_changed.connect(func(t): _on_int_field_edited("secondary_ammo_cost", t))
+    add_child(_secondary_ammo_cost_edit)
 
     _label_desc = _make_label("Description")
     _desc_edit = TextEdit.new()
@@ -300,6 +330,9 @@ func _layout_children() -> void:
     _place_row(_label_name, _name_edit, right_x, field_x, row_y, label_w, field_w, row_h, field_h); row_y += row_h
     _place_row(_label_slot, _slot_option, right_x, field_x, row_y, label_w, field_w, row_h, field_h); row_y += row_h
     _place_row(_label_weapon, _weapon_edit, right_x, field_x, row_y, label_w, field_w, row_h, field_h); row_y += row_h
+    _place_row(_label_secondary_attack, _secondary_attack_edit, right_x, field_x, row_y, label_w, field_w, row_h, field_h); row_y += row_h
+    _place_row(_label_secondary_ammo_key, _secondary_ammo_key_edit, right_x, field_x, row_y, label_w, field_w, row_h, field_h); row_y += row_h
+    _place_row(_label_secondary_ammo_cost, _secondary_ammo_cost_edit, right_x, field_x, row_y, label_w, field_w, row_h, field_h); row_y += row_h
 
     _label_desc.position = Vector2(right_x, row_y + 3)
     _label_desc.size = Vector2(label_w, row_h)
@@ -393,6 +426,9 @@ static func _normalize_entry(src: Dictionary) -> Dictionary:
         "grants_abilities": grants,
         "stat_mods":        mods,
         "weapon":           str(src.get("weapon", "")),
+        "secondary_attack": str(src.get("secondary_attack", "")),
+        "secondary_ammo_key": str(src.get("secondary_ammo_key", "")),
+        "secondary_ammo_cost": int(src.get("secondary_ammo_cost", 1)),
         "sprite_sheet":     str(src.get("sprite_sheet", "")),
         "frame_width":      int(src.get("frame_width", 16)),
         "frame_height":     int(src.get("frame_height", 16)),
@@ -446,6 +482,9 @@ func _on_add_pressed() -> void:
         "grants_abilities": [],
         "stat_mods": {},
         "weapon": "",
+        "secondary_attack": "",
+        "secondary_ammo_key": "",
+        "secondary_ammo_cost": 1,
         "sprite_sheet": "",
         "frame_width": 16,
         "frame_height": 16,
@@ -495,6 +534,9 @@ func _apply_to_inputs() -> void:
     _desc_edit.editable = have
     _slot_option.disabled = not have
     _weapon_edit.editable = have
+    _secondary_attack_edit.editable = have
+    _secondary_ammo_key_edit.editable = have
+    _secondary_ammo_cost_edit.editable = have
     _stat_mods_edit.editable = have
     _sheet_edit.editable = have
     _fw_edit.editable = have
@@ -509,6 +551,9 @@ func _apply_to_inputs() -> void:
         _name_edit.text = ""
         _desc_edit.text = ""
         _weapon_edit.text = ""
+        _secondary_attack_edit.text = ""
+        _secondary_ammo_key_edit.text = ""
+        _secondary_ammo_cost_edit.text = ""
         _stat_mods_edit.text = ""
         _sheet_edit.text = ""
         _fw_edit.text = ""
@@ -523,6 +568,9 @@ func _apply_to_inputs() -> void:
     _name_edit.text = str(e.get("name", ""))
     _desc_edit.text = str(e.get("description", ""))
     _weapon_edit.text = str(e.get("weapon", ""))
+    _secondary_attack_edit.text = str(e.get("secondary_attack", ""))
+    _secondary_ammo_key_edit.text = str(e.get("secondary_ammo_key", ""))
+    _secondary_ammo_cost_edit.text = str(int(e.get("secondary_ammo_cost", 1)))
     _stat_mods_edit.text = _stat_mods_to_text(e.get("stat_mods", {}))
     _sheet_edit.text = str(e.get("sprite_sheet", ""))
     _fw_edit.text = str(int(e.get("frame_width", 16)))
@@ -568,6 +616,21 @@ func _on_field_edited(field: String, text: String) -> void:
     dirty = true
     if field == "id" or field == "name":
         _refresh_list_row(_selected_idx)
+
+
+func _on_int_field_edited(field: String, text: String) -> void:
+    if _suppress_events:
+        return
+    if _selected_idx < 0 or _selected_idx >= _equipment.size():
+        return
+    var e: Dictionary = _equipment[_selected_idx]
+    var t := text.strip_edges()
+    if t.is_empty() or t == "-" or t == "+":
+        e[field] = int(e.get(field, 0))
+    else:
+        e[field] = t.to_int()
+    _equipment[_selected_idx] = e
+    dirty = true
 
 
 func _on_desc_changed() -> void:

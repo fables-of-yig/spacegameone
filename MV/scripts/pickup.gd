@@ -38,7 +38,7 @@ func _ready() -> void:
 			return
 
 	collision_layer = 0
-	collision_mask = 1
+	collision_mask = 0x7fffffff
 	var shape := CollisionShape2D.new()
 	var rect := RectangleShape2D.new()
 	rect.size = PLACEHOLDER_SIZE
@@ -54,11 +54,25 @@ func _draw() -> void:
 	if _sprite != null:
 		return
 	var half := PLACEHOLDER_SIZE / 2.0
-	draw_rect(Rect2(-half, PLACEHOLDER_SIZE), Color(1.0, 0.85, 0.3, 0.9))
+	var rect := Rect2(-half, PLACEHOLDER_SIZE)
+	draw_rect(rect, _placeholder_color())
+	draw_rect(rect, Color(0.05, 0.05, 0.07, 0.9), false, 1.0)
+
+
+func _physics_process(_delta: float) -> void:
+	for body in get_overlapping_bodies():
+		if _is_player_body(body):
+			_collect()
+			return
+	for player_v in get_tree().get_nodes_in_group("mv_player"):
+		var player := player_v as Node2D
+		if player != null and player.global_position.distance_to(global_position) <= 24.0:
+			_collect()
+			return
 
 
 func _on_body_entered(body: Node2D) -> void:
-	if not body.is_in_group("player"):
+	if not _is_player_body(body):
 		return
 	_collect()
 
@@ -114,7 +128,28 @@ func _load_entity() -> Dictionary:
 	return {}
 
 
+func _placeholder_color() -> Color:
+	var item_id := str(properties.get("item_id", "")).strip_edges()
+	if item_id.is_empty():
+		return Color(1.0, 0.85, 0.3, 0.9)
+	var def := PlayerInventory.get_item_definition(item_id)
+	match str(def.get("use_effect", "")).strip_edges():
+		"heal_hp":
+			return Color(0.25, 0.95, 0.35, 0.9)
+		"add_ammo":
+			return Color(0.3, 0.7, 1.0, 0.9)
+		"max_hp_up":
+			return Color(1.0, 0.25, 0.35, 0.9)
+		"max_ammo_up":
+			return Color(0.55, 0.5, 1.0, 0.9)
+	return Color(1.0, 0.85, 0.3, 0.9)
+
+
 func _current_pack_id() -> String:
 	if MvPackLoader.current_pack != null:
 		return MvPackLoader.current_pack.pack_id
 	return "demo"
+
+
+func _is_player_body(body: Node) -> bool:
+	return body != null and (body.is_in_group("mv_player") or body.is_in_group("player"))

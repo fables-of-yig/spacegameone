@@ -132,7 +132,14 @@ const BINDING_SOURCES: Array = [
 	"dialogue.text",
 	"dialogue.choices",
 	"shop.items",
+	"shop.message",
 	"map.rooms",
+	"quest.active",
+	"quest.completed",
+	"quest.current.title",
+	"quest.current.stage_title",
+	"quest.current.status",
+	"quest.current.objectives",
 ]
 
 const BINDING_RATIOS: Array = [
@@ -160,7 +167,9 @@ const BINDING_GROUPS: Array = [
 			"room.*",
 			"dialogue.*",
 			"shop.items",
+			"shop.message",
 			"map.rooms",
+			"quest.*",
 			"game_var.*",
 		],
 	},
@@ -286,7 +295,7 @@ const HOSTS: Dictionary = {
 const KNOWN_GAPS: Array = [
 	"`open_screen` is host-routed, not a universal scene navigation system. Current hosts only support the targets listed in the host action matrix below.",
 	"`sell_item`, `unequip`, and `use_item` still rely on `action_args` conventions such as `item_id[:count]`, `slot`, or `item_id[:price]`. `equip_item` uses just `item_id`.",
-	"Pack-authored item effects currently support `heal_hp`, `max_hp_up`, `grant_ability`, `add_var`, and `set_weapon`.",
+	"Pack-authored item effects currently support `heal_hp`, `max_hp_up`, `add_gold`, `add_ammo`, `max_ammo_up`, `grant_ability`, `add_var`, `set_flag`, `add_tag`, `fire_event`, `set_weapon`, and `equip_item`.",
 	"`set_weapon` and equipment `weapon` can target authored attack ids. Legacy `beam` / `grenade_launcher` values still work as compatibility fallbacks.",
 	"Player pose authoring drives per-pose `collision_width`, `hurtbox_x/y/w/h`, and `weapon_anchor_x/y`. Enemy leaf projectiles honor the authored hurtbox area.",
 	"Authored attacks can define `charge_ticks` plus `charged_attack_id`, so hold-release charged shots are data-driven instead of beam-only.",
@@ -460,7 +469,6 @@ static func render_supported_features_markdown() -> String:
 	lines.append("")
 	for note in KNOWN_GAPS:
 		lines.append("- %s" % note)
-	lines.append("")
 	return "\n".join(lines) + "\n"
 
 

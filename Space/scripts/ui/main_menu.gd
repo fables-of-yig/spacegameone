@@ -47,7 +47,7 @@ signal test_planet_pressed
 signal play_pack_pressed(pack_id: String)
 # editor_chosen(kind, pack_id) fires after the user has picked a campaign
 # AND a sub-editor. kind is "ship" | "realm" | "entity" | "behavior" |
-# "theme" | "audio" | "player" | "trigger" | "dialogue" | "shop".
+# "theme" | "audio" | "player" | "trigger" | "dialogue" | "shop" | "quest".
 # pack_id is always the active campaign pack; "ship" now opens the pack
 # authoring hub rather than editing global SSB state.
 signal editor_chosen(kind: String, pack_id: String)
@@ -90,19 +90,17 @@ var _sub_player_rect: Rect2 = Rect2()
 var _sub_trigger_rect: Rect2 = Rect2()
 var _sub_dialogue_rect: Rect2 = Rect2()
 var _sub_shop_rect: Rect2 = Rect2()
+var _sub_quest_rect: Rect2 = Rect2()
 var _sub_back_rect: Rect2 = Rect2()
 
 
 
 func _ready():
-    size = get_viewport_rect().size
-    set_anchors_preset(PRESET_FULL_RECT)
+    set_anchors_and_offsets_preset(PRESET_FULL_RECT)
     process_mode = PROCESS_MODE_ALWAYS
     _authored_screen = Control.new()
     _authored_screen.set_script(AuthoredScreenRuntime)
-    _authored_screen.set_anchors_preset(PRESET_FULL_RECT)
-    _authored_screen.position = Vector2.ZERO
-    _authored_screen.size = size
+    _authored_screen.set_anchors_and_offsets_preset(PRESET_FULL_RECT)
     _authored_screen.visible = false
     add_child(_authored_screen)
     _authored_screen.action_requested.connect(_on_authored_action)
@@ -152,10 +150,9 @@ func _notification(what: int) -> void:
 
 
 func _layout_runtime_controls() -> void:
-    size = get_viewport_rect().size
+    set_anchors_and_offsets_preset(PRESET_FULL_RECT)
     if _authored_screen != null:
-        _authored_screen.position = Vector2.ZERO
-        _authored_screen.size = size
+        _authored_screen.set_anchors_and_offsets_preset(PRESET_FULL_RECT)
 
 func _input(event):
     if not visible:
@@ -333,6 +330,9 @@ func _handle_click(pos: Vector2):
             return
         if _sub_shop_rect.has_point(pos):
             _choose_subeditor("shop")
+            return
+        if _sub_quest_rect.has_point(pos):
+            _choose_subeditor("quest")
             return
         if _sub_back_rect.has_point(pos):
             _editor_modal = EditorModal.CAMPAIGN_PICKER
@@ -999,13 +999,13 @@ func _draw_subeditor_chooser(font: Font, alpha: float):
 
     var mouse_pos = get_local_mouse_position()
 
-    var btn_w: float = 220.0
+    var btn_w: float = 180.0
     var btn_h: float = 140.0
     var btn_gap: float = 28.0
     var row_v_gap: float = 72.0
     # Row 1: 5 buttons, Row 2: 5 buttons — fits inside the 1280px panel.
     var row1_count: int = 5
-    var row2_count: int = 5
+    var row2_count: int = 6
     var row1_total_w: float = btn_w * row1_count + btn_gap * (row1_count - 1)
     var row2_total_w: float = btn_w * row2_count + btn_gap * (row2_count - 1)
     var row1_x: float = panel_x + (panel_w - row1_total_w) * 0.5
@@ -1023,6 +1023,7 @@ func _draw_subeditor_chooser(font: Font, alpha: float):
     _sub_trigger_rect = Rect2(row2_x + (btn_w + btn_gap) * 2, row2_y, btn_w, btn_h)
     _sub_dialogue_rect = Rect2(row2_x + (btn_w + btn_gap) * 3, row2_y, btn_w, btn_h)
     _sub_shop_rect = Rect2(row2_x + (btn_w + btn_gap) * 4, row2_y, btn_w, btn_h)
+    _sub_quest_rect = Rect2(row2_x + (btn_w + btn_gap) * 5, row2_y, btn_w, btn_h)
 
     _draw_chooser_btn(font, _sub_ship_rect, "CONTENT",
         _sub_ship_rect.has_point(mouse_pos), alpha,
@@ -1054,6 +1055,9 @@ func _draw_subeditor_chooser(font: Font, alpha: float):
     _draw_chooser_btn(font, _sub_shop_rect, "SHOP",
         _sub_shop_rect.has_point(mouse_pos), alpha,
         Color(0.8, 0.7, 0.4), Color(1.0, 0.9, 0.6))
+    _draw_chooser_btn(font, _sub_quest_rect, "QUEST",
+        _sub_quest_rect.has_point(mouse_pos), alpha,
+        Color(0.55, 0.82, 0.35), Color(0.82, 1.0, 0.62))
 
     # Red X close (top-right of panel) — replaces the old BACK + CANCEL
     # buttons. Reuses _sub_back_rect so the existing click handler dispatches

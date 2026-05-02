@@ -230,7 +230,7 @@ func _build_layout() -> void:
 
     _label_use_effect = _make_label("Use effect")
     _use_effect_edit = LineEdit.new()
-    _use_effect_edit.placeholder_text = "heal_hp|max_hp_up|grant_ability|add_var|set_weapon"
+    _use_effect_edit.placeholder_text = "heal_hp|max_hp_up|grant_ability|equip_item|set_weapon"
     _use_effect_edit.text_changed.connect(func(t): _on_field_edited("use_effect", t))
     add_child(_use_effect_edit)
 

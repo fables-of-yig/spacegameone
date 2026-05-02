@@ -21,7 +21,7 @@ const DESIGN_VIEWPORT_SIZE := Vector2(480.0, 272.0)
 
 
 func _ready() -> void:
-    mouse_filter = MOUSE_FILTER_STOP
+    _apply_mouse_filter()
     _sync_host_rect()
     set_process(true)
 
@@ -37,6 +37,7 @@ func load_screen(id: String, data: Dictionary, source: RefCounted) -> void:
     _tab_state.clear()
     _binding_issues_reported.clear()
     _seed_tab_state(screen_data)
+    _apply_mouse_filter()
     visible = not screen_data.is_empty()
     queue_redraw()
 
@@ -57,6 +58,14 @@ func has_screen() -> bool:
     return not screen_data.is_empty()
 
 
+func _apply_mouse_filter() -> void:
+    mouse_filter = MOUSE_FILTER_IGNORE if _is_display_only_hud() else MOUSE_FILTER_STOP
+
+
+func _is_display_only_hud() -> bool:
+    return screen_id == "hud_mv" or screen_id == "hud_space" or screen_id == "hud"
+
+
 func _process(_delta: float) -> void:
     _sync_host_rect()
     if visible and not screen_data.is_empty():
@@ -64,12 +73,13 @@ func _process(_delta: float) -> void:
 
 
 func _draw() -> void:
-    if screen_data.is_empty():
+    if screen_data.is_empty() or not is_visible_in_tree():
         return
     _sync_host_rect()
     _refresh_layout_metrics()
     _interactive.clear()
     _draw_element(screen_data, Vector2.ZERO)
+    _draw_hover_tooltip()
 
 
 func _gui_input(event: InputEvent) -> void:
@@ -401,12 +411,14 @@ func _draw_list(rect: Rect2, props: Dictionary) -> void:
                 UIPanels.text_color("body"))
             baseline += line_h
         if not item_action_id.is_empty():
+            var enabled := _item_enabled(items[i], props)
             _interactive.append({
                 "id": "%s::item::%d" % [str(props.get("bind_array", "")), i],
                 "rect": line_rect,
-                "enabled": true,
+                "enabled": enabled,
                 "action_id": item_action_id,
                 "action_args": _item_action_arg(items[i], i, props),
+                "tooltip": _item_tooltip(items[i], props),
             })
         y += item_h + spacing
     if items.is_empty():
@@ -440,19 +452,21 @@ func _draw_grid(rect: Rect2, props: Dictionary) -> void:
             if cell.end.x > rect.end.x or cell.end.y > rect.end.y:
                 continue
             var occupied := idx < items.size()
-            draw_rect(cell, Color(0.16, 0.18, 0.24, 1.0) if occupied else Color(0.1, 0.11, 0.15, 0.7))
+            var enabled := occupied and _item_enabled(items[idx], props)
+            draw_rect(cell, Color(0.16, 0.18, 0.24, 1.0) if occupied and enabled else (Color(0.15, 0.13, 0.13, 0.9) if occupied else Color(0.1, 0.11, 0.15, 0.7)))
             draw_rect(cell, Color(0.35, 0.45, 0.65, 0.8), false, maxf(_scaled_value(1.0), 1.0))
             if occupied:
                 draw_string(font, Vector2(cell.position.x + _scaled_value(4.0), cell.position.y + cell.size.y * 0.5 + _scaled_value(4.0)),
                     _grid_text(items[idx]), HORIZONTAL_ALIGNMENT_LEFT, int(cell.size.x - _scaled_value(8.0)), font_size,
-                    UIPanels.text_color("body"))
+                    UIPanels.text_color("body") if enabled else UIPanels.text_color("dim"))
                 if not item_action_id.is_empty():
                     _interactive.append({
                         "id": "%s::cell::%d" % [str(props.get("bind_array", "")), idx],
                         "rect": cell,
-                        "enabled": true,
+                        "enabled": enabled,
                         "action_id": item_action_id,
                         "action_args": _item_action_arg(items[idx], idx, props),
+                        "tooltip": _item_tooltip(items[idx], props),
                     })
             idx += 1
     if not issue_text.is_empty():
@@ -577,6 +591,45 @@ func _array_binding_result(binding: String, context: String) -> Dictionary:
     return {"items": _array_like_value(binding), "issue": ""}
 
 
+func _draw_hover_tooltip() -> void:
+    if _hovered_element_id.is_empty():
+        return
+    var tooltip := ""
+    var hovered_rect := Rect2()
+    for entry_v in _interactive:
+        if typeof(entry_v) != TYPE_DICTIONARY:
+            continue
+        var entry: Dictionary = entry_v
+        if str(entry.get("id", "")) != _hovered_element_id:
+            continue
+        tooltip = str(entry.get("tooltip", "")).strip_edges()
+        hovered_rect = entry.get("rect", Rect2())
+        break
+    if tooltip.is_empty():
+        return
+    var font := ThemeDB.fallback_font
+    var font_size := _scaled_font_size(11)
+    var lines := tooltip.split("\n", false)
+    var max_w := 0.0
+    for line_v in lines:
+        max_w = maxf(max_w, font.get_string_size(str(line_v), HORIZONTAL_ALIGNMENT_LEFT, -1, font_size).x)
+    var pad := _scaled_value(8.0)
+    var line_h := float(font_size) + _scaled_value(4.0)
+    var box_size := Vector2(max_w + pad * 2.0, float(lines.size()) * line_h + pad * 2.0)
+    var pos := hovered_rect.position + Vector2(0.0, hovered_rect.size.y + _scaled_value(6.0))
+    if pos.x + box_size.x > size.x:
+        pos.x = maxf(_scaled_value(4.0), size.x - box_size.x - _scaled_value(4.0))
+    if pos.y + box_size.y > size.y:
+        pos.y = maxf(_scaled_value(4.0), hovered_rect.position.y - box_size.y - _scaled_value(6.0))
+    var box := Rect2(pos, box_size)
+    UIPanels.draw_panel(self, box, Color(1.0, 1.0, 1.0, 0.98), UIPanels.PanelVariant.DARK)
+    var baseline := box.position.y + pad + float(font_size)
+    for line_v in lines:
+        draw_string(font, Vector2(box.position.x + pad, baseline), str(line_v),
+            HORIZONTAL_ALIGNMENT_LEFT, int(box.size.x - pad * 2.0), font_size, UIPanels.text_color("body"))
+        baseline += line_h
+
+
 func _binding_is_resolved(binding: String) -> bool:
     if binding.is_empty() or data_source == null:
         return false
@@ -601,7 +654,11 @@ func _item_text(item: Variant) -> String:
         if d.has("text"):
             return str(d.get("text", ""))
         if d.has("name"):
-            return str(d.get("name", ""))
+            var name := str(d.get("name", ""))
+            if d.has("price"):
+                var count_suffix := (" x%d" % int(d.get("count", 1))) if int(d.get("count", 1)) > 1 else ""
+                return "%s%s - %d gold" % [name, count_suffix, int(d.get("price", 0))]
+            return name
         return JSON.stringify(d)
     return str(item)
 
@@ -624,6 +681,47 @@ func _item_action_arg(item: Variant, index: int, props: Dictionary) -> String:
         if d.has("key"):
             return str(d.get("key", ""))
     return _item_text(item)
+
+
+func _item_enabled(item: Variant, props: Dictionary) -> bool:
+    if str(props.get("item_action_id", "")) != "buy_item":
+        return true
+    if typeof(item) != TYPE_DICTIONARY:
+        return true
+    var d: Dictionary = item
+    var price := int(d.get("price", 0))
+    if price <= 0:
+        return true
+    if data_source == null:
+        return false
+    var gold_v: Variant = data_source.resolve("game_var.gold")
+    if gold_v == null:
+        return false
+    return int(gold_v) >= price
+
+
+func _item_tooltip(item: Variant, props: Dictionary) -> String:
+    var action_id := str(props.get("item_action_id", ""))
+    if typeof(item) != TYPE_DICTIONARY:
+        return str(item)
+    var d: Dictionary = item
+    var lines: Array = []
+    var name := str(d.get("name", d.get("id", d.get("key", "Item"))))
+    lines.append(name)
+    if d.has("price"):
+        lines.append("%d gold" % int(d.get("price", 0)))
+    var desc := str(d.get("description", "")).strip_edges()
+    if not desc.is_empty():
+        lines.append(desc)
+    if action_id == "buy_item":
+        if _item_enabled(item, props):
+            lines.append("Click to buy.")
+        else:
+            var gold := int(data_source.resolve("game_var.gold")) if data_source != null and data_source.resolve("game_var.gold") != null else 0
+            lines.append("Need %d more gold." % maxi(int(d.get("price", 0)) - gold, 0))
+    elif action_id == "sell_item":
+        lines.append("Click to sell.")
+    return "\n".join(lines)
 
 
 func _is_tab_visible(props: Dictionary) -> bool:

@@ -2,6 +2,8 @@ extends Control
 
 const BehIO = preload("res://Space/scripts/editor/beh/beh_io.gd")
 const BehTypes = preload("res://Space/scripts/editor/beh/beh_types.gd")
+const ContentReferenceIndex = preload("res://Space/scripts/editor/content_reference_index.gd")
+const ContentReferenceRefactor = preload("res://Space/scripts/editor/content_reference_refactor.gd")
 
 # Entity behavior editor main controller. Owns behaviors.json for the
 # active pack, the currently-selected behavior, and the current node
@@ -32,12 +34,14 @@ var text_modal: Control = null
 var type_picker: Control = null
 var leaf_picker: Control = null
 var enum_picker: Control = null
+var delete_confirm_dialog: ConfirmationDialog = null
 
 var _tutorial_btn: Button = null
 var _tutorial_overlay: Control = null
 
 var _skip_close_frame: bool = true
 var _modal_callback: Callable = Callable()
+var _pending_delete_behavior_id: String = ""
 
 var _undo: RefCounted = null
 
@@ -121,6 +125,11 @@ func _build_layout() -> void:
     add_child(enum_picker)
     enum_picker.picked.connect(_on_enum_picked)
     enum_picker.cancelled.connect(_on_enum_cancelled)
+
+    delete_confirm_dialog = ConfirmationDialog.new()
+    delete_confirm_dialog.title = "Delete Behavior"
+    delete_confirm_dialog.confirmed.connect(_on_delete_behavior_confirmed)
+    add_child(delete_confirm_dialog)
 
     text_modal = Control.new()
     text_modal.set_script(preload("res://Space/scripts/editor/env/env_text_modal.gd"))
@@ -289,8 +298,12 @@ func request_add_behavior() -> void:
         Callable(self, "_create_new_behavior"))
 
 func request_rename_behavior(old_id: String) -> void:
+    var refs := ContentReferenceIndex.find_references(pack_id, "behavior", old_id)
+    var prompt := "New id for \"%s\" (must be unique)." % old_id
+    if not refs.is_empty():
+        prompt += "\n\n%s" % _reference_warning_text(refs, "Rename will update these known typed references.")
     show_text_modal("Rename behavior", old_id,
-        "New id for \"%s\" (must be unique)." % old_id,
+        prompt,
         Callable(self, "_rename_behavior_to").bind(old_id))
 
 func request_edit_behavior_field(field: String, title: String, prompt: String) -> void:
@@ -302,6 +315,19 @@ func request_edit_behavior_field(field: String, title: String, prompt: String) -
         Callable(self, "_set_behavior_field").bind(field))
 
 func delete_behavior(id: String) -> void:
+    var refs := ContentReferenceIndex.find_references(pack_id, "behavior", id)
+    if not refs.is_empty() and delete_confirm_dialog != null:
+        _pending_delete_behavior_id = id
+        delete_confirm_dialog.dialog_text = _reference_warning_text(
+            refs,
+            "Delete \"%s\"? These references will break unless you update them." % id
+        )
+        delete_confirm_dialog.popup_centered(Vector2i(560, 280))
+        return
+    _delete_behavior_now(id)
+
+
+func _delete_behavior_now(id: String) -> void:
     var arr := get_behaviors()
     for i in arr.size():
         var b_v: Variant = arr[i]
@@ -323,6 +349,47 @@ func delete_behavior(id: String) -> void:
             if _undo != null:
                 _undo.commit("delete behavior")
             return
+
+
+func _on_delete_behavior_confirmed() -> void:
+    var id := _pending_delete_behavior_id
+    _pending_delete_behavior_id = ""
+    if not id.is_empty():
+        _delete_behavior_now(id)
+
+
+func _reference_warning_text(refs: Array, intro: String) -> String:
+    var lines := PackedStringArray()
+    lines.append(intro)
+    lines.append("")
+    lines.append("%d reference(s) found:" % refs.size())
+    var limit := mini(refs.size(), 8)
+    for i in range(limit):
+        var ref_v: Variant = refs[i]
+        if typeof(ref_v) != TYPE_DICTIONARY:
+            continue
+        var ref: Dictionary = ref_v
+        lines.append("- %s %s (%s)" % [
+            str(ref.get("source", "")),
+            str(ref.get("field", "")),
+            str(ref.get("role", "")),
+        ])
+    if refs.size() > limit:
+        lines.append("- ...and %d more." % (refs.size() - limit))
+    return "\n".join(lines)
+
+
+func _lines_to_text(value: Variant) -> String:
+    var lines := PackedStringArray()
+    for line_v in _as_array(value):
+        lines.append(str(line_v))
+    return "\n".join(lines)
+
+
+func _as_array(value: Variant) -> Array:
+    if typeof(value) == TYPE_ARRAY:
+        return value
+    return []
 
 func _suggest_new_behavior_id() -> String:
     var arr := get_behaviors()
@@ -380,6 +447,14 @@ func _rename_behavior_to(new_id: String, old_id: String) -> void:
             if _undo != null:
                 _undo.begin()
             b["id"] = new_id
+            var refactor := ContentReferenceRefactor.rename_references(pack_id, "behavior", old_id, new_id)
+            if not bool(refactor.get("ok", false)):
+                push_warning("[BehEditor] behavior renamed, but reference update failed: %s" % _lines_to_text(refactor.get("errors", [])))
+            elif int(refactor.get("changed_refs", 0)) > 0:
+                print("[BehEditor] updated %d behavior reference(s) across %d file(s)" % [
+                    int(refactor.get("changed_refs", 0)),
+                    _as_array(refactor.get("changed_files", [])).size(),
+                ])
             if selected_behavior_id == old_id:
                 selected_behavior_id = new_id
             dirty = true

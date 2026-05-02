@@ -3,6 +3,7 @@ extends Control
 const UIPanels := preload("res://Space/scripts/ui/ui_panels.gd")
 const PedIO := preload("res://Space/scripts/editor/ped/ped_io.gd")
 const EcaSchema := preload("res://Space/scripts/editor/dlg/eca_schema.gd")
+const TriggerRecipes := preload("res://Space/scripts/editor/dlg/trigger_recipes.gd")
 const EditorUndoLib = preload("res://Space/scripts/editor/editor_undo.gd")
 const DlgConditionsListFormLib := preload("res://Space/scripts/editor/dlg/conditions_list_form.gd")
 const DlgActionsFormLib := preload("res://Space/scripts/editor/dlg/actions_form.gd")
@@ -59,7 +60,6 @@ const MODAL_MARGIN_TOP: float = 44.0
 const MODAL_MARGIN_BOTTOM: float = 18.0
 const PANEL_INSET: float = 14.0
 
-
 func request_close() -> void:
     visible = false
     closed.emit()
@@ -68,6 +68,7 @@ func request_close() -> void:
 func open(pack_id: String) -> void:
     _pack_id = pack_id
     _save_callback = Callable()
+    _sync_pack_context()
     _set_root_value(PedIO.load_triggers(pack_id))
 
 
@@ -85,6 +86,7 @@ func open_with_rules(pack_id: String, rules: Array, save_callback: Callable = Ca
 func open_with_root(pack_id: String, root_value: Variant, save_callback: Callable = Callable()) -> void:
     _pack_id = pack_id
     _save_callback = save_callback
+    _sync_pack_context()
     _set_root_value(root_value)
 
 
@@ -125,6 +127,13 @@ func _ready() -> void:
     _build_ui()
     if MvTriggerEngine != null and MvTriggerEngine.has_signal("debug_state_changed") and not MvTriggerEngine.debug_state_changed.is_connected(_on_runtime_debug_changed):
         MvTriggerEngine.debug_state_changed.connect(_on_runtime_debug_changed)
+
+
+func _sync_pack_context() -> void:
+    if _cond_form != null and _cond_form.has_method("set_pack_id"):
+        _cond_form.set_pack_id(_pack_id)
+    if _action_form != null and _action_form.has_method("set_pack_id"):
+        _action_form.set_pack_id(_pack_id)
 
 
 func _process(_delta: float) -> void:
@@ -189,6 +198,21 @@ func _build_ui() -> void:
     add_rule_btn.tooltip_text = "Add a new: When this happens, if these checks pass, do these actions."
     add_rule_btn.pressed.connect(_on_add_rule)
     btn_row.add_child(add_rule_btn)
+
+    var recipe_btn := MenuButton.new()
+    recipe_btn.text = "Recipe"
+    recipe_btn.tooltip_text = "Insert a ready-made natural-language trigger pattern into the current folder. Recipes use pack ids where possible and stay editable afterward."
+    var recipe_popup := recipe_btn.get_popup()
+    recipe_popup.add_item("When the player picks up a key, unlock a door", TriggerRecipes.PICKUP_UNLOCKS_GATE)
+    recipe_popup.add_item("When the player talks to an NPC, start a conversation", TriggerRecipes.NPC_STARTS_DIALOGUE)
+    recipe_popup.add_item("When the player enters a boss zone, run the intro", TriggerRecipes.BOSS_INTRO)
+    recipe_popup.add_item("When a boss is defeated, reward the player", TriggerRecipes.BOSS_DEFEATED)
+    recipe_popup.add_item("When a UI button is pressed, fire a story event", TriggerRecipes.UI_BUTTON_EVENT)
+    recipe_popup.add_item("When the player enters a zone, start a quest", TriggerRecipes.QUEST_START_ON_ZONE)
+    recipe_popup.add_item("When the player picks up an item, complete a quest objective", TriggerRecipes.QUEST_OBJECTIVE_ON_PICKUP)
+    recipe_popup.add_item("When a boss is defeated, complete a quest", TriggerRecipes.QUEST_COMPLETE_ON_BOSS)
+    recipe_popup.id_pressed.connect(_on_recipe_selected)
+    btn_row.add_child(recipe_btn)
 
     var dup_rule_btn := Button.new()
     dup_rule_btn.text = "Duplicate"
@@ -364,6 +388,8 @@ func _build_ui() -> void:
     cond_hint.add_theme_color_override("font_color", Color(0.6, 0.7, 0.8))
     _detail.add_child(cond_hint)
     _cond_form = DlgConditionsListFormLib.new()
+    if _cond_form.has_method("set_pack_id"):
+        _cond_form.set_pack_id(_pack_id)
     _cond_form.changed.connect(_on_rule_field_changed)
     _detail.add_child(_cond_form)
 
@@ -375,6 +401,8 @@ func _build_ui() -> void:
     act_hint.add_theme_color_override("font_color", Color(0.6, 0.7, 0.8))
     _detail.add_child(act_hint)
     _action_form = DlgActionsFormLib.new()
+    if _action_form.has_method("set_pack_id"):
+        _action_form.set_pack_id(_pack_id)
     _action_form.changed.connect(_on_rule_field_changed)
     _detail.add_child(_action_form)
 
@@ -950,6 +978,42 @@ func _on_add_rule() -> void:
     _rebuild_list()
     if _undo != null:
         _undo.commit("add trigger rule")
+
+
+func _on_recipe_selected(recipe_id: int) -> void:
+    if not _flush_detail():
+        return
+    var recipe := TriggerRecipes.build_recipe_rule(recipe_id, _pack_id)
+    if recipe.is_empty():
+        status_changed.emit("Recipe unavailable for this pack")
+        return
+    if _undo != null:
+        _undo.begin()
+    var rules := _ensure_current_rules_array()
+    recipe["id"] = _make_unique_rule_id(str(recipe.get("id", "recipe_rule")))
+    rules.append(recipe)
+    _selected = rules.size() - 1
+    _mark_dirty()
+    _rebuild_list()
+    status_changed.emit("Recipe inserted: %s" % str(recipe.get("name", recipe.get("id", "rule"))))
+    if _undo != null:
+        _undo.commit("insert trigger recipe")
+
+
+func _ensure_current_rules_array() -> Array:
+    if _current_library_idx < 0:
+        if typeof(_root.get("triggers", [])) != TYPE_ARRAY:
+            _root["triggers"] = []
+        return _root["triggers"]
+    if _current_folder_path.is_empty():
+        var lib := _current_library()
+        if typeof(lib.get("triggers", [])) != TYPE_ARRAY:
+            lib["triggers"] = []
+        return lib["triggers"]
+    var folder := _current_folder()
+    if typeof(folder.get("triggers", [])) != TYPE_ARRAY:
+        folder["triggers"] = []
+    return folder["triggers"]
 
 
 func _on_delete_rule() -> void:

@@ -70,6 +70,17 @@ static func user_sheet_path_for_file(pack_id: String, file_name: String) -> Stri
     return user_sprites_dir(pack_id) + file_name
 
 
+# Creates missing player sprite authoring files from baked starter data.
+# Existing user files are never changed and no shipped/demo files are read.
+static func ensure_starter_player_sprites(pack_id: String) -> Array:
+    var changed: Array = []
+    _ensure_dir(user_sprites_dir(pack_id))
+    _write_missing_json(user_frames_path(pack_id), baked_starter_frames_data(), changed)
+    _write_missing_json(user_poses_path(pack_id), baked_starter_poses_data(), changed)
+    _write_missing_starter_sheet(user_sheet_path(pack_id), changed)
+    return changed
+
+
 # Resolves to the user layer if present, otherwise falls back to the
 # shipped layer. Used by the editor to display whatever sheet the
 # runtime would actually load.
@@ -449,6 +460,10 @@ static func default_frames_data() -> Dictionary:
     var shipped_demo: Dictionary = _read_json(shipped_pack_dir(SHIPPED_SEED_PACK) + "Sprites/player_frames.json")
     if not shipped_demo.is_empty():
         return shipped_demo
+    return baked_starter_frames_data()
+
+
+static func baked_starter_frames_data() -> Dictionary:
     return {
         "frame_width": DEFAULT_FRAME_W,
         "frame_height": DEFAULT_FRAME_H,
@@ -464,6 +479,10 @@ static func default_poses_data() -> Dictionary:
     var shipped_demo: Dictionary = _read_json(shipped_pack_dir(SHIPPED_SEED_PACK) + "Sprites/player_poses.json")
     if not shipped_demo.is_empty():
         return shipped_demo
+    return baked_starter_poses_data()
+
+
+static func baked_starter_poses_data() -> Dictionary:
     return {"poses": _starter_pose_entries()}
 
 
@@ -1106,6 +1125,65 @@ static func _write_json(path: String, data: Dictionary) -> bool:
     f.store_string(JSON.stringify(data, "  "))
     f.close()
     return true
+
+
+static func _write_missing_json(path: String, data: Dictionary, changed: Array) -> bool:
+    if FileAccess.file_exists(path):
+        return false
+    if not _write_json(path, data):
+        return false
+    changed.append(path)
+    return true
+
+
+static func _write_missing_starter_sheet(path: String, changed: Array) -> bool:
+    if FileAccess.file_exists(path):
+        return false
+    var slash := path.rfind("/")
+    if slash > 0:
+        DirAccess.make_dir_recursive_absolute(path.substr(0, slash))
+    var img := _create_starter_sheet_image()
+    var err := img.save_png(path)
+    if err != OK:
+        push_error("PspIO: cannot write starter sheet '%s' (err=%d)" % [path, err])
+        return false
+    changed.append(path)
+    return true
+
+
+static func _create_starter_sheet_image() -> Image:
+    var sheet_w := DEFAULT_FRAME_W * DEFAULT_SHEET_COLS
+    var sheet_h := DEFAULT_FRAME_H * DEFAULT_SHEET_COLS
+    var img := Image.create(sheet_w, sheet_h, false, Image.FORMAT_RGBA8)
+    img.fill(Color(0, 0, 0, 0))
+    for i in range(DEFAULT_SHEET_COLS * DEFAULT_SHEET_COLS):
+        var cell_x := (i % DEFAULT_SHEET_COLS) * DEFAULT_FRAME_W
+        var cell_y := int(i / DEFAULT_SHEET_COLS) * DEFAULT_FRAME_H
+        _draw_starter_cell(img, cell_x, cell_y, i)
+    return img
+
+
+static func _draw_starter_cell(img: Image, cell_x: int, cell_y: int, index: int) -> void:
+    var suit := Color(0.20, 0.72, 0.95, 1.0)
+    var visor := Color(1.0, 0.86, 0.28, 1.0)
+    var trim := Color(0.08, 0.16, 0.24, 1.0)
+    var shade := Color(0.05, 0.40, 0.62, 1.0)
+    var pulse := float(index % 4) * 0.04
+    _fill_rect_pixels(img, Rect2i(cell_x + 19, cell_y + 7, 12, 9), suit.lightened(pulse))
+    _fill_rect_pixels(img, Rect2i(cell_x + 22, cell_y + 10, 9, 3), visor)
+    _fill_rect_pixels(img, Rect2i(cell_x + 17, cell_y + 16, 16, 17), suit)
+    _fill_rect_pixels(img, Rect2i(cell_x + 20, cell_y + 19, 10, 10), shade)
+    _fill_rect_pixels(img, Rect2i(cell_x + 14, cell_y + 18, 5, 12), trim)
+    _fill_rect_pixels(img, Rect2i(cell_x + 32, cell_y + 18, 5, 12), trim)
+    _fill_rect_pixels(img, Rect2i(cell_x + 19, cell_y + 33, 4, 8), trim)
+    _fill_rect_pixels(img, Rect2i(cell_x + 28, cell_y + 33, 4, 8), trim)
+
+
+static func _fill_rect_pixels(img: Image, rect: Rect2i, color: Color) -> void:
+    for y in range(rect.position.y, rect.position.y + rect.size.y):
+        for x in range(rect.position.x, rect.position.x + rect.size.x):
+            if x >= 0 and y >= 0 and x < img.get_width() and y < img.get_height():
+                img.set_pixel(x, y, color)
 
 
 static func _copy_file(src_path: String, dst_path: String) -> bool:

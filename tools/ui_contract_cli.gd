@@ -2,7 +2,7 @@ extends SceneTree
 
 
 const SUPPORTED_FEATURES_PATH := "res://SUPPORTED_FEATURES.md"
-const DEFAULT_SMOKE_PACK := "demo"
+const DEFAULT_SMOKE_PACK := "phase1_bootstrap"
 
 
 func _init() -> void:
@@ -19,7 +19,13 @@ func _init() -> void:
 		"validate-pack":
 			_handle_validate_pack(args.slice(1))
 		"validate-smoke-pack":
+			if not MvPackLoader.create_empty_pack(DEFAULT_SMOKE_PACK, "Phase 1 Bootstrap"):
+				push_error("Could not bootstrap smoke pack '%s'" % DEFAULT_SMOKE_PACK)
+				quit(1)
+				return
 			_handle_validate_pack([DEFAULT_SMOKE_PACK])
+		"bootstrap-pack":
+			_handle_bootstrap_pack(args.slice(1))
 		_:
 			push_error("Unknown ui_contract_cli command '%s'" % command)
 			_print_usage()
@@ -74,6 +80,28 @@ func _handle_validate_pack(args: Array) -> void:
 	quit(1 if errors > 0 else 0)
 
 
+func _handle_bootstrap_pack(args: Array) -> void:
+	if args.is_empty():
+		push_error("bootstrap-pack requires a pack id")
+		quit(2)
+		return
+	var pack_id := str(args[0]).strip_edges()
+	if pack_id.is_empty():
+		push_error("bootstrap-pack requires a non-empty pack id")
+		quit(2)
+		return
+	var display_name := pack_id
+	if args.size() >= 2:
+		display_name = str(args[1]).strip_edges()
+	var ok := MvPackLoader.create_empty_pack(pack_id, display_name)
+	if not ok:
+		push_error("Failed to bootstrap pack '%s'" % pack_id)
+		quit(1)
+		return
+	print("[ui_contract_cli] Bootstrapped pack '%s'." % pack_id)
+	quit(0)
+
+
 func _read_text(path: String) -> String:
 	if not FileAccess.file_exists(path):
 		return ""
@@ -98,5 +126,6 @@ func _write_text(path: String, text: String) -> bool:
 func _print_usage() -> void:
 	print("ui_contract_cli commands:")
 	print("  sync-docs [--check]")
+	print("  bootstrap-pack <pack_id> [display_name]")
 	print("  validate-pack <pack_id>")
 	print("  validate-smoke-pack")

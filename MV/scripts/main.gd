@@ -44,6 +44,8 @@ var _transition_frame: int = 0
 var _pending_door: Dictionary = {}
 var _pending_source_room: String = ""
 var _pending_target_link: Dictionary = {}
+var _last_blocked_door_id: String = ""
+var _last_blocked_door_msec: int = 0
 var _camera_focus_mode: String = ""
 var _camera_focus_target: String = ""
 var _camera_focus_pos: Vector2 = Vector2.ZERO
@@ -51,6 +53,7 @@ var _camera_pan_active: bool = false
 var _camera_pan_tween: Tween = null
 const FADE_OUT_FRAMES: int = 12
 const FADE_IN_FRAMES: int = 18
+const BLOCKED_DOOR_COOLDOWN_MS: int = 350
 
 
 func _enter_tree() -> void:
@@ -63,10 +66,13 @@ func _enter_tree() -> void:
     # puts it in place for every downstream _ready.
     #
     # pending_pack_id is set by PlanetaryInterface.begin_landing from the
-    # SSB layer when the player interacts with a planet POI. Falls back
-    # to "demo" for standalone runs and dev.
+    # SSB layer when the player interacts with a planet POI. Standalone
+    # dev runs can still boot demo, but hosted landings must be explicit.
     var pack_id: String = PlanetaryInterface.pending_pack_id
     if pack_id.is_empty():
+        if PlanetaryInterface.hosted:
+            push_error("MvMain: hosted landing has no pending pack_id")
+            return
         pack_id = "demo"
     var pack: MvPackRef = MvPackLoader.load_pack(pack_id)
     if pack == null:
@@ -74,13 +80,21 @@ func _enter_tree() -> void:
 
 
 func _exit_tree() -> void:
+    prepare_for_teardown()
     if MvGame.main == self:
         MvGame.main = null
     if MvGame.room_manager == _room_manager:
         MvGame.room_manager = null
 
 
+func prepare_for_teardown() -> void:
+    if _hud != null and is_instance_valid(_hud):
+        _hud.visible = false
+
+
 func _ready() -> void:
+    if PlanetaryInterface.hosted:
+        process_mode = Node.PROCESS_MODE_ALWAYS
     MvGame.simulation_paused = false
 
     # Only claim the root viewport when running standalone. When hosted
@@ -93,6 +107,12 @@ func _ready() -> void:
     _room_manager = $RoomLayer as MvRoomManager
     _camera = $Camera2D
     _fade_rect = $FadeLayer/FadeRect
+    if PlanetaryInterface.hosted:
+        _room_manager.process_mode = Node.PROCESS_MODE_ALWAYS
+        ($PlayerLayer as Node).process_mode = Node.PROCESS_MODE_ALWAYS
+        ($ForegroundLayer as Node).process_mode = Node.PROCESS_MODE_ALWAYS
+        ($FadeLayer as Node).process_mode = Node.PROCESS_MODE_ALWAYS
+        _camera.process_mode = Node.PROCESS_MODE_ALWAYS
     # FadeRect is a fullscreen ColorRect in a CanvasLayer. Its default MouseFilter is STOP,
     # so its bounds would eat mouse events even when fully transparent.
     # The fade is purely visual; let input pass straight through.
@@ -113,10 +133,11 @@ func _ready() -> void:
     # Spawn the player.
     var player_scene: PackedScene = load("res://MV/scenes/player.tscn")
     _player = player_scene.instantiate() as MvPlayer
+    if PlanetaryInterface.hosted:
+        _player.process_mode = Node.PROCESS_MODE_ALWAYS
     ($PlayerLayer as Node).add_child(_player)
     _player.entered_door.connect(_on_player_door)
     _player.player_died.connect(_on_player_died)
-    _ensure_hud()
 
     # Apply ManiaVar stat effects to the player's physics profile before
     # the first room loads, so gravity/jump/speed reflect stat levels.
@@ -130,6 +151,7 @@ func _ready() -> void:
     # Load the start room (no flow engine — MvRoomManager carries the
     # pack's start_room address directly).
     _room_manager.load_start_room()
+    _ensure_hud()
     _setup_camera()
 
     var pack_id := MvPackLoader.current_pack.pack_id if MvPackLoader.current_pack != null else "demo"
@@ -161,24 +183,31 @@ func _ready() -> void:
     # PlanetaryInterface so it can rehydrate any pending per-planet
     # snapshot (player position, hp). No-op on fresh boots and first visits.
     var restored_snapshot: bool = PlanetaryInterface.restore_pending_if_any(self)
+    var restored_player_progression: bool = PlanetaryInterface.has_method("has_player_progression_snapshot") \
+        and bool(PlanetaryInterface.call("has_player_progression_snapshot"))
 
     # Editor playtest handoff: if the env editor staged a spawn room/pos
     # via begin_landing, load that instead of start_room. This runs AFTER
     # restore_pending_if_any so it wins over any stale per-planet snapshot.
     var playtest_spawn_override: bool = false
-    if not PlanetaryInterface.pending_spawn_room.is_empty():
+    var has_spawn_override: bool = not PlanetaryInterface.pending_spawn_room.is_empty()
+    if has_spawn_override and (PlanetaryInterface.pending_return_to_editor or not restored_snapshot):
         var target_room: String = PlanetaryInterface.pending_spawn_room
         var target_pos: Vector2 = PlanetaryInterface.pending_spawn_pos
         playtest_spawn_override = PlanetaryInterface.pending_return_to_editor
         PlanetaryInterface.pending_spawn_room = ""
         PlanetaryInterface.pending_spawn_pos = Vector2.ZERO
         load_from_snapshot(target_room, target_pos, -1)
+    elif has_spawn_override:
+        PlanetaryInterface.pending_spawn_room = ""
+        PlanetaryInterface.pending_spawn_pos = Vector2.ZERO
 
     var boot_room_addr: String = _room_manager.current_room_addr() if _room_manager != null else ""
     var startup_payload: Dictionary = {
         "room": boot_room_addr,
-        "fresh_boot": not restored_snapshot and not playtest_spawn_override,
+        "fresh_boot": not restored_snapshot and not playtest_spawn_override and not restored_player_progression,
         "restored_snapshot": restored_snapshot,
+        "restored_player_progression": restored_player_progression,
         "playtest_spawn_override": playtest_spawn_override,
     }
     if bool(startup_payload["fresh_boot"]):
@@ -240,9 +269,7 @@ func _on_viewport_size_changed() -> void:
 func _layout_fade_rect() -> void:
     if _fade_rect == null:
         return
-    var rect := get_viewport().get_visible_rect()
-    _fade_rect.position = rect.position
-    _fade_rect.size = rect.size
+    _fade_rect.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 
 
 func _ensure_trigger_debug_overlay() -> void:
@@ -539,6 +566,8 @@ func request_return_to_overworld(region_id: String = "", spawn_pos: Vector2 = Ve
             target_region_id = _resolve_current_region_id()
         target_spawn = _resolve_overworld_spawn_for_region(pack_id, realm_id, target_region_id)
 
+    if PlanetaryInterface.has_method("snapshot_current_mv"):
+        PlanetaryInterface.snapshot_current_mv(self)
     PlanetaryInterface.request_return_to_overworld(pack_id, realm_id, target_spawn)
 
 
@@ -557,6 +586,7 @@ func get_player_snapshot() -> Dictionary:
     d["x"] = _player.position.x
     d["y"] = _player.position.y
     d["hp"] = _player.hp
+    d["max_hp"] = _player.max_hp
     return d
 
 
@@ -809,7 +839,7 @@ func wait_for_dialogue(timeout: float = 0.0) -> bool:
     return true
 
 
-func load_from_snapshot(room_addr: String, pos: Vector2, hp: int) -> void:
+func load_from_snapshot(room_addr: String, pos: Vector2, hp: int, max_hp: int = -1) -> void:
     if not room_addr.is_empty() and room_addr != _room_manager.current_room_addr():
         _room_manager.load_room(room_addr)
         _setup_camera()
@@ -818,8 +848,10 @@ func load_from_snapshot(room_addr: String, pos: Vector2, hp: int) -> void:
             _player.spawn_at(pos)
         else:
             _spawn_player_in_room()
+        if max_hp > 0:
+            _player.max_hp = max_hp
         if hp > 0:
-            _player.hp = hp
+            _player.hp = mini(hp, _player.max_hp)
 
 
 # ===== Door transitions =====
@@ -830,6 +862,8 @@ func _on_player_door(door_id: String) -> void:
     var door: Dictionary = _room_manager.find_door_by_id(door_id) if _room_manager != null and _room_manager.has_method("find_door_by_id") else {}
     if door.is_empty():
         return
+    if _blocked_door_attempt_is_throttled(door):
+        return
     var payload := _build_door_payload(door)
     MvTriggerEngine.fire_event("door_use_attempt", payload)
 
@@ -839,13 +873,16 @@ func _on_player_door(door_id: String) -> void:
     payload["locked"] = locked
     if not enabled:
         payload["block_reason"] = "disabled"
+        _remember_blocked_door(door)
         _fire_blocked_door_events(door, payload)
         return
     if locked and not _door_access_granted(door):
         payload["block_reason"] = "locked"
+        _remember_blocked_door(door)
         _fire_blocked_door_events(door, payload)
         return
 
+    _last_blocked_door_id = ""
     MvTriggerEngine.fire_event("door_use_success", payload)
     MvTriggerEngine.fire_event("door_enter", payload)
     _fire_custom_door_event(str(door.get("success_event_name", "")).strip_edges(), payload)
@@ -1107,6 +1144,18 @@ func _fire_custom_door_event(event_name: String, payload: Dictionary) -> void:
 func _fire_blocked_door_events(door: Dictionary, payload: Dictionary) -> void:
     MvTriggerEngine.fire_event("door_use_blocked", payload)
     _fire_custom_door_event(str(door.get("blocked_event_name", "")).strip_edges(), payload)
+
+
+func _blocked_door_attempt_is_throttled(door: Dictionary) -> bool:
+    var door_id := str(door.get("id", "")).strip_edges()
+    if door_id.is_empty() or door_id != _last_blocked_door_id:
+        return false
+    return Time.get_ticks_msec() - _last_blocked_door_msec < BLOCKED_DOOR_COOLDOWN_MS
+
+
+func _remember_blocked_door(door: Dictionary) -> void:
+    _last_blocked_door_id = str(door.get("id", "")).strip_edges()
+    _last_blocked_door_msec = Time.get_ticks_msec()
 
 
 func _abort_door_transition() -> void:

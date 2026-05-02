@@ -82,6 +82,10 @@ func restore_visited(data: Dictionary) -> void:
     _visited = data.duplicate()
 
 
+func clear() -> void:
+    _visited.clear()
+
+
 func current_map_rooms() -> Array:
     var out: Array = []
     for addr in _room_positions.keys():

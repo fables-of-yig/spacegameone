@@ -8,12 +8,14 @@ extends VBoxContainer
 signal changed
 
 const EcaSchemaLib := preload("res://Space/scripts/editor/dlg/eca_schema.gd")
+const QuestIO := preload("res://Space/scripts/editor/quest_io.gd")
 
 var _rows_box: VBoxContainer = null
 var _add_option: OptionButton = null
 var _suppress_emit: bool = false
 var _rows: Array = []  # each: {"box": VBoxContainer, "type": String, "fields": {key -> Control}}
 var _last_errors: Array = []
+var _pack_id: String = ""
 
 
 func _ready() -> void:
@@ -41,6 +43,10 @@ func _build_ui() -> void:
     add_btn.tooltip_text = "Add the selected action to the bottom of the list."
     add_btn.pressed.connect(_on_add_pressed)
     add_row.add_child(add_btn)
+
+
+func set_pack_id(pack_id: String) -> void:
+    _pack_id = pack_id.strip_edges()
 
 
 func open(actions: Array) -> void:
@@ -176,6 +182,8 @@ func _on_delete_row(row_box: VBoxContainer) -> void:
 
 
 func _make_field(kind: String, initial: Variant, action_type: String = "", field_key: String = "") -> Control:
+    if _should_use_quest_picker(action_type, field_key, kind):
+        return _make_quest_picker(field_key, initial, kind == "opt_string")
     match kind:
         "bool":
             var cb := CheckBox.new()
@@ -230,8 +238,13 @@ func _read_field(control: Control, kind: String) -> Dictionary:
                     return {"ok": true, "value": float(text)}
             return {"ok": false, "value": 0.0}
         "opt_string":
+            if control is OptionButton:
+                return {"ok": true, "value": _option_selected_value(control as OptionButton)}
             return {"ok": true, "value": (control as LineEdit).text.strip_edges() if control is LineEdit else ""}
         _:
+            if control is OptionButton:
+                var opt_value := _option_selected_value(control as OptionButton)
+                return {"ok": not opt_value.is_empty(), "value": opt_value}
             return {"ok": true, "value": (control as LineEdit).text.strip_edges() if control is LineEdit else ""}
 
 
@@ -380,11 +393,29 @@ func _action_example(action_type: String) -> String:
             return "name = ui_confirm"
         "log":
             return "message = reached_intro_gate"
+        "quest_start":
+            return "quest_id = first_steps, stage_id = start"
+        "quest_set_stage":
+            return "quest_id = first_steps, stage_id = clear_boss"
+        "quest_complete_objective":
+            return "quest_id = first_steps, stage_id = start, objective_id = get_key"
+        "quest_complete_stage":
+            return "quest_id = first_steps, stage_id = start"
+        "quest_complete":
+            return "quest_id = first_steps"
         _:
             return ""
 
 
 func _field_placeholder(action_type: String, field_key: String, kind: String) -> String:
+    if action_type.begins_with("quest_"):
+        match field_key:
+            "quest_id":
+                return "choose a quest"
+            "stage_id":
+                return "choose a quest stage"
+            "objective_id":
+                return "choose a quest objective"
     if kind == "opt_string":
         match field_key:
             "key":
@@ -482,3 +513,108 @@ func _field_placeholder(action_type: String, field_key: String, kind: String) ->
             return "wait_succeeded"
         _:
             return ""
+
+
+func _should_use_quest_picker(action_type: String, field_key: String, kind: String) -> bool:
+    if not action_type.begins_with("quest_"):
+        return false
+    if kind != "string" and kind != "opt_string":
+        return false
+    return ["quest_id", "stage_id", "objective_id"].has(field_key)
+
+
+func _make_quest_picker(field_key: String, initial: Variant, optional: bool) -> Control:
+    var picker := OptionButton.new()
+    picker.custom_minimum_size = Vector2(170, 0)
+    var initial_value := str(initial).strip_edges() if initial != null else ""
+    if optional:
+        picker.add_item("(leave unchanged)")
+        picker.set_item_metadata(0, "")
+    var options := _quest_picker_options(field_key)
+    for option_v in options:
+        var option: Dictionary = option_v
+        var label := str(option.get("label", ""))
+        var value := str(option.get("value", ""))
+        if value.is_empty():
+            continue
+        var idx := picker.item_count
+        picker.add_item(label)
+        picker.set_item_metadata(idx, value)
+    if picker.item_count == 0:
+        picker.add_item("(create a quest first)")
+        picker.set_item_metadata(0, "")
+    if not initial_value.is_empty() and _select_option_value(picker, initial_value):
+        pass
+    elif not optional and picker.item_count > 0:
+        picker.select(0)
+    picker.item_selected.connect(func(_idx): _emit_changed())
+    return picker
+
+
+func _option_selected_value(picker: OptionButton) -> String:
+    var idx := picker.get_selected()
+    if idx < 0:
+        return ""
+    var meta: Variant = picker.get_item_metadata(idx)
+    if meta != null:
+        return str(meta).strip_edges()
+    return picker.get_item_text(idx).strip_edges()
+
+
+func _select_option_value(picker: OptionButton, value: String) -> bool:
+    for i in range(picker.item_count):
+        if str(picker.get_item_metadata(i)).strip_edges() == value:
+            picker.select(i)
+            return true
+    var idx := picker.item_count
+    picker.add_item("%s (missing)" % value)
+    picker.set_item_metadata(idx, value)
+    picker.select(idx)
+    return true
+
+
+func _quest_picker_options(field_key: String) -> Array:
+    if _pack_id.is_empty():
+        return []
+    var quests_v: Variant = QuestIO.load_or_init(_pack_id).get("quests", [])
+    if typeof(quests_v) != TYPE_ARRAY:
+        return []
+    var out: Array = []
+    for quest_v in quests_v:
+        if typeof(quest_v) != TYPE_DICTIONARY:
+            continue
+        var quest: Dictionary = quest_v
+        var quest_id := str(quest.get("id", "")).strip_edges()
+        if quest_id.is_empty():
+            continue
+        var quest_title := str(quest.get("title", quest_id)).strip_edges()
+        if field_key == "quest_id":
+            out.append({"value": quest_id, "label": "%s (%s)" % [quest_title, quest_id]})
+            continue
+        var stages_v: Variant = quest.get("stages", [])
+        if typeof(stages_v) != TYPE_ARRAY:
+            continue
+        for stage_v in stages_v:
+            if typeof(stage_v) != TYPE_DICTIONARY:
+                continue
+            var stage: Dictionary = stage_v
+            var stage_id := str(stage.get("id", "")).strip_edges()
+            if stage_id.is_empty():
+                continue
+            var stage_title := str(stage.get("title", stage_id)).strip_edges()
+            if field_key == "stage_id":
+                out.append({"value": stage_id, "label": "%s / %s (%s)" % [quest_title, stage_title, stage_id]})
+                continue
+            var objectives_v: Variant = stage.get("objectives", [])
+            if typeof(objectives_v) != TYPE_ARRAY:
+                continue
+            for objective_v in objectives_v:
+                if typeof(objective_v) != TYPE_DICTIONARY:
+                    continue
+                var objective: Dictionary = objective_v
+                var objective_id := str(objective.get("id", "")).strip_edges()
+                if objective_id.is_empty():
+                    continue
+                var objective_title := str(objective.get("title", objective_id)).strip_edges()
+                out.append({"value": objective_id, "label": "%s / %s / %s (%s)" % [quest_title, stage_title, objective_title, objective_id]})
+    return out

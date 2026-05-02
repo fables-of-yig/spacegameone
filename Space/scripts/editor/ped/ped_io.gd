@@ -28,6 +28,23 @@ static func demo_file(folder: String, file_name: String) -> String:
     return "res://Content/%s/%s/%s" % [SHIPPED_SEED_PACK, folder, file_name]
 
 
+# Creates the starter authoring files that a new pack needs without
+# consulting shipped/demo content. Existing user files are never changed.
+static func ensure_starter_player_data(pack_id: String) -> Array:
+    var changed: Array = []
+    _write_missing_json(user_file(pack_id, "Player", "stats.json"), default_stats(), changed)
+    _write_missing_json(user_file(pack_id, "Player", "stats_manifest.json"), default_stats_manifest(), changed)
+    _write_missing_json(user_file(pack_id, "Player", "attacks.json"), default_attacks(), changed)
+    _write_missing_json(user_file(pack_id, "Items", "items.json"), default_items(), changed)
+    _write_missing_json(user_file(pack_id, "Items", "equipment.json"), default_equipment(), changed)
+    _write_missing_json(user_file(pack_id, "Abilities", "abilities.json"), default_abilities(), changed)
+    _write_missing_json(user_file(pack_id, "Projectiles", "projectiles.json"), default_projectiles(), changed)
+    _write_missing_json(user_file(pack_id, "Triggers", "global.json"), default_triggers(), changed)
+    _write_missing_json(user_file(pack_id, "Entities", "entities.json"), default_entities(), changed)
+    _write_missing_json(user_file(pack_id, "Entities", "behaviors.json"), default_behaviors(), changed)
+    return changed
+
+
 # ── Stats ────────────────────────────────────────────────────────────────
 
 static func load_stats(pack_id: String) -> Dictionary:
@@ -189,6 +206,7 @@ static func _validate_items(pack_id: String, data: Dictionary) -> bool:
         "add_tag": true,
         "fire_event": true,
         "set_weapon": true,
+        "equip_item": true,
     }
     for i in range((items_v as Array).size()):
         var entry_v: Variant = (items_v as Array)[i]
@@ -226,7 +244,7 @@ static func _validate_items(pack_id: String, data: Dictionary) -> bool:
             return false
 
         var arg := str(entry.get("use_arg", "")).strip_edges()
-        if (effect == "grant_ability" or effect == "add_var" or effect == "set_flag" or effect == "add_tag" or effect == "fire_event" or effect == "set_weapon" or effect == "add_ammo" or effect == "max_ammo_up") and arg.is_empty():
+        if (effect == "grant_ability" or effect == "add_var" or effect == "set_flag" or effect == "add_tag" or effect == "fire_event" or effect == "set_weapon" or effect == "equip_item" or effect == "add_ammo" or effect == "max_ammo_up") and arg.is_empty():
             push_error("PedIO: item '%s' requires use_arg for effect '%s'" % [item_id, effect])
             return false
         if effect == "set_weapon" and not attack_ids.has(arg) and not _supported_weapon_values().has(arg.to_lower()):
@@ -258,6 +276,9 @@ static func default_equipment() -> Dictionary:
                 "grants_abilities": [],
                 "stat_mods": {},
                 "weapon": "combo_slash_1",
+                "secondary_attack": "",
+                "secondary_ammo_key": "",
+                "secondary_ammo_cost": 1,
                 "sprite_sheet": "equipment_sheet.png",
                 "frame_width": 16,
                 "frame_height": 16,
@@ -685,6 +706,77 @@ static func default_triggers() -> Dictionary:
     return TriggerRoot.default_root()
 
 
+# Starter Entities/Behaviors
+
+static func default_entities() -> Dictionary:
+    return {
+        "entities": [
+            {
+                "id": "pickup",
+                "name": "Pickup",
+                "category": "pickup",
+                "description": "Touch-collectable item. Set item_id on the room instance.",
+                "scene": "res://Scenes/Pickup.tscn",
+                "sprite_set": "",
+                "behavior": "",
+                "movement_mode": "ground",
+                "hp": 1,
+                "attack_damage": 0,
+                "contact_damage": 0,
+                "contact_cooldown": 0.8,
+                "move_speed": 0,
+                "projectile_damage": 0,
+                "projectile_speed": 0,
+                "melee_range": 0,
+                "melee_attack_trigger_frame": -1,
+                "projectile_range": 0,
+                "projectile_attack_trigger_frame": -1,
+                "placement_folder": "Core/Pickups",
+            },
+            {
+                "id": "trigger_volume",
+                "name": "Trigger Volume",
+                "category": "logic",
+                "description": "Invisible walk-into zone. Set width, height, tag, and event_name on the room instance.",
+                "scene": "res://Scenes/TriggerVolume.tscn",
+                "sprite_set": "",
+                "behavior": "",
+                "movement_mode": "ground",
+                "hp": 1,
+                "attack_damage": 0,
+                "contact_damage": 0,
+                "contact_cooldown": 0.8,
+                "move_speed": 0,
+                "projectile_damage": 0,
+                "projectile_speed": 0,
+                "melee_range": 0,
+                "melee_attack_trigger_frame": -1,
+                "projectile_range": 0,
+                "projectile_attack_trigger_frame": -1,
+                "placement_folder": "Core/Logic",
+            },
+        ],
+    }
+
+
+static func default_behaviors() -> Dictionary:
+    return {
+        "behaviors": [
+            {
+                "id": "npc_idle",
+                "name": "NPC Idle",
+                "description": "Passive idle behavior.",
+                "root": {
+                    "type": "action",
+                    "name": "idle",
+                    "action": "idle",
+                    "params": {},
+                },
+            },
+        ],
+    }
+
+
 # ── Dialogue ────────────────────────────────────────────────────────────
 
 static func load_dialogue(pack_id: String, dialogue_id: String) -> Dictionary:
@@ -852,6 +944,14 @@ static func _validate_equipment(pack_id: String, data: Dictionary) -> bool:
         var weapon := str(entry.get("weapon", "")).strip_edges()
         if not weapon.is_empty() and not attack_ids.has(weapon) and not supported_weapons.has(weapon.to_lower()):
             push_error("PedIO: equipment '%s' uses unsupported weapon '%s' (expected authored attack id or legacy beam/grenade_launcher)" % [equip_id, weapon])
+            return false
+
+        var secondary_attack := str(entry.get("secondary_attack", "")).strip_edges()
+        if not secondary_attack.is_empty() and not attack_ids.has(secondary_attack):
+            push_error("PedIO: equipment '%s' uses unknown secondary_attack '%s'" % [equip_id, secondary_attack])
+            return false
+        if int(entry.get("secondary_ammo_cost", 1)) < 0:
+            push_error("PedIO: equipment '%s' has negative secondary_ammo_cost" % equip_id)
             return false
 
         if int(entry.get("frame_width", 0)) < 1 or int(entry.get("frame_height", 0)) < 1:
@@ -1267,6 +1367,7 @@ static func _validate_shop(pack_id: String, shop_id: String, data: Dictionary) -
         "add_tag": true,
         "fire_event": true,
         "set_weapon": true,
+        "equip_item": true,
     }
     var seen_stock_ids: Dictionary = {}
     for i in range((items_v as Array).size()):
@@ -1302,7 +1403,7 @@ static func _validate_shop(pack_id: String, shop_id: String, data: Dictionary) -
             push_error("PedIO: shop '%s' item '%s' has invalid use_amount" % [shop_id, item_id])
             return false
         var arg := str(entry.get("use_arg", "")).strip_edges()
-        if (effect == "grant_ability" or effect == "add_var" or effect == "set_flag" or effect == "add_tag" or effect == "fire_event" or effect == "set_weapon" or effect == "add_ammo" or effect == "max_ammo_up") and arg.is_empty():
+        if (effect == "grant_ability" or effect == "add_var" or effect == "set_flag" or effect == "add_tag" or effect == "fire_event" or effect == "set_weapon" or effect == "equip_item" or effect == "add_ammo" or effect == "max_ammo_up") and arg.is_empty():
             push_error("PedIO: shop '%s' item '%s' requires use_arg for effect '%s'" % [shop_id, item_id, effect])
             return false
         if effect == "set_weapon" and not attack_ids.has(arg) and not _supported_weapon_values().has(arg.to_lower()):
@@ -1635,4 +1736,13 @@ static func _write_json(path: String, data: Dictionary) -> bool:
         return false
     f.store_string(JSON.stringify(data, "  "))
     f.close()
+    return true
+
+
+static func _write_missing_json(path: String, data: Dictionary, changed: Array) -> bool:
+    if FileAccess.file_exists(path):
+        return false
+    if not _write_json(path, data):
+        return false
+    changed.append(path)
     return true

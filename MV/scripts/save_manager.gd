@@ -20,6 +20,7 @@ func save_game(slot: int) -> bool:
 		"timestamp": Time.get_unix_time_from_system(),
 		"inventory": PlayerInventory.snapshot(),
 		"global_tags": MvTriggerEngine.snapshot_global_tags(),
+		"trigger_state": MvTriggerEngine.snapshot_runtime_state() if MvTriggerEngine.has_method("snapshot_runtime_state") else {},
 		"room_state": MvRoomState.snapshot(),
 		"map_visited": MvMapScreen.visited_snapshot(),
 		"player": {
@@ -59,6 +60,8 @@ func load_game(slot: int) -> bool:
 		return false
 	PlayerInventory.restore(data.get("inventory", {}))
 	MvTriggerEngine.restore_global_tags(data.get("global_tags", {}))
+	if MvTriggerEngine.has_method("restore_runtime_state"):
+		MvTriggerEngine.restore_runtime_state(data.get("trigger_state", {}))
 	MvRoomState.restore(data.get("room_state", {}))
 	MvMapScreen.restore_visited(data.get("map_visited", {}))
 

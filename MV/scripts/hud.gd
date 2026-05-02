@@ -6,6 +6,7 @@ extends CanvasLayer
 
 const UIPanels := preload("res://Space/scripts/ui/ui_panels.gd")
 const UIIo = preload("res://Space/scripts/editor/ui/ui_io.gd")
+const QuestIO := preload("res://Space/scripts/editor/quest_io.gd")
 const AuthoredScreenRuntime = preload("res://Space/scripts/ui/authored_screen_runtime.gd")
 const HudDataSource = preload("res://Space/scripts/ui/hud_data_source.gd")
 const BAR_WIDTH: int = 80
@@ -19,6 +20,8 @@ const BOSS_BG: Color = Color(0.15, 0.15, 0.2, 0.8)
 var _hp_bar: Control = null
 var _hp_label: Label = null
 var _weapon_label: Label = null
+var _resource_label: Label = null
+var _quest_label: Label = null
 var _boss_bar: Control = null
 var _boss_label: Label = null
 
@@ -37,6 +40,8 @@ func _ready() -> void:
 	if not _using_custom_screen:
 		_build_hp_bar()
 		_build_weapon_label()
+		_build_resource_label()
+		_build_quest_label()
 		_build_boss_bar()
 
 
@@ -58,10 +63,13 @@ func _try_custom_screen() -> void:
 	var data := UIIo.load_screen(pack_id, screen_id)
 	if data.is_empty():
 		return
+	var source := HudDataSource.new(_find_player(), GameManager)
+	if not _custom_screen_sources_ready(source, screen_id):
+		return
 	var renderer := Control.new()
-	renderer.set_anchors_preset(Control.PRESET_FULL_RECT)
+	renderer.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	renderer.set_script(AuthoredScreenRuntime)
-	renderer.call("load_screen", screen_id, data, HudDataSource.new(_find_player(), GameManager))
+	renderer.call("load_screen", screen_id, data, source)
 	add_child(renderer)
 	_using_custom_screen = true
 
@@ -76,6 +84,8 @@ func _process(_delta: float) -> void:
 		return
 	_update_hp()
 	_update_weapon()
+	_update_resources()
+	_update_quest()
 	_update_boss()
 
 
@@ -139,7 +149,104 @@ func _update_weapon() -> void:
 			_weapon_label.text = "BEAM"
 
 
+func _build_resource_label() -> void:
+	_resource_label = Label.new()
+	_resource_label.position = Vector2(MARGIN, MARGIN + BAR_HEIGHT + 36)
+	_resource_label.add_theme_font_size_override("font_size", UIPanels.font_size("hint_size"))
+	_resource_label.add_theme_color_override("font_color", UIPanels.text_color("body"))
+	add_child(_resource_label)
+
+
+func _update_resources() -> void:
+	if _resource_label == null:
+		return
+	var gold := int(PlayerInventory.get_var("gold", 0))
+	var ammo := int(PlayerInventory.get_var("ammo_missile", 0))
+	var max_ammo := int(PlayerInventory.get_var("max_ammo_missile", 0))
+	var player := _find_player()
+	var missile_mode := ""
+	if player != null and player.has_method("is_secondary_mode_active") and bool(player.call("is_secondary_mode_active")):
+		missile_mode = " ON"
+	_resource_label.text = "GOLD %d   MISSILES%s %d / %d" % [gold, missile_mode, ammo, max_ammo]
+
+
 # ── Boss HP bar ─────────────────────────────────────────────────────────
+
+func _build_quest_label() -> void:
+	_quest_label = Label.new()
+	_quest_label.position = Vector2(MARGIN, MARGIN + BAR_HEIGHT + 54)
+	_quest_label.custom_minimum_size = Vector2(260, 36)
+	_quest_label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	_quest_label.add_theme_font_size_override("font_size", UIPanels.font_size("hint_size"))
+	_quest_label.add_theme_color_override("font_color", UIPanels.text_color("body"))
+	add_child(_quest_label)
+
+
+func _update_quest() -> void:
+	if _quest_label == null:
+		return
+	var text := _active_quest_text()
+	_quest_label.text = text
+	_quest_label.visible = not text.is_empty()
+
+
+func _active_quest_text() -> String:
+	var engine := get_tree().root.get_node_or_null("MvTriggerEngine")
+	if engine == null or not engine.has_method("get_quest_state"):
+		return ""
+	var states_v: Variant = engine.get_quest_state()
+	if typeof(states_v) != TYPE_DICTIONARY:
+		return ""
+	var defs := _quest_definitions_by_id()
+	for quest_id_v in (states_v as Dictionary).keys():
+		var quest_id := str(quest_id_v).strip_edges()
+		var state_v: Variant = (states_v as Dictionary).get(quest_id, {})
+		if quest_id.is_empty() or typeof(state_v) != TYPE_DICTIONARY:
+			continue
+		var state: Dictionary = state_v
+		if str(state.get("status", "")) != "active":
+			continue
+		var quest_def: Dictionary = defs.get(quest_id, {})
+		var title := str(quest_def.get("title", quest_id)).strip_edges()
+		var stage_id := str(state.get("stage_id", "")).strip_edges()
+		var stage := _quest_stage_def(quest_def, stage_id)
+		var stage_title := str(stage.get("title", stage_id)).strip_edges()
+		return "%s\n%s" % [title, stage_title] if not stage_title.is_empty() else title
+	return ""
+
+
+func _quest_definitions_by_id() -> Dictionary:
+	var pack_id := ""
+	if MvPackLoader.current_pack != null:
+		pack_id = str(MvPackLoader.current_pack.pack_id).strip_edges()
+	if pack_id.is_empty():
+		return {}
+	var quests_v: Variant = QuestIO.load_or_init(pack_id).get("quests", [])
+	if typeof(quests_v) != TYPE_ARRAY:
+		return {}
+	var out: Dictionary = {}
+	for quest_v in quests_v:
+		if typeof(quest_v) != TYPE_DICTIONARY:
+			continue
+		var quest: Dictionary = quest_v
+		var quest_id := str(quest.get("id", "")).strip_edges()
+		if not quest_id.is_empty():
+			out[quest_id] = quest
+	return out
+
+
+func _quest_stage_def(quest_def: Dictionary, stage_id: String) -> Dictionary:
+	var stages_v: Variant = quest_def.get("stages", [])
+	if typeof(stages_v) != TYPE_ARRAY:
+		return {}
+	for stage_v in stages_v:
+		if typeof(stage_v) != TYPE_DICTIONARY:
+			continue
+		var stage: Dictionary = stage_v
+		if str(stage.get("id", "")).strip_edges() == stage_id:
+			return stage
+	return {}
+
 
 func _build_boss_bar() -> void:
 	_boss_bar = Control.new()
@@ -193,11 +300,24 @@ func hide_boss() -> void:
 # ── Utility ─────────────────────────────────────────────────────────────
 
 func _find_player() -> Node:
+	if MvGame.main != null and is_instance_valid(MvGame.main):
+		var main_player: Variant = MvGame.main.get("_player")
+		if main_player is Node and is_instance_valid(main_player):
+			return main_player
 	var players := get_tree().get_nodes_in_group("mv_player")
 	if players.is_empty():
 		return null
 	return players[0]
 
 
+func _custom_screen_sources_ready(source: RefCounted, screen_id: String) -> bool:
+	if screen_id != "hud_mv":
+		return true
+	for binding in ["player.hp", "player.max_hp", "room.name"]:
+		if source.call("resolve", binding) == null:
+			return false
+	return true
+
+
 func _mv_runtime_available() -> bool:
-	return PlanetaryInterface.hosted or MvGame.main != null
+	return MvGame.main != null

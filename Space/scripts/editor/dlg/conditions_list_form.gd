@@ -7,6 +7,7 @@ var _rows_box: VBoxContainer = null
 var _add_btn: Button = null
 var _rows: Array = []  # [{row, form}]
 var _suppress_emit: bool = false
+var _pack_id: String = ""
 
 
 func _ready() -> void:
@@ -28,6 +29,15 @@ func _build_ui() -> void:
     _add_btn.tooltip_text = "Append another check."
     _add_btn.pressed.connect(_on_add_pressed)
     footer.add_child(_add_btn)
+
+
+func set_pack_id(pack_id: String) -> void:
+    _pack_id = pack_id.strip_edges()
+    for row_v in _rows:
+        var row: Dictionary = row_v
+        var form: DlgConditionForm = row.get("form")
+        if form != null and form.has_method("set_pack_id"):
+            form.set_pack_id(_pack_id)
 
 
 func open(conditions: Array) -> void:
@@ -97,6 +107,8 @@ func _append_row(seed_data: Dictionary) -> void:
     header.add_child(del_btn)
 
     var form := DlgConditionForm.new()
+    if form.has_method("set_pack_id"):
+        form.set_pack_id(_pack_id)
     form.changed.connect(_emit_changed)
     row.add_child(form)
     form.open(seed_data)

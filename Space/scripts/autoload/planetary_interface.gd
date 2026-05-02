@@ -12,6 +12,7 @@ signal return_to_overworld_requested(pack_id: String, realm_id: String, spawn_po
 var hosted: bool = false
 var pending_pack_id: String = ""
 var pending_realm_id: String = ""
+var pending_planet_key: String = ""
 var pending_spawn_room: String = ""
 var pending_spawn_pos: Vector2 = Vector2.ZERO
 # Region properties staged by Space main._on_overworld_land for MV to consume
@@ -39,6 +40,7 @@ var pending_editor_room_addr: String = ""
 # begin_launch writes here; restore_pending_if_any reads and clears on re-landing.
 var _pending_snapshot: Dictionary = {}
 var _planet_snapshots: Dictionary = {}
+var _player_progression_snapshot: Dictionary = {}
 
 # ─── Unified flag bridge ──────────────────────────────────────────────────
 #
@@ -115,20 +117,29 @@ func has_pending_snapshot() -> bool:
 # Called by SSB when the player interacts with a planet POI. Stages the
 # pack id and spawn coords for MvMain._enter_tree to read, and pulls any
 # prior snapshot for that planet so MvMain._ready can rehydrate state.
-func begin_landing(pack_id: String, spawn_room: String, spawn_pos: Vector2, realm_id: String = ""):
-    if pack_id == "":
-        pack_id = "demo"
+func begin_landing(pack_id: String, spawn_room: String, spawn_pos: Vector2,
+        realm_id: String = "", planet_key: String = ""):
+    pack_id = pack_id.strip_edges()
+    if pack_id.is_empty():
+        push_error("PlanetaryInterface.begin_landing: empty pack_id")
+        return
+    var resolved_planet_key := _resolve_planet_key(pack_id, realm_id, spawn_room, planet_key)
     hosted = true
     pending_pack_id = pack_id
     pending_realm_id = realm_id.strip_edges()
+    pending_planet_key = resolved_planet_key
     pending_spawn_room = spawn_room
     pending_spawn_pos = spawn_pos
-    if _planet_snapshots.has(pack_id):
-        _pending_snapshot = _planet_snapshots[pack_id].duplicate(true)
+    if _planet_snapshots.has(resolved_planet_key):
+        _pending_snapshot = _planet_snapshots[resolved_planet_key].duplicate(true)
     else:
         _pending_snapshot = {}
-    print("planetary_interface: begin_landing pack='%s' spawn_room='%s' has_snapshot=%s" %
-        [pack_id, spawn_room, not _pending_snapshot.is_empty()])
+    if _pending_snapshot.has("planet_flags"):
+        restore_planet_flags(_pending_snapshot.get("planet_flags", {}))
+    else:
+        clear_planet_flags()
+    print("planetary_interface: begin_landing pack='%s' planet='%s' spawn_room='%s' has_snapshot=%s" %
+        [pack_id, resolved_planet_key, spawn_room, not _pending_snapshot.is_empty()])
 
 
 # Called by MV trigger actions when an authored interactable or trigger
@@ -164,9 +175,61 @@ func _consume_pending_snapshot() -> Dictionary:
 
 # Called by begin_launch to store the just-snapshotted planet state under
 # its pack id. Next visit to that planet rehydrates from here.
-func _save_snapshot(pack_id: String, snap: Dictionary):
-    _planet_snapshots[pack_id] = snap.duplicate(true)
-    print("planetary_interface: snapshotted '%s' (%d keys)" % [pack_id, snap.size()])
+func _save_snapshot(snapshot_key: String, snap: Dictionary):
+    _planet_snapshots[snapshot_key] = snap.duplicate(true)
+    print("planetary_interface: snapshotted '%s' (%d keys)" % [snapshot_key, snap.size()])
+
+
+func has_player_progression_snapshot() -> bool:
+    return not _player_progression_snapshot.is_empty()
+
+
+func _capture_player_progression(snap: Dictionary) -> void:
+    var out: Dictionary = {}
+    var inventory_v: Variant = snap.get("inventory", {})
+    if typeof(inventory_v) == TYPE_DICTIONARY and not (inventory_v as Dictionary).is_empty():
+        out["inventory"] = (inventory_v as Dictionary).duplicate(true)
+    var player_v: Variant = snap.get("player", {})
+    if typeof(player_v) == TYPE_DICTIONARY:
+        var player_data: Dictionary = player_v
+        var player_out: Dictionary = {}
+        if player_data.has("hp"):
+            player_out["hp"] = int(player_data.get("hp", 0))
+        if player_data.has("max_hp"):
+            player_out["max_hp"] = int(player_data.get("max_hp", 0))
+        if not player_out.is_empty():
+            out["player"] = player_out
+    if not out.is_empty():
+        _player_progression_snapshot = out
+
+
+func _restore_player_progression(main: Node, fallback_snap: Dictionary = {}) -> void:
+    var progression: Dictionary = _player_progression_snapshot
+    if progression.is_empty() and not fallback_snap.is_empty():
+        var fallback: Dictionary = {}
+        var fallback_inv_v: Variant = fallback_snap.get("inventory", {})
+        if typeof(fallback_inv_v) == TYPE_DICTIONARY and not (fallback_inv_v as Dictionary).is_empty():
+            fallback["inventory"] = (fallback_inv_v as Dictionary).duplicate(true)
+        var fallback_player_v: Variant = fallback_snap.get("player", {})
+        if typeof(fallback_player_v) == TYPE_DICTIONARY:
+            fallback["player"] = (fallback_player_v as Dictionary).duplicate(true)
+        progression = fallback
+    if progression.is_empty():
+        return
+    var inv_v: Variant = progression.get("inventory", {})
+    if typeof(inv_v) == TYPE_DICTIONARY and PlayerInventory != null and PlayerInventory.has_method("restore"):
+        PlayerInventory.restore(inv_v)
+    var player_v: Variant = progression.get("player", {})
+    if typeof(player_v) != TYPE_DICTIONARY or main == null:
+        return
+    var player: Node = main.get("_player") as Node
+    if player == null:
+        return
+    var player_data: Dictionary = player_v
+    if player_data.has("max_hp"):
+        player.set("max_hp", int(player_data.get("max_hp", int(player.get("max_hp")))))
+    if player_data.has("hp"):
+        player.set("hp", mini(int(player_data.get("hp", int(player.get("hp")))), int(player.get("max_hp"))))
 
 # Called by MvMain when an exit_to_space door tag is traversed (and by
 # future return_to_space triggers). Clears live state and emits the launch
@@ -176,6 +239,7 @@ func _emit_launch_after_snapshot():
     hosted = false
     pending_pack_id = ""
     pending_realm_id = ""
+    pending_planet_key = ""
     pending_spawn_room = ""
     pending_spawn_pos = Vector2.ZERO
     _pending_snapshot = {}
@@ -192,6 +256,9 @@ func begin_launch(main: Node) -> void:
     if pack_id.is_empty():
         push_error("PlanetaryInterface.begin_launch: no pending_pack_id")
         return
+    var snapshot_key := pending_planet_key.strip_edges()
+    if snapshot_key.is_empty():
+        snapshot_key = _resolve_planet_key(pack_id, pending_realm_id, pending_spawn_room, "")
 
     var snap: Dictionary = {
         "pack":      pack_id,
@@ -199,6 +266,15 @@ func begin_launch(main: Node) -> void:
         "player":    {},
         "vars":      {},       # deferred — VarStore not ported
         "inventory": {},       # deferred — PlayerInventory snapshot not ported
+        "snapshot_key": snapshot_key,
+        "realm": pending_realm_id,
+        "planet_key": pending_planet_key,
+        "room_state": {},
+        "map_visited": {},
+        "global_tags": {},
+        "trigger_state": {},
+        "planet_flags": snapshot_planet_flags(),
+        "global_flags": _global_flags.duplicate(true),
     }
     if main != null:
         if main.has_method("get_current_room_addr"):
@@ -213,9 +289,66 @@ func begin_launch(main: Node) -> void:
         # through begin_landing) still snapshots under the right key.
         if MvPackLoader.current_pack != null:
             snap["pack"] = MvPackLoader.current_pack.pack_id
+        if PlayerInventory != null and PlayerInventory.has_method("snapshot"):
+            snap["inventory"] = PlayerInventory.snapshot()
+        if MvRoomState != null and MvRoomState.has_method("snapshot"):
+            snap["room_state"] = MvRoomState.snapshot()
+        if MvMapScreen != null and MvMapScreen.has_method("visited_snapshot"):
+            snap["map_visited"] = MvMapScreen.visited_snapshot()
+        if MvTriggerEngine != null and MvTriggerEngine.has_method("snapshot_global_tags"):
+            snap["global_tags"] = MvTriggerEngine.snapshot_global_tags()
+        if MvTriggerEngine != null and MvTriggerEngine.has_method("snapshot_runtime_state"):
+            snap["trigger_state"] = MvTriggerEngine.snapshot_runtime_state()
 
-    _save_snapshot(pack_id, snap)
+    _save_snapshot(snapshot_key, snap)
+    _capture_player_progression(snap)
     _emit_launch_after_snapshot()
+
+
+func snapshot_current_mv(main: Node) -> bool:
+    var pack_id := pending_pack_id.strip_edges()
+    if pack_id.is_empty():
+        return false
+    var snapshot_key := pending_planet_key.strip_edges()
+    if snapshot_key.is_empty():
+        snapshot_key = _resolve_planet_key(pack_id, pending_realm_id, pending_spawn_room, "")
+    var snap: Dictionary = {
+        "pack": pack_id,
+        "room": "",
+        "player": {},
+        "inventory": {},
+        "snapshot_key": snapshot_key,
+        "realm": pending_realm_id,
+        "planet_key": pending_planet_key,
+        "room_state": {},
+        "map_visited": {},
+        "global_tags": {},
+        "trigger_state": {},
+        "planet_flags": snapshot_planet_flags(),
+        "global_flags": _global_flags.duplicate(true),
+    }
+    if main != null:
+        if main.has_method("get_current_room_addr"):
+            snap["room"] = str(main.call("get_current_room_addr"))
+        if main.has_method("get_player_snapshot"):
+            var ps = main.call("get_player_snapshot")
+            if typeof(ps) == TYPE_DICTIONARY:
+                snap["player"] = ps
+    if MvPackLoader.current_pack != null:
+        snap["pack"] = MvPackLoader.current_pack.pack_id
+    if PlayerInventory != null and PlayerInventory.has_method("snapshot"):
+        snap["inventory"] = PlayerInventory.snapshot()
+    if MvRoomState != null and MvRoomState.has_method("snapshot"):
+        snap["room_state"] = MvRoomState.snapshot()
+    if MvMapScreen != null and MvMapScreen.has_method("visited_snapshot"):
+        snap["map_visited"] = MvMapScreen.visited_snapshot()
+    if MvTriggerEngine != null and MvTriggerEngine.has_method("snapshot_global_tags"):
+        snap["global_tags"] = MvTriggerEngine.snapshot_global_tags()
+    if MvTriggerEngine != null and MvTriggerEngine.has_method("snapshot_runtime_state"):
+        snap["trigger_state"] = MvTriggerEngine.snapshot_runtime_state()
+    _save_snapshot(snapshot_key, snap)
+    _capture_player_progression(snap)
+    return true
 
 
 # Called by MvMain._ready after the initial pack load + room spawn. Pulls
@@ -226,21 +359,45 @@ func restore_pending_if_any(main: Node) -> bool:
     if main == null:
         return false
     var snap := _consume_pending_snapshot()
-    if snap.is_empty():
+    var has_planet_snapshot := not snap.is_empty()
+    if not has_planet_snapshot:
+        _restore_player_progression(main)
         return false
+    _restore_player_progression(main, snap)
+    if snap.has("room_state") and MvRoomState != null and MvRoomState.has_method("restore"):
+        var room_state_v: Variant = snap.get("room_state", {})
+        if typeof(room_state_v) == TYPE_DICTIONARY:
+            MvRoomState.restore(room_state_v)
+    if snap.has("map_visited") and MvMapScreen != null and MvMapScreen.has_method("restore_visited"):
+        var map_v: Variant = snap.get("map_visited", {})
+        if typeof(map_v) == TYPE_DICTIONARY:
+            MvMapScreen.restore_visited(map_v)
+    if snap.has("global_tags") and MvTriggerEngine != null and MvTriggerEngine.has_method("restore_global_tags"):
+        var tags_v: Variant = snap.get("global_tags", {})
+        if typeof(tags_v) == TYPE_DICTIONARY:
+            MvTriggerEngine.restore_global_tags(tags_v)
+    if snap.has("trigger_state") and MvTriggerEngine != null and MvTriggerEngine.has_method("restore_runtime_state"):
+        var trigger_state_v: Variant = snap.get("trigger_state", {})
+        if typeof(trigger_state_v) == TYPE_DICTIONARY:
+            MvTriggerEngine.restore_runtime_state(trigger_state_v)
+    if snap.has("planet_flags"):
+        restore_planet_flags(snap.get("planet_flags", {}))
 
     var room_addr := str(snap.get("room", ""))
     var pos := Vector2.ZERO
     var hp := -1
+    var max_hp := -1
     if snap.has("player") and typeof(snap["player"]) == TYPE_DICTIONARY:
         var pd: Dictionary = snap["player"]
         if pd.has("x") and pd.has("y"):
             pos = Vector2(float(pd["x"]), float(pd["y"]))
         if pd.has("hp"):
             hp = int(pd["hp"])
+        if pd.has("max_hp"):
+            max_hp = int(pd["max_hp"])
 
     if main.has_method("load_from_snapshot"):
-        main.call("load_from_snapshot", room_addr, pos, hp)
+        main.call("load_from_snapshot", room_addr, pos, hp, max_hp)
     print("PlanetaryInterface: restored snapshot")
     return true
 
@@ -260,6 +417,7 @@ func reset_runtime_state(clear_editor_return: bool = true, clear_snapshots: bool
     hosted = false
     pending_pack_id = ""
     pending_realm_id = ""
+    pending_planet_key = ""
     pending_spawn_room = ""
     pending_spawn_pos = Vector2.ZERO
     pending_region_id = ""
@@ -268,12 +426,58 @@ func reset_runtime_state(clear_editor_return: bool = true, clear_snapshots: bool
     _pending_snapshot = {}
     if clear_snapshots:
         _planet_snapshots = {}
+        _player_progression_snapshot = {}
     if clear_editor_return:
         pending_return_to_editor = false
         pending_editor_pack_id = ""
         pending_editor_realm_id = ""
         pending_editor_region_id = ""
         pending_editor_room_addr = ""
+
+
+func snapshot_all() -> Dictionary:
+    return {
+        "hosted": hosted,
+        "pending_pack_id": pending_pack_id,
+        "pending_realm_id": pending_realm_id,
+        "pending_planet_key": pending_planet_key,
+        "pending_spawn_room": pending_spawn_room,
+        "pending_spawn_pos": [pending_spawn_pos.x, pending_spawn_pos.y],
+        "pending_region_id": pending_region_id,
+        "pending_region_meta": pending_region_meta.duplicate(true),
+        "planet_flags": _planet_flags.duplicate(true),
+        "global_flags": _global_flags.duplicate(true),
+        "planet_snapshots": _planet_snapshots.duplicate(true),
+        "player_progression": _player_progression_snapshot.duplicate(true),
+    }
+
+
+func restore_all(data: Dictionary) -> void:
+    if data.is_empty():
+        return
+    hosted = bool(data.get("hosted", false))
+    pending_pack_id = str(data.get("pending_pack_id", "")).strip_edges()
+    pending_realm_id = str(data.get("pending_realm_id", "")).strip_edges()
+    pending_planet_key = str(data.get("pending_planet_key", "")).strip_edges()
+    pending_spawn_room = str(data.get("pending_spawn_room", "")).strip_edges()
+    var pos_v: Variant = data.get("pending_spawn_pos", [0.0, 0.0])
+    if typeof(pos_v) == TYPE_ARRAY and (pos_v as Array).size() >= 2:
+        pending_spawn_pos = Vector2(float((pos_v as Array)[0]), float((pos_v as Array)[1]))
+    else:
+        pending_spawn_pos = Vector2.ZERO
+    pending_region_id = str(data.get("pending_region_id", "")).strip_edges()
+    var region_meta_v: Variant = data.get("pending_region_meta", {})
+    pending_region_meta = (region_meta_v as Dictionary).duplicate(true) if typeof(region_meta_v) == TYPE_DICTIONARY else {}
+    restore_planet_flags(data.get("planet_flags", {}))
+    _global_flags.clear()
+    var global_flags_v: Variant = data.get("global_flags", {})
+    if typeof(global_flags_v) == TYPE_DICTIONARY:
+        _global_flags = (global_flags_v as Dictionary).duplicate(true)
+    var snapshots_v: Variant = data.get("planet_snapshots", {})
+    _planet_snapshots = (snapshots_v as Dictionary).duplicate(true) if typeof(snapshots_v) == TYPE_DICTIONARY else {}
+    var progression_v: Variant = data.get("player_progression", {})
+    _player_progression_snapshot = (progression_v as Dictionary).duplicate(true) if typeof(progression_v) == TYPE_DICTIONARY else {}
+    _pending_snapshot = {}
 
 
 # Returns the stashed {pack_id, region_id, room_addr} and clears the
@@ -291,3 +495,12 @@ func consume_return_to_editor() -> Dictionary:
     pending_editor_region_id = ""
     pending_editor_room_addr = ""
     return out
+
+
+func _resolve_planet_key(pack_id: String, realm_id: String, spawn_room: String, planet_key: String) -> String:
+    var key := planet_key.strip_edges()
+    if key.is_empty():
+        key = "%s/%s" % [realm_id.strip_edges(), spawn_room.strip_edges()]
+    if key.strip_edges().is_empty() or key == "/":
+        key = "default"
+    return "%s::%s" % [pack_id.strip_edges(), key]

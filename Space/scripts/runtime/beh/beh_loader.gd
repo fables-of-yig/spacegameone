@@ -1,6 +1,7 @@
 extends RefCounted
 
 const BehRegistry = preload("res://Space/scripts/runtime/beh/beh_registry.gd")
+const BehTypes = preload("res://Space/scripts/editor/beh/beh_types.gd")
 
 # Turns a behavior dict (as authored by the in-editor behavior builder
 # and serialized to behaviors.json) into a live BeehaveTree Node with
@@ -19,6 +20,11 @@ const BehRegistry = preload("res://Space/scripts/runtime/beh/beh_registry.gd")
 
 
 static func build_tree(behavior: Dictionary) -> BeehaveTree:
+    var validation_errors := validate_behavior(behavior)
+    if not validation_errors.is_empty():
+        for error in validation_errors:
+            push_error("[BehLoader] %s" % error)
+        return null
     var tree := BeehaveTree.new()
     var label: String = str(behavior.get("name", behavior.get("id", "behavior")))
     if label == "":
@@ -31,6 +37,69 @@ static func build_tree(behavior: Dictionary) -> BeehaveTree:
     if root_node != null:
         tree.add_child(root_node)
     return tree
+
+
+static func validate_behavior(behavior: Dictionary) -> Array:
+    var errors: Array = []
+    var behavior_id := str(behavior.get("id", behavior.get("name", "behavior"))).strip_edges()
+    if behavior_id.is_empty():
+        behavior_id = "behavior"
+    var root_v: Variant = behavior.get("root", null)
+    if typeof(root_v) != TYPE_DICTIONARY:
+        errors.append("%s: missing root dictionary" % behavior_id)
+        return errors
+    _validate_node(root_v as Dictionary, "%s.root" % behavior_id, errors)
+    return errors
+
+
+static func _validate_node(dict: Dictionary, path: String, errors: Array) -> void:
+    var type_str := str(dict.get("type", "")).strip_edges()
+    if type_str == "delay":
+        type_str = "delayer"
+    if type_str.is_empty():
+        errors.append("%s: missing node type" % path)
+        return
+    if not BehTypes.NODE_TYPES.has(type_str):
+        errors.append("%s: unknown node type '%s'" % [path, type_str])
+        return
+
+    var kids_v: Variant = dict.get("children", [])
+    var kids: Array = []
+    if typeof(kids_v) == TYPE_ARRAY:
+        kids = kids_v as Array
+    elif dict.has("children"):
+        errors.append("%s: children must be an array" % path)
+
+    if BehTypes.LEAF_TYPES.has(type_str):
+        if not kids.is_empty():
+            errors.append("%s: leaf nodes cannot have children" % path)
+        if type_str == "action":
+            var action_name := str(dict.get("action", "")).strip_edges()
+            if action_name.is_empty():
+                errors.append("%s: action leaf is missing action name" % path)
+            elif not BehRegistry.has_action(action_name):
+                errors.append("%s: unknown action leaf '%s'" % [path, action_name])
+        elif type_str == "condition":
+            var condition_name := str(dict.get("condition", "")).strip_edges()
+            if condition_name.is_empty():
+                errors.append("%s: condition leaf is missing condition name" % path)
+            elif not BehRegistry.has_condition(condition_name):
+                errors.append("%s: unknown condition leaf '%s'" % [path, condition_name])
+        return
+
+    if BehTypes.DECORATOR_TYPES.has(type_str) and kids.size() != 1:
+        errors.append("%s: decorator '%s' must have exactly one child" % [path, type_str])
+    elif type_str == "simple_parallel" and kids.size() != 2:
+        errors.append("%s: simple_parallel must have exactly two children" % path)
+    elif BehTypes.COMPOSITE_TYPES.has(type_str) and type_str != "simple_parallel" and kids.size() < 1:
+        errors.append("%s: composite '%s' must have at least one child" % [path, type_str])
+
+    for i in range(kids.size()):
+        var child_v: Variant = kids[i]
+        if typeof(child_v) != TYPE_DICTIONARY:
+            errors.append("%s.children[%d]: child is not a dictionary" % [path, i])
+            continue
+        _validate_node(child_v as Dictionary, "%s.children[%d]" % [path, i], errors)
 
 
 static func _build_node(dict: Dictionary) -> BeehaveNode:

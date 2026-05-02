@@ -272,6 +272,10 @@ func _run_actions(actions: Variant) -> bool:
 		if action.get("type", "") == "end_dialogue":
 			stop()
 			return false
+		if action.get("type", "") == "start_shop":
+			stop()
+			MvTriggerEngine.execute_action(action, {})
+			return false
 		MvTriggerEngine.execute_action(action, {})
 		if not _active:
 			return false

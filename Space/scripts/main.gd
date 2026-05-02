@@ -48,6 +48,7 @@ var loot_editor = null
 var trigger_editor = null
 var dialogue_editor = null
 var shop_editor = null
+var quest_editor = null
 var _editor_active_pack_id: String = ""
 var _editor_active_realm_id: String = ""
 var _editor_active_region_id: String = ""
@@ -234,6 +235,7 @@ func _ready():
     trigger_editor = editors["trigger_editor"]
     dialogue_editor = editors["dialogue_editor"]
     shop_editor = editors["shop_editor"]
+    quest_editor = editors["quest_editor"]
     _restore_editor_from_playtest_if_any()
     pause_menu = _ui.setup_pause_menu(self)
     _ui.setup_cinematic_overlay()
@@ -916,6 +918,7 @@ func _on_test_planet():
 func _on_play_pack(pack_id: String):
     if pack_id.is_empty():
         return
+    MvPackLoader.clear_runtime_state()
     MvPackLoader.reset_last_loaded_pack_id()
     if _planet_iface == null:
         _planet_iface = get_node_or_null("/root/PlanetaryInterface")
@@ -979,6 +982,8 @@ func _on_editor_chosen(kind: String, pack_id: String):
             _open_mv_editor(dialogue_editor, pack_id)
         "shop":
             _open_mv_editor(shop_editor, pack_id)
+        "quest":
+            _open_mv_editor(quest_editor, pack_id)
         _:
             push_warning("main._on_editor_chosen: unknown kind '%s'" % kind)
 
@@ -1035,6 +1040,8 @@ func _on_content_editor_editor_requested(kind: String, pack_id: String) -> void:
             _open_mv_editor(dialogue_editor, pack_id)
         "shop":
             _open_mv_editor(shop_editor, pack_id)
+        "quest":
+            _open_mv_editor(quest_editor, pack_id)
         _:
             _editor_return_to_content_hub = false
             push_warning("main._on_content_editor_editor_requested: unknown kind '%s'" % kind)
@@ -1233,10 +1240,14 @@ func _begin_mvmania_landing(data: Dictionary):
     # Tell PlanetaryInterface which pack to load BEFORE we instantiate Main.
     # MVMania.Main._EnterTree reads PlanetaryInterface.PendingPackId, so this
     # assignment has to happen first or Main will boot into "demo" by default.
-    var pack_id: String = str(data.get("pack_id", "demo")).strip_edges()
+    var pack_id: String = _resolve_planet_pack_id(data)
     if pack_id.is_empty():
-        pack_id = "demo"
+        push_error("PlanetaryInterface: planet landing has no authored pack_id")
+        return
     var manifest: Dictionary = _load_pack_manifest(pack_id)
+    if manifest.is_empty():
+        push_error("PlanetaryInterface: pack '%s' has no readable Pack.json" % pack_id)
+        return
     var realm_id: String = _resolve_authored_realm(
         pack_id,
         str(data.get("realm_id", "")).strip_edges(),
@@ -1261,7 +1272,8 @@ func _begin_mvmania_landing(data: Dictionary):
         spawn_room = RegIO.get_realm_start_room(pack_id, realm_id)
     if not spawn_room.is_empty() and (spawn_pos_v.x < 0.0 or spawn_pos_v.y < 0.0):
         spawn_pos_v = _resolve_room_player_spawn(pack_id, realm_id, spawn_room)
-    _planet_iface.begin_landing(pack_id, spawn_room, spawn_pos_v, realm_id)
+    var planet_key: String = _resolve_planet_snapshot_key(data, pack_id, realm_id, spawn_room)
+    _planet_iface.begin_landing(pack_id, spawn_room, spawn_pos_v, realm_id, planet_key)
 
     # Configure the planet viewport for the right mode.
     #   Editor: stretch_shrink=1 → SubViewport renders at native 1920x1080
@@ -1527,6 +1539,8 @@ func _teardown_planet_instances() -> void:
     _surface_death_blocked = false
     _clear_planet_overlay()
     if planet_main_instance and is_instance_valid(planet_main_instance):
+        if planet_main_instance.has_method("prepare_for_teardown"):
+            planet_main_instance.call("prepare_for_teardown")
         planet_main_instance.queue_free()
         planet_main_instance = null
 
@@ -1641,11 +1655,50 @@ func _stage_region_meta(pack_id: String, realm_id: String, region_id: String) ->
     _planet_iface.pending_region_meta = (meta_v as Dictionary).duplicate(true)
 
 
+func _resolve_planet_pack_id(data: Dictionary) -> String:
+    var pack_id := str(data.get("pack_id", "")).strip_edges()
+    if not pack_id.is_empty():
+        return pack_id
+    if MvPackLoader.current_pack != null:
+        var current_pack_id := str(MvPackLoader.current_pack.pack_id).strip_edges()
+        if not current_pack_id.is_empty():
+            return current_pack_id
+    if _entered_planet_from_menu:
+        return "demo"
+    return "demo"
+
+
+func _resolve_planet_snapshot_key(data: Dictionary, pack_id: String, realm_id: String,
+        spawn_room: String) -> String:
+    for key_field in ["snapshot_key", "planet_key", "id"]:
+        var explicit_key := str(data.get(key_field, "")).strip_edges()
+        if not explicit_key.is_empty():
+            return explicit_key
+    var source_system := str(data.get("source_system", loaded_system)).strip_edges()
+    var poi_name := str(data.get("poi_name", data.get("name", ""))).strip_edges()
+    if not source_system.is_empty() and not poi_name.is_empty():
+        return "%s/%s" % [source_system, _snapshot_key_part(poi_name)]
+    var poi_index := str(data.get("poi_index", "")).strip_edges()
+    if not source_system.is_empty() and not poi_index.is_empty():
+        return "%s/poi_%s" % [source_system, poi_index]
+    if not realm_id.is_empty() or not spawn_room.is_empty():
+        return "%s/%s" % [realm_id, spawn_room]
+    return pack_id
+
+
+func _snapshot_key_part(value: String) -> String:
+    var out := value.strip_edges().to_lower()
+    out = out.replace("\\", "/")
+    out = out.replace("/", "_")
+    out = out.replace(" ", "_")
+    out = out.replace(":", "_")
+    return "planet" if out.is_empty() else out
+
+
 func _load_pack_manifest(pack_id: String) -> Dictionary:
     for path in [
         "user://Packs/%s/Pack.json" % pack_id,
         "res://Content/%s/Pack.json" % pack_id,
-        "res://Content/demo/Pack.json",
     ]:
         if not FileAccess.file_exists(path):
             continue

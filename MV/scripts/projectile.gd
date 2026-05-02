@@ -37,7 +37,8 @@ func _ready() -> void:
 
 
 func _physics_process(delta: float) -> void:
-    if MvGame.simulation_paused:
+    var mv_game := _mv_game()
+    if mv_game != null and bool(mv_game.get("simulation_paused")):
         return
     _age += delta
     if _age >= lifetime:
@@ -115,7 +116,8 @@ func _draw() -> void:
 
 
 func _first_world_collision(from_pos: Vector2, to_pos: Vector2) -> Dictionary:
-    var room: Node = MvGame.room_manager
+    var mv_game := _mv_game()
+    var room: Node = mv_game.get("room_manager") if mv_game != null else null
     if room == null or not room.has_method("is_solid_at_world_pos"):
         return {"hit": false}
     var travel := from_pos.distance_to(to_pos)
@@ -135,6 +137,13 @@ func _overlaps_world_at(center: Vector2, room: Node) -> bool:
         if bool(room.call("is_solid_at_world_pos", point)):
             return true
     return false
+
+
+func _mv_game() -> Node:
+    var tree := get_tree()
+    if tree == null or tree.root == null:
+        return null
+    return tree.root.get_node_or_null("MvGame")
 
 
 func _world_probe_points(center: Vector2) -> Array:

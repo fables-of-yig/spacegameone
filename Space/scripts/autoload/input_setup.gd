@@ -118,13 +118,11 @@ static func install() -> void:
     _add_key("move_right", KEY_D)
     _add_key("jump", KEY_SPACE)
     _add_mouse("fire_primary", MOUSE_BUTTON_LEFT)
-    _add_mouse("fire_secondary", MOUSE_BUTTON_RIGHT)
     _add_key("toggle_ship_builder", KEY_B)
     _add_key("toggle_star_map", KEY_M)
     _add_key("map", KEY_M)
     _add_key("interact", KEY_E)
     _add_key("melee_attack", KEY_C)
-    _add_key("ranged_attack", KEY_V)
     _add_key("grapple", KEY_G)
     _add_key("dodge_roll", KEY_Z)
     _add_key("scan", KEY_Q)
@@ -255,11 +253,30 @@ static func serialize_action_events(action: String) -> Array:
 
 
 static func apply_binding_map(bindings: Dictionary) -> void:
+    var clean_bindings := sanitize_binding_map(bindings)
     for action_v in tracked_actions():
         var action := str(action_v)
-        if not bindings.has(action):
+        if not clean_bindings.has(action):
             continue
-        set_action_binding_specs(action, bindings.get(action, []))
+        set_action_binding_specs(action, clean_bindings.get(action, []))
+    _remove_mouse_button("fire_secondary", MOUSE_BUTTON_RIGHT)
+
+
+static func sanitize_binding_map(bindings: Dictionary) -> Dictionary:
+    var out := bindings.duplicate(true)
+    if out.has("fire_secondary"):
+        var specs_v: Variant = out.get("fire_secondary", [])
+        if typeof(specs_v) == TYPE_ARRAY:
+            var cleaned: Array = []
+            for spec_v in (specs_v as Array):
+                if typeof(spec_v) == TYPE_DICTIONARY:
+                    var spec: Dictionary = spec_v
+                    if str(spec.get("kind", "")) == "mouse_button" \
+                            and int(spec.get("button_index", 0)) == int(MOUSE_BUTTON_RIGHT):
+                        continue
+                cleaned.append(spec_v)
+            out["fire_secondary"] = cleaned
+    return out
 
 
 static func set_action_binding_specs(action: String, specs_v: Variant) -> void:
@@ -571,6 +588,14 @@ static func _add_mouse(action: String, button: MouseButton) -> void:
     var ev := InputEventMouseButton.new()
     ev.button_index = button
     InputMap.action_add_event(action, ev)
+
+
+static func _remove_mouse_button(action: String, button: MouseButton) -> void:
+    if not InputMap.has_action(action):
+        return
+    for event_v in InputMap.action_get_events(action):
+        if event_v is InputEventMouseButton and int((event_v as InputEventMouseButton).button_index) == int(button):
+            InputMap.action_erase_event(action, event_v)
 
 
 static func _add_joy_button(action: String, button: JoyButton) -> void:

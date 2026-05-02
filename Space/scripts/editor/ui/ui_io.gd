@@ -550,11 +550,11 @@ static func validate_screen(screen_id: String, data: Dictionary, pack_id: String
         errors.append("screen data is empty")
         return {"errors": errors, "warnings": warnings}
     if not UiContract.is_known_screen(screen_id):
-        warnings.append("screen id '%s' is not in UiContract.SCREEN_DEFS" % screen_id)
+        errors.append("screen id '%s' is not in UiContract.SCREEN_DEFS" % screen_id)
     var ids_seen: Dictionary = {}
     _validate_element(data, screen_id, screen_id, ids_seen, errors, warnings, pack_id)
     if not UiContract.screen_mount_is_supported(screen_id):
-        warnings.append("runtime mounting is not implemented for authored screen '%s' yet" % screen_id)
+        errors.append("runtime mounting is not implemented for authored screen '%s' yet" % screen_id)
     return {"errors": errors, "warnings": warnings}
 
 
@@ -680,6 +680,11 @@ static func _validate_action_args(screen_id: String, host_id: String, action_id:
         if trimmed in ["cinematic", "boss_intro"]:
             return
         if trimmed.begins_with("shop:"):
+            var shop_id := trimmed.substr("shop:".length()).strip_edges()
+            if shop_id.is_empty():
+                errors.append("%s open_screen target '%s' is missing a shop id" % [path, trimmed])
+            elif pack_id != "" and not _shop_exists(pack_id, shop_id):
+                errors.append("%s open_screen target references missing shop '%s'" % [path, shop_id])
             return
         if not trimmed.is_empty() and UiContract.is_known_screen(trimmed) and pack_id != "" and trimmed != screen_id and not screen_exists(pack_id, trimmed):
             warnings.append("%s open_screen target '%s' is not authored in pack '%s' yet" % [path, trimmed, pack_id])
@@ -687,6 +692,16 @@ static func _validate_action_args(screen_id: String, host_id: String, action_id:
         warnings.append("%s fire_event '%s' contains whitespace" % [path, trimmed])
     elif action_id == "choose_dialogue" and not item_action and trimmed.is_empty():
         errors.append("%s choose_dialogue requires a choice index" % path)
+
+
+static func _shop_exists(pack_id: String, shop_id: String) -> bool:
+    if pack_id.is_empty() or shop_id.is_empty():
+        return false
+    var file_name := shop_id
+    if not file_name.ends_with(".json"):
+        file_name += ".json"
+    return FileAccess.file_exists(user_pack_dir(pack_id) + "Shops/" + file_name) \
+        or FileAccess.file_exists(shipped_pack_dir(pack_id) + "Shops/" + file_name)
 
 
 static func _sanitize_file_stem(name: String) -> String:
@@ -861,15 +876,22 @@ static func _stock_shop_screen() -> Dictionary:
     var root := _base_screen("shop")
     root["children"] = [
         _label("shop_title", 16, 12, 160, 24, "SHOP", "title"),
-        _label("shop_hint", 16, 36, 448, 18, "Vendor stock uses each offer id, so duplicate base items still buy the correct row.", "dim"),
-        _label("shop_vendor_lbl", 16, 64, 180, 18, "Vendor stock", "body"),
-        _grid("shop_vendor_items", 16, 84, 180, 136, "shop.items", 4, 36, "buy_item", "stock_id"),
-        _label("shop_player_lbl", 214, 64, 180, 18, "Player inventory", "body"),
-        _grid("shop_player_items", 214, 84, 180, 136, "inventory.items", 4, 36, "sell_item", "key"),
+        _label("shop_gold", 300, 14, 164, 18, "", "success", "game_var.gold"),
+        _label("shop_hint", 16, 36, 448, 18, "Hover an offer for details. Click an affordable row to buy it.", "dim"),
+        _label("shop_message", 16, 56, 448, 18, "", "body", "shop.message"),
+        _label("shop_vendor_lbl", 16, 82, 180, 18, "Vendor stock", "body"),
+        _list("shop_vendor_items", 16, 102, 244, 112, "shop.items", "buy_item", "stock_id"),
+        _label("shop_player_lbl", 278, 82, 180, 18, "Player inventory", "body"),
+        _list("shop_player_items", 278, 102, 186, 112, "inventory.items", "sell_item", "key"),
         _label("shop_barter_lbl", 16, 224, 180, 18, "Barter offer / notes", "body"),
-        _label("shop_barter_note", 16, 242, 300, 18, "Use trigger events or custom buttons here as you flesh out barter.", "dim"),
+        _label("shop_barter_note", 16, 242, 300, 18, "Shop items use authored item effects, prices, and trigger events.", "dim"),
         _button("shop_close", 356, 232, 108, 28, "CLOSE", "close_screen"),
     ]
+    root["children"][1]["properties"]["format"] = "Gold: {value}"
+    root["children"][5]["properties"]["item_wrap"] = true
+    root["children"][5]["properties"]["item_min_height"] = 26
+    root["children"][7]["properties"]["item_wrap"] = true
+    root["children"][7]["properties"]["item_min_height"] = 22
     return root
 
 
@@ -902,6 +924,7 @@ static func _stock_dialogue_box_screen() -> Dictionary:
 
 static func _stock_space_hud_screen() -> Dictionary:
     var root := _base_screen("hud_space")
+    root["rect"]["h"] = 71
     root["children"] = [
         _label("hud_space_hull_label", 12, 10, 80, 16, "HULL", "body"),
         _progress("hud_space_hull_bar", 54, 10, 136, 14, "player.health", "player.max_health", "#5cd96a"),
@@ -915,12 +938,24 @@ static func _stock_space_hud_screen() -> Dictionary:
 
 static func _make_stock_mv_hud_screen(screen_id: String) -> Dictionary:
     var root := _base_screen(screen_id)
+    root["rect"]["h"] = 71
     root["children"] = [
-        _label("hud_mv_hp_label", 12, 10, 80, 16, "HP", "body"),
-        _progress("hud_mv_hp_bar", 44, 10, 150, 14, "player.hp", "player.max_hp", "#d85353"),
+        _label("hud_mv_hp_label", 12, 10, 52, 16, "", "body", "player.hp"),
+        _label("hud_mv_hp_max", 62, 10, 42, 16, "", "body", "player.max_hp"),
+        _progress("hud_mv_hp_bar", 108, 10, 86, 14, "player.hp", "player.max_hp", "#d85353"),
         _label("hud_mv_weapon_label", 214, 10, 100, 16, "", "body", "current_weapon.name"),
         _label("hud_mv_room_label", 326, 10, 140, 16, "", "dim", "room.name"),
+        _label("hud_mv_gold", 214, 30, 100, 16, "", "success", "game_var.gold"),
+        _label("hud_mv_missiles", 326, 30, 88, 16, "", "body", "game_var.ammo_missile"),
+        _label("hud_mv_missile_max", 412, 30, 54, 16, "", "body", "game_var.max_ammo_missile"),
+        _label("hud_mv_quest_title", 12, 30, 190, 16, "", "body", "quest.current.title"),
+        _label("hud_mv_quest_stage", 12, 48, 210, 16, "", "dim", "quest.current.stage_title"),
     ]
+    root["children"][0]["properties"]["format"] = "E {value}/"
+    root["children"][1]["properties"]["format"] = "{value}"
+    root["children"][5]["properties"]["format"] = "Gold: {value}"
+    root["children"][6]["properties"]["format"] = "Missiles: {value}/"
+    root["children"][7]["properties"]["format"] = "{value}"
     return root
 
 

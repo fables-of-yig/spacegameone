@@ -165,6 +165,24 @@ func get_ranged_attack_id() -> String:
 	return _attack_id_for_type("projectile", "beam_shot")
 
 
+func get_secondary_attack_id() -> String:
+	_ensure_defs_loaded()
+	var config := _resolve_equipped_secondary_config()
+	return str(config.get("attack_id", ""))
+
+
+func get_secondary_ammo_key() -> String:
+	_ensure_defs_loaded()
+	var config := _resolve_equipped_secondary_config()
+	return str(config.get("ammo_key", ""))
+
+
+func get_secondary_ammo_cost() -> int:
+	_ensure_defs_loaded()
+	var config := _resolve_equipped_secondary_config()
+	return int(config.get("ammo_cost", 1))
+
+
 func set_active_attack_id(attack_id: String) -> void:
 	_ensure_defs_loaded()
 	var clean_id := attack_id.strip_edges()
@@ -247,11 +265,25 @@ func _apply_item_effect(def: Dictionary, count: int = 1) -> bool:
 		"add_ammo":
 			if arg.is_empty():
 				return false
-			add_var("ammo_%s" % arg, float(amount) * count)
+			var ammo_key := "ammo_%s" % arg
+			var max_key := "max_ammo_%s" % arg
+			var max_ammo := int(get_var(max_key, 0))
+			var current_ammo := int(get_var(ammo_key, max_ammo if max_ammo > 0 else 0))
+			var next_ammo := current_ammo + maxi(amount, 0) * count
+			if max_ammo > 0:
+				next_ammo = mini(next_ammo, max_ammo)
+			set_var(ammo_key, next_ammo)
 		"max_ammo_up":
 			if arg.is_empty():
 				return false
-			add_var("max_ammo_%s" % arg, float(amount) * count)
+			var maxup_ammo_key := "ammo_%s" % arg
+			var maxup_max_key := "max_ammo_%s" % arg
+			var increase := maxi(amount, 0) * count
+			var old_max_ammo := int(get_var(maxup_max_key, 0))
+			var new_max_ammo := old_max_ammo + increase
+			var maxup_current_ammo := int(get_var(maxup_ammo_key, old_max_ammo if old_max_ammo > 0 else 0))
+			set_var(maxup_max_key, new_max_ammo)
+			set_var(maxup_ammo_key, mini(maxup_current_ammo + increase, new_max_ammo))
 		"damage_up":
 			add_var("mv_melee_damage_bonus", float(amount) * count)
 			add_var("mv_projectile_damage_bonus", float(amount) * count)
@@ -292,6 +324,10 @@ func _apply_item_effect(def: Dictionary, count: int = 1) -> bool:
 				set_active_attack_id(arg)
 			else:
 				set_active_weapon_type(_weapon_type_from_name(arg))
+		"equip_item":
+			if arg.is_empty():
+				return false
+			return equip_item_by_id(arg)
 		_:
 			return false
 	return true
@@ -490,6 +526,24 @@ func _resolve_equipped_attack() -> String:
 		if not mapped_attack_id.is_empty():
 			return mapped_attack_id
 	return ""
+
+
+func _resolve_equipped_secondary_config() -> Dictionary:
+	for slot in _equipment.keys():
+		var item_id := str(_equipment.get(slot, "")).strip_edges()
+		if item_id.is_empty():
+			continue
+		var def := get_equipment_definition(item_id)
+		var attack_id := str(def.get("secondary_attack", "")).strip_edges()
+		if attack_id.is_empty() or not _attack_defs_cache.has(attack_id):
+			continue
+		var ammo_key := str(def.get("secondary_ammo_key", "")).strip_edges()
+		return {
+			"attack_id": attack_id,
+			"ammo_key": ammo_key,
+			"ammo_cost": maxi(0, int(def.get("secondary_ammo_cost", 1))),
+		}
+	return {}
 
 
 func _reapply_equipment_state() -> void:

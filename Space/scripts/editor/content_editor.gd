@@ -2,18 +2,21 @@ extends Control
 
 const UIPanels = preload("res://Space/scripts/ui/ui_panels.gd")
 const ContentValidator = preload("res://Space/scripts/editor/content_validator.gd")
+const ContentReferenceIndex = preload("res://Space/scripts/editor/content_reference_index.gd")
+const PlanetLandingBossRecipe = preload("res://Space/scripts/editor/recipes/planet_landing_boss_recipe.gd")
 
 
 signal closed
 signal editor_requested(kind: String, pack_id: String)
 signal playtest_requested(pack_id: String)
 
-const MODE_ORDER: Array = ["campaign", "objects", "world", "triggers", "ui", "audio", "playtest"]
+const MODE_ORDER: Array = ["campaign", "objects", "world", "triggers", "recipes", "ui", "audio", "playtest"]
 const MODE_LABELS: Dictionary = {
     "campaign": "CAMPAIGN",
     "objects": "GAME PIECES",
     "world": "WORLD",
     "triggers": "GAME LOGIC",
+    "recipes": "RECIPES / WIZARDS",
     "ui": "UI + FX",
     "audio": "AUDIO",
     "playtest": "CHECK + PLAY",
@@ -24,6 +27,7 @@ const MODE_DESCRIPTIONS: Dictionary = {
     "objects": "Definitions: player, ships, modules, loot, entities, AI, dialogue, shops.",
     "world": "Realm, regions, rooms, solar systems, and planet landing pathways.",
     "triggers": "Rules for when things happen, what must be true, and what the game should do.",
+    "recipes": "One-click setup helpers that generate or wire starter content.",
     "ui": "Theme, authored screens, cinematics, and trigger-driven menu flow.",
     "audio": "Import and curate music / SFX assets for this pack.",
     "playtest": "Validate the pack, including authored UI screens, then launch it as a playable build.",
@@ -109,6 +113,12 @@ const MODE_TILES: Dictionary = {
             "subtitle": "Vendor inventories, prices, barter-facing stock.",
             "accent": Color(0.85, 0.73, 0.42),
         },
+        {
+            "kind": "quest",
+            "label": "QUESTS",
+            "subtitle": "Stages, objectives, rewards, and journal-facing structure.",
+            "accent": Color(0.7, 0.86, 0.42),
+        },
     ],
     "world": [
         {
@@ -122,6 +132,14 @@ const MODE_TILES: Dictionary = {
             "label": "SYSTEMS + PLANETS",
             "subtitle": "Author stars, orbiting POIs, and planet landing links.",
             "accent": Color(0.32, 0.8, 0.96),
+        },
+    ],
+    "recipes": [
+        {
+            "kind": "__landing_boss_recipe__",
+            "label": "STARTER LANDING",
+            "subtitle": "Generate a planet landing, key gate, boss room, and trigger wiring.",
+            "accent": Color(0.88, 0.58, 0.28),
         },
     ],
     "triggers": [
@@ -142,6 +160,12 @@ const MODE_TILES: Dictionary = {
             "label": "SHOPS",
             "subtitle": "Vendor stock, prices, and economy hooks.",
             "accent": Color(0.85, 0.73, 0.42),
+        },
+        {
+            "kind": "quest",
+            "label": "QUESTS",
+            "subtitle": "Author progression arcs from objectives into rewards.",
+            "accent": Color(0.7, 0.86, 0.42),
         },
     ],
     "ui": [
@@ -180,6 +204,12 @@ const MODE_TILES: Dictionary = {
             "accent": Color(0.28, 0.6, 0.95),
         },
         {
+            "kind": "__reference_lookup__",
+            "label": "REFERENCE LOOKUP",
+            "subtitle": "Find every trigger, room, shop, dialogue, or object using one authored id.",
+            "accent": Color(0.78, 0.62, 0.96),
+        },
+        {
             "kind": "theme",
             "label": "UI TEST PASS",
             "subtitle": "Quick jump back into authored screens before testing.",
@@ -211,6 +241,10 @@ var _manifest_fields: Dictionary = {}
 var _manifest_desc: TextEdit = null
 var _import_dialog: FileDialog = null
 var _export_dialog: FileDialog = null
+var _reference_dialog: AcceptDialog = null
+var _reference_kind: OptionButton = null
+var _reference_id: LineEdit = null
+var _reference_results: TextEdit = null
 
 
 func _ready() -> void:
@@ -221,6 +255,7 @@ func _ready() -> void:
     _skip_close_frame = true
     set_process(true)
     _build_campaign_controls()
+    _build_reference_dialog()
 
 
 func _build_campaign_controls() -> void:
@@ -260,6 +295,44 @@ func _build_campaign_controls() -> void:
     _export_dialog.add_filter("*.zip", "ZIP Archive")
     _export_dialog.file_selected.connect(_on_export_archive_selected)
     add_child(_export_dialog)
+
+
+func _build_reference_dialog() -> void:
+    _reference_dialog = AcceptDialog.new()
+    _reference_dialog.title = "Reference Lookup"
+    _reference_dialog.visible = false
+    _reference_dialog.min_size = Vector2(620, 460)
+    add_child(_reference_dialog)
+
+    var root := VBoxContainer.new()
+    root.custom_minimum_size = Vector2(580, 380)
+    _reference_dialog.add_child(root)
+
+    var row := HBoxContainer.new()
+    root.add_child(row)
+
+    _reference_kind = OptionButton.new()
+    _reference_kind.custom_minimum_size = Vector2(150, 28)
+    for kind in ["item", "ability", "entity", "dialogue", "shop", "quest", "room", "system", "trigger", "behavior", "attack", "projectile"]:
+        _reference_kind.add_item(kind)
+    row.add_child(_reference_kind)
+
+    _reference_id = LineEdit.new()
+    _reference_id.placeholder_text = "authored id"
+    _reference_id.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+    _reference_id.text_submitted.connect(func(_text: String) -> void: _run_reference_lookup())
+    row.add_child(_reference_id)
+
+    var find_button := Button.new()
+    find_button.text = "Find"
+    find_button.pressed.connect(_run_reference_lookup)
+    row.add_child(find_button)
+
+    _reference_results = TextEdit.new()
+    _reference_results.editable = false
+    _reference_results.wrap_mode = TextEdit.LINE_WRAPPING_BOUNDARY
+    _reference_results.size_flags_vertical = Control.SIZE_EXPAND_FILL
+    root.add_child(_reference_results)
 
 
 func current_mode() -> String:
@@ -687,6 +760,11 @@ func _mode_hints(mode_key: String) -> Array:
                 "Dialogue authoring lives here because the most common link is NPC `dialogue_id` or trigger `start_dialogue`.",
                 "Use Trigger Editor for zones, cutscenes, follow-up logic, UI events, and anything more complex than a plain NPC conversation.",
             ]
+        "recipes":
+            return [
+                "Recipes are setup helpers, not primary authoring pages.",
+                "Use them to generate starter structures, then edit the result in the normal World, Game Pieces, and Game Logic tabs.",
+            ]
         "ui":
             return [
                 "Use Theme + UI for authored screens, sprite button states, and the cinematic overlay slot.",
@@ -757,6 +835,11 @@ func _activate_tile(kind: String) -> void:
         "__play_pack__":
             _save_manifest()
             playtest_requested.emit(pack_id)
+        "__landing_boss_recipe__":
+            _save_manifest()
+            _run_landing_boss_recipe()
+        "__reference_lookup__":
+            _open_reference_lookup()
         _:
             if not kind.is_empty():
                 visible = false
@@ -951,3 +1034,53 @@ func _run_validation() -> void:
         _validation_summary = "No validator issues found for pack '%s'." % pack_id
         return
     _validation_summary = "%d errors, %d warnings in pack '%s'." % [errors, warnings, pack_id]
+
+
+func _run_landing_boss_recipe() -> void:
+    var result: Dictionary = PlanetLandingBossRecipe.apply(pack_id)
+    _validation_lines.clear()
+    for error_v in result.get("errors", []):
+        _validation_lines.append("[ERROR] %s" % str(error_v))
+    if bool(result.get("ok", false)):
+        _validation_summary = "Created landing + boss gate recipe for '%s'. Start room: %s." % [
+            pack_id,
+            str(result.get("start_room", "")),
+        ]
+        if _validation_lines.is_empty():
+            _validation_lines.append("Recipe validation passed with %d total issue(s)." % int(result.get("issue_count", 0)))
+    else:
+        _validation_summary = "Landing + boss gate recipe needs attention for '%s'." % pack_id
+    queue_redraw()
+
+
+func _open_reference_lookup() -> void:
+    if _reference_dialog == null:
+        return
+    if _reference_results != null:
+        _reference_results.text = "Choose a kind, enter an authored id, then press Find."
+    if _reference_id != null:
+        _reference_id.text = ""
+    _reference_dialog.popup_centered()
+
+
+func _run_reference_lookup() -> void:
+    if _reference_kind == null or _reference_id == null or _reference_results == null:
+        return
+    var kind := _reference_kind.get_item_text(_reference_kind.selected).strip_edges()
+    var id := _reference_id.text.strip_edges()
+    if id.is_empty():
+        _reference_results.text = "Enter an id to inspect."
+        return
+    var index := ContentReferenceIndex.build(pack_id)
+    var lines := ContentReferenceIndex.summary_lines(index, kind, id)
+    _reference_results.text = _lines_to_text(lines)
+    _validation_summary = "Reference lookup: %s '%s' in pack '%s'." % [kind, id, pack_id]
+    _validation_lines = lines
+    queue_redraw()
+
+
+func _lines_to_text(lines: Array) -> String:
+    var packed := PackedStringArray()
+    for line_v in lines:
+        packed.append(str(line_v))
+    return "\n".join(packed)

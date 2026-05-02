@@ -224,6 +224,7 @@ func setup_editors(host: Node) -> Dictionary:
         ["trigger_editor", "res://Space/scripts/editor/trigger_editor.gd"],
         ["dialogue_editor", "res://Space/scripts/editor/dialogue_editor.gd"],
         ["shop_editor", "res://Space/scripts/editor/shop_editor.gd"],
+        ["quest_editor", "res://Space/scripts/editor/quest_editor.gd"],
     ]
     for pair in mv_editors:
         var ed = _mk_editor(editor_layer, pair[1])

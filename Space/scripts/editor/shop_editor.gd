@@ -9,6 +9,8 @@ extends Control
 # validated by ContentValidator, not here.
 
 const PedIO := preload("res://Space/scripts/editor/ped/ped_io.gd")
+const ContentReferenceIndex := preload("res://Space/scripts/editor/content_reference_index.gd")
+const ContentReferenceRefactor := preload("res://Space/scripts/editor/content_reference_refactor.gd")
 
 const ITEM_EFFECTS := [
     "",
@@ -27,6 +29,7 @@ const ITEM_EFFECTS := [
     "add_tag",
     "fire_event",
     "set_weapon",
+    "equip_item",
 ]
 const EFFECTS_REQUIRING_ARG := [
     "grant_ability",
@@ -35,6 +38,7 @@ const EFFECTS_REQUIRING_ARG := [
     "add_tag",
     "fire_event",
     "set_weapon",
+    "equip_item",
     "add_ammo",
     "max_ammo_up",
 ]
@@ -81,9 +85,11 @@ var _reg_amount_edit: LineEdit = null
 var _reg_arg_edit: LineEdit = null
 var _reg_auto_check: CheckBox = null
 var _reg_validation_label: Label = null
+var _delete_registry_confirm: ConfirmationDialog = null
 
 var _tutorial_btn: Button = null
 var _tutorial_overlay: Control = null
+var _pending_delete_registry_item_id: String = ""
 
 
 func request_close() -> void:
@@ -155,6 +161,14 @@ func _ready() -> void:
     mouse_filter = MOUSE_FILTER_STOP
     _undo = EditorUndo.new(_capture_state, _apply_state)
     _build_ui()
+    _build_delete_registry_confirm()
+
+
+func _build_delete_registry_confirm() -> void:
+    _delete_registry_confirm = ConfirmationDialog.new()
+    _delete_registry_confirm.title = "Delete Item"
+    _delete_registry_confirm.confirmed.connect(_on_delete_registry_item_confirmed)
+    add_child(_delete_registry_confirm)
 
 
 func _capture_state() -> Dictionary:
@@ -661,7 +675,9 @@ func _flush_registry_item() -> bool:
         status_changed.emit("Registry item has invalid number fields")
         return false
     var item: Dictionary = _registry_items[_selected_registry_item]
-    item["id"] = _reg_id_edit.text.strip_edges()
+    var old_id := str(item.get("id", "")).strip_edges()
+    var new_id := _reg_id_edit.text.strip_edges()
+    item["id"] = new_id
     item["name"] = _reg_name_edit.text.strip_edges()
     item["description"] = _reg_desc_edit.text.strip_edges()
     item["category"] = _reg_category.get_item_text(_reg_category.selected) if _reg_category.selected >= 0 else "misc"
@@ -680,6 +696,8 @@ func _flush_registry_item() -> bool:
         item["auto_use_on_gain"] = true
     else:
         item.erase("auto_use_on_gain")
+    if not old_id.is_empty() and not new_id.is_empty() and old_id != new_id:
+        _rename_item_references(old_id, new_id)
     _refresh_known_item_ids()
     _rebuild_registry_list()
     return true
@@ -865,16 +883,105 @@ func _add_registry_item(item: Dictionary) -> void:
 func _on_delete_registry_item() -> void:
     if _selected_registry_item < 0 or _selected_registry_item >= _registry_items.size():
         return
+    var item_id := str((_registry_items[_selected_registry_item] as Dictionary).get("id", "")).strip_edges()
+    var refs := ContentReferenceIndex.find_references(_pack_id, "item", item_id)
+    if not refs.is_empty() and _delete_registry_confirm != null:
+        _pending_delete_registry_item_id = item_id
+        _delete_registry_confirm.dialog_text = _reference_warning_text(
+            refs,
+            "Delete \"%s\"? These references will break unless you update them." % item_id
+        )
+        _delete_registry_confirm.popup_centered(Vector2i(560, 280))
+        return
+    _delete_registry_item_now(item_id)
+
+
+func _delete_registry_item_now(item_id: String) -> void:
+    var idx := _selected_registry_item
+    if not item_id.is_empty():
+        idx = _registry_index_for_id(item_id)
+    if idx < 0 or idx >= _registry_items.size():
+        return
     if _undo != null:
         _undo.begin()
-    _registry_items.remove_at(_selected_registry_item)
-    _selected_registry_item = mini(_selected_registry_item, _registry_items.size() - 1)
+    _registry_items.remove_at(idx)
+    _selected_registry_item = mini(idx, _registry_items.size() - 1)
     _mark_items_dirty()
     _refresh_known_item_ids()
     _rebuild_registry_list()
     _rebuild_item_list()
     if _undo != null:
         _undo.commit("delete registry item")
+
+
+func _on_delete_registry_item_confirmed() -> void:
+    var item_id := _pending_delete_registry_item_id
+    _pending_delete_registry_item_id = ""
+    _delete_registry_item_now(item_id)
+
+
+func _rename_item_references(old_id: String, new_id: String) -> void:
+    _rename_item_refs_in_current_shop(old_id, new_id)
+    var refactor := ContentReferenceRefactor.rename_references(_pack_id, "item", old_id, new_id)
+    if not bool(refactor.get("ok", false)):
+        status_changed.emit("Item renamed, but reference update failed: %s" % _lines_to_text(refactor.get("errors", [])))
+        return
+    var changed := int(refactor.get("changed_refs", 0))
+    if changed > 0:
+        _dirty = true
+        status_changed.emit("Renamed item id and updated %d reference(s)" % changed)
+
+
+func _rename_item_refs_in_current_shop(old_id: String, new_id: String) -> void:
+    for item_v in _items:
+        if typeof(item_v) != TYPE_DICTIONARY:
+            continue
+        var item: Dictionary = item_v
+        if str(item.get("id", "")).strip_edges() == old_id:
+            item["id"] = new_id
+    _rebuild_item_list()
+
+
+func _registry_index_for_id(item_id: String) -> int:
+    for i in range(_registry_items.size()):
+        var item_v: Variant = _registry_items[i]
+        if typeof(item_v) == TYPE_DICTIONARY and str((item_v as Dictionary).get("id", "")).strip_edges() == item_id:
+            return i
+    return -1
+
+
+func _reference_warning_text(refs: Array, intro: String) -> String:
+    var lines := PackedStringArray()
+    lines.append(intro)
+    lines.append("")
+    lines.append("%d reference(s) found:" % refs.size())
+    var limit := mini(refs.size(), 8)
+    for i in range(limit):
+        var ref_v: Variant = refs[i]
+        if typeof(ref_v) != TYPE_DICTIONARY:
+            continue
+        var ref: Dictionary = ref_v
+        lines.append("- %s %s (%s)" % [
+            str(ref.get("source", "")),
+            str(ref.get("field", "")),
+            str(ref.get("role", "")),
+        ])
+    if refs.size() > limit:
+        lines.append("- ...and %d more." % (refs.size() - limit))
+    return "\n".join(lines)
+
+
+func _lines_to_text(value: Variant) -> String:
+    var lines := PackedStringArray()
+    for line_v in _as_array(value):
+        lines.append(str(line_v))
+    return "\n".join(lines)
+
+
+func _as_array(value: Variant) -> Array:
+    if typeof(value) == TYPE_ARRAY:
+        return value
+    return []
 
 
 func _unique_registry_id(base_id: String) -> String:

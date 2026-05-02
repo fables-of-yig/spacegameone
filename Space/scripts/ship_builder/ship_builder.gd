@@ -299,8 +299,7 @@ func refresh_layout() -> void:
     var vp := get_viewport_rect().size
     if vp == Vector2.ZERO:
         vp = Vector2(1920, 1080)
-    size = vp
-    set_anchors_preset(PRESET_FULL_RECT)
+    set_anchors_and_offsets_preset(PRESET_FULL_RECT)
     _update_layout()
     queue_redraw()
 

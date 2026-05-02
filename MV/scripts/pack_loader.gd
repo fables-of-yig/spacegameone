@@ -1,7 +1,21 @@
 class_name MvPackLoader
 
+const RegIO := preload("res://Space/scripts/editor/reg/reg_io.gd")
+const SystemIO := preload("res://Space/scripts/editor/system_io.gd")
 const UIIo := preload("res://Space/scripts/editor/ui/ui_io.gd")
+const PedIO := preload("res://Space/scripts/editor/ped/ped_io.gd")
+const PspIO := preload("res://Space/scripts/editor/psp/psp_io.gd")
 const PORTABLE_PACK_ID_TOKEN := "__BUNDLED_PACK_ID__"
+const INTERNAL_TOOL_PACK_IDS := {
+	"phase1_bootstrap": true,
+	"phase2_runtime_smoke": true,
+	"phase2_sprite_smoke_codex": true,
+	"trigger_recipe_smoke": true,
+	"world_recipe_smoke": true,
+	"reference_index_smoke": true,
+	"reference_refactor_smoke": true,
+	"quest_schema_smoke": true,
+}
 
 # Resolves content-pack paths and loads pack metadata + physics profile.
 #
@@ -39,8 +53,8 @@ static func load_pack(pack_id: String) -> MvPackRef:
 	# clear inventory + global tags. Same-pack re-entry (planet revisits)
 	# preserves state so progression carries across Space↔MV handoffs.
 	if not _last_loaded_pack_id.is_empty() and _last_loaded_pack_id != pack_id:
-		PlayerInventory.clear()
-		MvTriggerEngine.clear_global_tags()
+		_clear_inventory()
+		_clear_global_tags()
 	_last_loaded_pack_id = pack_id
 
 	var pack := MvPackRef.new()
@@ -66,8 +80,10 @@ static func reset_last_loaded_pack_id() -> void:
 static func clear_runtime_state() -> void:
 	current_pack = null
 	_last_loaded_pack_id = ""
-	PlayerInventory.clear()
-	MvTriggerEngine.clear_global_tags()
+	_clear_inventory()
+	_clear_global_tags()
+	_clear_room_state()
+	_clear_map_state()
 
 
 static func _ensure_user_pack_dir(user_path: String) -> void:
@@ -76,6 +92,8 @@ static func _ensure_user_pack_dir(user_path: String) -> void:
 		"Rooms", "Tilesets", "Sprites", "Beams",
 		"Audio/Music", "Audio/Sfx",
 		"Entities", "Items", "Dialogue", "Shops", "Triggers", "Abilities",
+		"Systems", "Realms", "Player", "Projectiles", "UI", "UI/screens",
+		"Assets", "Assets/UI", "Ships", "ShipTemplates",
 	]
 	for sub in subs:
 		DirAccess.make_dir_recursive_absolute(user_path + sub)
@@ -127,10 +145,10 @@ static func _load_physics_profile(user_path: String, shipped: String) -> MvPhysi
 	return null
 
 
-# Create an empty pack skeleton under user://Packs/<pack_id>/. Writes a
-# minimal Pack.json and ensures every standard subdir exists. Safe to call
-# on an existing directory — won't clobber an existing Pack.json. Returns
-# true on success.
+# Create an empty pack skeleton under user://Packs/<pack_id>/ and seed the
+# Phase 1 starter data. Safe to call on an existing directory: authored
+# manifest values are preserved while missing bootstrap fields are filled.
+# Returns true on success.
 static func create_empty_pack(pack_id: String, display_name: String = "") -> bool:
 	if pack_id.is_empty():
 		push_error("MvPackLoader.create_empty_pack: empty pack_id")
@@ -139,28 +157,141 @@ static func create_empty_pack(pack_id: String, display_name: String = "") -> boo
 	_ensure_user_pack_dir(user_path)
 
 	var manifest_path := user_path + "Pack.json"
-	if FileAccess.file_exists(manifest_path):
-		UIIo.ensure_stock_screens(pack_id)
-		return true
+	var starter_world: Dictionary = RegIO.ensure_starter_world(pack_id)
+	var starter_realm_id: String = str(starter_world.get("realm_id", RegIO.DEFAULT_REALM_ID)).strip_edges()
+	var starter_region_id: String = str(starter_world.get("region_id", RegIO.DEFAULT_REGION_ID)).strip_edges()
+	var starter_room_addr: String = str(starter_world.get("room_addr", RegIO.STARTER_ROOM_ADDR)).strip_edges()
+	var starter_spawn_pos := _resolve_starter_spawn_pos(
+		pack_id,
+		starter_realm_id,
+		starter_region_id,
+		starter_room_addr
+	)
+	var start_system_id := SystemIO.ensure_starter_system(
+		pack_id,
+		starter_realm_id,
+		starter_region_id,
+		starter_room_addr,
+		starter_spawn_pos
+	)
+	UIIo.ensure_stock_screens(pack_id)
+	PedIO.ensure_starter_player_data(pack_id)
+	PspIO.ensure_starter_player_sprites(pack_id)
 
-	var final_name := display_name if not display_name.is_empty() else pack_id
-	var manifest := {
-		"pack_id": pack_id,
-		"name": final_name,
-		"version": "0.1.0",
-		"author": "",
-		"description": "",
-		"entry_room": "",
-		"start_realm": "",
-	}
+	var manifest := read_json_dict(manifest_path)
+	var original_manifest := manifest.duplicate(true)
+	var final_name := display_name.strip_edges() if not display_name.strip_edges().is_empty() else pack_id
+	_set_manifest_default(manifest, "schema_version", "1.0")
+	_set_manifest_default(manifest, "pack_id", pack_id)
+	_set_manifest_default(manifest, "name", final_name)
+	_set_manifest_default(manifest, "version", "0.1.0")
+	_set_manifest_default(manifest, "author", "", false)
+	_set_manifest_default(manifest, "description", "", false)
+	_set_manifest_default(manifest, "start_system",
+		start_system_id if not start_system_id.is_empty() else SystemIO.STARTER_SYSTEM_ID)
+	_set_manifest_default(manifest, "start_ship_template", "startship")
+	_set_manifest_default(manifest, "start_realm", starter_realm_id)
+	_set_manifest_default(manifest, "entry_room",
+		str(starter_world.get("start_room",
+			RegIO.runtime_room_addr(starter_realm_id, starter_region_id, starter_room_addr))))
+
+	if FileAccess.file_exists(manifest_path) and manifest == original_manifest:
+		return true
 	var f := FileAccess.open(manifest_path, FileAccess.WRITE)
 	if f == null:
 		push_error("MvPackLoader.create_empty_pack: cannot open %s" % manifest_path)
 		return false
 	f.store_string(JSON.stringify(manifest, "\t"))
 	f.close()
-	UIIo.ensure_stock_screens(pack_id)
 	return true
+
+
+static func _set_manifest_default(manifest: Dictionary, key: String, value: Variant,
+		fill_empty: bool = true) -> void:
+	if not manifest.has(key):
+		manifest[key] = value
+		return
+	if fill_empty and str(manifest.get(key, "")).strip_edges().is_empty():
+		manifest[key] = value
+
+
+static func _resolve_starter_spawn_pos(pack_id: String, realm_id: String,
+		region_id: String, room_addr: String) -> Vector2:
+	var rooms_root: Dictionary = RegIO.load_region_rooms(pack_id, realm_id, region_id)
+	var rooms_v: Variant = rooms_root.get("rooms", {})
+	if typeof(rooms_v) != TYPE_DICTIONARY:
+		return Vector2.ZERO
+	var rooms: Dictionary = rooms_v
+	var room_v: Variant = rooms.get(room_addr, {})
+	if typeof(room_v) != TYPE_DICTIONARY:
+		return Vector2.ZERO
+	var room: Dictionary = room_v
+	return _find_player_spawn_pos(room)
+
+
+static func _find_player_spawn_pos(room: Dictionary) -> Vector2:
+	var entities_v: Variant = room.get("entities", [])
+	if typeof(entities_v) != TYPE_ARRAY:
+		return Vector2.ZERO
+	for entity_v in entities_v:
+		if typeof(entity_v) != TYPE_DICTIONARY:
+			continue
+		var entity: Dictionary = entity_v
+		if str(entity.get("type", "")).strip_edges() != "player_spawn":
+			continue
+		var position_v: Variant = entity.get("position", null)
+		if position_v is Vector2:
+			var position_vec: Vector2 = position_v
+			return position_vec
+		if position_v is Vector2i:
+			var position_vec_i: Vector2i = position_v
+			return Vector2(position_vec_i)
+		if typeof(position_v) == TYPE_ARRAY:
+			var position_arr: Array = position_v
+			if position_arr.size() >= 2:
+				return Vector2(float(position_arr[0]), float(position_arr[1]))
+		if typeof(position_v) == TYPE_DICTIONARY:
+			var position: Dictionary = position_v
+			return Vector2(
+				float(position.get("x", entity.get("x", 0.0))),
+				float(position.get("y", entity.get("y", 0.0)))
+			)
+		return Vector2(float(entity.get("x", 0.0)), float(entity.get("y", 0.0)))
+	return Vector2.ZERO
+
+
+static func _clear_inventory() -> void:
+	var inv := _autoload_node("PlayerInventory")
+	if inv != null and inv.has_method("clear"):
+		inv.call("clear")
+
+
+static func _clear_global_tags() -> void:
+	var trigger_engine := _autoload_node("MvTriggerEngine")
+	if trigger_engine != null and trigger_engine.has_method("clear"):
+		trigger_engine.call("clear")
+		return
+	if trigger_engine != null and trigger_engine.has_method("clear_global_tags"):
+		trigger_engine.call("clear_global_tags")
+
+
+static func _clear_room_state() -> void:
+	var room_state := _autoload_node("MvRoomState")
+	if room_state != null and room_state.has_method("clear"):
+		room_state.call("clear")
+
+
+static func _clear_map_state() -> void:
+	var map_screen := _autoload_node("MvMapScreen")
+	if map_screen != null and map_screen.has_method("clear"):
+		map_screen.call("clear")
+
+
+static func _autoload_node(node_name: String) -> Node:
+	var tree := Engine.get_main_loop() as SceneTree
+	if tree == null or tree.root == null:
+		return null
+	return tree.root.get_node_or_null(node_name)
 
 
 # List every pack under user://Packs/, reading each Pack.json for display
@@ -193,6 +324,8 @@ static func list_user_packs() -> Array:
 			if not manifest.is_empty():
 				display_name = str(manifest.get("name", entry))
 			mtime = int(FileAccess.get_modified_time(manifest_path))
+		if _is_internal_tool_pack_id(entry):
+			continue
 		var has_shipped: bool = _shipped_pack_exists(entry)
 		out.append({
 			"id": entry,
@@ -238,6 +371,8 @@ static func list_all_packs() -> Array:
 		if name.is_empty():
 			break
 		if not dir.current_is_dir():
+			continue
+		if _is_internal_tool_pack_id(name):
 			continue
 		if have_ids.has(name):
 			continue
@@ -677,6 +812,10 @@ static func _find_referenced_paths(text: String) -> Array:
 		seen[found] = true
 		out.append(found)
 	return out
+
+
+static func _is_internal_tool_pack_id(pack_id: String) -> bool:
+	return INTERNAL_TOOL_PACK_IDS.has(pack_id.strip_edges())
 
 
 static func _plan_export_reference(pack_id: String, ref_path: String) -> Dictionary:

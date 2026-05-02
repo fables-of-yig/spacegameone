@@ -66,6 +66,7 @@ const _FIELD_TIPS: Dictionary = {
     "star_b": "Star color blue channel, 0.0–1.0. Previewed in the color swatch on the right.",
     "star_size": "Radius of the star's visual in pixels when inside this system.",
     "star_sprite": "Optional PNG for the star. Click to open the native file picker in this pack's star art folder. Picking a file from outside that folder copies it in. Right-click clears.",
+    "background_image": "Optional PNG tiled behind this system's procedural starfield. Click to open the native file picker in this pack's system background folder. Picking a file from outside that folder copies it in. Right-click clears.",
     "star_anim_frames": "If the star sprite is a horizontal strip, set how many frames it contains. 1 = static sprite.",
     "star_anim_fps": "Frames per second for the custom star strip animation. 0 = static.",
     "star_gravity": "Gravity-well radius in pixels. Pulls the ship toward the star within this range; 0 disables.",
@@ -517,6 +518,8 @@ func _draw_panel(font: Font):
     y = _draw_field("faction", "Faction", str(sys.get("faction", "")), x, y, font)
     y = _draw_field("threat_level", "Threat", str(sys.get("threat_level", 1)), x, y, font)
     y = _draw_field("description", "Desc", str(sys.get("description", "")), x, y, font)
+    var _bg = sys.get("background_image", "")
+    y = _draw_field("background_image", "Background", _sprite_field_display("background_image", _bg), x, y, font)
 
 
     y += 8
@@ -953,7 +956,7 @@ func _handle_left_click(pos: Vector2):
                 _open_template_picker()
                 accept_event()
                 return
-            if fr.key in ["poi_sprite", "star_sprite", "npc_static_hull"]:
+            if fr.key in ["poi_sprite", "star_sprite", "npc_static_hull", "background_image"]:
                 _open_sprite_picker(fr.key)
                 accept_event()
                 return
@@ -1389,6 +1392,7 @@ func _add_system():
         "star_anim_frames": 1,
         "star_anim_fps": 0.0,
         "star_gravity": 0,
+        "background_image": "",
         "description": "",
         "threat_level": 1,
         "faction": "independent",
@@ -1779,6 +1783,10 @@ func _assign_sprite_path(target: String, path: String) -> bool:
         if selected_id != "" and systems.has(selected_id):
             systems[selected_id]["star_sprite"] = path
             did = true
+    elif target == "background_image":
+        if selected_id != "" and systems.has(selected_id):
+            systems[selected_id]["background_image"] = path
+            did = true
     if _undo != null:
         if did:
             _undo.commit("select sprite")
@@ -1794,7 +1802,7 @@ func _try_clear_sprite_field_at(pos: Vector2) -> bool:
         if not fr.rect.has_point(pos):
             continue
         var key: String = str(fr.key)
-        if not ["poi_sprite", "star_sprite", "npc_static_hull"].has(key):
+        if not ["poi_sprite", "star_sprite", "npc_static_hull", "background_image"].has(key):
             return false
         if _assign_sprite_path(key, ""):
             _set_status("Sprite cleared")
@@ -1808,6 +1816,8 @@ func _sprite_target_dir(target: String) -> String:
             return PackAssetIndex.user_pack_dir(_pack_id) + "Systems/AstralBodies/Stars"
         "poi_sprite":
             return PackAssetIndex.user_pack_dir(_pack_id) + "Systems/AstralBodies/Pois"
+        "background_image":
+            return PackAssetIndex.user_pack_dir(_pack_id) + "Systems/Backgrounds"
         "npc_static_hull":
             return "res://Space/art/ships/%s/Hulls" % _pack_id
         _:
@@ -1820,6 +1830,8 @@ func _sprite_picker_title(target: String) -> String:
             return "Pick star sprite PNG"
         "poi_sprite":
             return "Pick POI sprite PNG"
+        "background_image":
+            return "Pick system background PNG"
         "npc_static_hull":
             return "Pick static hull PNG"
         _:
@@ -1862,6 +1874,8 @@ func _sprite_import_prefix(target: String) -> String:
             return "star"
         "poi_sprite":
             return "poi"
+        "background_image":
+            return "background"
         "npc_static_hull":
             return "hull"
         _:
