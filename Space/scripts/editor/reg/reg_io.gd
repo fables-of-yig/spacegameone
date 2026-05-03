@@ -3,23 +3,24 @@ extends RefCounted
 # Multi-realm world IO.
 #
 # Pack layout (user layer):
-#   user://Packs/<pack>/Realms/<realm_id>/realm.json
-#   user://Packs/<pack>/Realms/<realm_id>/Regions/<region_id>/region.json
-#   user://Packs/<pack>/Realms/<realm_id>/Regions/<region_id>/rooms.json
-#   user://Packs/<pack>/Rooms/rooms.json   -- flat runtime view
+#   Content/<pack>/Realms/<realm_id>/realm.json
+#   Content/<pack>/Realms/<realm_id>/Regions/<region_id>/region.json
+#   Content/<pack>/Realms/<realm_id>/Regions/<region_id>/rooms.json
+#   Content/<pack>/Rooms/rooms.json   -- flat runtime view
 #
 # Runtime room addresses are flattened as:
 #   <realm_id>/<region_id>/<room_addr>
 #
 # Legacy migration:
 #   Older packs stored exactly one realm at the pack root:
-#     user://Packs/<pack>/realm.json
-#     user://Packs/<pack>/Regions/<region_id>/...
-#     user://Packs/<pack>/Rooms/rooms.json
+#     Content/<pack>/realm.json
+#     Content/<pack>/Regions/<region_id>/...
+#     Content/<pack>/Rooms/rooms.json
 #   On first load, that layout is copied into Realms/realm_main/.
 
 const EnvIO = preload("res://Space/scripts/editor/env/env_io.gd")
 const SystemIO = preload("res://Space/scripts/editor/system_io.gd")
+const PackPaths = preload("res://Space/scripts/editor/pack_paths.gd")
 
 const SCHEMA_VERSION: String = "2.0"
 const DEFAULT_REALM_ID: String = "realm_main"
@@ -77,7 +78,7 @@ static func unique_content_id(raw_name: String, used_ids: Dictionary, fallback: 
 
 
 static func user_pack_dir(pack_id: String) -> String:
-    return "user://Packs/%s/" % pack_id
+    return PackPaths.writable_pack_dir(pack_id)
 
 
 static func realms_dir(pack_id: String) -> String:
@@ -1253,8 +1254,8 @@ static func _rewrite_room_reference(reference: String, old_realm_id: String, new
 
 static func _load_pack_manifest(pack_id: String) -> Dictionary:
     for path in [
-        "user://Packs/%s/Pack.json" % pack_id,
-        "res://Content/%s/Pack.json" % pack_id,
+        PackPaths.writable_pack_file(pack_id, "Pack.json"),
+        PackPaths.shipped_pack_file(pack_id, "Pack.json"),
         "res://Content/demo/Pack.json",
     ]:
         if FileAccess.file_exists(path):

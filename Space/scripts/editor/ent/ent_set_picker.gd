@@ -218,7 +218,7 @@ func _draw():
             "  res://Content/<pack>/Sprites/  or",
             HORIZONTAL_ALIGNMENT_LEFT, -1, 11, Color(0.5, 0.62, 0.78, 1))
         draw_string(font, Vector2(list_x + 12, list_y + 90 + ROW_H),
-            "  user://Packs/<pack>/Sprites/",
+            "  Content/<pack>/Sprites/",
             HORIZONTAL_ALIGNMENT_LEFT, -1, 11, Color(0.5, 0.62, 0.78, 1))
 
     # Import + Cancel buttons (bottom-right of the box)

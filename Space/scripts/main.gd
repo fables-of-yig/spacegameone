@@ -9,6 +9,7 @@ const WorldRenderer = preload("res://Space/scripts/world/world_renderer.gd")
 const UICoordinator = preload("res://Space/scripts/ui/ui_coordinator.gd")
 const SpawnManager = preload("res://Space/scripts/runtime/spawn_manager.gd")
 const CreativeModeController = preload("res://Space/scripts/runtime/creative_mode_controller.gd")
+const PackPaths = preload("res://Space/scripts/editor/pack_paths.gd")
 
 
 var player_scene: PackedScene = preload("res://Space/scenes/player_ship.tscn")
@@ -1697,8 +1698,8 @@ func _snapshot_key_part(value: String) -> String:
 
 func _load_pack_manifest(pack_id: String) -> Dictionary:
     for path in [
-        "user://Packs/%s/Pack.json" % pack_id,
-        "res://Content/%s/Pack.json" % pack_id,
+        PackPaths.writable_pack_file(pack_id, "Pack.json"),
+        PackPaths.shipped_pack_file(pack_id, "Pack.json"),
     ]:
         if not FileAccess.file_exists(path):
             continue

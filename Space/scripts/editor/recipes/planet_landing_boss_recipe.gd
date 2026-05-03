@@ -7,6 +7,7 @@ const SystemIO := preload("res://Space/scripts/editor/system_io.gd")
 const PedIO := preload("res://Space/scripts/editor/ped/ped_io.gd")
 const EntIO := preload("res://Space/scripts/editor/ent/ent_io.gd")
 const TriggerRecipes := preload("res://Space/scripts/editor/dlg/trigger_recipes.gd")
+const PackPaths := preload("res://Space/scripts/editor/pack_paths.gd")
 
 const REALM_ID := RegIO.DEFAULT_REALM_ID
 const REGION_ID := RegIO.DEFAULT_REGION_ID
@@ -63,7 +64,7 @@ static func apply(pack_id: String, options: Dictionary = {}) -> Dictionary:
 
 
 static func _write_manifest(pack_id: String, system_id: String) -> bool:
-	var path := "user://Packs/%s/Pack.json" % pack_id
+	var path := PackPaths.writable_pack_file(pack_id, "Pack.json")
 	var manifest := _read_json(path)
 	manifest["schema_version"] = str(manifest.get("schema_version", "1.0"))
 	manifest["pack_id"] = pack_id

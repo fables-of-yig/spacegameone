@@ -3,7 +3,7 @@ extends RefCounted
 # Shared IO for all non-sprite player-editor tabs (stats, items, equipment,
 # abilities, attacks, projectiles). Same layered read pattern as psp_io.gd:
 #
-#   1. user://Packs/<pack>/<folder>/<file>      (user edits land here)
+#   1. Content/<pack>/<folder>/<file>           (authored edits land here)
 #   2. res://Content/<pack>/<folder>/<file>     (shipped pack baseline)
 #   3. res://Content/demo/<folder>/<file>       (demo pack fallback)
 #   4. built-in default dict baked into this file
@@ -12,12 +12,13 @@ extends RefCounted
 
 const SHIPPED_SEED_PACK: String = "demo"
 const PspIO = preload("res://Space/scripts/editor/psp/psp_io.gd")
+const PackPaths = preload("res://Space/scripts/editor/pack_paths.gd")
 
 
 # ── Path helpers ─────────────────────────────────────────────────────────
 
 static func user_file(pack_id: String, folder: String, file_name: String) -> String:
-    return "user://Packs/%s/%s/%s" % [pack_id, folder, file_name]
+    return PackPaths.writable_pack_file(pack_id, "%s/%s" % [folder, file_name])
 
 
 static func shipped_file(pack_id: String, folder: String, file_name: String) -> String:
@@ -803,7 +804,7 @@ static func list_dialogues(pack_id: String) -> Array:
     var seen: Dictionary = {}
     var out: Array = []
     for base in [
-        "user://Packs/%s/Dialogue/" % pack_id,
+        PackPaths.writable_pack_dir(pack_id) + "Dialogue/",
         "res://Content/%s/Dialogue/" % pack_id,
         "res://Content/demo/Dialogue/",
     ]:
@@ -827,14 +828,14 @@ static func list_dialogues(pack_id: String) -> Array:
     return out
 
 
-# Shop files: user://Packs/<pack>/Shops/<shop_id>.json. Same 3-layer
+# Shop files: Content/<pack>/Shops/<shop_id>.json. Same 3-layer
 # cascade as dialogues (user → shipped → demo fallback). Shop JSON shape:
 # { "id": "<id>", "items": [{id, name, price, count}, ...] }.
 static func list_shops(pack_id: String) -> Array:
     var seen: Dictionary = {}
     var out: Array = []
     for base in [
-        "user://Packs/%s/Shops/" % pack_id,
+        PackPaths.writable_pack_dir(pack_id) + "Shops/",
         "res://Content/%s/Shops/" % pack_id,
         "res://Content/demo/Shops/",
     ]:

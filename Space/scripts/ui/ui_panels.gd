@@ -1,5 +1,7 @@
 extends RefCounted
 
+const PackPaths = preload("res://Space/scripts/editor/pack_paths.gd")
+
 # Intentionally NO `class_name UIPanels` — consumers use a `const UIPanels =
 # preload(...)` so they work even before Godot's global script class cache
 # has registered this script. Adding class_name back triggers
@@ -107,14 +109,14 @@ static func load_default_theme() -> void:
     apply_theme_dict(dict)
     _current_pack_id = ""
 
-# Loads a pack-specific theme from user://Packs/{pack_id}/UI/theme.json. If
+# Loads a pack-specific theme from the writable Content/{pack_id}/UI/theme.json. If
 # that file doesn't exist, falls back to res://Content/{pack_id}/UI/theme.json
 # (shipped default), then to the global user default, then to FALLBACK_THEME.
 static func load_pack_theme(pack_id: String) -> void:
     if pack_id == "":
         load_default_theme()
         return
-    var user_path := "user://Packs/%s/UI/theme.json" % pack_id
+    var user_path := PackPaths.writable_pack_file(pack_id, "UI/theme.json")
     var ship_path := "res://Content/%s/UI/theme.json" % pack_id
     var dict := _read_json_file(user_path)
     if dict.is_empty():
@@ -180,7 +182,7 @@ static func apply_theme_dict(theme_dict: Dictionary) -> void:
 static func save_pack_theme(pack_id: String, theme_dict: Dictionary) -> bool:
     if pack_id == "":
         return false
-    var dir_path := "user://Packs/%s/UI" % pack_id
+    var dir_path := PackPaths.writable_pack_dir(pack_id) + "UI"
     DirAccess.make_dir_recursive_absolute(dir_path)
     var path := "%s/theme.json" % dir_path
     return _write_json_file(path, theme_dict)

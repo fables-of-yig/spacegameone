@@ -6,10 +6,11 @@ extends RefCounted
 # layer, reads fall back to the shipped layer.
 
 const BehTypes = preload("res://Space/scripts/editor/beh/beh_types.gd")
+const PackPaths = preload("res://Space/scripts/editor/pack_paths.gd")
 
 
 static func user_pack_dir(pack_id: String) -> String:
-    return "user://Packs/%s/" % pack_id
+    return PackPaths.writable_pack_dir(pack_id)
 
 
 static func shipped_pack_dir(pack_id: String) -> String:

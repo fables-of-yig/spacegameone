@@ -5,6 +5,7 @@ const PedIO := preload("res://Space/scripts/editor/ped/ped_io.gd")
 const RegIO := preload("res://Space/scripts/editor/reg/reg_io.gd")
 const UIIo := preload("res://Space/scripts/editor/ui/ui_io.gd")
 const BehLoader := preload("res://Space/scripts/runtime/beh/beh_loader.gd")
+const PackPaths := preload("res://Space/scripts/editor/pack_paths.gd")
 
 const BOOTSTRAP_SCHEMA_VERSION: String = "1.0"
 const BOOTSTRAP_REQUIRED_PACK_FIELDS: Array = [
@@ -1811,8 +1812,8 @@ static func _pack_file_paths(pack_id: String, rel_path: String) -> Array:
 	if clean_path.begins_with("/"):
 		clean_path = clean_path.substr(1)
 	return [
-		"user://Packs/%s/%s" % [pack_id, clean_path],
-		"res://Content/%s/%s" % [pack_id, clean_path],
+		PackPaths.writable_pack_file(pack_id, clean_path),
+		PackPaths.shipped_pack_file(pack_id, clean_path),
 	]
 
 
@@ -1821,8 +1822,8 @@ static func _pack_dir_paths(pack_id: String, rel_path: String) -> Array:
 	if clean_path.begins_with("/"):
 		clean_path = clean_path.substr(1)
 	return [
-		"user://Packs/%s/%s" % [pack_id, clean_path],
-		"res://Content/%s/%s" % [pack_id, clean_path],
+		PackPaths.writable_pack_file(pack_id, clean_path),
+		PackPaths.shipped_pack_file(pack_id, clean_path),
 	]
 
 
@@ -2136,7 +2137,7 @@ static func _list_dialogue_ids(pack_id: String) -> Dictionary:
 static func _list_shop_ids(pack_id: String) -> Dictionary:
 	var ids: Dictionary = {}
 	for dir_path in [
-		"user://Packs/%s/Shops/" % pack_id,
+		PackPaths.writable_pack_dir(pack_id) + "Shops/",
 		"res://Content/%s/Shops/" % pack_id,
 	]:
 		if not DirAccess.dir_exists_absolute(dir_path):

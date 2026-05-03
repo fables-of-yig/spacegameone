@@ -11,6 +11,7 @@ extends Control
 signal closed
 
 const UIPanels = preload("res://Space/scripts/ui/ui_panels.gd")
+const PackPaths = preload("res://Space/scripts/editor/pack_paths.gd")
 
 var pack_id: String = ""
 var _manifest: Dictionary = {}
@@ -189,7 +190,7 @@ func _is_valid_audio_path(path: String) -> bool:
     if clean.begins_with("res://") or clean.begins_with("user://"):
         return ResourceLoader.exists(clean) or FileAccess.file_exists(clean)
     # Otherwise treat as pack-relative: try user override then shipped.
-    var user_path: String = "user://Packs/%s/%s" % [pack_id, clean]
+    var user_path: String = PackPaths.writable_pack_file(pack_id, clean)
     if FileAccess.file_exists(user_path):
         return true
     var shipped_path: String = "res://Content/%s/%s" % [pack_id, clean]
@@ -238,7 +239,7 @@ func _on_delete_pressed(key: String) -> void:
 # ─── IO ──────────────────────────────────────────────────────────────────
 
 func _load_manifest() -> Dictionary:
-    var user_path := "user://Packs/%s/Audio/manifest.json" % pack_id
+    var user_path := PackPaths.writable_pack_file(pack_id, "Audio/manifest.json")
     var shipped_path := "res://Content/%s/Audio/manifest.json" % pack_id
     var path := user_path if FileAccess.file_exists(user_path) else shipped_path
     if not FileAccess.file_exists(path):
@@ -269,7 +270,7 @@ func _on_save_pressed() -> void:
             var path_val: String = str((section_v as Dictionary)[k_v])
             if not _is_valid_audio_path(path_val):
                 invalid.append("%s.%s -> %s" % [section_name, str(k_v), path_val])
-    var dir_path := "user://Packs/%s/Audio" % pack_id
+    var dir_path := PackPaths.writable_pack_dir(pack_id) + "Audio"
     DirAccess.make_dir_recursive_absolute(dir_path)
     var out_path := dir_path + "/manifest.json"
     var f := FileAccess.open(out_path, FileAccess.WRITE)

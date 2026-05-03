@@ -6,10 +6,11 @@ const FOLDER: String = "Systems"
 const LEGACY_ATLAS_PATH: String = "res://Space/data/systems/sector_atlas.json"
 const STARTER_SYSTEM_ID: String = "start"
 const STARTER_PLANET_NAME: String = "Starter Planet"
+const PackPaths = preload("res://Space/scripts/editor/pack_paths.gd")
 
 
 static func user_file(pack_id: String) -> String:
-    return "user://Packs/%s/%s/%s" % [pack_id, FOLDER, FILE_NAME]
+    return PackPaths.writable_pack_file(pack_id, "%s/%s" % [FOLDER, FILE_NAME])
 
 
 static func shipped_file(pack_id: String) -> String:

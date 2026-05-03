@@ -5,16 +5,17 @@ extends RefCounted
 # pack's Sprites/ directory.
 #
 # Mirrors env_io.gd's dual-layer resolution: writes always land under
-# user://Packs/<pack>/ (the override layer), but reads fall back to
+# Content/<pack>/ (the writable layer), but reads fall back to
 # res://Content/<pack>/ when the user layer is empty — so a pristine
 # campaign can be opened without an override copy being written until
 # the user actually makes a change.
 
 const SHIPPED_SEED_PACK: String = "demo"
+const PackPaths = preload("res://Space/scripts/editor/pack_paths.gd")
 
 
 static func user_pack_dir(pack_id: String) -> String:
-    return "user://Packs/%s/" % pack_id
+    return PackPaths.writable_pack_dir(pack_id)
 
 
 static func shipped_pack_dir(pack_id: String) -> String:

@@ -1,6 +1,8 @@
 class_name ContentReferenceIndex
 extends RefCounted
 
+const PackPaths := preload("res://Space/scripts/editor/pack_paths.gd")
+
 
 static func build(pack_id: String) -> Dictionary:
 	var pid := pack_id.strip_edges()
@@ -544,8 +546,8 @@ static func _pack_file_paths(pack_id: String, rel_path: String) -> Array:
 	if clean_path.begins_with("/"):
 		clean_path = clean_path.substr(1)
 	return [
-		"user://Packs/%s/%s" % [pack_id, clean_path],
-		"res://Content/%s/%s" % [pack_id, clean_path],
+		PackPaths.writable_pack_file(pack_id, clean_path),
+		PackPaths.shipped_pack_file(pack_id, clean_path),
 	]
 
 
@@ -554,8 +556,8 @@ static func _pack_dir_paths(pack_id: String, rel_path: String) -> Array:
 	if clean_path.begins_with("/"):
 		clean_path = clean_path.substr(1)
 	return [
-		"user://Packs/%s/%s" % [pack_id, clean_path],
-		"res://Content/%s/%s" % [pack_id, clean_path],
+		PackPaths.writable_pack_file(pack_id, clean_path),
+		PackPaths.shipped_pack_file(pack_id, clean_path),
 	]
 
 

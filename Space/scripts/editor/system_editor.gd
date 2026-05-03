@@ -4,6 +4,7 @@ extends Control
 const RegIO = preload("res://Space/scripts/editor/reg/reg_io.gd")
 const SystemIO = preload("res://Space/scripts/editor/system_io.gd")
 const PackAssetIndex = preload("res://Space/scripts/editor/pack_asset_index.gd")
+const PackPaths = preload("res://Space/scripts/editor/pack_paths.gd")
 
 signal closed
 signal systems_saved(pack_id: String, systems: Dictionary)
@@ -1141,7 +1142,7 @@ func _rename_selected_system_id(raw_text: String) -> void:
 func _update_manifest_start_system(old_id: String, new_id: String) -> void:
     if _pack_id.is_empty():
         return
-    var path := "user://Packs/%s/Pack.json" % _pack_id
+    var path := PackPaths.writable_pack_file(_pack_id, "Pack.json")
     if not FileAccess.file_exists(path):
         return
     var file := FileAccess.open(path, FileAccess.READ)
@@ -1912,8 +1913,9 @@ func _sprite_field_display(target: String, raw_path: String) -> String:
         var rel: String = clean_path.trim_prefix(target_dir + "/")
         var dir_name: String = target_dir.get_file()
         return "%s/%s" % [dir_name, rel]
-    if clean_path.begins_with("user://Packs/%s/" % _pack_id):
-        return clean_path.trim_prefix("user://Packs/%s/" % _pack_id)
+    var writable_root := PackPaths.writable_pack_dir(_pack_id)
+    if clean_path.begins_with(writable_root):
+        return clean_path.trim_prefix(writable_root)
     if clean_path.begins_with("res://"):
         return clean_path.trim_prefix("res://")
     return clean_path.get_file()

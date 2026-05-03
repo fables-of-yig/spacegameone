@@ -8,6 +8,7 @@ extends Control
 # grid overlay, highlights the selected frame range, and animates a preview.
 
 const PspIO = preload("res://Space/scripts/editor/psp/psp_io.gd")
+const PackPaths = preload("res://Space/scripts/editor/pack_paths.gd")
 
 signal frame_clicked(frame_idx: int)
 
@@ -79,7 +80,7 @@ func _load_texture(target_pack_id: String, folder_name: String, file_name: Strin
         folder = "Sprites"
     # Try to load from user pack sprites, then shipped
     for base in [
-        "user://Packs/%s/%s/" % [target_pack_id, folder],
+        PackPaths.writable_pack_dir(target_pack_id) + folder + "/",
         "res://Content/%s/%s/" % [target_pack_id, folder],
     ]:
         var path: String = base + file_name

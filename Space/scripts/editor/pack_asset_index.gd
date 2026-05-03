@@ -1,6 +1,7 @@
 extends RefCounted
 
 const SHIPPED_SEED_PACK: String = "demo"
+const PackPaths = preload("res://Space/scripts/editor/pack_paths.gd")
 
 
 static func normalized_pack_id(pack_id: String) -> String:
@@ -11,7 +12,7 @@ static func normalized_pack_id(pack_id: String) -> String:
 
 
 static func user_pack_dir(pack_id: String) -> String:
-    return "user://Packs/%s/" % normalized_pack_id(pack_id)
+    return PackPaths.writable_pack_dir(normalized_pack_id(pack_id))
 
 
 static func shipped_pack_dir(pack_id: String) -> String:

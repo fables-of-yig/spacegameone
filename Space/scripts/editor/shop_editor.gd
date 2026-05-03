@@ -1,6 +1,6 @@
 extends Control
 
-# Shop editor. Authors user://Packs/<pack>/Shops/<shop_id>.json — the
+# Shop editor. Authors Content/<pack>/Shops/<shop_id>.json — the
 # buyable-stock lists that MvShopUI.open_shop(shop_id) reads.
 #
 # Left: shop file list + Back/Save/+New buttons. Right: stock item list

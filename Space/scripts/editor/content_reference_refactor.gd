@@ -1,6 +1,8 @@
 class_name ContentReferenceRefactor
 extends RefCounted
 
+const PackPaths := preload("res://Space/scripts/editor/pack_paths.gd")
+
 
 static func rename_references(pack_id: String, kind: String, old_id: String, new_id: String) -> Dictionary:
 	var pid := pack_id.strip_edges()
@@ -609,7 +611,7 @@ static func _load_pack_json_root(pack_id: String, rel_path: String) -> Dictionar
 
 
 static func _write_user_pack_json(pack_id: String, rel_path: String, data: Dictionary) -> bool:
-	var path := "user://Packs/%s/%s" % [pack_id, rel_path.strip_edges().trim_prefix("/")]
+	var path := PackPaths.writable_pack_file(pack_id, rel_path.strip_edges().trim_prefix("/"))
 	DirAccess.make_dir_recursive_absolute(path.get_base_dir())
 	var file := FileAccess.open(path, FileAccess.WRITE)
 	if file == null:
@@ -622,16 +624,16 @@ static func _write_user_pack_json(pack_id: String, rel_path: String, data: Dicti
 static func _pack_file_paths(pack_id: String, rel_path: String) -> Array:
 	var clean_path := rel_path.strip_edges().trim_prefix("/")
 	return [
-		"user://Packs/%s/%s" % [pack_id, clean_path],
-		"res://Content/%s/%s" % [pack_id, clean_path],
+		PackPaths.writable_pack_file(pack_id, clean_path),
+		PackPaths.shipped_pack_file(pack_id, clean_path),
 	]
 
 
 static func _pack_dir_paths(pack_id: String, rel_path: String) -> Array:
 	var clean_path := rel_path.strip_edges().trim_prefix("/").rstrip("/")
 	return [
-		"user://Packs/%s/%s" % [pack_id, clean_path],
-		"res://Content/%s/%s" % [pack_id, clean_path],
+		PackPaths.writable_pack_file(pack_id, clean_path),
+		PackPaths.shipped_pack_file(pack_id, clean_path),
 	]
 
 

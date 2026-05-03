@@ -1,6 +1,7 @@
 extends Control
 
 const LegacyShipBuilder = preload("res://Space/scripts/ship_builder/ship_builder.gd")
+const PackPaths = preload("res://Space/scripts/editor/pack_paths.gd")
 
 signal closed
 signal test_fly_requested(placed: Array, core_id: String)
@@ -309,7 +310,7 @@ func _current_start_ship_id() -> String:
 
 
 func _manifest_path() -> String:
-    return "user://Packs/%s/Pack.json" % _pack_id
+    return PackPaths.writable_pack_file(_pack_id, "Pack.json")
 
 
 func _load_manifest() -> Dictionary:

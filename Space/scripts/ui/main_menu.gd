@@ -5,6 +5,7 @@ const UIIo = preload("res://Space/scripts/editor/ui/ui_io.gd")
 const AuthoredScreenRuntime = preload("res://Space/scripts/ui/authored_screen_runtime.gd")
 const HudDataSource = preload("res://Space/scripts/ui/hud_data_source.gd")
 const SettingsMenuScript = preload("res://Space/scripts/ui/settings_menu.gd")
+const PackPaths = preload("res://Space/scripts/editor/pack_paths.gd")
 
 
 var _stars: Array = []
@@ -433,7 +434,7 @@ func _start_play_pack_menu(pack_id: String) -> void:
 
 # Shipped-only packs can't be edited in place — any edit-intent click
 # (row select, rename) first copies the shipped baseline into
-# user://Packs/<pack_id>/ and then proceeds as if the user pack already
+# Content/<pack_id>/ and then proceeds as if the writable pack already
 # existed. Downstream editors write to user://; shipped stays untouched.
 func _clone_and_select(pack_id: String) -> void:
     if pack_id.is_empty():
@@ -472,7 +473,7 @@ func _on_campaign_name_submitted(text: String) -> void:
         # Ensure unique
         var base := safe_id
         var n := 1
-        while DirAccess.dir_exists_absolute("user://Packs/%s" % safe_id):
+        while DirAccess.dir_exists_absolute(PackPaths.writable_pack_dir(safe_id).rstrip("/")):
             safe_id = "%s_%d" % [base, n]
             n += 1
         if not MvPackLoader.create_empty_pack(safe_id, display_name):
@@ -803,7 +804,7 @@ func _draw_campaign_picker(font: Font, alpha: float):
     draw_string(font, Vector2(panel_x + (panel_w - title_w) * 0.5, panel_y + 36),
         title, HORIZONTAL_ALIGNMENT_LEFT, -1, 16, Color(0.85, 0.9, 1.0, alpha))
 
-    var sub = "Pick a pack to open its authored game menu." if is_play_picker else "Pick a campaign to edit, or create a new one.   USER = your pack  OVERRIDE = masks shipped  SHIPPED = click to clone into user layer"
+    var sub = "Pick a pack to open its authored game menu." if is_play_picker else "Pick a campaign to edit, or create a new one.   CONTENT = editable pack  OVERRIDE = masks shipped  SHIPPED = click to clone into Content"
     draw_string(font, Vector2(panel_x + 24, panel_y + 62),
         sub, HORIZONTAL_ALIGNMENT_LEFT, int(panel_w - 48), 10, Color(0.55, 0.65, 0.75, alpha * 0.85))
     if not is_play_picker:

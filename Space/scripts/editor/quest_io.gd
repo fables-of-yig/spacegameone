@@ -1,6 +1,8 @@
 class_name QuestIO
 extends RefCounted
 
+const PackPaths := preload("res://Space/scripts/editor/pack_paths.gd")
+
 
 static func load_or_init(pack_id: String) -> Dictionary:
 	var root := _load_pack_json_root(pack_id, "Quests/quests.json")
@@ -12,7 +14,7 @@ static func load_or_init(pack_id: String) -> Dictionary:
 
 
 static func save(pack_id: String, data: Dictionary) -> bool:
-	var path := "user://Packs/%s/Quests/quests.json" % pack_id.strip_edges()
+	var path := PackPaths.writable_pack_file(pack_id.strip_edges(), "Quests/quests.json")
 	DirAccess.make_dir_recursive_absolute(path.get_base_dir())
 	var file := FileAccess.open(path, FileAccess.WRITE)
 	if file == null:
@@ -49,8 +51,8 @@ static func starter_quest(quest_id: String = "first_steps") -> Dictionary:
 
 static func _load_pack_json_root(pack_id: String, rel_path: String) -> Dictionary:
 	for path in [
-		"user://Packs/%s/%s" % [pack_id, rel_path],
-		"res://Content/%s/%s" % [pack_id, rel_path],
+		PackPaths.writable_pack_file(pack_id, rel_path),
+		PackPaths.shipped_pack_file(pack_id, rel_path),
 	]:
 		if not FileAccess.file_exists(path):
 			continue

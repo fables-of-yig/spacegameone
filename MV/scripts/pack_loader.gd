@@ -5,6 +5,7 @@ const SystemIO := preload("res://Space/scripts/editor/system_io.gd")
 const UIIo := preload("res://Space/scripts/editor/ui/ui_io.gd")
 const PedIO := preload("res://Space/scripts/editor/ped/ped_io.gd")
 const PspIO := preload("res://Space/scripts/editor/psp/psp_io.gd")
+const PackPaths := preload("res://Space/scripts/editor/pack_paths.gd")
 const PORTABLE_PACK_ID_TOKEN := "__BUNDLED_PACK_ID__"
 const INTERNAL_TOOL_PACK_IDS := {
 	"phase1_bootstrap": true,
@@ -21,7 +22,7 @@ const INTERNAL_TOOL_PACK_IDS := {
 #
 # Dual-path layer: every pack lives in two locations.
 #   - res://Content/{packId}/  — shipped read-only (baseline, in the .pck)
-#   - user://Packs/{packId}/   — user override layer (writeable, persists)
+#   - Content/{packId}/        - writable exported authoring tree
 #
 # Use: call MvPackLoader.load_pack("demo") once at startup (Main._ready)
 # before anything reads pack assets.
@@ -31,8 +32,8 @@ static var _last_loaded_pack_id: String = ""
 
 
 static func load_pack(pack_id: String) -> MvPackRef:
-	var shipped := "res://Content/%s/" % pack_id
-	var user_path := "user://Packs/%s/" % pack_id
+	var shipped := PackPaths.shipped_pack_dir(pack_id)
+	var user_path := PackPaths.writable_pack_dir(pack_id)
 
 	_ensure_user_pack_dir(user_path)
 	repair_shipped_pack(pack_id)
@@ -109,10 +110,10 @@ static func _resolve_read_static(user_path: String, shipped: String, rel: String
 # Returns the first path that exists, or the demo path if none do (caller can
 # check FileAccess.file_exists on the result to detect "truly missing").
 static func resolve_read_cascade(pack_id: String, folder: String, file_name: String) -> String:
-	var user := "user://Packs/%s/%s/%s" % [pack_id, folder, file_name]
+	var user := PackPaths.writable_pack_file(pack_id, "%s/%s" % [folder, file_name])
 	if FileAccess.file_exists(user):
 		return user
-	var shipped := "res://Content/%s/%s/%s" % [pack_id, folder, file_name]
+	var shipped := PackPaths.shipped_pack_file(pack_id, "%s/%s" % [folder, file_name])
 	if FileAccess.file_exists(shipped):
 		return shipped
 	return "res://Content/demo/%s/%s" % [folder, file_name]
@@ -146,7 +147,7 @@ static func _load_physics_profile(user_path: String, shipped: String) -> MvPhysi
 	return null
 
 
-# Create an empty pack skeleton under user://Packs/<pack_id>/ and seed the
+# Create an empty pack skeleton under Content/<pack_id>/ and seed the
 # Phase 1 starter data. Safe to call on an existing directory: authored
 # manifest values are preserved while missing bootstrap fields are filled.
 # Returns true on success.
@@ -154,7 +155,7 @@ static func create_empty_pack(pack_id: String, display_name: String = "") -> boo
 	if pack_id.is_empty():
 		push_error("MvPackLoader.create_empty_pack: empty pack_id")
 		return false
-	var user_path := "user://Packs/%s/" % pack_id
+	var user_path := PackPaths.writable_pack_dir(pack_id)
 	_ensure_user_pack_dir(user_path)
 
 	var manifest_path := user_path + "Pack.json"
@@ -295,7 +296,7 @@ static func _autoload_node(node_name: String) -> Node:
 	return tree.root.get_node_or_null(node_name)
 
 
-# List every pack under user://Packs/, reading each Pack.json for display
+# List every pack under the writable Content root, reading each Pack.json for display
 # metadata. Each entry includes `has_shipped` — true when a shipped pack
 # of the same id exists under res://Content/ (meaning edits here are an
 # override layer rather than an independent new pack). Returns an array of
@@ -303,7 +304,7 @@ static func _autoload_node(node_name: String) -> Node:
 # modified_at descending.
 static func list_user_packs() -> Array:
 	var out: Array = []
-	var packs_root := "user://Packs/"
+	var packs_root := PackPaths.writable_packs_root()
 	if not DirAccess.dir_exists_absolute(packs_root):
 		return out
 	var dir := DirAccess.open(packs_root)
@@ -346,7 +347,7 @@ static func list_user_packs() -> Array:
 static func _shipped_pack_exists(pack_id: String) -> bool:
 	if pack_id.is_empty():
 		return false
-	var manifest_path := "res://Content/%s/Pack.json" % pack_id
+	var manifest_path := PackPaths.shipped_pack_file(pack_id, "Pack.json")
 	if FileAccess.file_exists(manifest_path):
 		return true
 	return ResourceLoader.exists(manifest_path)
@@ -397,14 +398,16 @@ static func list_all_packs() -> Array:
 
 # Clone a shipped pack into the user layer so the author can start editing
 # it. Copies missing files from res://Content/<pack_id>/ recursively to
-# user://Packs/<pack_id>/ without overwriting user edits. This is also a
+# Content/<pack_id>/ without overwriting user edits. This is also a
 # repair pass for exported builds that previously created a partial user
 # pack before all raw authoring assets were bundled.
 static func clone_shipped_pack(pack_id: String) -> bool:
 	if pack_id.is_empty():
 		return false
-	var user_path := "user://Packs/%s/" % pack_id
-	var shipped_path := "res://Content/%s/" % pack_id
+	var user_path := PackPaths.writable_pack_dir(pack_id)
+	var shipped_path := PackPaths.shipped_pack_dir(pack_id)
+	if user_path == shipped_path:
+		return true
 	if not DirAccess.dir_exists_absolute(shipped_path):
 		push_error("MvPackLoader.clone_shipped_pack: no shipped pack '%s'" % pack_id)
 		return false
@@ -422,13 +425,15 @@ static func repair_shipped_pack(pack_id: String) -> bool:
 		return false
 	if not _shipped_pack_exists(pack_id):
 		return true
+	if PackPaths.writable_pack_dir(pack_id) == PackPaths.shipped_pack_dir(pack_id):
+		return true
 	if _shipped_repair_marker_current(pack_id):
 		return true
 	return clone_shipped_pack(pack_id)
 
 
 static func _shipped_repair_marker_current(pack_id: String) -> bool:
-	var marker_path := "user://Packs/%s/.shipped_repair_version" % pack_id
+	var marker_path := PackPaths.writable_pack_file(pack_id, ".shipped_repair_version")
 	if not FileAccess.file_exists(marker_path):
 		return false
 	var f := FileAccess.open(marker_path, FileAccess.READ)
@@ -436,11 +441,29 @@ static func _shipped_repair_marker_current(pack_id: String) -> bool:
 		return false
 	var marker_version := f.get_as_text().strip_edges()
 	f.close()
-	return not marker_version.is_empty() and marker_version == _current_app_version()
+	if marker_version.is_empty() or marker_version != _current_app_version():
+		return false
+	return _shipped_repair_sentinels_ok(pack_id)
+
+
+static func _shipped_repair_sentinels_ok(pack_id: String) -> bool:
+	var user_path := PackPaths.writable_pack_dir(pack_id)
+	var json_files := [
+		"Pack.json",
+		"Entities/entities.json",
+		"Sprites/player_frames.json",
+	]
+	for rel_v in json_files:
+		var rel := str(rel_v)
+		if _read_json_any(user_path + rel) == null:
+			return false
+	if not _image_file_has_visible_pixels(user_path + "Sprites/Idle/Normal/idle_down.png"):
+		return false
+	return true
 
 
 static func _write_shipped_repair_marker(pack_id: String) -> void:
-	var marker_path := "user://Packs/%s/.shipped_repair_version" % pack_id
+	var marker_path := PackPaths.writable_pack_file(pack_id, ".shipped_repair_version")
 	_ensure_parent_dir(marker_path)
 	var f := FileAccess.open(marker_path, FileAccess.WRITE)
 	if f == null:
@@ -599,7 +622,7 @@ static func import_portable_pack(archive_path: String) -> Dictionary:
 		"imported_pack"
 	)
 	var final_pack_id := _unique_import_pack_id(source_pack_id)
-	var user_root := "user://Packs/%s/" % final_pack_id
+	var user_root := PackPaths.writable_pack_dir(final_pack_id)
 	_ensure_user_pack_dir(user_root)
 
 	payload_files.sort()
@@ -880,8 +903,8 @@ static func _prepare_text_bundle_file(pack_id: String, source_path: String,
 
 static func _collect_effective_pack_files(pack_id: String) -> Dictionary:
 	var files: Dictionary = {}
-	var shipped_root := "res://Content/%s/" % pack_id
-	var user_root := "user://Packs/%s/" % pack_id
+	var shipped_root := PackPaths.shipped_pack_dir(pack_id)
+	var user_root := PackPaths.writable_pack_dir(pack_id)
 	if DirAccess.dir_exists_absolute(shipped_root):
 		_scan_pack_dir_recursive(shipped_root, "", files)
 	if DirAccess.dir_exists_absolute(user_root):
@@ -972,7 +995,7 @@ static func _unique_import_pack_id(pack_id: String) -> String:
 static func _pack_id_exists_anywhere(pack_id: String) -> bool:
 	if pack_id.is_empty():
 		return false
-	if DirAccess.dir_exists_absolute("user://Packs/%s" % pack_id):
+	if DirAccess.dir_exists_absolute(PackPaths.writable_pack_dir(pack_id).rstrip("/")):
 		return true
 	return _shipped_pack_exists(pack_id)
 
@@ -1008,8 +1031,8 @@ static func _plan_export_reference(pack_id: String, ref_path: String) -> Diction
 	var normalized := ref_path.strip_edges().replace("\\", "/")
 	if normalized.is_empty():
 		return {}
-	var pack_user_root := "user://Packs/%s/" % pack_id
-	var pack_shipped_root := "res://Content/%s/" % pack_id
+	var pack_user_root := PackPaths.writable_pack_dir(pack_id)
+	var pack_shipped_root := PackPaths.shipped_pack_dir(pack_id)
 	if normalized.begins_with(pack_user_root):
 		var rel := normalized.substr(pack_user_root.length())
 		return {
@@ -1046,7 +1069,7 @@ static func _should_bundle_external_reference(path: String) -> bool:
 		return true
 	if path.begins_with("res://Content/"):
 		return true
-	if path.begins_with("user://Packs/"):
+	if path.begins_with(PackPaths.writable_packs_root()):
 		return true
 	return path.contains(":/")
 
@@ -1092,14 +1115,19 @@ static func _portable_pack_user_path(rel_path: String) -> String:
 	var clean := rel_path.strip_edges().replace("\\", "/")
 	while clean.begins_with("/"):
 		clean = clean.substr(1)
-	return "user://Packs/%s/%s" % [PORTABLE_PACK_ID_TOKEN, clean]
+	return "pack://%s/%s" % [PORTABLE_PACK_ID_TOKEN, clean]
 
 
 static func _rewrite_imported_bundle_text(text: String, final_pack_id: String) -> String:
-	return text.replace(
-		"user://Packs/%s/" % PORTABLE_PACK_ID_TOKEN,
-		"user://Packs/%s/" % final_pack_id
+	var rewritten := text.replace(
+		"pack://%s/" % PORTABLE_PACK_ID_TOKEN,
+		PackPaths.writable_pack_dir(final_pack_id)
 	)
+	rewritten = rewritten.replace(
+		"user://Packs/%s/" % PORTABLE_PACK_ID_TOKEN,
+		PackPaths.writable_pack_dir(final_pack_id)
+	)
+	return rewritten
 
 
 static func _resource_exists(path: String) -> bool:
@@ -1139,10 +1167,10 @@ static func _is_safe_bundle_rel_path(rel_path: String) -> bool:
 
 
 # Auto-generate the next "new_campaign_<n>" id that doesn't already exist
-# under user://Packs/. Used by the campaign picker's "+ NEW CAMPAIGN" flow
+# under the writable Content root. Used by the campaign picker's "+ NEW CAMPAIGN" flow
 # so the user doesn't have to type a name before editing.
 static func next_new_campaign_id() -> String:
-	var packs_root := "user://Packs/"
+	var packs_root := PackPaths.writable_packs_root()
 	var n: int = 1
 	while true:
 		var candidate := "new_campaign_%d" % n
@@ -1157,7 +1185,7 @@ static func next_new_campaign_id() -> String:
 static func rename_pack(pack_id: String, new_display_name: String) -> bool:
 	if pack_id.is_empty() or new_display_name.strip_edges().is_empty():
 		return false
-	var manifest_path := "user://Packs/%s/Pack.json" % pack_id
+	var manifest_path := PackPaths.writable_pack_file(pack_id, "Pack.json")
 	var manifest := read_json_dict(manifest_path)
 	if manifest.is_empty():
 		manifest = {"pack_id": pack_id}
@@ -1172,11 +1200,11 @@ static func rename_pack(pack_id: String, new_display_name: String) -> bool:
 
 
 # Delete a user pack by removing its entire directory. Only works on
-# user://Packs/ — shipped packs under res:// are never touched.
+# the writable Content root. Shipped packs under res:// are never touched.
 static func delete_pack(pack_id: String) -> bool:
 	if pack_id.is_empty():
 		return false
-	var pack_dir := "user://Packs/%s" % pack_id
+	var pack_dir := PackPaths.writable_pack_dir(pack_id).rstrip("/")
 	if not DirAccess.dir_exists_absolute(pack_dir):
 		return false
 	# Recursively remove all files and subdirectories.

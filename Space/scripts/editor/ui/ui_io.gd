@@ -8,10 +8,11 @@ extends RefCounted
 const UIPanels = preload("res://Space/scripts/ui/ui_panels.gd")
 const UiContract = preload("res://Space/scripts/ui/ui_contract.gd")
 const UITypes  = preload("res://Space/scripts/editor/ui/ui_types.gd")
+const PackPaths = preload("res://Space/scripts/editor/pack_paths.gd")
 
 
 static func user_pack_dir(pack_id: String) -> String:
-    return "user://Packs/%s/" % pack_id
+    return PackPaths.writable_pack_dir(pack_id)
 
 
 static func shipped_pack_dir(pack_id: String) -> String:
@@ -31,7 +32,7 @@ static func default_theme_path() -> String:
 
 
 # Loads a theme dict for the editor's working state. Resolution order:
-#   1. user://Packs/<pack>/UI/theme.json
+#   1. Content/<pack>/UI/theme.json
 #   2. res://Content/<pack>/UI/theme.json
 #   3. user://default_ui_theme.json
 #   4. UIPanels.FALLBACK_THEME (always succeeds)
@@ -66,7 +67,7 @@ static func save_default_theme(data: Dictionary) -> bool:
 
 # Returns a sorted list of {path, label} dicts for every texture the
 # theme editor can offer in the picker. Sources scanned (in order):
-#   - user://Packs/<pack>/Assets/UI/*.png
+#   - Content/<pack>/Assets/UI/*.png
 #   - res://Content/<pack>/Assets/UI/*.png
 #   - res://Assets/UI/*.png
 #   - res://Space/art/ui/*.png

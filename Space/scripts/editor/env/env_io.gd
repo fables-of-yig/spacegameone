@@ -2,9 +2,10 @@ extends RefCounted
 
 const TriggerRoot = preload("res://Space/scripts/shared/trigger_root.gd")
 const RegIO = preload("res://Space/scripts/editor/reg/reg_io.gd")
+const PackPaths = preload("res://Space/scripts/editor/pack_paths.gd")
 
 # Pure IO functions for the environment editor. Reads/writes rooms.json
-# from user://Packs/<pack_id>/Rooms/rooms.json, seeds fresh packs with a
+# from Content/<pack_id>/Rooms/rooms.json, seeds fresh packs with a
 # starter room + a copy of the demo tileset, and exposes tileset discovery
 # helpers.
 #
@@ -47,7 +48,7 @@ static var _last_import_error_text: String = ""
 
 
 static func user_pack_dir(pack_id: String) -> String:
-    return "user://Packs/%s/" % pack_id
+    return PackPaths.writable_pack_dir(pack_id)
 
 
 static func shipped_pack_dir(pack_id: String) -> String:
@@ -163,7 +164,7 @@ static func _source_label(path: String) -> String:
 # Create a new tileset from one or more source PNGs.
 #
 # Single-file path: byte-copies the PNG verbatim into
-# user://Packs/<pack>/Tilesets/tileset_NN_atlas.png — original encoding
+# Content/<pack>/Tilesets/tileset_NN_atlas.png — original encoding
 # preserved, no re-packing.
 #
 # Multi-file path: loads every source, walks each one's logical tiles
@@ -1418,7 +1419,7 @@ static func _unique_file_name(dst_dir: String, file_name: String) -> String:
 
 # ─── Spike profiles ──────────────────────────────────────────────────────
 #
-# spike_profiles.json lives in user://Packs/<pack_id>/Hazards/ and holds an
+# spike_profiles.json lives in Content/<pack_id>/Hazards/ and holds an
 # array of spike profile dicts indexed by BTS byte value. Profile 0 is always
 # the default (auto-created if missing).
 

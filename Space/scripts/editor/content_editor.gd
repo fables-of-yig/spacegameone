@@ -4,6 +4,7 @@ const UIPanels = preload("res://Space/scripts/ui/ui_panels.gd")
 const ContentValidator = preload("res://Space/scripts/editor/content_validator.gd")
 const ContentReferenceIndex = preload("res://Space/scripts/editor/content_reference_index.gd")
 const PlanetLandingBossRecipe = preload("res://Space/scripts/editor/recipes/planet_landing_boss_recipe.gd")
+const PackPaths = preload("res://Space/scripts/editor/pack_paths.gd")
 
 
 signal closed
@@ -853,7 +854,7 @@ func _request_close() -> void:
 
 
 func _manifest_path() -> String:
-    return "user://Packs/%s/Pack.json" % pack_id
+    return PackPaths.writable_pack_file(pack_id, "Pack.json")
 
 
 func _load_manifest() -> void:

@@ -34,7 +34,7 @@ var _known_behavior_ids: Dictionary = {}
 # Pose metadata cache keyed by sprite_set_rel. Each value is the full
 # poses.json dict (`{"poses": {filename: {frames, fps, loop_from, ...}}}`).
 # Entries are populated lazily the first time a sprite set is inspected,
-# and written back to user://Packs/<pack>/<set>/poses.json when dirty.
+# and written back to Content/<pack>/<set>/poses.json when dirty.
 var _poses_cache: Dictionary = {}
 var _poses_dirty: Dictionary = {}
 

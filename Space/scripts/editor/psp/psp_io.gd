@@ -1,9 +1,9 @@
 extends RefCounted
 
 # Pure IO for the player sprite editor. Reads/writes:
-#   user://Packs/<pack>/Sprites/player_sheet*.png
-#   user://Packs/<pack>/Sprites/player_frames.json
-#   user://Packs/<pack>/Sprites/player_poses.json
+#   Content/<pack>/Sprites/player_sheet*.png
+#   Content/<pack>/Sprites/player_frames.json
+#   Content/<pack>/Sprites/player_poses.json
 #
 # Schema must stay in sync with MV/scripts/player.gd _load_frames / _load_poses.
 # frames.json:
@@ -34,12 +34,13 @@ const DEFAULT_SHEET_COLS: int = 10
 const BASE_SHEET_ID: String = "base"
 const BASE_SHEET_FILE: String = "player_sheet.png"
 const PRESET_ROOT_DIR: String = "presets"
+const PackPaths = preload("res://Space/scripts/editor/pack_paths.gd")
 
 const SHIPPED_SEED_PACK: String = "demo"
 
 
 static func user_pack_dir(pack_id: String) -> String:
-    return "user://Packs/%s/" % pack_id
+    return PackPaths.writable_pack_dir(pack_id)
 
 
 static func shipped_pack_dir(pack_id: String) -> String:

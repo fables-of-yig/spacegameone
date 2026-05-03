@@ -3,13 +3,14 @@ extends RefCounted
 
 # Content-pack reference. Dual-path: pack lives in both
 #   res://Content/{id}/       (shipped read-only baseline)
-#   user://Packs/{id}/        (user override layer)
-# resolve_read() prefers the user layer so customised files shadow shipped
-# baselines; resolve_write() always points at the user layer.
+#   Content/{id}/             (writable exported authoring tree)
+# Editor/source builds author directly into res://Content/{id}/.
+# resolve_read() prefers the writable layer so customised files shadow shipped
+# baselines; resolve_write() always points at the writable layer.
 
 var pack_id: String = ""
 var path: String = ""           # res://Content/{id}/
-var user_path: String = ""      # user://Packs/{id}/
+var user_path: String = ""      # writable Content/{id}/
 var manifest: Dictionary = {}
 var physics: MvPhysicsProfile
 
