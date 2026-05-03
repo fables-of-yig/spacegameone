@@ -198,7 +198,13 @@ static func _is_valid_sheet_file(path: String) -> bool:
     var img := Image.new()
     if img.load_png_from_buffer(bytes) != OK:
         return false
-    return img.get_width() > 0 and img.get_height() > 0
+    if img.get_width() <= 0 or img.get_height() <= 0:
+        return false
+    for y in range(img.get_height()):
+        for x in range(img.get_width()):
+            if img.get_pixel(x, y).a > 0.01:
+                return true
+    return false
 
 
 static func save_frames(pack_id: String, data: Dictionary) -> bool:
