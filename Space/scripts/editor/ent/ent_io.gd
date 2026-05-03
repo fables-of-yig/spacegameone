@@ -94,8 +94,10 @@ static func list_sprite_pngs(pack_id: String, sprite_set_rel: String) -> Array:
         d.list_dir_begin()
         var fn := d.get_next()
         while fn != "":
-            if not d.current_is_dir() and fn.to_lower().ends_with(".png"):
-                out.append(fn)
+            if not d.current_is_dir() and _is_png_or_imported_png(fn):
+                var png_name := _png_name_from_dir_entry(fn)
+                if not out.has(png_name):
+                    out.append(png_name)
             fn = d.get_next()
         d.list_dir_end()
         out.sort()
@@ -321,7 +323,7 @@ static func _folder_has_png(path: String) -> bool:
     d.list_dir_begin()
     var fn := d.get_next()
     while fn != "":
-        if not d.current_is_dir() and fn.to_lower().ends_with(".png"):
+        if not d.current_is_dir() and _is_png_or_imported_png(fn):
             d.list_dir_end()
             return true
         fn = d.get_next()
@@ -340,6 +342,17 @@ static func _read_json(path: String) -> Dictionary:
     if not raw.has("entities") or typeof(raw["entities"]) != TYPE_ARRAY:
         raw["entities"] = []
     return raw
+
+
+static func _is_png_or_imported_png(name: String) -> bool:
+    var lower := name.to_lower()
+    return lower.ends_with(".png") or lower.ends_with(".png.import")
+
+
+static func _png_name_from_dir_entry(name: String) -> String:
+    if name.to_lower().ends_with(".png.import"):
+        return name.substr(0, name.length() - ".import".length())
+    return name
 
 
 static func _ensure_dir(path: String) -> void:

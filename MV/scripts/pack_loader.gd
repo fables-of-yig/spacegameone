@@ -621,21 +621,33 @@ static func _copy_dir_recursive(src: String, dst: String) -> void:
 			DirAccess.make_dir_recursive_absolute(dst_full)
 			_copy_dir_recursive(src_full, dst_full)
 		else:
+			if name.ends_with(".import"):
+				var imported_source_name := name.substr(0, name.length() - ".import".length())
+				var imported_src := src.rstrip("/") + "/" + imported_source_name
+				var imported_dst := dst.rstrip("/") + "/" + imported_source_name
+				if not FileAccess.file_exists(imported_dst) and FileAccess.file_exists(imported_src):
+					_copy_file_bytes(imported_src, imported_dst)
+				continue
 			if FileAccess.file_exists(dst_full):
 				continue
-			if name.ends_with(".import") or name.ends_with(".uid"):
+			if name.ends_with(".uid"):
 				continue
-			var rf := FileAccess.open(src_full, FileAccess.READ)
-			if rf == null:
-				continue
-			var buf := rf.get_buffer(rf.get_length())
-			rf.close()
-			var wf := FileAccess.open(dst_full, FileAccess.WRITE)
-			if wf == null:
-				continue
-			wf.store_buffer(buf)
-			wf.close()
+			_copy_file_bytes(src_full, dst_full)
 	dir.list_dir_end()
+
+
+static func _copy_file_bytes(src_path: String, dst_path: String) -> bool:
+	var rf := FileAccess.open(src_path, FileAccess.READ)
+	if rf == null:
+		return false
+	var buf := rf.get_buffer(rf.get_length())
+	rf.close()
+	var wf := FileAccess.open(dst_path, FileAccess.WRITE)
+	if wf == null:
+		return false
+	wf.store_buffer(buf)
+	wf.close()
+	return true
 
 
 static func _build_portable_bundle_files(pack_id: String, pack_files: Dictionary) -> Dictionary:
@@ -737,6 +749,11 @@ static func _scan_pack_dir_recursive(root: String, rel_dir: String, out: Diction
 			_scan_pack_dir_recursive(root, rel_path, out)
 			continue
 		if entry.ends_with(".import") or entry.ends_with(".uid"):
+			if entry.ends_with(".import"):
+				var imported_rel := rel_path.substr(0, rel_path.length() - ".import".length())
+				var imported_full := root + imported_rel
+				if FileAccess.file_exists(imported_full) and not out.has(imported_rel):
+					out[imported_rel] = imported_full
 			continue
 		out[rel_path] = full_path
 	dir.list_dir_end()

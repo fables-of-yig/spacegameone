@@ -1179,10 +1179,13 @@ static func list_tileset_indices(pack_id: String) -> Array:
         dir.list_dir_begin()
         var fn := dir.get_next()
         while fn != "":
-            if not dir.current_is_dir() \
-                    and fn.begins_with("tileset_") \
-                    and fn.ends_with("_atlas.png"):
-                var n := fn.substr(8, 2)
+            if not dir.current_is_dir():
+                var atlas_name := _png_name_from_dir_entry(fn)
+                if not atlas_name.begins_with("tileset_") \
+                        or not atlas_name.ends_with("_atlas.png"):
+                    fn = dir.get_next()
+                    continue
+                var n := atlas_name.substr(8, 2)
                 if n.is_valid_int():
                     var idx := int(n)
                     if not seen.has(idx):
@@ -1218,6 +1221,17 @@ static func load_tileset_texture(pack_id: String, tileset_idx: int) -> Texture2D
             continue
         return ImageTexture.create_from_image(image)
     return null
+
+
+static func _is_png_or_imported_png(name: String) -> bool:
+    var lower := name.to_lower()
+    return lower.ends_with(".png") or lower.ends_with(".png.import")
+
+
+static func _png_name_from_dir_entry(name: String) -> String:
+    if name.to_lower().ends_with(".png.import"):
+        return name.substr(0, name.length() - ".import".length())
+    return name
 
 
 static func load_backdrop_texture(pack_id: String, rel_path: String) -> Texture2D:

@@ -183,8 +183,8 @@ static func _scan_pngs_relative(base_path: String, rel_root: String, current_rel
             continue
         if dir.current_is_dir():
             _scan_pngs_relative(base_path, rel_root, current_rel + "/" + name, out, seen)
-        elif name.to_lower().ends_with(".png"):
-            var rel_path: String = current_rel + "/" + name
+        elif _is_png_or_imported_png(name):
+            var rel_path: String = current_rel + "/" + _png_name_from_dir_entry(name)
             if not seen.has(rel_path):
                 seen[rel_path] = true
                 out.append(rel_path)
@@ -209,10 +209,11 @@ static func _scan_abs_png_root(root_path: String, out: Array, seen: Dictionary) 
         var full_path: String = root_path + "/" + name if not root_path.ends_with("/") else root_path + name
         if dir.current_is_dir():
             _scan_abs_png_root(full_path, out, seen)
-        elif name.to_lower().ends_with(".png"):
-            if not seen.has(full_path):
-                seen[full_path] = true
-                out.append(full_path)
+        elif _is_png_or_imported_png(name):
+            var png_path: String = root_path + "/" + _png_name_from_dir_entry(name) if not root_path.ends_with("/") else root_path + _png_name_from_dir_entry(name)
+            if not seen.has(png_path):
+                seen[png_path] = true
+                out.append(png_path)
         name = dir.get_next()
     dir.list_dir_end()
 
@@ -239,3 +240,14 @@ static func _looks_like_ship_hull(path: String) -> bool:
         if base.find(str(hint_v)) >= 0:
             return true
     return false
+
+
+static func _is_png_or_imported_png(name: String) -> bool:
+    var lower: String = name.to_lower()
+    return lower.ends_with(".png") or lower.ends_with(".png.import")
+
+
+static func _png_name_from_dir_entry(name: String) -> String:
+    if name.to_lower().ends_with(".png.import"):
+        return name.substr(0, name.length() - ".import".length())
+    return name
