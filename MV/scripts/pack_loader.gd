@@ -410,6 +410,7 @@ static func clone_shipped_pack(pack_id: String) -> bool:
 		return false
 	_ensure_user_pack_dir(user_path)
 	_copy_dir_recursive(shipped_path, user_path)
+	_write_shipped_repair_marker(pack_id)
 	print("[MvPackLoader] cloned shipped pack '%s' into user layer" % pack_id)
 	return true
 
@@ -421,7 +422,45 @@ static func repair_shipped_pack(pack_id: String) -> bool:
 		return false
 	if not _shipped_pack_exists(pack_id):
 		return true
+	if _shipped_repair_marker_current(pack_id):
+		return true
 	return clone_shipped_pack(pack_id)
+
+
+static func _shipped_repair_marker_current(pack_id: String) -> bool:
+	var marker_path := "user://Packs/%s/.shipped_repair_version" % pack_id
+	if not FileAccess.file_exists(marker_path):
+		return false
+	var f := FileAccess.open(marker_path, FileAccess.READ)
+	if f == null:
+		return false
+	var marker_version := f.get_as_text().strip_edges()
+	f.close()
+	return not marker_version.is_empty() and marker_version == _current_app_version()
+
+
+static func _write_shipped_repair_marker(pack_id: String) -> void:
+	var marker_path := "user://Packs/%s/.shipped_repair_version" % pack_id
+	_ensure_parent_dir(marker_path)
+	var f := FileAccess.open(marker_path, FileAccess.WRITE)
+	if f == null:
+		return
+	f.store_string(_current_app_version())
+	f.close()
+
+
+static func _current_app_version() -> String:
+	for path in ["res://version.txt", "user://version.txt"]:
+		if not FileAccess.file_exists(path):
+			continue
+		var f := FileAccess.open(path, FileAccess.READ)
+		if f == null:
+			continue
+		var version := f.get_as_text().strip_edges()
+		f.close()
+		if not version.is_empty():
+			return version
+	return "0"
 
 
 static func export_portable_pack(pack_id: String, archive_path: String) -> Dictionary:
@@ -625,15 +664,134 @@ static func _copy_dir_recursive(src: String, dst: String) -> void:
 				var imported_source_name := name.substr(0, name.length() - ".import".length())
 				var imported_src := src.rstrip("/") + "/" + imported_source_name
 				var imported_dst := dst.rstrip("/") + "/" + imported_source_name
-				if not FileAccess.file_exists(imported_dst) and FileAccess.file_exists(imported_src):
+				if _should_copy_shipped_file(imported_src, imported_dst):
 					_copy_file_bytes(imported_src, imported_dst)
 				continue
-			if FileAccess.file_exists(dst_full):
+			if not _should_copy_shipped_file(src_full, dst_full):
 				continue
 			if name.ends_with(".uid"):
 				continue
 			_copy_file_bytes(src_full, dst_full)
 	dir.list_dir_end()
+
+
+static func _should_copy_shipped_file(src_path: String, dst_path: String) -> bool:
+	if not FileAccess.file_exists(src_path):
+		return false
+	if not FileAccess.file_exists(dst_path):
+		return true
+	var lower := src_path.to_lower()
+	if lower.ends_with(".json"):
+		return _read_json_any(dst_path) == null and _read_json_any(src_path) != null
+	if _is_image_path(lower):
+		return not _image_file_has_visible_pixels(dst_path) and _image_file_has_visible_pixels(src_path)
+	if _is_binary_asset_path(lower):
+		return _file_length(dst_path) <= 0 and _file_length(src_path) > 0
+	return false
+
+
+static func _read_json_any(path: String) -> Variant:
+	var f := FileAccess.open(path, FileAccess.READ)
+	if f == null:
+		return null
+	var text := f.get_as_text()
+	f.close()
+	var json := JSON.new()
+	if json.parse(text) != OK:
+		return null
+	return json.data
+
+
+static func _is_image_path(lower_path: String) -> bool:
+	for ext_v in [".png", ".jpg", ".jpeg", ".webp", ".bmp", ".tga"]:
+		var ext: String = str(ext_v)
+		if lower_path.ends_with(ext):
+			return true
+	return false
+
+
+static func _is_binary_asset_path(lower_path: String) -> bool:
+	for ext_v in [".ogg", ".wav", ".mp3", ".flac", ".tres", ".res"]:
+		var ext: String = str(ext_v)
+		if lower_path.ends_with(ext):
+			return true
+	return false
+
+
+static func _file_length(path: String) -> int:
+	var f := FileAccess.open(path, FileAccess.READ)
+	if f == null:
+		return 0
+	var length := int(f.get_length())
+	f.close()
+	return length
+
+
+static func _image_file_has_visible_pixels(path: String) -> bool:
+	var f := FileAccess.open(path, FileAccess.READ)
+	if f == null:
+		return false
+	var bytes := f.get_buffer(f.get_length())
+	f.close()
+	if bytes.is_empty():
+		return false
+	var img := Image.new()
+	var ext := path.get_extension().to_lower()
+	var err := ERR_FILE_UNRECOGNIZED
+	match ext:
+		"png":
+			if not _bytes_have_png_signature(bytes):
+				return false
+			err = img.load_png_from_buffer(bytes)
+		"jpg", "jpeg":
+			if not _bytes_have_jpeg_signature(bytes):
+				return false
+			err = img.load_jpg_from_buffer(bytes)
+		"webp":
+			if not _bytes_have_webp_signature(bytes):
+				return false
+			err = img.load_webp_from_buffer(bytes)
+		"bmp":
+			if not _bytes_have_bmp_signature(bytes):
+				return false
+			err = img.load_bmp_from_buffer(bytes)
+		"tga":
+			err = img.load_tga_from_buffer(bytes)
+		_:
+			err = img.load(path)
+	if err != OK or img.get_width() <= 0 or img.get_height() <= 0:
+		return false
+	for y in range(img.get_height()):
+		for x in range(img.get_width()):
+			if img.get_pixel(x, y).a > 0.01:
+				return true
+	return false
+
+
+static func _bytes_have_png_signature(bytes: PackedByteArray) -> bool:
+	var sig := PackedByteArray([0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a])
+	if bytes.size() < sig.size():
+		return false
+	for i in range(sig.size()):
+		if bytes[i] != sig[i]:
+			return false
+	return true
+
+
+static func _bytes_have_jpeg_signature(bytes: PackedByteArray) -> bool:
+	return bytes.size() >= 3 and bytes[0] == 0xff and bytes[1] == 0xd8 and bytes[2] == 0xff
+
+
+static func _bytes_have_webp_signature(bytes: PackedByteArray) -> bool:
+	return (
+		bytes.size() >= 12
+		and bytes[0] == 0x52 and bytes[1] == 0x49 and bytes[2] == 0x46 and bytes[3] == 0x46
+		and bytes[8] == 0x57 and bytes[9] == 0x45 and bytes[10] == 0x42 and bytes[11] == 0x50
+	)
+
+
+static func _bytes_have_bmp_signature(bytes: PackedByteArray) -> bool:
+	return bytes.size() >= 2 and bytes[0] == 0x42 and bytes[1] == 0x4d
 
 
 static func _copy_file_bytes(src_path: String, dst_path: String) -> bool:
