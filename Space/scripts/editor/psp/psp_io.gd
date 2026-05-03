@@ -117,10 +117,10 @@ static func load_or_init(pack_id: String) -> Dictionary:
     if typeof(scaffold_poses_v) == TYPE_DICTIONARY:
         poses = scaffold_poses_v
 
-    # Also make sure we have a sheet png in the user layer if none exists -
-    # copies the shipped baseline so editing is possible without a manual
-    # import. Non-fatal if no baseline exists.
-    _ensure_user_sheet(pack_id)
+    # Also make sure all referenced sheet PNGs exist in the user layer.
+    # Current demo data can use many source sheets, not only player_sheet.png.
+    # Non-fatal if a baseline sheet is not bundled.
+    _ensure_user_sheets(pack_id, frames)
 
     return {"frames": frames, "poses": poses}
 
@@ -148,14 +148,34 @@ static func _load_or_copy(pack_id: String, file_name: String, fallback: Dictiona
 
 
 static func _ensure_user_sheet(pack_id: String) -> void:
-    var user_path := user_sheet_path(pack_id)
+    _ensure_user_sheet_file(pack_id, BASE_SHEET_FILE)
+
+
+static func _ensure_user_sheets(pack_id: String, frames: Dictionary) -> void:
+    var seen: Dictionary = {}
+    for sheet_def_v in normalize_sheet_defs(frames.get("sheets", default_sheet_defs())):
+        if typeof(sheet_def_v) != TYPE_DICTIONARY:
+            continue
+        var sheet_def: Dictionary = sheet_def_v
+        var file_name := str(sheet_def.get("file", "")).strip_edges()
+        if file_name.is_empty() or seen.has(file_name):
+            continue
+        seen[file_name] = true
+        _ensure_user_sheet_file(pack_id, file_name)
+    if seen.is_empty():
+        _ensure_user_sheet_file(pack_id, BASE_SHEET_FILE)
+
+
+static func _ensure_user_sheet_file(pack_id: String, file_name: String) -> void:
+    var user_path := user_sheet_path_for_file(pack_id, file_name)
     if FileAccess.file_exists(user_path):
         return
-    var shipped := shipped_sprites_dir(pack_id) + "player_sheet.png"
+    _ensure_dir(user_path.get_base_dir())
+    var shipped := shipped_sprites_dir(pack_id) + file_name
     if FileAccess.file_exists(shipped):
         _copy_file(shipped, user_path)
         return
-    var demo := shipped_pack_dir(SHIPPED_SEED_PACK) + "Sprites/player_sheet.png"
+    var demo := shipped_pack_dir(SHIPPED_SEED_PACK) + "Sprites/" + file_name
     if FileAccess.file_exists(demo):
         _copy_file(demo, user_path)
 
