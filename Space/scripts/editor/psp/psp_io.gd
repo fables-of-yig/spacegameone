@@ -168,16 +168,37 @@ static func _ensure_user_sheets(pack_id: String, frames: Dictionary) -> void:
 
 static func _ensure_user_sheet_file(pack_id: String, file_name: String) -> void:
     var user_path := user_sheet_path_for_file(pack_id, file_name)
-    if FileAccess.file_exists(user_path):
+    if _is_valid_sheet_file(user_path):
         return
     _ensure_dir(user_path.get_base_dir())
     var shipped := shipped_sprites_dir(pack_id) + file_name
-    if FileAccess.file_exists(shipped):
+    if _is_valid_sheet_file(shipped):
         _copy_file(shipped, user_path)
         return
     var demo := shipped_pack_dir(SHIPPED_SEED_PACK) + "Sprites/" + file_name
-    if FileAccess.file_exists(demo):
+    if _is_valid_sheet_file(demo):
         _copy_file(demo, user_path)
+
+
+static func _is_valid_sheet_file(path: String) -> bool:
+    if not FileAccess.file_exists(path):
+        return false
+    var f := FileAccess.open(path, FileAccess.READ)
+    if f == null:
+        return false
+    if f.get_length() < 8:
+        f.close()
+        return false
+    var bytes := f.get_buffer(f.get_length())
+    f.close()
+    var png_signature := PackedByteArray([0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a])
+    for i in range(png_signature.size()):
+        if bytes[i] != png_signature[i]:
+            return false
+    var img := Image.new()
+    if img.load_png_from_buffer(bytes) != OK:
+        return false
+    return img.get_width() > 0 and img.get_height() > 0
 
 
 static func save_frames(pack_id: String, data: Dictionary) -> bool:
