@@ -569,11 +569,11 @@ func _draw_campaign_panel(font: Font, rect: Rect2, mouse_pos: Vector2) -> void:
         draw_string(font, Vector2(x, y + 16.0),
             str(key_label[1]), HORIZONTAL_ALIGNMENT_LEFT, int(label_w - 8.0), 11, Color(0.76, 0.84, 0.94))
 
-    draw_string(font, Vector2(base_x, base_y + 148.0),
+    draw_string(font, Vector2(base_x, base_y + 184.0),
         "Description", HORIZONTAL_ALIGNMENT_LEFT, int(label_w - 8.0), 11, Color(0.76, 0.84, 0.94))
 
     var campaign_tiles: Array = MODE_TILES.get("campaign", [])
-    var tile_y: float = base_y + 258.0
+    var tile_y: float = base_y + 326.0
     var mini_gap: float = 14.0
     var mini_h: float = 102.0
     var campaign_cols: int = mini(3, maxi(int((rect.size.x - 36.0 + mini_gap) / (280.0 + mini_gap)), 1))
@@ -663,7 +663,10 @@ func _draw_action_button(font: Font, rect: Rect2, label: String, hovered: bool, 
 
 
 func _draw_validation_panel(font: Font, panel_rect: Rect2, mouse_pos: Vector2) -> void:
-    var rect: Rect2 = Rect2(panel_rect.end.x - 300, panel_rect.position.y + 150, 276, panel_rect.size.y - 174)
+    # Stop short of the panel bottom so the CLOSE button (drawn at
+    # panel_rect.end.y - 42, height 28) sits in the gap below this panel
+    # instead of getting clipped behind it.
+    var rect: Rect2 = Rect2(panel_rect.end.x - 300, panel_rect.position.y + 150, 276, panel_rect.size.y - 200)
     draw_rect(rect, Color(0.055, 0.065, 0.095))
     draw_rect(rect, Color(0.26, 0.34, 0.46), false, 1.0)
     draw_string(font, Vector2(rect.position.x + 16, rect.position.y + 24),
@@ -996,8 +999,11 @@ func _layout_campaign_controls() -> void:
         le.size = Vector2(field_w, 24)
 
     if _manifest_desc != null:
-        _manifest_desc.position = Vector2(base_x + label_w, base_y + 132.0)
-        _manifest_desc.size = Vector2(left_rect.size.x - 52.0 - label_w, 96.0)
+        # Sits below the 4-row form grid (rows end at base_y + 144); pinning
+        # it 24 px below the last row + giving it the full inner width keeps
+        # the description from overlapping the Starting Ship LineEdit on row 3.
+        _manifest_desc.position = Vector2(base_x + label_w, base_y + 168.0)
+        _manifest_desc.size = Vector2(left_rect.size.x - 52.0 - label_w, 140.0)
 
 
 func _on_manifest_field_changed(text: String, key: String) -> void:

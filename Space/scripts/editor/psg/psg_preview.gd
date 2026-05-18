@@ -2,10 +2,11 @@ extends Control
 
 const PsgIO = preload("res://Space/scripts/editor/psg/psg_io.gd")
 
-# Live SubViewport-based preview of a PixelPlanets body type. Hosts a
-# SubViewportContainer that fills self, with the chosen body scene
-# instantiated inside the SubViewport. Pixel art stays crisp because the
-# container scales nearest-neighbor.
+# Live SubViewport-based preview of a PixelPlanets body type. The body
+# scene is instantiated inside a 200² SubViewport and displayed via a
+# TextureRect with STRETCH_KEEP_ASPECT_CENTERED + TEXTURE_FILTER_NEAREST,
+# so the texture scales up to fill the preview frame while staying
+# centered and pixel-crisp.
 #
 # The body scenes extend `res://Space/vendor/pixel_planets/Planet.gd`,
 # which defines a common interface: set_pixels(amount), set_seed(sd),
@@ -15,37 +16,54 @@ const PsgIO = preload("res://Space/scripts/editor/psg/psg_io.gd")
 
 const VIEWPORT_RES: int = 200  # pixels — matches the size we drive into set_pixels()
 
-var _container: SubViewportContainer = null
 var _viewport: SubViewport = null
+var _texture_rect: TextureRect = null
 var _body: Node = null
 
 var _current_type: String = ""
 var _current_seed: int = 0
 var _current_light: Vector2 = Vector2(0.3, 0.3)
 
+# Animation rate multiplier driven by the panel's "Time speed" slider.
+# Planet.gd's get_multiplier divides by the shader's `time_speed`, and
+# every shader then multiplies by `time_speed`, so scrubbing that
+# uniform alone cancels out. We disable the body's own _process and
+# drive `update_time(_local_time)` from this script instead, so the
+# slider becomes a real animation-rate knob.
+var _anim_speed: float = 1.0
+var _local_time: float = 1000.0
+
 
 func _ready() -> void:
 	mouse_filter = MOUSE_FILTER_PASS
 	clip_contents = true
 	_ensure_viewport()
+	set_process(true)
 
 
 func _ensure_viewport() -> void:
-	if _container != null:
+	if _viewport != null:
 		return
-	_container = SubViewportContainer.new()
-	_container.stretch = true
-	_container.set_anchors_preset(PRESET_FULL_RECT)
-	_container.mouse_filter = MOUSE_FILTER_IGNORE
-	_container.texture_filter = CanvasItem.TEXTURE_FILTER_NEAREST
-	add_child(_container)
-
+	# Render the planet offscreen at VIEWPORT_RES² in the SubViewport, then
+	# display it via a TextureRect with KEEP_ASPECT_CENTERED so the texture
+	# scales to fill the preview frame and stays centered. A
+	# SubViewportContainer with stretch=false would have drawn the
+	# 200² texture at the top-left of the larger preview frame instead of
+	# centering or scaling it.
 	_viewport = SubViewport.new()
 	_viewport.size = Vector2i(VIEWPORT_RES, VIEWPORT_RES)
 	_viewport.transparent_bg = true
 	_viewport.render_target_update_mode = SubViewport.UPDATE_ALWAYS
 	_viewport.handle_input_locally = false
-	_container.add_child(_viewport)
+	add_child(_viewport)
+
+	_texture_rect = TextureRect.new()
+	_texture_rect.texture = _viewport.get_texture()
+	_texture_rect.set_anchors_preset(PRESET_FULL_RECT)
+	_texture_rect.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
+	_texture_rect.texture_filter = CanvasItem.TEXTURE_FILTER_NEAREST
+	_texture_rect.mouse_filter = MOUSE_FILTER_IGNORE
+	add_child(_texture_rect)
 
 
 func set_body_type(type_id: String) -> bool:
@@ -72,11 +90,49 @@ func set_body_type(type_id: String) -> bool:
 	_body = instance
 	_current_type = type_id
 
+	# Vendored PixelPlanets scenes ship with root-Control anchors tuned
+	# for the much larger upstream demo (PRESET_FULL_RECT + offset_right
+	# ~ -412). In our 200² SubViewport those resolve to a negative-size
+	# rect that shifts every inner ColorRect ~100 px left of x=0, so the
+	# planet renders as a half-circle clipped on the right. Pin the root
+	# to fill the viewport so the ColorRects render where their offsets
+	# expect (parent origin = viewport origin).
+	if _body is Control:
+		var root_ctrl: Control = _body
+		root_ctrl.set_anchors_preset(PRESET_FULL_RECT)
+		root_ctrl.offset_left = 0
+		root_ctrl.offset_top = 0
+		root_ctrl.offset_right = 0
+		root_ctrl.offset_bottom = 0
+
+	# Suppress Planet.gd's _process so our anim_speed-driven update_time
+	# call is the only thing advancing the shader's `time` uniform.
+	_body.set_process(false)
+	_local_time = 1000.0
+
 	_apply_seed(_current_seed)
 	_apply_light(_current_light)
 	if _body.has_method("set_pixels"):
 		_body.set_pixels(VIEWPORT_RES)
 	return true
+
+
+func set_anim_speed(speed: float) -> void:
+	_anim_speed = max(0.0, speed)
+
+
+func _process(delta: float) -> void:
+	if _body == null:
+		return
+	# Bake takes exclusive control of `time` via set_custom_time; skip
+	# our update so we don't fight it.
+	if bool(_body.get("override_time")):
+		return
+	if _anim_speed <= 0.0:
+		return
+	_local_time += delta * _anim_speed
+	if _body.has_method("update_time"):
+		_body.update_time(_local_time)
 
 
 func set_seed(seed_value: int) -> void:
