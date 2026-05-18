@@ -15,7 +15,7 @@ const BOSS_ID := "golden_boss"
 const QUEST_ID := "boss_gate"
 const DIALOGUE_ID := "quest_giver"
 const SHOP_ID := "supply_shop"
-const ROOM_ADDR := "realm_main/region_default/landing"
+const ROOM_ADDR := "region_default/landing"
 
 
 func _init() -> void:

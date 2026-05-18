@@ -143,7 +143,7 @@
                                             {
                                                 "type":  "payload_eq",
                                                 "key":  "room",
-                                                "value":  "realm_01/region_default/startingscene"
+                                                "value":  "region_default/startingscene"
                                             },
                                             {
                                                 "type":  "has_flag",
@@ -154,7 +154,7 @@
                          "actions":  [
                                          {
                                              "type":  "spawn_player",
-                                             "room":  "realm_01/region_default/startingscene"
+                                             "room":  "region_default/startingscene"
                                          },
                                          {
                                              "type":  "camera_focus",

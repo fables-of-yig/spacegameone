@@ -13,7 +13,6 @@ const PlanetLandingBossRecipe := preload("res://Space/scripts/editor/recipes/pla
 const PACK_ID := "reference_refactor_smoke"
 const OLD_SYSTEM_ID := "start"
 const NEW_SYSTEM_ID := "renamed_start"
-const REALM_ID := "realm_main"
 const REGION_ID := "region_default"
 const OLD_ROOM_ID := "landing"
 const NEW_ROOM_ID := "arrival"
@@ -201,8 +200,8 @@ func _run() -> bool:
 	if ContentReferenceIndex.find_references_in_index(index, "system", NEW_SYSTEM_ID).is_empty():
 		push_error("reference_refactor_smoke: renamed system has no references")
 		return false
-	var old_room_full := RegIO.runtime_room_addr(REALM_ID, REGION_ID, OLD_ROOM_ID)
-	var new_room_full := RegIO.runtime_room_addr(REALM_ID, REGION_ID, NEW_ROOM_ID)
+	var old_room_full := RegIO.runtime_room_addr(REGION_ID, OLD_ROOM_ID)
+	var new_room_full := RegIO.runtime_room_addr(REGION_ID, NEW_ROOM_ID)
 	if not ContentReferenceIndex.find_references_in_index(index, "room", old_room_full).is_empty():
 		push_error("reference_refactor_smoke: old room address still has references")
 		return false
@@ -304,7 +303,7 @@ func _seed_system_reference() -> bool:
 
 
 func _seed_room_reference() -> bool:
-	var old_full := RegIO.runtime_room_addr(REALM_ID, REGION_ID, OLD_ROOM_ID)
+	var old_full := RegIO.runtime_room_addr(REGION_ID, OLD_ROOM_ID)
 	var triggers := PedIO.load_triggers(PACK_ID)
 	var rules := _as_array(triggers.get("triggers", []))
 	rules.append({
@@ -320,7 +319,7 @@ func _seed_room_reference() -> bool:
 		push_error("reference_refactor_smoke: could not seed global room trigger")
 		return false
 
-	var rooms_root := RegIO.load_region_rooms(PACK_ID, REALM_ID, REGION_ID)
+	var rooms_root := RegIO.load_region_rooms(PACK_ID, REGION_ID)
 	var rooms_v: Variant = rooms_root.get("rooms", {})
 	if typeof(rooms_v) != TYPE_DICTIONARY:
 		push_error("reference_refactor_smoke: region rooms missing")
@@ -342,7 +341,7 @@ func _seed_room_reference() -> bool:
 	gate_room["triggers"] = room_rules
 	rooms["gate_room"] = gate_room
 	rooms_root["rooms"] = rooms
-	if not RegIO.save_region_rooms(PACK_ID, REALM_ID, REGION_ID, rooms_root):
+	if not RegIO.save_region_rooms(PACK_ID, REGION_ID, rooms_root):
 		push_error("reference_refactor_smoke: could not seed room trigger")
 		return false
 	RegIO.flatten_to_runtime(PACK_ID)
@@ -550,7 +549,7 @@ func _seed_dialogue_shop_reference_data() -> bool:
 		push_error("reference_refactor_smoke: could not seed shop")
 		return false
 
-	var rooms_root := RegIO.load_region_rooms(PACK_ID, REALM_ID, REGION_ID)
+	var rooms_root := RegIO.load_region_rooms(PACK_ID, REGION_ID)
 	var rooms_v: Variant = rooms_root.get("rooms", {})
 	if typeof(rooms_v) != TYPE_DICTIONARY:
 		push_error("reference_refactor_smoke: region rooms missing for dialogue/shop refs")
@@ -574,7 +573,7 @@ func _seed_dialogue_shop_reference_data() -> bool:
 	gate_room["entities"] = entities
 	rooms["gate_room"] = gate_room
 	rooms_root["rooms"] = rooms
-	if not RegIO.save_region_rooms(PACK_ID, REALM_ID, REGION_ID, rooms_root):
+	if not RegIO.save_region_rooms(PACK_ID, REGION_ID, rooms_root):
 		push_error("reference_refactor_smoke: could not seed room dialogue/shop refs")
 		return false
 	RegIO.flatten_to_runtime(PACK_ID)
@@ -676,15 +675,13 @@ func _rename_room_and_references() -> Dictionary:
 		"changed_refs": 0,
 		"errors": ["Room rename did not run."],
 	}
-	if not RegIO.rename_room(PACK_ID, REALM_ID, REGION_ID, OLD_ROOM_ID, NEW_ROOM_ID, "Arrival"):
+	if not RegIO.rename_room(PACK_ID, REGION_ID, OLD_ROOM_ID, NEW_ROOM_ID, "Arrival"):
 		result["errors"] = ["Could not rename room definition."]
 		return result
 	result = ContentReferenceRefactor.rename_room_references(
 		PACK_ID,
-		REALM_ID,
 		REGION_ID,
 		OLD_ROOM_ID,
-		REALM_ID,
 		REGION_ID,
 		NEW_ROOM_ID
 	)

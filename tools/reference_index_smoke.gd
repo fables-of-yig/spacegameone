@@ -46,7 +46,7 @@ func _run() -> bool:
 	if not _has_reference(index, "entity", "golden_boss", "boss_intro"):
 		push_error("reference_index_smoke: missing golden_boss trigger spawn reference")
 		return false
-	if not _has_reference(index, "room", "realm_main/region_default/landing", "Pack.json"):
+	if not _has_reference(index, "room", "region_default/landing", "Pack.json"):
 		push_error("reference_index_smoke: missing manifest entry room reference")
 		return false
 

@@ -14,6 +14,7 @@
 					"description": "Authored campaign landing point.",
 					"event_id": "",
 					"gravity_radius": 0,
+					"id": "starter_planet",
 					"name": "Starter Planet",
 					"orbit_angle": 0,
 					"orbit_dist": 900,
@@ -29,19 +30,24 @@
 							0,
 							0
 						],
-						"realm_id": "realm_main",
-						"region_id": "region_default",
+						"poi_id": "starter_planet",
+						"regions": [
+							{
+								"id": "region_default",
+								"name": "Default",
+								"spawn_room": "start",
+								"spawn_pos": [
+									80.0,
+									208.0
+								]
+							}
+						],
 						"roughness": 0.6,
 						"sky_color": [
 							0.35,
 							0.5,
 							0.8
 						],
-						"spawn_pos": [
-							80.0,
-							208.0
-						],
-						"spawn_room": "start",
 						"surface_pois": [],
 						"terrain_colors": [
 							[

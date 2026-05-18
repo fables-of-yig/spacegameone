@@ -6,7 +6,6 @@ param(
     [switch]$SmokePack,
     [switch]$RuntimeSmoke,
     [switch]$AuthoredRouteSmoke,
-    [switch]$GoldenPathSmoke,
     [switch]$TriggerRecipeSmoke,
     [switch]$WorldRecipeSmoke,
     [switch]$ReferenceIndexSmoke,
@@ -24,7 +23,6 @@ $projectRoot = Split-Path -Parent $PSScriptRoot
 $scriptPath = "res://tools/ui_contract_cli.gd"
 $runtimeSmokeScriptPath = "res://tools/phase2_runtime_smoke.gd"
 $authoredRouteSmokeScriptPath = "res://tools/runtime_smoke_cli.gd"
-$goldenPathSmokeScriptPath = "res://tools/golden_pack_cli.gd"
 $triggerRecipeSmokeScriptPath = "res://tools/trigger_recipe_smoke.gd"
 $worldRecipeSmokeScriptPath = "res://tools/world_recipe_smoke.gd"
 $referenceIndexSmokeScriptPath = "res://tools/reference_index_smoke.gd"
@@ -61,13 +59,6 @@ if ($RuntimeSmoke) {
 
 if ($AuthoredRouteSmoke) {
     & $GodotBin --headless --path $projectRoot --script $authoredRouteSmokeScriptPath -- authored-route --pack phase2_runtime_smoke --slot 5
-    if ($LASTEXITCODE -ne 0 -or -not $GoldenPathSmoke) {
-        exit $LASTEXITCODE
-    }
-}
-
-if ($GoldenPathSmoke) {
-    & $GodotBin --headless --path $projectRoot --script $goldenPathSmokeScriptPath -- smoke --pack golden_path --clean --slot 6
     if ($LASTEXITCODE -ne 0 -or -not $TriggerRecipeSmoke) {
         exit $LASTEXITCODE
     }

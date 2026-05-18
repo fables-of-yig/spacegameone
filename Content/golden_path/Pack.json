@@ -1,11 +1,11 @@
 {
 	"author": "",
 	"description": "",
-	"entry_room": "realm_main/region_default/start",
+	"entry_room": "region_default/start",
 	"name": "Golden Path",
 	"pack_id": "golden_path",
 	"schema_version": "1.0",
-	"start_realm": "realm_main",
+	"start_region": "region_default",
 	"start_ship_template": "startship",
 	"start_system": "start",
 	"version": "0.1.0"

@@ -1125,7 +1125,7 @@
           "required_item_id": "",
           "tags": [],
           "target_door_id": "gate_to_boss",
-          "target_room": "realm_main/region_default/gate_room",
+          "target_room": "gate_room",
           "width_blocks": 2.0,
           "x_blocks": 0.0,
           "y_blocks": 11.0
@@ -1782,7 +1782,7 @@
           "required_item_id": "",
           "tags": [],
           "target_door_id": "gate_to_boss",
-          "target_room": "realm_main/region_default/gate_room",
+          "target_room": "gate_room",
           "width_blocks": 2.0,
           "x_blocks": 0.0,
           "y_blocks": 11.0
@@ -2931,7 +2931,7 @@
           "required_item_id": "",
           "tags": [],
           "target_door_id": "shop_to_gate",
-          "target_room": "realm_main/region_default/shop_room",
+          "target_room": "shop_room",
           "width_blocks": 2.0,
           "x_blocks": 0.0,
           "y_blocks": 11.0
@@ -2947,7 +2947,7 @@
           "required_item_id": "key_silver",
           "tags": [],
           "target_door_id": "boss_to_gate",
-          "target_room": "realm_main/region_default/boss_room",
+          "target_room": "boss_room",
           "width_blocks": 2.0,
           "x_blocks": 28.0,
           "y_blocks": 11.0
@@ -3581,7 +3581,7 @@
           "required_item_id": "",
           "tags": [],
           "target_door_id": "shop_to_gate",
-          "target_room": "realm_main/region_default/shop_room",
+          "target_room": "shop_room",
           "width_blocks": 2.0,
           "x_blocks": 0.0,
           "y_blocks": 11.0
@@ -3597,7 +3597,7 @@
           "required_item_id": "key_silver",
           "tags": [],
           "target_door_id": "boss_to_gate",
-          "target_room": "realm_main/region_default/boss_room",
+          "target_room": "boss_room",
           "width_blocks": 2.0,
           "x_blocks": 28.0,
           "y_blocks": 11.0
@@ -4728,7 +4728,7 @@
           "required_item_id": "",
           "tags": [],
           "target_door_id": "start_to_pickup",
-          "target_room": "realm_main/region_default/start",
+          "target_room": "start",
           "width_blocks": 2.0,
           "x_blocks": 0.0,
           "y_blocks": 11.0
@@ -4744,7 +4744,7 @@
           "required_item_id": "",
           "tags": [],
           "target_door_id": "shop_to_pickup",
-          "target_room": "realm_main/region_default/shop_room",
+          "target_room": "shop_room",
           "width_blocks": 2.0,
           "x_blocks": 28.0,
           "y_blocks": 11.0
@@ -5380,7 +5380,7 @@
           "required_item_id": "",
           "tags": [],
           "target_door_id": "start_to_pickup",
-          "target_room": "realm_main/region_default/start",
+          "target_room": "start",
           "width_blocks": 2.0,
           "x_blocks": 0.0,
           "y_blocks": 11.0
@@ -5396,7 +5396,7 @@
           "required_item_id": "",
           "tags": [],
           "target_door_id": "shop_to_pickup",
-          "target_room": "realm_main/region_default/shop_room",
+          "target_room": "shop_room",
           "width_blocks": 2.0,
           "x_blocks": 28.0,
           "y_blocks": 11.0
@@ -6527,7 +6527,7 @@
           "required_item_id": "",
           "tags": [],
           "target_door_id": "pickup_to_shop",
-          "target_room": "realm_main/region_default/pickup_room",
+          "target_room": "pickup_room",
           "width_blocks": 2.0,
           "x_blocks": 0.0,
           "y_blocks": 11.0
@@ -6543,7 +6543,7 @@
           "required_item_id": "",
           "tags": [],
           "target_door_id": "gate_to_shop",
-          "target_room": "realm_main/region_default/gate_room",
+          "target_room": "gate_room",
           "width_blocks": 2.0,
           "x_blocks": 28.0,
           "y_blocks": 11.0
@@ -7179,7 +7179,7 @@
           "required_item_id": "",
           "tags": [],
           "target_door_id": "pickup_to_shop",
-          "target_room": "realm_main/region_default/pickup_room",
+          "target_room": "pickup_room",
           "width_blocks": 2.0,
           "x_blocks": 0.0,
           "y_blocks": 11.0
@@ -7195,7 +7195,7 @@
           "required_item_id": "",
           "tags": [],
           "target_door_id": "gate_to_shop",
-          "target_room": "realm_main/region_default/gate_room",
+          "target_room": "gate_room",
           "width_blocks": 2.0,
           "x_blocks": 28.0,
           "y_blocks": 11.0
@@ -8326,7 +8326,7 @@
           "required_item_id": "",
           "tags": [],
           "target_door_id": "pickup_to_start",
-          "target_room": "realm_main/region_default/pickup_room",
+          "target_room": "pickup_room",
           "width_blocks": 2.0,
           "x_blocks": 28.0,
           "y_blocks": 11.0
@@ -8960,7 +8960,7 @@
           "required_item_id": "",
           "tags": [],
           "target_door_id": "pickup_to_start",
-          "target_room": "realm_main/region_default/pickup_room",
+          "target_room": "pickup_room",
           "width_blocks": 2.0,
           "x_blocks": 28.0,
           "y_blocks": 11.0

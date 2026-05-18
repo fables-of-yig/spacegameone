@@ -13,19 +13,25 @@
 					"description": "",
 					"event_id": "",
 					"gravity_radius": 0.0,
+					"id": "R-4-88",
 					"name": "R-4-88",
 					"orbit_angle": 52.6960517220166,
 					"orbit_dist": 528.0,
 					"planet_data": {
 						"name": "R-4-88",
 						"pack_id": "demo",
-						"realm_id": "realm_01",
-						"region_id": "region_default",
-						"spawn_pos": [
-							0.0,
-							0.0
-						],
-						"spawn_room": "startingscene"
+						"poi_id": "R-4-88",
+						"regions": [
+							{
+								"id": "region_default",
+								"name": "Default",
+								"spawn_room": "startingscene",
+								"spawn_pos": [
+									0.0,
+									0.0
+								]
+							}
+						]
 					},
 					"sprite": "",
 					"type": "planet",

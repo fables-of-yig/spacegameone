@@ -58,6 +58,7 @@
 					"description": "Primary vertical-slice landing point.",
 					"event_id": "",
 					"gravity_radius": 0,
+					"id": "golden_landing",
 					"name": "Golden Landing",
 					"orbit_angle": 0.0,
 					"orbit_dist": 860.0,
@@ -74,19 +75,24 @@
 							0
 						],
 						"planet_key": "golden_landing",
-						"realm_id": "realm_main",
-						"region_id": "region_default",
+						"poi_id": "golden_landing",
+						"regions": [
+							{
+								"id": "region_default",
+								"name": "Golden Circuit",
+								"spawn_room": "start",
+								"spawn_pos": [
+									80.0,
+									208.0
+								]
+							}
+						],
 						"roughness": 0.62,
 						"sky_color": [
 							0.35,
 							0.43,
 							0.62
 						],
-						"spawn_pos": [
-							80.0,
-							208.0
-						],
-						"spawn_room": "start",
 						"surface_pois": [],
 						"terrain_colors": [
 							[
