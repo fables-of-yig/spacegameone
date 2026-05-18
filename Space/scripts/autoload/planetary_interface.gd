@@ -2,24 +2,19 @@ extends Node
 
 # Authoritative state holder for the cross-project planet handoff.
 # Read/written by both Space (SSB) and MV layers. begin_landing stages a
-# pack id + spawn coords for MvMain._enter_tree to read; begin_launch
+# pack id + POI + region for MvMain._enter_tree to read; begin_launch
 # snapshots the current planet and emits launch_requested so SSB can tear
 # the viewport down.
 
 signal launch_requested(pack_id: String)
-signal return_to_overworld_requested(pack_id: String, realm_id: String, spawn_pos: Vector2)
 
 var hosted: bool = false
 var pending_pack_id: String = ""
-var pending_realm_id: String = ""
+var pending_poi_id: String = ""
+var pending_region_id: String = ""
 var pending_planet_key: String = ""
 var pending_spawn_room: String = ""
 var pending_spawn_pos: Vector2 = Vector2.ZERO
-# Region properties staged by Space main._on_overworld_land for MV to consume
-# on startup. Keys mirror the region meta schema: music_id, encounter_id,
-# gravity_mult, visual_theme, hazard_type.
-var pending_region_id: String = ""
-var pending_region_meta: Dictionary = {}
 # When true, MvMain opens the editor overlay on first frame. SSB sets this
 # from the EDITOR main-menu chooser when "Sidescroller" is selected. Cleared
 # by Main on read. (Editor overlay itself is deferred; this flag is live.)
@@ -32,11 +27,10 @@ var pending_edit_mode: bool = false
 # (and cleared) by Space main._ready when the flag is set.
 var pending_return_to_editor: bool = false
 var pending_editor_pack_id: String = ""
-var pending_editor_realm_id: String = ""
 var pending_editor_region_id: String = ""
 var pending_editor_room_addr: String = ""
 
-# Internal snapshot store: pack_id → snapshot dict ({pack, room, player, vars, inventory}).
+# Internal snapshot store: planet_key → snapshot dict ({pack, room, player, vars, inventory}).
 # begin_launch writes here; restore_pending_if_any reads and clears on re-landing.
 var _pending_snapshot: Dictionary = {}
 var _planet_snapshots: Dictionary = {}
@@ -114,19 +108,21 @@ func list_global_flag_names() -> Array:
 func has_pending_snapshot() -> bool:
     return not _pending_snapshot.is_empty()
 
-# Called by SSB when the player interacts with a planet POI. Stages the
-# pack id and spawn coords for MvMain._enter_tree to read, and pulls any
-# prior snapshot for that planet so MvMain._ready can rehydrate state.
-func begin_landing(pack_id: String, spawn_room: String, spawn_pos: Vector2,
-        realm_id: String = "", planet_key: String = ""):
+# Called by SSB when the player picks a region from a POI's location list.
+# Stages the pack id, POI id, region id, and spawn coords for MvMain._enter_tree
+# to read, and pulls any prior snapshot for that planet+region so MvMain._ready
+# can rehydrate state.
+func begin_landing(pack_id: String, poi_id: String, region_id: String,
+        spawn_room: String, spawn_pos: Vector2) -> void:
     pack_id = pack_id.strip_edges()
     if pack_id.is_empty():
         push_error("PlanetaryInterface.begin_landing: empty pack_id")
         return
-    var resolved_planet_key := _resolve_planet_key(pack_id, realm_id, spawn_room, planet_key)
+    var resolved_planet_key := _resolve_planet_key(pack_id, poi_id, region_id)
     hosted = true
     pending_pack_id = pack_id
-    pending_realm_id = realm_id.strip_edges()
+    pending_poi_id = poi_id.strip_edges()
+    pending_region_id = region_id.strip_edges()
     pending_planet_key = resolved_planet_key
     pending_spawn_room = spawn_room
     pending_spawn_pos = spawn_pos
@@ -138,33 +134,9 @@ func begin_landing(pack_id: String, spawn_room: String, spawn_pos: Vector2,
         restore_planet_flags(_pending_snapshot.get("planet_flags", {}))
     else:
         clear_planet_flags()
-    print("planetary_interface: begin_landing pack='%s' planet='%s' spawn_room='%s' has_snapshot=%s" %
-        [pack_id, resolved_planet_key, spawn_room, not _pending_snapshot.is_empty()])
+    print("planetary_interface: begin_landing pack='%s' poi='%s' region='%s' spawn_room='%s' has_snapshot=%s" %
+        [pack_id, pending_poi_id, pending_region_id, spawn_room, not _pending_snapshot.is_empty()])
 
-
-# Called by MV trigger actions when an authored interactable or trigger
-# should back the player out of the side-view room stack and reopen the
-# current realm's atmosphere / overworld layer.
-func request_return_to_overworld(pack_id: String, realm_id: String, spawn_pos: Vector2 = Vector2(-1, -1)) -> void:
-    var target_pack_id: String = pack_id.strip_edges()
-    if target_pack_id.is_empty():
-        target_pack_id = pending_pack_id.strip_edges()
-    if target_pack_id.is_empty():
-        push_error("PlanetaryInterface.request_return_to_overworld: no pack id")
-        return
-
-    var target_realm_id: String = realm_id.strip_edges()
-    if target_realm_id.is_empty():
-        target_realm_id = pending_realm_id.strip_edges()
-
-    hosted = true
-    pending_pack_id = target_pack_id
-    pending_realm_id = target_realm_id
-    pending_spawn_room = ""
-    pending_spawn_pos = Vector2.ZERO
-    pending_region_id = ""
-    pending_region_meta = {}
-    return_to_overworld_requested.emit(target_pack_id, target_realm_id, spawn_pos)
 
 # Called by restore_pending_if_any to fetch (and clear) the pending snapshot.
 # Returns an empty dict if there's nothing to restore.
@@ -174,7 +146,7 @@ func _consume_pending_snapshot() -> Dictionary:
     return snap
 
 # Called by begin_launch to store the just-snapshotted planet state under
-# its pack id. Next visit to that planet rehydrates from here.
+# its planet key. Next visit to that planet+region rehydrates from here.
 func _save_snapshot(snapshot_key: String, snap: Dictionary):
     _planet_snapshots[snapshot_key] = snap.duplicate(true)
     print("planetary_interface: snapshotted '%s' (%d keys)" % [snapshot_key, snap.size()])
@@ -238,7 +210,8 @@ func _emit_launch_after_snapshot():
     var launching: String = pending_pack_id
     hosted = false
     pending_pack_id = ""
-    pending_realm_id = ""
+    pending_poi_id = ""
+    pending_region_id = ""
     pending_planet_key = ""
     pending_spawn_room = ""
     pending_spawn_pos = Vector2.ZERO
@@ -258,16 +231,17 @@ func begin_launch(main: Node) -> void:
         return
     var snapshot_key := pending_planet_key.strip_edges()
     if snapshot_key.is_empty():
-        snapshot_key = _resolve_planet_key(pack_id, pending_realm_id, pending_spawn_room, "")
+        snapshot_key = _resolve_planet_key(pack_id, pending_poi_id, pending_region_id)
 
     var snap: Dictionary = {
         "pack":      pack_id,
+        "poi":       pending_poi_id,
+        "region":    pending_region_id,
         "room":      "",
         "player":    {},
         "vars":      {},       # deferred — VarStore not ported
         "inventory": {},       # deferred — PlayerInventory snapshot not ported
         "snapshot_key": snapshot_key,
-        "realm": pending_realm_id,
         "planet_key": pending_planet_key,
         "room_state": {},
         "map_visited": {},
@@ -311,14 +285,15 @@ func snapshot_current_mv(main: Node) -> bool:
         return false
     var snapshot_key := pending_planet_key.strip_edges()
     if snapshot_key.is_empty():
-        snapshot_key = _resolve_planet_key(pack_id, pending_realm_id, pending_spawn_room, "")
+        snapshot_key = _resolve_planet_key(pack_id, pending_poi_id, pending_region_id)
     var snap: Dictionary = {
         "pack": pack_id,
+        "poi": pending_poi_id,
+        "region": pending_region_id,
         "room": "",
         "player": {},
         "inventory": {},
         "snapshot_key": snapshot_key,
-        "realm": pending_realm_id,
         "planet_key": pending_planet_key,
         "room_state": {},
         "map_visited": {},
@@ -405,10 +380,9 @@ func restore_pending_if_any(main: Node) -> bool:
 # Stash the editor's current pack/region/room so MvMain's Ctrl+9
 # return handler can scene-change back to Space and Space main can
 # re-open the environment editor at the same spot.
-func stage_return_to_editor(pack_id: String, realm_id: String, region_id: String, room_addr: String) -> void:
+func stage_return_to_editor(pack_id: String, region_id: String, room_addr: String) -> void:
     pending_return_to_editor = true
     pending_editor_pack_id = pack_id
-    pending_editor_realm_id = realm_id
     pending_editor_region_id = region_id
     pending_editor_room_addr = room_addr
 
@@ -416,12 +390,11 @@ func stage_return_to_editor(pack_id: String, realm_id: String, region_id: String
 func reset_runtime_state(clear_editor_return: bool = true, clear_snapshots: bool = true) -> void:
     hosted = false
     pending_pack_id = ""
-    pending_realm_id = ""
+    pending_poi_id = ""
+    pending_region_id = ""
     pending_planet_key = ""
     pending_spawn_room = ""
     pending_spawn_pos = Vector2.ZERO
-    pending_region_id = ""
-    pending_region_meta = {}
     pending_edit_mode = false
     _pending_snapshot = {}
     if clear_snapshots:
@@ -430,7 +403,6 @@ func reset_runtime_state(clear_editor_return: bool = true, clear_snapshots: bool
     if clear_editor_return:
         pending_return_to_editor = false
         pending_editor_pack_id = ""
-        pending_editor_realm_id = ""
         pending_editor_region_id = ""
         pending_editor_room_addr = ""
 
@@ -439,12 +411,11 @@ func snapshot_all() -> Dictionary:
     return {
         "hosted": hosted,
         "pending_pack_id": pending_pack_id,
-        "pending_realm_id": pending_realm_id,
+        "pending_poi_id": pending_poi_id,
+        "pending_region_id": pending_region_id,
         "pending_planet_key": pending_planet_key,
         "pending_spawn_room": pending_spawn_room,
         "pending_spawn_pos": [pending_spawn_pos.x, pending_spawn_pos.y],
-        "pending_region_id": pending_region_id,
-        "pending_region_meta": pending_region_meta.duplicate(true),
         "planet_flags": _planet_flags.duplicate(true),
         "global_flags": _global_flags.duplicate(true),
         "planet_snapshots": _planet_snapshots.duplicate(true),
@@ -457,7 +428,8 @@ func restore_all(data: Dictionary) -> void:
         return
     hosted = bool(data.get("hosted", false))
     pending_pack_id = str(data.get("pending_pack_id", "")).strip_edges()
-    pending_realm_id = str(data.get("pending_realm_id", "")).strip_edges()
+    pending_poi_id = str(data.get("pending_poi_id", "")).strip_edges()
+    pending_region_id = str(data.get("pending_region_id", "")).strip_edges()
     pending_planet_key = str(data.get("pending_planet_key", "")).strip_edges()
     pending_spawn_room = str(data.get("pending_spawn_room", "")).strip_edges()
     var pos_v: Variant = data.get("pending_spawn_pos", [0.0, 0.0])
@@ -465,9 +437,6 @@ func restore_all(data: Dictionary) -> void:
         pending_spawn_pos = Vector2(float((pos_v as Array)[0]), float((pos_v as Array)[1]))
     else:
         pending_spawn_pos = Vector2.ZERO
-    pending_region_id = str(data.get("pending_region_id", "")).strip_edges()
-    var region_meta_v: Variant = data.get("pending_region_meta", {})
-    pending_region_meta = (region_meta_v as Dictionary).duplicate(true) if typeof(region_meta_v) == TYPE_DICTIONARY else {}
     restore_planet_flags(data.get("planet_flags", {}))
     _global_flags.clear()
     var global_flags_v: Variant = data.get("global_flags", {})
@@ -485,22 +454,23 @@ func restore_all(data: Dictionary) -> void:
 func consume_return_to_editor() -> Dictionary:
     var out := {
         "pack_id": pending_editor_pack_id,
-        "realm_id": pending_editor_realm_id,
         "region_id": pending_editor_region_id,
         "room_addr": pending_editor_room_addr,
     }
     pending_return_to_editor = false
     pending_editor_pack_id = ""
-    pending_editor_realm_id = ""
     pending_editor_region_id = ""
     pending_editor_room_addr = ""
     return out
 
 
-func _resolve_planet_key(pack_id: String, realm_id: String, spawn_room: String, planet_key: String) -> String:
-    var key := planet_key.strip_edges()
-    if key.is_empty():
-        key = "%s/%s" % [realm_id.strip_edges(), spawn_room.strip_edges()]
-    if key.strip_edges().is_empty() or key == "/":
-        key = "default"
-    return "%s::%s" % [pack_id.strip_edges(), key]
+func _resolve_planet_key(pack_id: String, poi_id: String, region_id: String) -> String:
+    var poi := poi_id.strip_edges()
+    var region := region_id.strip_edges()
+    if poi.is_empty() and region.is_empty():
+        return "%s::default" % pack_id.strip_edges()
+    if poi.is_empty():
+        return "%s::%s" % [pack_id.strip_edges(), region]
+    if region.is_empty():
+        return "%s::%s" % [pack_id.strip_edges(), poi]
+    return "%s::%s::%s" % [pack_id.strip_edges(), poi, region]
