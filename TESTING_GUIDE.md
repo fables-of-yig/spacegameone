@@ -14,14 +14,14 @@ The canonical pack should prove:
 - pack creation and pack-aware saves
 - authored player, attack, projectile, item, and equipment data
 - authored UI screens that match the current contract
-- authored systems, realms, regions, and MV rooms
+- authored systems, POIs, regions, and MV rooms
 - authored entities and behaviors
 - authored dialogue, shops, and triggers
 - save/load and failure recovery paths
 
 Target route:
 
-`main_menu -> new game -> authored ship in space -> planet POI -> atmosphere overworld -> landing region -> start room -> hallway -> item room -> gate room -> shop/dialogue room -> combat room -> MV return trigger -> atmosphere -> space`
+`main_menu -> new game -> authored ship in space -> planet POI -> Land (interact) -> region picker -> region spawn room -> hallway -> item room -> gate room -> shop/dialogue room -> combat room -> launch_to_space door -> space`
 
 ## Source Of Truth
 
@@ -70,7 +70,7 @@ What pack validation now checks:
 - authored UI screens
 - UI input-map targets
 - pack manifest references
-- system / POI / realm / room references
+- system / POI / region / room references
 - room dimensions, doors, and hierarchy
 - trigger, dialogue, and shop references
 - entity / behavior references
@@ -102,11 +102,15 @@ Do the canonical pack in this order:
 2. Author the player baseline.
 3. Author the starting ship and module baseline.
 4. Author one minimal UI slice.
-5. Author the world hierarchy in order: system -> realm -> region -> rooms.
+5. Author the world hierarchy in order: system -> POI -> region -> rooms.
 6. Author one enemy plus one behavior.
 7. Author one dialogue, one shop, and one trigger chain.
 8. Validate the pack.
 9. Play the pack and note every mismatch.
+
+## Editor Playtest Roundtrip
+
+The environment editor's Test button calls `PlanetaryInterface.begin_landing(pack_id, "", region_id, room_addr, spawn_pos)` and `PlanetaryInterface.stage_return_to_editor(pack_id, region_id, room_addr)` before scene-changing to MV. Ctrl+9 inside MV scene-changes back to Space and `consume_return_to_editor()` re-opens the environment editor at the same region/room.
 
 ## Phase 1: Create The Pack
 
@@ -256,20 +260,18 @@ Exit criteria:
 
 ## Phase 5: Author The Smallest Useful World
 
-Suite paths:
-- `World -> Systems + Planets`
-- `World -> Realm + Regions`
+Suite path:
+- `World -> Systems + Planets` (POI detail has the Regions sub-panel; Edit Rooms opens the region editor)
 
 Author the world in this hierarchy:
 
-`Pack -> Systems -> Realms -> Regions -> MV Rooms`
+`Pack -> Systems -> POIs -> Regions -> MV Rooms`
 
 Author exactly one slice:
 - 1 system
-- 1 realm
-- 1 region
+- 1 POI
+- 1 region (one entry in the POI's `planet_data.regions[]`)
 - 4 to 6 rooms
-- 1 planet POI linking the system to the realm
 
 Recommended room ids:
 - `start_room`
@@ -282,26 +284,20 @@ Recommended room ids:
 System / planet setup:
 - author one system
 - author one planet POI
-- set the POI realm to the test realm id
+- add one region to the POI's Regions sub-panel; set its `spawn_room` and `spawn_pos`
 - leave `Pack Override` blank unless you are intentionally testing cross-pack routing
-- leave `Spawn Room` blank for the canonical path
+- set the Pack manifest's `start_region` to the region id
 
-Realm / region setup:
-- create one placed region
-- set a valid `start_region`
-- set enough atmosphere ground/structure content to prove the renderer is alive
-
-Room setup:
-- valid room masks
-- valid dimensions
-- valid room-to-room doors
-- one real start room
+Region / room setup:
+- click Edit Rooms on the region to open the region editor
+- author 4 to 6 rooms with valid masks, dimensions, and room-to-room doors
+- one real start room reachable from the region's `spawn_room`
 
 Exit criteria:
-- system, realm, region, and room references all validate
-- door targets are real rooms
-- the POI -> realm link validates
-- the region start room resolves to a real MV room
+- system, POI, region, and room references all validate
+- door targets are real rooms (`<region>/<room>` or bare `<room>`)
+- the POI -> region entries resolve to real region folders on disk
+- the region's `spawn_room` resolves to a real MV room
 
 ## Phase 6: Environment Authoring
 
@@ -362,18 +358,17 @@ Recommended chain:
 3. Dialogue can open a shop or fire a trigger event.
 4. Shop sells `medkit` and optionally one progression item.
 5. A trigger in `gate_room` checks the progression condition.
-6. One authored return interaction exits MV back to the atmosphere overworld.
+6. One door in a reachable room launches the player back to Space.
 
 Recommended authored return setup:
-- add an interactable in one MV room
-- on `interact`, fire a trigger action `return_to_overworld`
-- leave `region_id`, `x`, and `y` blank for the default test path unless you are intentionally testing override routing
+- add a door in one MV room with `launch_to_space: true` (or the legacy `exit_to_space` tag)
+- traversing it calls `PlanetaryInterface.begin_launch`, snapshots planet state, and emits `launch_requested`
 
 Exit criteria:
 - dialogue, shop, and trigger validation passes
 - there are no dangling ids in conditions or actions
 - shop item references are real authored items
-- the return path reaches the atmosphere overworld cleanly
+- the launch door returns the player to Space at the orbital position cleanly
 
 ## Phase 9: Save / Load / Failure Recovery
 
@@ -418,24 +413,21 @@ Run the first end-to-end play pass in this order:
 3. The authored starting ship loads in space.
 4. HUD bindings display live values without placeholder breakage.
 5. Space flight is playable.
-6. Planet POI interaction enters the atmosphere overworld.
-7. Atmosphere ground content renders correctly.
-8. Atmosphere billboard/structure content renders in the right places.
-9. Landing on the authored region enters the region start room in MV.
-10. The player can move, jump, and attack using authored player content.
-11. Authored attack/projectile behavior occurs.
-12. Inventory opens and shows authored content.
-13. Room transitions work.
-14. Hazard damage works.
-15. Enemy contact/combat behavior works.
-16. Dialogue opens and branches.
-17. Shop opens and buying works.
-18. Gate logic respects the authored item/ability/flag/variable state.
-19. The authored MV return interaction exits back to the atmosphere overworld.
-20. Atmosphere exit returns to space cleanly.
-21. Pause menu works.
-22. Save/load works.
-23. Game-over flow works if intentionally triggered.
+6. Planet POI interaction opens the Space-side region picker.
+7. Selecting a region in the picker calls `PlanetaryInterface.begin_landing` and enters the region's `spawn_room` in MV.
+8. The player can move, jump, and attack using authored player content.
+9. Authored attack/projectile behavior occurs.
+10. Inventory opens and shows authored content.
+11. Room transitions work.
+12. Hazard damage works.
+13. Enemy contact/combat behavior works.
+14. Dialogue opens and branches.
+15. Shop opens and buying works.
+16. Gate logic respects the authored item/ability/flag/variable state.
+17. The authored `launch_to_space` door (or `exit_to_space` tag) returns the player to Space at the orbital position.
+18. Pause menu works.
+19. Save/load works.
+20. Game-over flow works if intentionally triggered.
 
 ## What To Record During Testing
 
@@ -459,7 +451,7 @@ High-value bugs are:
 Call the toolchain ready for broader authored content only when all of this is true:
 - the canonical pack is created entirely through the pack-aware tools
 - validation passes without unexplained errors
-- the authored run is playable end to end across space, atmosphere, and MV without code edits
+- the authored run is playable end to end across space and MV without code edits
 - UI screens obey the published contract
 - docs and runtime behavior match
 - remaining failures are narrow bugs, not systemic contract lies

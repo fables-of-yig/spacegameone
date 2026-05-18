@@ -68,15 +68,18 @@ Acceptance criteria:
 ## Phase 4: World Authoring
 
 Target:
-- Realm, region, room, environment, entity, and behavior data round-trip from editor to runtime.
+- Region, room, environment, entity, and behavior data round-trip from editor to runtime.
 
 Work:
-- Lock the pack -> realm -> region -> room -> entity hierarchy.
+- Lock the pack -> system -> POI -> region -> room -> entity hierarchy.
 - Validate room references, door targets, and behavior references.
 - Add migration/versioning for saved content.
 
 Acceptance criteria:
 - A creator can author a small world and traverse it in runtime.
+
+Done in this phase:
+- Removed the Realm data layer and the mode-7 atmosphere overworld. Pack layout is now `Content/<pack>/Regions/<region_id>/{region.json,rooms.json}` with a flattened `Rooms/rooms.json` runtime view; POIs own `planet_data.regions[]` and landing routes through the Space-side region picker via `PlanetaryInterface.begin_landing`. Door schema dropped `send_to_overworld` / `overworld_region_id` in favor of `launch_to_space: bool`.
 
 ## Phase 5: Validation And Smoke Tests
 
