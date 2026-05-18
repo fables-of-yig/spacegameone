@@ -4,9 +4,12 @@ const DEFAULT_PACK_ID := "phase2_runtime_smoke"
 const ContentValidator := preload("res://Space/scripts/editor/content_validator.gd")
 
 # Phase 6: the realm slot is gone. Room addresses are now <region>/<room>.
+# ROOM_ADDR must be a string literal: GDScript 2 doesn't fold + or % over
+# named consts, so neither REGION_ID + "/" + ROOM_NAME nor
+# "%s/%s" % [REGION_ID, ROOM_NAME] counts as a constant expression.
 const REGION_ID := "region_default"
 const ROOM_NAME := "start"
-const ROOM_ADDR := "%s/%s" % [REGION_ID, ROOM_NAME]
+const ROOM_ADDR := "region_default/start"
 const POI_ID := "smoke_start_planet"
 
 
