@@ -1,0 +1,198 @@
+{
+  "libraries": [
+    {
+      "folders": [],
+      "id": "golden_path",
+      "name": "Golden Path",
+      "triggers": []
+    }
+  ],
+  "triggers": [
+    {
+      "actions": [
+        {
+          "count": 1,
+          "id": "missile_launcher",
+          "type": "give_item"
+        },
+        {
+          "name": "gold",
+          "type": "set_var",
+          "value": 15
+        },
+        {
+          "name": "max_ammo_missile",
+          "type": "set_var",
+          "value": 5
+        },
+        {
+          "name": "ammo_missile",
+          "type": "set_var",
+          "value": 5
+        }
+      ],
+      "conditions": [],
+      "enabled": true,
+      "event": "player_spawn",
+      "id": "golden_starting_loadout",
+      "library_id": "golden_path",
+      "locals": [],
+      "name": "Start with gold and missiles",
+      "once": true
+    },
+    {
+      "actions": [
+        {
+          "id": "phase_dash",
+          "type": "give_ability"
+        },
+        {
+          "name": "has_silver_key",
+          "type": "set_var",
+          "value": 1
+        },
+        {
+          "id": "gate_to_boss",
+          "locked": false,
+          "type": "set_door_locked"
+        },
+        {
+          "event": "golden_gate_unlocked",
+          "inherit_payload": true,
+          "type": "fire_event"
+        }
+      ],
+      "conditions": [
+        {
+          "key": "item_id",
+          "type": "payload_eq",
+          "value": "key_silver"
+        }
+      ],
+      "enabled": true,
+      "event": "pickup",
+      "id": "golden_pickup_unlocks_gate",
+      "library_id": "golden_path",
+      "locals": [],
+      "name": "Silver key unlocks the boss route",
+      "once": true
+    },
+    {
+      "actions": [
+        {
+          "tag": "golden_gate_unlocked",
+          "type": "add_tag"
+        }
+      ],
+      "conditions": [],
+      "enabled": true,
+      "event": "golden_gate_unlocked",
+      "id": "golden_gate_unlocked_tag",
+      "library_id": "golden_path",
+      "locals": [],
+      "name": "Remember unlocked gate"
+    },
+    {
+      "actions": [
+        {
+          "duration": 0.0,
+          "mode": "position",
+          "type": "camera_focus",
+          "x": 320.0,
+          "y": 176.0
+        },
+        {
+          "data": {
+            "properties": {
+              "instance_id": "golden_boss"
+            }
+          },
+          "id": "golden_boss",
+          "type": "spawn_entity_at_zone",
+          "zone_id": "boss_intro"
+        },
+        {
+          "type": "camera_unlock"
+        }
+      ],
+      "conditions": [
+        {
+          "key": "zone_id",
+          "type": "payload_eq",
+          "value": "boss_intro"
+        }
+      ],
+      "enabled": true,
+      "event": "zone_enter",
+      "id": "golden_boss_intro",
+      "library_id": "golden_path",
+      "locals": [],
+      "name": "Spawn the golden sentinel",
+      "once": true
+    },
+    {
+      "actions": [
+        {
+          "count": 1,
+          "id": "boss_core",
+          "type": "give_item"
+        },
+        {
+          "id": "boss_exit",
+          "locked": false,
+          "type": "set_door_locked"
+        },
+        {
+          "tag": "golden_boss_defeated",
+          "type": "add_tag"
+        }
+      ],
+      "conditions": [
+        {
+          "key": "entity_id",
+          "type": "payload_eq",
+          "value": "golden_boss"
+        }
+      ],
+      "enabled": true,
+      "event": "boss_defeated",
+      "id": "golden_boss_defeated",
+      "library_id": "golden_path",
+      "locals": [],
+      "name": "Boss core opens the return route",
+      "once": true
+    },
+    {
+      "actions": [
+        {
+          "tag": "archive_relic_recovered",
+          "type": "add_tag"
+        },
+        {
+          "delta": 20,
+          "name": "gold",
+          "type": "add_var"
+        },
+        {
+          "event": "archive_relic_recovered",
+          "inherit_payload": true,
+          "type": "fire_event"
+        }
+      ],
+      "conditions": [
+        {
+          "key": "item_id",
+          "type": "payload_eq",
+          "value": "archive_relic"
+        }
+      ],
+      "enabled": true,
+      "event": "pickup",
+      "id": "advanced_relic_reward",
+      "library_id": "golden_path",
+      "locals": [],
+      "name": "Archive relic updates world state",
+      "once": true
+    }
+  ]
+}

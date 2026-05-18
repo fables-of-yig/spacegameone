@@ -1,0 +1,45 @@
+{
+  "id": "golden_shop",
+  "items": [
+    {
+      "auto_use_on_gain": true,
+      "count": 1,
+      "id": "missile_expansion",
+      "name": "Missile Expansion (+5)",
+      "price": 5,
+      "stock_id": "missile_expansion_stock",
+      "use_amount": 5,
+      "use_arg": "missile",
+      "use_effect": "max_ammo_up"
+    },
+    {
+      "auto_use_on_gain": true,
+      "count": 1,
+      "id": "heart_container",
+      "name": "Heart Container (+99 Energy)",
+      "price": 10,
+      "stock_id": "heart_container_stock",
+      "use_amount": 99,
+      "use_arg": "",
+      "use_effect": "max_hp_up"
+    },
+    {
+      "count": 1,
+      "id": "key_silver",
+      "name": "Silver Key",
+      "price": 25,
+      "stock_id": "key_silver_stock"
+    },
+    {
+      "auto_use_on_gain": true,
+      "count": 1,
+      "id": "high_jump_boots_item",
+      "name": "High Jump Boots",
+      "price": 20,
+      "stock_id": "high_jump_boots_stock",
+      "use_amount": 1,
+      "use_arg": "hi_jump_boots",
+      "use_effect": "equip_item"
+    }
+  ]
+}

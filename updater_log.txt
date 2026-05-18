@@ -1,0 +1,7 @@
+2026-05-02T18:47:18  Version from exe dir: 0.0.0004
+2026-05-02T18:47:18  Ready. Version: 0.0.0004
+2026-05-02T18:47:22  Starting update check -> https://api.github.com/repos/fables-of-yig/spacegameone/releases/latest
+2026-05-02T18:47:22  Check complete: result=0  http=200  body_size=5167
+2026-05-02T18:47:22  Latest: V0.0.0004  Current: 0.0.0004  PCK URL: https://api.github.com/repos/fables-of-yig/spacegameone/releases/assets/410831449
+2026-05-02T21:33:07  Version from exe dir: 0.0.0005
+2026-05-02T21:33:07  Ready. Version: 0.0.0005

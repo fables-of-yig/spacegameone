@@ -1,0 +1,17 @@
+{
+  "cam_height": 120.0,
+  "cell_blocks_x": 1,
+  "cell_blocks_y": 1,
+  "encounter_id": "",
+  "fov_scale": 1.5,
+  "gravity_mult": 1.0,
+  "grid_cells_x": 128,
+  "grid_cells_y": 96,
+  "hazard_type": "",
+  "horizon": 0.35,
+  "id": "region_default",
+  "music_id": "",
+  "name": "Default",
+  "version": "1.1",
+  "visual_theme": ""
+}

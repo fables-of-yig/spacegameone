@@ -1,0 +1,2007 @@
+{
+  "poses": {
+    "0": {
+      "anim_speed": 1.0,
+      "collision_width": 11.0,
+      "collision_x": 1.0,
+      "dir": -1.0,
+      "frame_boxes": [
+        {
+          "collision_width": 11.0,
+          "collision_x": 1.0,
+          "hurtbox_h": 22.0,
+          "hurtbox_w": 11.0,
+          "hurtbox_x": 1.0,
+          "hurtbox_y": -11.0,
+          "y_offset": -1.0,
+          "y_radius": 11.0
+        },
+        {
+
+        },
+        {
+
+        },
+        {
+
+        },
+        {
+
+        },
+        {
+
+        },
+        {
+
+        },
+        {
+
+        }
+      ],
+      "hurtbox_h": 22.0,
+      "hurtbox_w": 11.0,
+      "hurtbox_x": 1.0,
+      "hurtbox_y": -11.0,
+      "loop_from": 0.0,
+      "mvtype": 0.0,
+      "name": "forward",
+      "timing": [
+        60.0,
+        10.0,
+        10.0,
+        10.0,
+        10.0,
+        10.0,
+        10.0,
+        10.0
+      ],
+      "transition_to": -1.0,
+      "weapon_anchor_x": 9.0,
+      "weapon_anchor_y": -9.0,
+      "y_offset": -1.0,
+      "y_radius": 11.0
+    },
+    "1": {
+      "anim_speed": 1.0,
+      "collision_width": 11.0,
+      "collision_x": 1.0,
+      "dir": -1.0,
+      "frame_boxes": [
+        {
+          "collision_width": 11.0,
+          "collision_x": 1.0,
+          "hurtbox_h": 22.0,
+          "hurtbox_w": 11.0,
+          "hurtbox_x": 1.0,
+          "hurtbox_y": -11.0,
+          "y_offset": -1.0,
+          "y_radius": 11.0
+        },
+        {
+          "collision_width": 11.0,
+          "collision_x": 1.0,
+          "hurtbox_h": 22.0,
+          "hurtbox_w": 11.0,
+          "hurtbox_x": 1.0,
+          "hurtbox_y": -11.0,
+          "y_offset": -1.0,
+          "y_radius": 11.0
+        },
+        {
+          "collision_width": 11.0,
+          "collision_x": 1.0,
+          "hurtbox_h": 22.0,
+          "hurtbox_w": 11.0,
+          "hurtbox_x": 1.0,
+          "hurtbox_y": -11.0,
+          "y_offset": -1.0,
+          "y_radius": 11.0
+        },
+        {
+          "collision_width": 11.0,
+          "collision_x": 1.0,
+          "hurtbox_h": 22.0,
+          "hurtbox_w": 11.0,
+          "hurtbox_x": 1.0,
+          "hurtbox_y": -11.0,
+          "y_offset": -1.0,
+          "y_radius": 11.0
+        },
+        {
+          "collision_width": 11.0,
+          "collision_x": 1.0,
+          "hurtbox_h": 22.0,
+          "hurtbox_w": 11.0,
+          "hurtbox_x": 1.0,
+          "hurtbox_y": -11.0,
+          "y_offset": -1.0,
+          "y_radius": 11.0
+        },
+        {
+          "collision_width": 11.0,
+          "collision_x": 1.0,
+          "hurtbox_h": 22.0,
+          "hurtbox_w": 11.0,
+          "hurtbox_x": 1.0,
+          "hurtbox_y": -11.0,
+          "y_offset": -1.0,
+          "y_radius": 11.0
+        }
+      ],
+      "hurtbox_h": 22.0,
+      "hurtbox_w": 11.0,
+      "hurtbox_x": 1.0,
+      "hurtbox_y": -11.0,
+      "loop_from": 0.0,
+      "mvtype": 0.0,
+      "name": "stand_right",
+      "timing": [
+        10.0,
+        10.0,
+        10.0,
+        10.0,
+        10.0,
+        10.0
+      ],
+      "transition_to": -1.0,
+      "weapon_anchor_x": 0.0,
+      "weapon_anchor_y": -24.0,
+      "y_offset": -1.0,
+      "y_radius": 11.0
+    },
+    "10": {
+      "anim_speed": 1.0,
+      "collision_width": 11.0,
+      "collision_x": -1.0,
+      "dir": -1.0,
+      "frame_boxes": [
+        {
+          "collision_width": 11.0,
+          "collision_x": -1.0,
+          "hurtbox_h": 22.0,
+          "hurtbox_w": 11.0,
+          "hurtbox_x": -1.0,
+          "hurtbox_y": -11.0,
+          "y_offset": -1.0,
+          "y_radius": 11.0
+        },
+        {
+          "collision_width": 11.0,
+          "collision_x": -1.0,
+          "hurtbox_h": 22.0,
+          "hurtbox_w": 11.0,
+          "hurtbox_x": -1.0,
+          "hurtbox_y": -11.0,
+          "y_offset": -1.0,
+          "y_radius": 11.0
+        },
+        {
+          "collision_width": 11.0,
+          "collision_x": -1.0,
+          "hurtbox_h": 22.0,
+          "hurtbox_w": 11.0,
+          "hurtbox_x": -1.0,
+          "hurtbox_y": -11.0,
+          "y_offset": -1.0,
+          "y_radius": 11.0
+        },
+        {
+          "collision_width": 11.0,
+          "collision_x": -1.0,
+          "hurtbox_h": 22.0,
+          "hurtbox_w": 11.0,
+          "hurtbox_x": -1.0,
+          "hurtbox_y": -11.0,
+          "y_offset": -1.0,
+          "y_radius": 11.0
+        },
+        {
+          "collision_width": 11.0,
+          "collision_x": -1.0,
+          "hurtbox_h": 22.0,
+          "hurtbox_w": 11.0,
+          "hurtbox_x": -1.0,
+          "hurtbox_y": -11.0,
+          "y_offset": -1.0,
+          "y_radius": 11.0
+        },
+        {
+          "collision_width": 11.0,
+          "collision_x": -1.0,
+          "hurtbox_h": 22.0,
+          "hurtbox_w": 11.0,
+          "hurtbox_x": -1.0,
+          "hurtbox_y": -11.0,
+          "y_offset": -1.0,
+          "y_radius": 11.0
+        }
+      ],
+      "hurtbox_h": 22.0,
+      "hurtbox_w": 11.0,
+      "hurtbox_x": -1.0,
+      "hurtbox_y": -11.0,
+      "loop_from": 0.0,
+      "mvtype": 1.0,
+      "name": "run_left",
+      "timing": [
+        6.0,
+        6.0,
+        6.0,
+        6.0,
+        6.0,
+        6.0
+      ],
+      "transition_to": -1.0,
+      "weapon_anchor_x": 0.0,
+      "weapon_anchor_y": -24.0,
+      "y_offset": -1.0,
+      "y_radius": 11.0
+    },
+    "135": {
+      "anim_speed": 1.0,
+      "collision_width": 11.0,
+      "collision_x": 1.0,
+      "dir": -1.0,
+      "frame_boxes": [
+        {
+
+        },
+        {
+
+        },
+        {
+
+        },
+        {
+
+        }
+      ],
+      "hurtbox_h": 22.0,
+      "hurtbox_w": 11.0,
+      "hurtbox_x": 1.0,
+      "hurtbox_y": -11.0,
+      "loop_from": -1.0,
+      "mvtype": 24.0,
+      "name": "turn_fall_right",
+      "timing": [
+        10.0,
+        10.0,
+        10.0,
+        10.0
+      ],
+      "transition_to": 42.0,
+      "weapon_anchor_x": 0.0,
+      "weapon_anchor_y": -24.0,
+      "y_offset": -1.0,
+      "y_radius": 11.0
+    },
+    "136": {
+      "anim_speed": 1.0,
+      "collision_width": 11.0,
+      "collision_x": -1.0,
+      "dir": -1.0,
+      "frame_boxes": [],
+      "hurtbox_h": 22.0,
+      "hurtbox_w": 11.0,
+      "hurtbox_x": -1.0,
+      "hurtbox_y": -11.0,
+      "loop_from": -1.0,
+      "mvtype": 24.0,
+      "name": "turn_fall_left",
+      "timing": [
+        10.0,
+        10.0,
+        10.0,
+        10.0
+      ],
+      "transition_to": 41.0,
+      "weapon_anchor_x": 0.0,
+      "weapon_anchor_y": -24.0,
+      "y_offset": -1.0,
+      "y_radius": 11.0
+    },
+    "164": {
+      "anim_speed": 1.0,
+      "collision_width": 11.0,
+      "collision_x": 1.0,
+      "dir": 1.0,
+      "frame_boxes": [
+        {
+
+        },
+        {
+
+        },
+        {
+
+        }
+      ],
+      "hurtbox_h": 22.0,
+      "hurtbox_w": 11.0,
+      "hurtbox_x": 1.0,
+      "hurtbox_y": -11.0,
+      "loop_from": -1.0,
+      "mvtype": 15.0,
+      "name": "land_right",
+      "timing": [
+        10.0,
+        10.0,
+        10.0
+      ],
+      "transition_to": 1.0,
+      "weapon_anchor_x": 0.0,
+      "weapon_anchor_y": -24.0,
+      "y_offset": -1.0,
+      "y_radius": 11.0
+    },
+    "165": {
+      "anim_speed": 1.0,
+      "collision_width": 11.0,
+      "collision_x": -1.0,
+      "dir": -1.0,
+      "frame_boxes": [],
+      "hurtbox_h": 22.0,
+      "hurtbox_w": 11.0,
+      "hurtbox_x": -1.0,
+      "hurtbox_y": -11.0,
+      "loop_from": -1.0,
+      "mvtype": 15.0,
+      "name": "land_left",
+      "timing": [
+        10.0,
+        10.0,
+        10.0
+      ],
+      "transition_to": 2.0,
+      "weapon_anchor_x": 0.0,
+      "weapon_anchor_y": -24.0,
+      "y_offset": -1.0,
+      "y_radius": 11.0
+    },
+    "166": {
+      "anim_speed": 1.0,
+      "collision_width": 11.0,
+      "collision_x": 1.0,
+      "dir": 1.0,
+      "frame_boxes": [
+        {
+
+        },
+        {
+
+        },
+        {
+
+        }
+      ],
+      "hurtbox_h": 22.0,
+      "hurtbox_w": 11.0,
+      "hurtbox_x": 1.0,
+      "hurtbox_y": -11.0,
+      "loop_from": -1.0,
+      "mvtype": 15.0,
+      "name": "land_spin_right",
+      "timing": [
+        10.0,
+        10.0,
+        10.0
+      ],
+      "transition_to": 1.0,
+      "weapon_anchor_x": 0.0,
+      "weapon_anchor_y": -24.0,
+      "y_offset": -1.0,
+      "y_radius": 11.0
+    },
+    "167": {
+      "anim_speed": 1.0,
+      "collision_width": 11.0,
+      "collision_x": -1.0,
+      "dir": -1.0,
+      "frame_boxes": [],
+      "hurtbox_h": 22.0,
+      "hurtbox_w": 11.0,
+      "hurtbox_x": -1.0,
+      "hurtbox_y": -11.0,
+      "loop_from": -1.0,
+      "mvtype": 15.0,
+      "name": "land_spin_left",
+      "timing": [
+        10.0,
+        10.0,
+        10.0
+      ],
+      "transition_to": 2.0,
+      "weapon_anchor_x": 0.0,
+      "weapon_anchor_y": -24.0,
+      "y_offset": -1.0,
+      "y_radius": 11.0
+    },
+    "2": {
+      "anim_speed": 1.0,
+      "collision_width": 11.0,
+      "collision_x": -1.0,
+      "dir": -1.0,
+      "frame_boxes": [
+        {
+          "collision_width": 11.0,
+          "collision_x": -1.0,
+          "hurtbox_h": 22.0,
+          "hurtbox_w": 11.0,
+          "hurtbox_x": -1.0,
+          "hurtbox_y": -11.0,
+          "y_offset": -1.0,
+          "y_radius": 11.0
+        },
+        {
+          "collision_width": 11.0,
+          "collision_x": -1.0,
+          "hurtbox_h": 22.0,
+          "hurtbox_w": 11.0,
+          "hurtbox_x": -1.0,
+          "hurtbox_y": -11.0,
+          "y_offset": -1.0,
+          "y_radius": 11.0
+        },
+        {
+          "collision_width": 11.0,
+          "collision_x": -1.0,
+          "hurtbox_h": 22.0,
+          "hurtbox_w": 11.0,
+          "hurtbox_x": -1.0,
+          "hurtbox_y": -11.0,
+          "y_offset": -1.0,
+          "y_radius": 11.0
+        },
+        {
+          "collision_width": 11.0,
+          "collision_x": -1.0,
+          "hurtbox_h": 22.0,
+          "hurtbox_w": 11.0,
+          "hurtbox_x": -1.0,
+          "hurtbox_y": -11.0,
+          "y_offset": -1.0,
+          "y_radius": 11.0
+        },
+        {
+          "collision_width": 11.0,
+          "collision_x": -1.0,
+          "hurtbox_h": 22.0,
+          "hurtbox_w": 11.0,
+          "hurtbox_x": -1.0,
+          "hurtbox_y": -11.0,
+          "y_offset": -1.0,
+          "y_radius": 11.0
+        },
+        {
+          "collision_width": 11.0,
+          "collision_x": -1.0,
+          "hurtbox_h": 22.0,
+          "hurtbox_w": 11.0,
+          "hurtbox_x": -1.0,
+          "hurtbox_y": -11.0,
+          "y_offset": -1.0,
+          "y_radius": 11.0
+        }
+      ],
+      "hurtbox_h": 22.0,
+      "hurtbox_w": 11.0,
+      "hurtbox_x": -1.0,
+      "hurtbox_y": -11.0,
+      "loop_from": 0.0,
+      "mvtype": 0.0,
+      "name": "stand_left",
+      "timing": [
+        10.0,
+        10.0,
+        10.0,
+        10.0,
+        10.0,
+        10.0
+      ],
+      "transition_to": -1.0,
+      "weapon_anchor_x": 0.0,
+      "weapon_anchor_y": -24.0,
+      "y_offset": -1.0,
+      "y_radius": 11.0
+    },
+    "201": {
+      "anim_speed": 1.0,
+      "collision_width": 11.0,
+      "collision_x": 1.0,
+      "dir": 1.0,
+      "frame_boxes": [
+        {
+          "collision_width": 11.0,
+          "collision_x": 1.0,
+          "hurtbox_h": 22.0,
+          "hurtbox_w": 11.0,
+          "hurtbox_x": 1.0,
+          "hurtbox_y": -11.0,
+          "y_offset": -1.0,
+          "y_radius": 11.0
+        },
+        {
+          "collision_width": 11.0,
+          "collision_x": 1.0,
+          "hurtbox_h": 22.0,
+          "hurtbox_w": 11.0,
+          "hurtbox_x": 1.0,
+          "hurtbox_y": -11.0,
+          "y_offset": -1.0,
+          "y_radius": 11.0
+        },
+        {
+          "collision_width": 11.0,
+          "collision_x": 1.0,
+          "hurtbox_h": 22.0,
+          "hurtbox_w": 11.0,
+          "hurtbox_x": 1.0,
+          "hurtbox_y": -11.0,
+          "y_offset": -1.0,
+          "y_radius": 11.0
+        },
+        {
+          "collision_width": 11.0,
+          "collision_x": 1.0,
+          "hurtbox_h": 22.0,
+          "hurtbox_w": 11.0,
+          "hurtbox_x": 1.0,
+          "hurtbox_y": -11.0,
+          "y_offset": -1.0,
+          "y_radius": 11.0
+        },
+        {
+          "collision_width": 11.0,
+          "collision_x": 1.0,
+          "hurtbox_h": 22.0,
+          "hurtbox_w": 11.0,
+          "hurtbox_x": 1.0,
+          "hurtbox_y": -11.0,
+          "y_offset": -1.0,
+          "y_radius": 11.0
+        },
+        {
+          "collision_width": 11.0,
+          "collision_x": 1.0,
+          "hurtbox_h": 22.0,
+          "hurtbox_w": 11.0,
+          "hurtbox_x": 1.0,
+          "hurtbox_y": -11.0,
+          "y_offset": -1.0,
+          "y_radius": 11.0
+        }
+      ],
+      "hurtbox_h": 22.0,
+      "hurtbox_w": 11.0,
+      "hurtbox_x": 1.0,
+      "hurtbox_y": -11.0,
+      "loop_from": -1.0,
+      "mvtype": 15.0,
+      "name": "melee_1_right",
+      "timing": [
+        4.0,
+        4.0,
+        4.0,
+        4.0,
+        4.0,
+        4.0
+      ],
+      "transition_to": 1.0,
+      "weapon_anchor_x": 0.0,
+      "weapon_anchor_y": -24.0,
+      "y_offset": -1.0,
+      "y_radius": 11.0
+    },
+    "202": {
+      "anim_speed": 1.0,
+      "collision_width": 11.0,
+      "collision_x": -1.0,
+      "dir": -1.0,
+      "frame_boxes": [],
+      "hurtbox_h": 22.0,
+      "hurtbox_w": 11.0,
+      "hurtbox_x": -1.0,
+      "hurtbox_y": -11.0,
+      "loop_from": -1.0,
+      "mvtype": 15.0,
+      "name": "melee_1_left",
+      "timing": [
+        4.0,
+        4.0,
+        4.0,
+        4.0,
+        4.0,
+        4.0
+      ],
+      "transition_to": 2.0,
+      "weapon_anchor_x": 0.0,
+      "weapon_anchor_y": -24.0,
+      "y_offset": -1.0,
+      "y_radius": 11.0
+    },
+    "203": {
+      "anim_speed": 1.0,
+      "collision_width": 11.0,
+      "collision_x": 1.0,
+      "dir": 1.0,
+      "frame_boxes": [
+        {
+
+        },
+        {
+
+        },
+        {
+
+        },
+        {
+
+        }
+      ],
+      "hurtbox_h": 22.0,
+      "hurtbox_w": 11.0,
+      "hurtbox_x": 1.0,
+      "hurtbox_y": -11.0,
+      "loop_from": -1.0,
+      "mvtype": 15.0,
+      "name": "melee_2_right",
+      "timing": [
+        10.0,
+        10.0,
+        10.0,
+        10.0
+      ],
+      "transition_to": 1.0,
+      "weapon_anchor_x": 0.0,
+      "weapon_anchor_y": -24.0,
+      "y_offset": -1.0,
+      "y_radius": 11.0
+    },
+    "204": {
+      "anim_speed": 1.0,
+      "collision_width": 11.0,
+      "collision_x": -1.0,
+      "dir": -1.0,
+      "frame_boxes": [
+        {
+          "collision_width": 11.0,
+          "collision_x": -1.0,
+          "hurtbox_h": 22.0,
+          "hurtbox_w": 11.0,
+          "hurtbox_x": -1.0,
+          "hurtbox_y": -11.0,
+          "y_offset": -1.0,
+          "y_radius": 11.0
+        },
+        {
+          "collision_width": 11.0,
+          "collision_x": -1.0,
+          "hurtbox_h": 22.0,
+          "hurtbox_w": 11.0,
+          "hurtbox_x": -1.0,
+          "hurtbox_y": -11.0,
+          "y_offset": -1.0,
+          "y_radius": 11.0
+        },
+        {
+          "collision_width": 11.0,
+          "collision_x": -1.0,
+          "hurtbox_h": 22.0,
+          "hurtbox_w": 11.0,
+          "hurtbox_x": -1.0,
+          "hurtbox_y": -11.0,
+          "y_offset": -1.0,
+          "y_radius": 11.0
+        },
+        {
+          "collision_width": 11.0,
+          "collision_x": -1.0,
+          "hurtbox_h": 22.0,
+          "hurtbox_w": 11.0,
+          "hurtbox_x": -1.0,
+          "hurtbox_y": -11.0,
+          "y_offset": -1.0,
+          "y_radius": 11.0
+        },
+        {
+          "collision_width": 11.0,
+          "collision_x": -1.0,
+          "hurtbox_h": 22.0,
+          "hurtbox_w": 11.0,
+          "hurtbox_x": -1.0,
+          "hurtbox_y": -11.0,
+          "y_offset": -1.0,
+          "y_radius": 11.0
+        },
+        {
+          "collision_width": 11.0,
+          "collision_x": -1.0,
+          "hurtbox_h": 22.0,
+          "hurtbox_w": 11.0,
+          "hurtbox_x": -1.0,
+          "hurtbox_y": -11.0,
+          "y_offset": -1.0,
+          "y_radius": 11.0
+        }
+      ],
+      "hurtbox_h": 22.0,
+      "hurtbox_w": 11.0,
+      "hurtbox_x": -1.0,
+      "hurtbox_y": -11.0,
+      "loop_from": -1.0,
+      "mvtype": 15.0,
+      "name": "melee_2_left",
+      "timing": [
+        4.0,
+        4.0,
+        4.0,
+        4.0,
+        4.0,
+        4.0
+      ],
+      "transition_to": 2.0,
+      "weapon_anchor_x": 0.0,
+      "weapon_anchor_y": -24.0,
+      "y_offset": -1.0,
+      "y_radius": 11.0
+    },
+    "205": {
+      "anim_speed": 1.0,
+      "collision_width": 11.0,
+      "collision_x": 1.0,
+      "dir": 1.0,
+      "frame_boxes": [
+        {
+
+        },
+        {
+
+        },
+        {
+
+        },
+        {
+
+        },
+        {
+
+        },
+        {
+
+        },
+        {
+
+        },
+        {
+
+        },
+        {
+
+        },
+        {
+
+        }
+      ],
+      "hurtbox_h": 22.0,
+      "hurtbox_w": 11.0,
+      "hurtbox_x": 1.0,
+      "hurtbox_y": -11.0,
+      "loop_from": -1.0,
+      "mvtype": 15.0,
+      "name": "melee_3_right",
+      "timing": [
+        10.0,
+        10.0,
+        10.0,
+        10.0,
+        10.0,
+        10.0,
+        10.0,
+        10.0,
+        10.0,
+        10.0
+      ],
+      "transition_to": 1.0,
+      "weapon_anchor_x": 0.0,
+      "weapon_anchor_y": -24.0,
+      "y_offset": -1.0,
+      "y_radius": 11.0
+    },
+    "206": {
+      "anim_speed": 1.0,
+      "collision_width": 11.0,
+      "collision_x": -1.0,
+      "dir": -1.0,
+      "frame_boxes": [],
+      "hurtbox_h": 22.0,
+      "hurtbox_w": 11.0,
+      "hurtbox_x": -1.0,
+      "hurtbox_y": -11.0,
+      "loop_from": -1.0,
+      "mvtype": 15.0,
+      "name": "melee_3_left",
+      "timing": [
+        10.0,
+        10.0,
+        10.0,
+        10.0,
+        10.0,
+        10.0,
+        10.0,
+        10.0,
+        10.0,
+        10.0
+      ],
+      "transition_to": 2.0,
+      "weapon_anchor_x": 0.0,
+      "weapon_anchor_y": -24.0,
+      "y_offset": -1.0,
+      "y_radius": 11.0
+    },
+    "207": {
+      "anim_speed": 1.0,
+      "collision_width": 11.0,
+      "collision_x": 1.0,
+      "dir": 1.0,
+      "frame_boxes": [
+        {
+
+        },
+        {
+
+        },
+        {
+
+        },
+        {
+
+        },
+        {
+
+        },
+        {
+
+        },
+        {
+
+        }
+      ],
+      "hurtbox_h": 22.0,
+      "hurtbox_w": 11.0,
+      "hurtbox_x": 1.0,
+      "hurtbox_y": -11.0,
+      "loop_from": -1.0,
+      "mvtype": 15.0,
+      "name": "ranged_right",
+      "timing": [
+        10.0,
+        10.0,
+        10.0,
+        10.0,
+        10.0,
+        10.0,
+        10.0
+      ],
+      "transition_to": 1.0,
+      "weapon_anchor_x": 15.0,
+      "weapon_anchor_y": -12.0,
+      "y_offset": -1.0,
+      "y_radius": 11.0
+    },
+    "208": {
+      "anim_speed": 1.0,
+      "collision_width": 11.0,
+      "collision_x": -1.0,
+      "dir": -1.0,
+      "frame_boxes": [],
+      "hurtbox_h": 22.0,
+      "hurtbox_w": 11.0,
+      "hurtbox_x": -1.0,
+      "hurtbox_y": -11.0,
+      "loop_from": -1.0,
+      "mvtype": 15.0,
+      "name": "ranged_left",
+      "timing": [
+        10.0,
+        10.0,
+        10.0,
+        10.0,
+        10.0,
+        10.0,
+        10.0
+      ],
+      "transition_to": 2.0,
+      "weapon_anchor_x": -15.0,
+      "weapon_anchor_y": -12.0,
+      "y_offset": -1.0,
+      "y_radius": 11.0
+    },
+    "209": {
+      "anim_speed": 1.0,
+      "collision_width": 11.0,
+      "collision_x": 1.0,
+      "dir": 1.0,
+      "frame_boxes": [
+        {
+          "collision_width": 11.0,
+          "collision_x": 1.0,
+          "hurtbox_h": 22.0,
+          "hurtbox_w": 11.0,
+          "hurtbox_x": 1.0,
+          "hurtbox_y": -11.0,
+          "y_offset": -1.0,
+          "y_radius": 11.0
+        },
+        {
+
+        },
+        {
+
+        },
+        {
+
+        },
+        {
+
+        },
+        {
+
+        },
+        {
+
+        },
+        {
+
+        }
+      ],
+      "hurtbox_h": 22.0,
+      "hurtbox_w": 11.0,
+      "hurtbox_x": 1.0,
+      "hurtbox_y": -11.0,
+      "loop_from": 0.0,
+      "mvtype": 15.0,
+      "name": "ranged_charge_right",
+      "timing": [
+        10.0,
+        10.0,
+        10.0,
+        10.0,
+        10.0,
+        10.0,
+        10.0,
+        10.0
+      ],
+      "transition_to": -1.0,
+      "weapon_anchor_x": 15.0,
+      "weapon_anchor_y": -12.0,
+      "y_offset": -1.0,
+      "y_radius": 11.0
+    },
+    "210": {
+      "anim_speed": 1.0,
+      "collision_width": 11.0,
+      "collision_x": -1.0,
+      "dir": -1.0,
+      "frame_boxes": [],
+      "hurtbox_h": 22.0,
+      "hurtbox_w": 11.0,
+      "hurtbox_x": -1.0,
+      "hurtbox_y": -11.0,
+      "loop_from": 0.0,
+      "mvtype": 15.0,
+      "name": "ranged_charge_left",
+      "timing": [
+        10.0,
+        10.0,
+        10.0,
+        10.0,
+        10.0,
+        10.0,
+        10.0,
+        10.0
+      ],
+      "transition_to": -1.0,
+      "weapon_anchor_x": -15.0,
+      "weapon_anchor_y": -12.0,
+      "y_offset": -1.0,
+      "y_radius": 11.0
+    },
+    "211": {
+      "anim_speed": 8.0,
+      "collision_width": 11.0,
+      "collision_x": 1.0,
+      "dir": 1.0,
+      "frame_boxes": [
+        {
+          "collision_width": 11.0,
+          "collision_x": 1.0,
+          "hurtbox_h": 22.0,
+          "hurtbox_w": 11.0,
+          "hurtbox_x": 1.0,
+          "hurtbox_y": -11.0,
+          "y_offset": -1.0,
+          "y_radius": 11.0
+        },
+        {
+
+        },
+        {
+
+        },
+        {
+
+        },
+        {
+
+        },
+        {
+
+        },
+        {
+
+        },
+        {
+
+        },
+        {
+
+        },
+        {
+
+        },
+        {
+
+        },
+        {
+
+        },
+        {
+
+        },
+        {
+
+        },
+        {
+
+        },
+        {
+
+        },
+        {
+          "collision_width": 11.0,
+          "collision_x": 1.0,
+          "hurtbox_h": 22.0,
+          "hurtbox_w": 11.0,
+          "hurtbox_x": 1.0,
+          "hurtbox_y": -11.0,
+          "y_offset": -1.0,
+          "y_radius": 11.0
+        }
+      ],
+      "hurtbox_h": 22.0,
+      "hurtbox_w": 11.0,
+      "hurtbox_x": 1.0,
+      "hurtbox_y": -11.0,
+      "loop_from": -1.0,
+      "mvtype": 15.0,
+      "name": "dodge_roll_right",
+      "timing": [
+        4.0,
+        10.0,
+        10.0,
+        10.0,
+        10.0,
+        10.0,
+        10.0,
+        10.0,
+        10.0,
+        10.0,
+        10.0,
+        10.0,
+        10.0,
+        10.0,
+        10.0,
+        10.0,
+        10.0
+      ],
+      "transition_to": 1.0,
+      "weapon_anchor_x": 0.0,
+      "weapon_anchor_y": -24.0,
+      "y_offset": -1.0,
+      "y_radius": 11.0
+    },
+    "212": {
+      "anim_speed": 8.0,
+      "collision_width": 11.0,
+      "collision_x": -1.0,
+      "dir": -1.0,
+      "frame_boxes": [],
+      "hurtbox_h": 22.0,
+      "hurtbox_w": 11.0,
+      "hurtbox_x": -1.0,
+      "hurtbox_y": -11.0,
+      "loop_from": -1.0,
+      "mvtype": 15.0,
+      "name": "dodge_roll_left",
+      "timing": [
+        10.0
+      ],
+      "transition_to": 2.0,
+      "weapon_anchor_x": 0.0,
+      "weapon_anchor_y": -24.0,
+      "y_offset": -1.0,
+      "y_radius": 11.0
+    },
+    "25": {
+      "anim_speed": 6.0,
+      "collision_width": 11.0,
+      "collision_x": 1.0,
+      "dir": 1.0,
+      "frame_boxes": [
+        {
+          "collision_width": 11.0,
+          "collision_x": 1.0,
+          "hurtbox_h": 22.0,
+          "hurtbox_w": 11.0,
+          "hurtbox_x": 1.0,
+          "hurtbox_y": -11.0,
+          "y_offset": -1.0,
+          "y_radius": 11.0
+        },
+        {
+
+        },
+        {
+
+        },
+        {
+
+        },
+        {
+
+        },
+        {
+
+        },
+        {
+
+        },
+        {
+
+        },
+        {
+
+        },
+        {
+
+        },
+        {
+
+        },
+        {
+
+        },
+        {
+
+        },
+        {
+
+        },
+        {
+
+        },
+        {
+
+        }
+      ],
+      "hurtbox_h": 22.0,
+      "hurtbox_w": 11.0,
+      "hurtbox_x": 1.0,
+      "hurtbox_y": -11.0,
+      "loop_from": 0.0,
+      "mvtype": 3.0,
+      "name": "spin_right",
+      "timing": [
+        10.0,
+        10.0,
+        10.0,
+        10.0,
+        10.0,
+        10.0,
+        10.0,
+        10.0,
+        10.0,
+        10.0,
+        10.0,
+        10.0,
+        10.0,
+        10.0,
+        10.0,
+        10.0
+      ],
+      "transition_to": -1.0,
+      "weapon_anchor_x": 0.0,
+      "weapon_anchor_y": -24.0,
+      "y_offset": -1.0,
+      "y_radius": 11.0
+    },
+    "26": {
+      "anim_speed": 1.0,
+      "collision_width": 11.0,
+      "collision_x": -1.0,
+      "dir": -1.0,
+      "frame_boxes": [],
+      "hurtbox_h": 22.0,
+      "hurtbox_w": 11.0,
+      "hurtbox_x": -1.0,
+      "hurtbox_y": -11.0,
+      "loop_from": 0.0,
+      "mvtype": 3.0,
+      "name": "spin_left",
+      "timing": [
+        10.0,
+        10.0,
+        10.0,
+        10.0,
+        10.0,
+        10.0,
+        10.0,
+        10.0,
+        10.0,
+        10.0,
+        10.0,
+        10.0,
+        10.0,
+        10.0,
+        10.0,
+        10.0
+      ],
+      "transition_to": -1.0,
+      "weapon_anchor_x": 0.0,
+      "weapon_anchor_y": -24.0,
+      "y_offset": -1.0,
+      "y_radius": 11.0
+    },
+    "37": {
+      "anim_speed": 1.0,
+      "collision_width": 11.0,
+      "collision_x": 1.0,
+      "dir": 1.0,
+      "frame_boxes": [
+        {
+          "collision_width": 11.0,
+          "collision_x": 1.0,
+          "hurtbox_h": 22.0,
+          "hurtbox_w": 11.0,
+          "hurtbox_x": 1.0,
+          "hurtbox_y": -11.0,
+          "y_offset": -1.0,
+          "y_radius": 11.0
+        },
+        {
+          "collision_width": 11.0,
+          "collision_x": 1.0,
+          "hurtbox_h": 22.0,
+          "hurtbox_w": 11.0,
+          "hurtbox_x": 1.0,
+          "hurtbox_y": -11.0,
+          "y_offset": -1.0,
+          "y_radius": 11.0
+        },
+        {
+          "collision_width": 11.0,
+          "collision_x": 1.0,
+          "hurtbox_h": 22.0,
+          "hurtbox_w": 11.0,
+          "hurtbox_x": 1.0,
+          "hurtbox_y": -11.0,
+          "y_offset": -1.0,
+          "y_radius": 11.0
+        },
+        {
+          "collision_width": 11.0,
+          "collision_x": 1.0,
+          "hurtbox_h": 22.0,
+          "hurtbox_w": 11.0,
+          "hurtbox_x": 1.0,
+          "hurtbox_y": -11.0,
+          "y_offset": -1.0,
+          "y_radius": 11.0
+        }
+      ],
+      "hurtbox_h": 22.0,
+      "hurtbox_w": 11.0,
+      "hurtbox_x": 1.0,
+      "hurtbox_y": -11.0,
+      "loop_from": -1.0,
+      "mvtype": 14.0,
+      "name": "turn_right",
+      "timing": [
+        10.0,
+        10.0,
+        10.0,
+        10.0
+      ],
+      "transition_to": 2.0,
+      "weapon_anchor_x": 0.0,
+      "weapon_anchor_y": -24.0,
+      "y_offset": -1.0,
+      "y_radius": 11.0
+    },
+    "38": {
+      "anim_speed": 1.0,
+      "collision_width": 11.0,
+      "collision_x": -1.0,
+      "dir": -1.0,
+      "frame_boxes": [],
+      "hurtbox_h": 22.0,
+      "hurtbox_w": 11.0,
+      "hurtbox_x": -1.0,
+      "hurtbox_y": -11.0,
+      "loop_from": -1.0,
+      "mvtype": 14.0,
+      "name": "turn_left",
+      "timing": [
+        10.0,
+        10.0,
+        10.0,
+        10.0
+      ],
+      "transition_to": 1.0,
+      "weapon_anchor_x": 0.0,
+      "weapon_anchor_y": -24.0,
+      "y_offset": -1.0,
+      "y_radius": 11.0
+    },
+    "41": {
+      "anim_speed": 1.0,
+      "collision_width": 11.0,
+      "collision_x": 1.0,
+      "dir": 1.0,
+      "frame_boxes": [
+        {
+          "collision_width": 11.0,
+          "collision_x": 1.0,
+          "hurtbox_h": 22.0,
+          "hurtbox_w": 11.0,
+          "hurtbox_x": 1.0,
+          "hurtbox_y": -11.0,
+          "y_offset": -1.0,
+          "y_radius": 11.0
+        },
+        {
+          "collision_width": 11.0,
+          "collision_x": 1.0,
+          "hurtbox_h": 22.0,
+          "hurtbox_w": 11.0,
+          "hurtbox_x": 1.0,
+          "hurtbox_y": -11.0,
+          "y_offset": -1.0,
+          "y_radius": 11.0
+        },
+        {
+          "collision_width": 11.0,
+          "collision_x": 1.0,
+          "hurtbox_h": 22.0,
+          "hurtbox_w": 11.0,
+          "hurtbox_x": 1.0,
+          "hurtbox_y": -11.0,
+          "y_offset": -1.0,
+          "y_radius": 11.0
+        }
+      ],
+      "hurtbox_h": 22.0,
+      "hurtbox_w": 11.0,
+      "hurtbox_x": 1.0,
+      "hurtbox_y": -11.0,
+      "loop_from": 0.0,
+      "mvtype": 6.0,
+      "name": "fall_right",
+      "timing": [
+        10.0,
+        10.0,
+        10.0
+      ],
+      "transition_to": -1.0,
+      "weapon_anchor_x": 0.0,
+      "weapon_anchor_y": -24.0,
+      "y_offset": -1.0,
+      "y_radius": 11.0
+    },
+    "42": {
+      "anim_speed": 1.0,
+      "collision_width": 11.0,
+      "collision_x": -1.0,
+      "dir": -1.0,
+      "frame_boxes": [],
+      "hurtbox_h": 22.0,
+      "hurtbox_w": 11.0,
+      "hurtbox_x": -1.0,
+      "hurtbox_y": -11.0,
+      "loop_from": 0.0,
+      "mvtype": 6.0,
+      "name": "fall_left",
+      "timing": [
+        10.0,
+        10.0,
+        10.0
+      ],
+      "transition_to": -1.0,
+      "weapon_anchor_x": 0.0,
+      "weapon_anchor_y": -24.0,
+      "y_offset": -1.0,
+      "y_radius": 11.0
+    },
+    "47": {
+      "anim_speed": 1.0,
+      "collision_width": 11.0,
+      "collision_x": 1.0,
+      "dir": 1.0,
+      "frame_boxes": [
+        {
+          "collision_width": 11.0,
+          "collision_x": 1.0,
+          "hurtbox_h": 22.0,
+          "hurtbox_w": 11.0,
+          "hurtbox_x": 1.0,
+          "hurtbox_y": -11.0,
+          "y_offset": -1.0,
+          "y_radius": 11.0
+        }
+      ],
+      "hurtbox_h": 22.0,
+      "hurtbox_w": 11.0,
+      "hurtbox_x": 1.0,
+      "hurtbox_y": -11.0,
+      "loop_from": -1.0,
+      "mvtype": 23.0,
+      "name": "turn_air_right",
+      "timing": [
+        4.0
+      ],
+      "transition_to": 42.0,
+      "weapon_anchor_x": 0.0,
+      "weapon_anchor_y": -24.0,
+      "y_offset": -1.0,
+      "y_radius": 11.0
+    },
+    "48": {
+      "anim_speed": 1.0,
+      "collision_width": 11.0,
+      "collision_x": -1.0,
+      "dir": -1.0,
+      "frame_boxes": [
+        {
+          "collision_width": 11.0,
+          "collision_x": -1.0,
+          "hurtbox_h": 22.0,
+          "hurtbox_w": 11.0,
+          "hurtbox_x": -1.0,
+          "hurtbox_y": -11.0,
+          "y_offset": -1.0,
+          "y_radius": 11.0
+        }
+      ],
+      "hurtbox_h": 22.0,
+      "hurtbox_w": 11.0,
+      "hurtbox_x": -1.0,
+      "hurtbox_y": -11.0,
+      "loop_from": -1.0,
+      "mvtype": 23.0,
+      "name": "turn_air_left",
+      "timing": [
+        4.0
+      ],
+      "transition_to": 41.0,
+      "weapon_anchor_x": 0.0,
+      "weapon_anchor_y": -24.0,
+      "y_offset": -1.0,
+      "y_radius": 11.0
+    },
+    "53": {
+      "anim_speed": 1.0,
+      "collision_width": 11.0,
+      "collision_x": 1.0,
+      "dir": 1.0,
+      "frame_boxes": [
+        {
+          "collision_width": 11.0,
+          "collision_x": 1.0,
+          "hurtbox_h": 22.0,
+          "hurtbox_w": 11.0,
+          "hurtbox_x": 1.0,
+          "hurtbox_y": -11.0,
+          "y_offset": -1.0,
+          "y_radius": 11.0
+        },
+        {
+          "collision_width": 11.0,
+          "collision_x": 1.0,
+          "hurtbox_h": 22.0,
+          "hurtbox_w": 11.0,
+          "hurtbox_x": 1.0,
+          "hurtbox_y": -11.0,
+          "y_offset": -1.0,
+          "y_radius": 11.0
+        }
+      ],
+      "hurtbox_h": 22.0,
+      "hurtbox_w": 11.0,
+      "hurtbox_x": 1.0,
+      "hurtbox_y": -11.0,
+      "loop_from": -1.0,
+      "mvtype": 15.0,
+      "name": "crouch_transition_right",
+      "timing": [
+        10.0,
+        10.0
+      ],
+      "transition_to": 67.0,
+      "weapon_anchor_x": 0.0,
+      "weapon_anchor_y": -24.0,
+      "y_offset": -1.0,
+      "y_radius": 11.0
+    },
+    "54": {
+      "anim_speed": 1.0,
+      "collision_width": 11.0,
+      "collision_x": -1.0,
+      "dir": -1.0,
+      "frame_boxes": [],
+      "hurtbox_h": 22.0,
+      "hurtbox_w": 11.0,
+      "hurtbox_x": -1.0,
+      "hurtbox_y": -11.0,
+      "loop_from": -1.0,
+      "mvtype": 15.0,
+      "name": "crouch_transition_left",
+      "timing": [
+        10.0,
+        10.0
+      ],
+      "transition_to": 68.0,
+      "weapon_anchor_x": 0.0,
+      "weapon_anchor_y": -24.0,
+      "y_offset": -1.0,
+      "y_radius": 11.0
+    },
+    "59": {
+      "anim_speed": 1.0,
+      "collision_width": 11.0,
+      "collision_x": 1.0,
+      "dir": 1.0,
+      "frame_boxes": [
+        {
+          "collision_width": 11.0,
+          "collision_x": 1.0,
+          "hurtbox_h": 22.0,
+          "hurtbox_w": 11.0,
+          "hurtbox_x": 1.0,
+          "hurtbox_y": -11.0,
+          "y_offset": -1.0,
+          "y_radius": 11.0
+        },
+        {
+          "collision_width": 11.0,
+          "collision_x": 1.0,
+          "hurtbox_h": 22.0,
+          "hurtbox_w": 11.0,
+          "hurtbox_x": 1.0,
+          "hurtbox_y": -11.0,
+          "y_offset": -1.0,
+          "y_radius": 11.0
+        },
+        {
+          "collision_width": 11.0,
+          "collision_x": 1.0,
+          "hurtbox_h": 22.0,
+          "hurtbox_w": 11.0,
+          "hurtbox_x": 1.0,
+          "hurtbox_y": -11.0,
+          "y_offset": -1.0,
+          "y_radius": 11.0
+        },
+        {
+          "collision_width": 11.0,
+          "collision_x": 1.0,
+          "hurtbox_h": 22.0,
+          "hurtbox_w": 11.0,
+          "hurtbox_x": 1.0,
+          "hurtbox_y": -11.0,
+          "y_offset": -1.0,
+          "y_radius": 11.0
+        },
+        {
+          "collision_width": 11.0,
+          "collision_x": 1.0,
+          "hurtbox_h": 22.0,
+          "hurtbox_w": 11.0,
+          "hurtbox_x": 1.0,
+          "hurtbox_y": -11.0,
+          "y_offset": -1.0,
+          "y_radius": 11.0
+        },
+        {
+          "collision_width": 11.0,
+          "collision_x": 1.0,
+          "hurtbox_h": 22.0,
+          "hurtbox_w": 11.0,
+          "hurtbox_x": 1.0,
+          "hurtbox_y": -11.0,
+          "y_offset": -1.0,
+          "y_radius": 11.0
+        }
+      ],
+      "hurtbox_h": 22.0,
+      "hurtbox_w": 11.0,
+      "hurtbox_x": 1.0,
+      "hurtbox_y": -11.0,
+      "loop_from": 0.0,
+      "mvtype": 5.0,
+      "name": "crouch_aim_up_right",
+      "timing": [
+        10.0,
+        10.0,
+        10.0,
+        10.0,
+        10.0,
+        10.0
+      ],
+      "transition_to": -1.0,
+      "weapon_anchor_x": 0.0,
+      "weapon_anchor_y": -24.0,
+      "y_offset": -1.0,
+      "y_radius": 11.0
+    },
+    "60": {
+      "anim_speed": 1.0,
+      "collision_width": 11.0,
+      "collision_x": -1.0,
+      "dir": -1.0,
+      "frame_boxes": [
+        {
+          "collision_width": 11.0,
+          "collision_x": -1.0,
+          "hurtbox_h": 22.0,
+          "hurtbox_w": 11.0,
+          "hurtbox_x": -1.0,
+          "hurtbox_y": -11.0,
+          "y_offset": -1.0,
+          "y_radius": 11.0
+        },
+        {
+          "collision_width": 11.0,
+          "collision_x": -1.0,
+          "hurtbox_h": 22.0,
+          "hurtbox_w": 11.0,
+          "hurtbox_x": -1.0,
+          "hurtbox_y": -11.0,
+          "y_offset": -1.0,
+          "y_radius": 11.0
+        },
+        {
+          "collision_width": 11.0,
+          "collision_x": -1.0,
+          "hurtbox_h": 22.0,
+          "hurtbox_w": 11.0,
+          "hurtbox_x": -1.0,
+          "hurtbox_y": -11.0,
+          "y_offset": -1.0,
+          "y_radius": 11.0
+        },
+        {
+          "collision_width": 11.0,
+          "collision_x": -1.0,
+          "hurtbox_h": 22.0,
+          "hurtbox_w": 11.0,
+          "hurtbox_x": -1.0,
+          "hurtbox_y": -11.0,
+          "y_offset": -1.0,
+          "y_radius": 11.0
+        },
+        {
+          "collision_width": 11.0,
+          "collision_x": -1.0,
+          "hurtbox_h": 22.0,
+          "hurtbox_w": 11.0,
+          "hurtbox_x": -1.0,
+          "hurtbox_y": -11.0,
+          "y_offset": -1.0,
+          "y_radius": 11.0
+        },
+        {
+          "collision_width": 11.0,
+          "collision_x": -1.0,
+          "hurtbox_h": 22.0,
+          "hurtbox_w": 11.0,
+          "hurtbox_x": -1.0,
+          "hurtbox_y": -11.0,
+          "y_offset": -1.0,
+          "y_radius": 11.0
+        }
+      ],
+      "hurtbox_h": 22.0,
+      "hurtbox_w": 11.0,
+      "hurtbox_x": -1.0,
+      "hurtbox_y": -11.0,
+      "loop_from": 0.0,
+      "mvtype": 5.0,
+      "name": "crouch_aim_up_left",
+      "timing": [
+        10.0,
+        10.0,
+        10.0,
+        10.0,
+        10.0,
+        10.0
+      ],
+      "transition_to": -1.0,
+      "weapon_anchor_x": 0.0,
+      "weapon_anchor_y": -24.0,
+      "y_offset": -1.0,
+      "y_radius": 11.0
+    },
+    "67": {
+      "anim_speed": 1.0,
+      "collision_width": 11.0,
+      "collision_x": 1.0,
+      "dir": 1.0,
+      "frame_boxes": [
+        {
+          "collision_width": 11.0,
+          "collision_x": 1.0,
+          "hurtbox_h": 22.0,
+          "hurtbox_w": 11.0,
+          "hurtbox_x": 1.0,
+          "hurtbox_y": -11.0,
+          "y_offset": -1.0,
+          "y_radius": 11.0
+        },
+        {
+          "collision_width": 11.0,
+          "collision_x": 1.0,
+          "hurtbox_h": 22.0,
+          "hurtbox_w": 11.0,
+          "hurtbox_x": 1.0,
+          "hurtbox_y": -11.0,
+          "y_offset": -1.0,
+          "y_radius": 11.0
+        },
+        {
+          "collision_width": 11.0,
+          "collision_x": 1.0,
+          "hurtbox_h": 22.0,
+          "hurtbox_w": 11.0,
+          "hurtbox_x": 1.0,
+          "hurtbox_y": -11.0,
+          "y_offset": -1.0,
+          "y_radius": 11.0
+        }
+      ],
+      "hurtbox_h": 22.0,
+      "hurtbox_w": 11.0,
+      "hurtbox_x": 1.0,
+      "hurtbox_y": -11.0,
+      "loop_from": 0.0,
+      "mvtype": 5.0,
+      "name": "crouch_right",
+      "timing": [
+        10.0,
+        10.0,
+        10.0
+      ],
+      "transition_to": -1.0,
+      "weapon_anchor_x": 0.0,
+      "weapon_anchor_y": -24.0,
+      "y_offset": -1.0,
+      "y_radius": 11.0
+    },
+    "68": {
+      "anim_speed": 1.0,
+      "collision_width": 11.0,
+      "collision_x": -1.0,
+      "dir": -1.0,
+      "frame_boxes": [
+        {
+          "collision_width": 11.0,
+          "collision_x": -1.0,
+          "hurtbox_h": 22.0,
+          "hurtbox_w": 11.0,
+          "hurtbox_x": -1.0,
+          "hurtbox_y": -11.0,
+          "y_offset": -1.0,
+          "y_radius": 11.0
+        },
+        {
+          "collision_width": 11.0,
+          "collision_x": -1.0,
+          "hurtbox_h": 22.0,
+          "hurtbox_w": 11.0,
+          "hurtbox_x": -1.0,
+          "hurtbox_y": -11.0,
+          "y_offset": -1.0,
+          "y_radius": 11.0
+        },
+        {
+          "collision_width": 11.0,
+          "collision_x": -1.0,
+          "hurtbox_h": 22.0,
+          "hurtbox_w": 11.0,
+          "hurtbox_x": -1.0,
+          "hurtbox_y": -11.0,
+          "y_offset": -1.0,
+          "y_radius": 11.0
+        }
+      ],
+      "hurtbox_h": 22.0,
+      "hurtbox_w": 11.0,
+      "hurtbox_x": -1.0,
+      "hurtbox_y": -11.0,
+      "loop_from": 0.0,
+      "mvtype": 5.0,
+      "name": "crouch_left",
+      "timing": [
+        10.0,
+        10.0,
+        10.0
+      ],
+      "transition_to": -1.0,
+      "weapon_anchor_x": 0.0,
+      "weapon_anchor_y": -24.0,
+      "y_offset": -1.0,
+      "y_radius": 11.0
+    },
+    "75": {
+      "anim_speed": 1.0,
+      "collision_width": 11.0,
+      "collision_x": 1.0,
+      "dir": 1.0,
+      "frame_boxes": [
+        {
+
+        },
+        {
+
+        },
+        {
+
+        },
+        {
+
+        }
+      ],
+      "hurtbox_h": 22.0,
+      "hurtbox_w": 11.0,
+      "hurtbox_x": 1.0,
+      "hurtbox_y": -11.0,
+      "loop_from": 0.0,
+      "mvtype": 2.0,
+      "name": "jump_rise_right",
+      "timing": [
+        10.0,
+        10.0,
+        10.0,
+        10.0
+      ],
+      "transition_to": -1.0,
+      "weapon_anchor_x": 0.0,
+      "weapon_anchor_y": -24.0,
+      "y_offset": -1.0,
+      "y_radius": 11.0
+    },
+    "76": {
+      "anim_speed": 1.0,
+      "collision_width": 11.0,
+      "collision_x": -1.0,
+      "dir": -1.0,
+      "frame_boxes": [],
+      "hurtbox_h": 22.0,
+      "hurtbox_w": 11.0,
+      "hurtbox_x": -1.0,
+      "hurtbox_y": -11.0,
+      "loop_from": 0.0,
+      "mvtype": 2.0,
+      "name": "jump_rise_left",
+      "timing": [
+        10.0,
+        10.0,
+        10.0,
+        10.0
+      ],
+      "transition_to": -1.0,
+      "weapon_anchor_x": 0.0,
+      "weapon_anchor_y": -24.0,
+      "y_offset": -1.0,
+      "y_radius": 11.0
+    },
+    "9": {
+      "anim_speed": 1.0,
+      "collision_width": 11.0,
+      "collision_x": 1.0,
+      "dir": 1.0,
+      "frame_boxes": [
+        {
+          "collision_width": 11.0,
+          "collision_x": 1.0,
+          "hurtbox_h": 22.0,
+          "hurtbox_w": 11.0,
+          "hurtbox_x": 1.0,
+          "hurtbox_y": -11.0,
+          "y_offset": -1.0,
+          "y_radius": 11.0
+        },
+        {
+          "collision_width": 11.0,
+          "collision_x": 1.0,
+          "hurtbox_h": 22.0,
+          "hurtbox_w": 11.0,
+          "hurtbox_x": 1.0,
+          "hurtbox_y": -11.0,
+          "y_offset": -1.0,
+          "y_radius": 11.0
+        },
+        {
+          "collision_width": 11.0,
+          "collision_x": 1.0,
+          "hurtbox_h": 22.0,
+          "hurtbox_w": 11.0,
+          "hurtbox_x": 1.0,
+          "hurtbox_y": -11.0,
+          "y_offset": -1.0,
+          "y_radius": 11.0
+        },
+        {
+          "collision_width": 11.0,
+          "collision_x": 1.0,
+          "hurtbox_h": 22.0,
+          "hurtbox_w": 11.0,
+          "hurtbox_x": 1.0,
+          "hurtbox_y": -11.0,
+          "y_offset": -1.0,
+          "y_radius": 11.0
+        },
+        {
+          "collision_width": 11.0,
+          "collision_x": 1.0,
+          "hurtbox_h": 22.0,
+          "hurtbox_w": 11.0,
+          "hurtbox_x": 1.0,
+          "hurtbox_y": -11.0,
+          "y_offset": -1.0,
+          "y_radius": 11.0
+        },
+        {
+          "collision_width": 11.0,
+          "collision_x": 1.0,
+          "hurtbox_h": 22.0,
+          "hurtbox_w": 11.0,
+          "hurtbox_x": 1.0,
+          "hurtbox_y": -11.0,
+          "y_offset": -1.0,
+          "y_radius": 11.0
+        }
+      ],
+      "hurtbox_h": 22.0,
+      "hurtbox_w": 11.0,
+      "hurtbox_x": 1.0,
+      "hurtbox_y": -11.0,
+      "loop_from": 0.0,
+      "mvtype": 1.0,
+      "name": "run_right",
+      "timing": [
+        6.0,
+        6.0,
+        6.0,
+        6.0,
+        6.0,
+        6.0
+      ],
+      "transition_to": -1.0,
+      "weapon_anchor_x": 0.0,
+      "weapon_anchor_y": -24.0,
+      "y_offset": -1.0,
+      "y_radius": 11.0
+    }
+  },
+  "seed_version": 5.0
+}

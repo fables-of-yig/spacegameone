@@ -1,0 +1,150 @@
+{
+	"systems": {
+		"outer_rim": {
+			"background_image": "",
+			"connections": [
+				"start"
+			],
+			"description": "Golden-path authoring fixture system.",
+			"faction": "independent",
+			"name": "Outer Rim",
+			"placed_npcs": [],
+			"pois": [
+				{
+					"anim_fps": 0.0,
+					"anim_frames": 1,
+					"description": "Secondary authored system and event hook.",
+					"event_id": "intro_tutorial",
+					"gravity_radius": 0,
+					"name": "Tutorial Relay",
+					"orbit_angle": 20.0,
+					"orbit_dist": 900.0,
+					"sprite": "",
+					"type": "station",
+					"visual_scale": 1.0
+				}
+			],
+			"position": [
+				860,
+				390
+			],
+			"spawn_triggers": [],
+			"star_anim_fps": 0.0,
+			"star_anim_frames": 1,
+			"star_class": "G",
+			"star_color": [
+				1.0,
+				0.93,
+				0.68
+			],
+			"star_gravity": 0,
+			"star_size": 64,
+			"star_sprite": "",
+			"threat_level": 1
+		},
+		"start": {
+			"background_image": "",
+			"connections": [
+				"outer_rim"
+			],
+			"description": "Golden-path authoring fixture system.",
+			"faction": "independent",
+			"name": "Golden Traverse",
+			"placed_npcs": [],
+			"pois": [
+				{
+					"anim_fps": 0.0,
+					"anim_frames": 1,
+					"description": "Primary vertical-slice landing point.",
+					"event_id": "",
+					"gravity_radius": 0,
+					"name": "Golden Landing",
+					"orbit_angle": 0.0,
+					"orbit_dist": 860.0,
+					"planet_data": {
+						"horizon_color": [
+							0.72,
+							0.58,
+							0.32
+						],
+						"name": "Golden Landing",
+						"pack_id": "golden_path",
+						"patrol_count": [
+							0,
+							0
+						],
+						"planet_key": "golden_landing",
+						"realm_id": "realm_main",
+						"region_id": "region_default",
+						"roughness": 0.62,
+						"sky_color": [
+							0.35,
+							0.43,
+							0.62
+						],
+						"spawn_pos": [
+							80.0,
+							208.0
+						],
+						"spawn_room": "start",
+						"surface_pois": [],
+						"terrain_colors": [
+							[
+								0.18,
+								0.22,
+								0.26
+							],
+							[
+								0.25,
+								0.22,
+								0.17
+							],
+							[
+								0.09,
+								0.11,
+								0.14
+							]
+						],
+						"turret_count": [
+							0,
+							0
+						]
+					},
+					"sprite": "",
+					"type": "planet",
+					"visual_scale": 1.0
+				},
+				{
+					"anim_fps": 0.0,
+					"anim_frames": 1,
+					"description": "Existing event-data integration check.",
+					"event_id": "home_station",
+					"gravity_radius": 0,
+					"name": "Home Beacon",
+					"orbit_angle": 270.0,
+					"orbit_dist": 1020.0,
+					"sprite": "",
+					"type": "station",
+					"visual_scale": 1.0
+				}
+			],
+			"position": [
+				500,
+				500
+			],
+			"spawn_triggers": [],
+			"star_anim_fps": 0.0,
+			"star_anim_frames": 1,
+			"star_class": "G",
+			"star_color": [
+				1.0,
+				0.93,
+				0.68
+			],
+			"star_gravity": 0,
+			"star_size": 64,
+			"star_sprite": "",
+			"threat_level": 1
+		}
+	}
+}

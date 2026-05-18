@@ -1,0 +1,121 @@
+{
+  "items": [
+    {
+      "auto_use_on_gain": true,
+      "category": "currency",
+      "description": "Spendable currency.",
+      "id": "coin",
+      "max_stack": 9999,
+      "name": "Gold",
+      "price": 1,
+      "use_amount": 1,
+      "use_arg": "",
+      "use_effect": "add_gold"
+    },
+    {
+      "auto_use_on_gain": true,
+      "category": "equipment",
+      "description": "Equips the launcher that maps Secondary Fire to missiles.",
+      "id": "missile_launcher",
+      "max_stack": 1,
+      "name": "Missile Launcher",
+      "price": 0,
+      "use_amount": 1,
+      "use_arg": "missile_launcher",
+      "use_effect": "equip_item"
+    },
+    {
+      "auto_use_on_gain": true,
+      "category": "upgrade",
+      "description": "Increases missile capacity by 5.",
+      "id": "missile_expansion",
+      "max_stack": 99,
+      "name": "Missile Expansion",
+      "price": 5,
+      "use_amount": 5,
+      "use_arg": "missile",
+      "use_effect": "max_ammo_up"
+    },
+    {
+      "auto_use_on_gain": true,
+      "category": "ammo",
+      "description": "Restores 3 missiles, up to current capacity.",
+      "id": "missile_pickup",
+      "max_stack": 99,
+      "name": "Missile Pickup",
+      "price": 0,
+      "use_amount": 3,
+      "use_arg": "missile",
+      "use_effect": "add_ammo"
+    },
+    {
+      "auto_use_on_gain": true,
+      "category": "consumable",
+      "description": "Restores 5 energy.",
+      "id": "energy_pickup",
+      "max_stack": 99,
+      "name": "Energy Pickup",
+      "price": 0,
+      "use_amount": 5,
+      "use_arg": "",
+      "use_effect": "heal_hp"
+    },
+    {
+      "auto_use_on_gain": true,
+      "category": "upgrade",
+      "description": "Increases maximum energy by 99.",
+      "id": "heart_container",
+      "max_stack": 99,
+      "name": "Heart Container",
+      "price": 10,
+      "use_amount": 99,
+      "use_arg": "",
+      "use_effect": "max_hp_up"
+    },
+    {
+      "auto_use_on_gain": true,
+      "category": "equipment",
+      "description": "Equips boots that grant the High Jump ability.",
+      "id": "high_jump_boots_item",
+      "max_stack": 1,
+      "name": "High Jump Boots",
+      "price": 20,
+      "use_amount": 1,
+      "use_arg": "hi_jump_boots",
+      "use_effect": "equip_item"
+    },
+    {
+      "category": "key",
+      "description": "Opens the phase-locked boss gate.",
+      "id": "key_silver",
+      "max_stack": 1,
+      "name": "Silver Key",
+      "price": 25,
+      "use_amount": 0,
+      "use_arg": "",
+      "use_effect": ""
+    },
+    {
+      "category": "quest",
+      "description": "A recovered memory core for the field archivist.",
+      "id": "archive_relic",
+      "max_stack": 1,
+      "name": "Archive Relic",
+      "price": 50,
+      "use_amount": 0,
+      "use_arg": "",
+      "use_effect": ""
+    },
+    {
+      "category": "quest",
+      "description": "Proof that the sentinel was defeated.",
+      "id": "boss_core",
+      "max_stack": 9,
+      "name": "Boss Core",
+      "price": 100,
+      "use_amount": 0,
+      "use_arg": "",
+      "use_effect": ""
+    }
+  ]
+}

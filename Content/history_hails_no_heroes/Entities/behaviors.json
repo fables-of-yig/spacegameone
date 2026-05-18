@@ -1,0 +1,17 @@
+{
+  "behaviors": [
+    {
+      "description": "Passive idle behavior.",
+      "id": "npc_idle",
+      "name": "NPC Idle",
+      "root": {
+        "action": "idle",
+        "name": "idle",
+        "params": {
+
+        },
+        "type": "action"
+      }
+    }
+  ]
+}

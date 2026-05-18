@@ -5,6 +5,8 @@ const RegIO = preload("res://Space/scripts/editor/reg/reg_io.gd")
 const SystemIO = preload("res://Space/scripts/editor/system_io.gd")
 const PackAssetIndex = preload("res://Space/scripts/editor/pack_asset_index.gd")
 const PackPaths = preload("res://Space/scripts/editor/pack_paths.gd")
+const PsgPanel = preload("res://Space/scripts/editor/psg/psg_panel.gd")
+const PsgIO = preload("res://Space/scripts/editor/psg/psg_io.gd")
 
 signal closed
 signal systems_saved(pack_id: String, systems: Dictionary)
@@ -48,6 +50,10 @@ var editing_rect: Rect2 = Rect2()
 
 var field_rects: Array = []
 var button_rects: Array = []
+var _psg_panel: Control = null
+var _psg_target_kind: String = ""  # "poi" or "system_star"
+var _psg_target_system_id: String = ""
+var _psg_target_poi_index: int = -1
 
 var _undo: RefCounted = null
 
@@ -130,6 +136,8 @@ const _BUTTON_TIPS: Dictionary = {
     "add_waypoint": "Add a waypoint to the selected NPC's patrol route at their current position.",
     "remove_wp": "Remove this waypoint from the patrol route.",
     "toggle_draw_route": "Toggle draw-route mode. While active, click the inset map to add waypoints in order; right-click to finish.",
+    "open_planet_generator": "Open the planet shader generator. Pick a body type, scrub seed + params, then bake a rotation strip PNG into the active pack and assign it as the POI's sprite.",
+    "open_star_generator": "Open the planet shader generator scoped to the system's central star. Bakes into Systems/AstralBodies/Stars and sets star_sprite + star_anim_frames + star_anim_fps.",
 }
 
 func _ready():
@@ -161,6 +169,13 @@ func _ready():
     sprite_file_dialog.file_selected.connect(_on_sprite_file_selected)
     sprite_file_dialog.canceled.connect(_on_sprite_file_dialog_canceled)
     add_child(sprite_file_dialog)
+
+    _psg_panel = Control.new()
+    _psg_panel.set_script(PsgPanel)
+    _psg_panel.visible = false
+    add_child(_psg_panel)
+    _psg_panel.cancelled.connect(_on_psg_panel_cancelled)
+    _psg_panel.applied.connect(_on_psg_panel_applied)
 
 
 func open_editor(p_pack_id: String = "") -> void:
@@ -532,6 +547,7 @@ func _draw_panel(font: Font):
     y = _draw_field("star_size", "Star Size", str(int(sys.get("star_size", 60))), x, y, font)
     var _ss = sys.get("star_sprite", "")
     y = _draw_field("star_sprite", "Star Sprite", _sprite_field_display("star_sprite", _ss), x, y, font)
+    y = _draw_generate_star_button(x, y, font)
     y = _draw_field("star_anim_frames", "Star Frames", str(int(sys.get("star_anim_frames", 1))), x, y, font)
     y = _draw_field("star_anim_fps", "Star FPS", "%.2f" % float(sys.get("star_anim_fps", 0.0)), x, y, font)
     y = _draw_field("star_gravity", "Gravity R", str(int(sys.get("star_gravity", 0))), x, y, font)
@@ -597,6 +613,9 @@ func _draw_panel(font: Font):
         y = _draw_field("poi_orbit_angle", "Orbit Angle", str(int(poi.get("orbit_angle", 0))), x, y, font)
         var _ps = poi.get("sprite", "")
         y = _draw_field("poi_sprite", "Sprite", _sprite_field_display("poi_sprite", _ps), x, y, font)
+        var _poi_type_str := str(poi.get("type", ""))
+        if _poi_type_str == "planet" or _poi_type_str == "star":
+            y = _draw_generate_planet_button(x, y, font)
         y = _draw_field("poi_scale", "Scale", "%.2f" % poi.get("visual_scale", 1.0), x, y, font)
         y = _draw_field("poi_anim_frames", "Anim Frames", str(int(poi.get("anim_frames", 1))), x, y, font)
         y = _draw_field("poi_anim_fps", "Anim FPS", "%.2f" % float(poi.get("anim_fps", 0.0)), x, y, font)
@@ -1052,6 +1071,163 @@ func _handle_button(btn_id: String):
         drawing_route = not drawing_route
     elif btn_id.begins_with("remove_wp_"):
         _remove_waypoint_at(int(btn_id.replace("remove_wp_", "")))
+    elif btn_id == "open_planet_generator":
+        _open_planet_generator()
+    elif btn_id == "open_star_generator":
+        _open_star_generator()
+    queue_redraw()
+
+
+func _draw_generate_planet_button(x: float, y: float, font: Font) -> float:
+    var btn_h: float = 24.0
+    var btn_w: float = PANEL_W - 36.0
+    var rect := Rect2(x + 4, y, btn_w, btn_h)
+    draw_rect(rect, Color(0.16, 0.22, 0.32))
+    draw_rect(rect, Color(0.4, 0.7, 0.95), false, 1.0)
+    draw_string(font, Vector2(x + 14, y + 17),
+        "Generate planet sprite...", HORIZONTAL_ALIGNMENT_LEFT, -1, 12,
+        Color(0.78, 0.9, 1.0))
+    button_rects.append({"id": "open_planet_generator", "rect": rect})
+    return y + btn_h + 4.0
+
+
+func _draw_generate_star_button(x: float, y: float, font: Font) -> float:
+    var btn_h: float = 24.0
+    var btn_w: float = PANEL_W - 36.0
+    var rect := Rect2(x + 4, y, btn_w, btn_h)
+    draw_rect(rect, Color(0.28, 0.22, 0.14))
+    draw_rect(rect, Color(0.96, 0.78, 0.36), false, 1.0)
+    draw_string(font, Vector2(x + 14, y + 17),
+        "Generate star sprite...", HORIZONTAL_ALIGNMENT_LEFT, -1, 12,
+        Color(1.0, 0.9, 0.65))
+    button_rects.append({"id": "open_star_generator", "rect": rect})
+    return y + btn_h + 4.0
+
+
+func _open_planet_generator() -> void:
+    if _psg_panel == null:
+        return
+    if selected_id == "" or not systems.has(selected_id) or selected_poi < 0:
+        _set_status("Select a planet/star POI first.")
+        return
+    var pois: Array = systems[selected_id].get("pois", [])
+    if selected_poi >= pois.size():
+        return
+    var poi: Dictionary = pois[selected_poi]
+    var poi_type := str(poi.get("type", ""))
+    var initial_type: String = "Star" if poi_type == "star" else "GasPlanet"
+
+    var target_dir: String = _sprite_target_dir("poi_sprite")
+    var poi_name: String = str(poi.get("name", ""))
+    var stem: String = _planetgen_file_stem("poi", selected_id, poi_name, selected_poi)
+    var existing_sprite: String = str(poi.get("sprite", ""))
+    var sidecar: String = ""
+    if not existing_sprite.is_empty():
+        var candidate: String = PsgIO.sidecar_path_for(existing_sprite)
+        if not candidate.is_empty() and FileAccess.file_exists(candidate):
+            sidecar = candidate
+
+    _psg_target_kind = "poi"
+    _psg_target_system_id = selected_id
+    _psg_target_poi_index = selected_poi
+
+    _psg_panel.position = Vector2.ZERO
+    _psg_panel.size = size
+    _psg_panel.open(initial_type, randi() % 10000, target_dir, stem, sidecar)
+
+
+func _open_star_generator() -> void:
+    if _psg_panel == null:
+        return
+    if selected_id == "" or not systems.has(selected_id):
+        _set_status("Select a system first.")
+        return
+    var sys: Dictionary = systems[selected_id]
+
+    var target_dir: String = _sprite_target_dir("star_sprite")
+    var stem: String = _planetgen_file_stem("star", selected_id, "", -1)
+    var existing_sprite: String = str(sys.get("star_sprite", ""))
+    var sidecar: String = ""
+    if not existing_sprite.is_empty():
+        var candidate: String = PsgIO.sidecar_path_for(existing_sprite)
+        if not candidate.is_empty() and FileAccess.file_exists(candidate):
+            sidecar = candidate
+
+    _psg_target_kind = "system_star"
+    _psg_target_system_id = selected_id
+    _psg_target_poi_index = -1
+
+    _psg_panel.position = Vector2.ZERO
+    _psg_panel.size = size
+    _psg_panel.open("Star", randi() % 10000, target_dir, stem, sidecar)
+
+
+func _planetgen_file_stem(kind: String, system_id: String, name_hint: String, poi_index: int) -> String:
+    var system_part: String = _sanitize_stem(system_id)
+    if system_part.is_empty():
+        system_part = "system"
+    if kind == "star":
+        return "%s_star" % system_part
+    var name_part: String = _sanitize_stem(name_hint)
+    if name_part.is_empty():
+        name_part = "poi_%d" % max(0, poi_index)
+    return "%s_%s" % [system_part, name_part]
+
+
+func _sanitize_stem(raw: String) -> String:
+    var lower: String = raw.strip_edges().to_lower()
+    var out: String = ""
+    for i in range(lower.length()):
+        var ch: String = lower.substr(i, 1)
+        var code: int = ch.unicode_at(0)
+        var ok: bool = (code >= 97 and code <= 122) or (code >= 48 and code <= 57) or ch == "_" or ch == "-"
+        out += ch if ok else "_"
+    while out.find("__") >= 0:
+        out = out.replace("__", "_")
+    return out.trim_prefix("_").trim_suffix("_")
+
+
+func _on_psg_panel_cancelled() -> void:
+    _psg_target_kind = ""
+    _psg_target_system_id = ""
+    _psg_target_poi_index = -1
+    queue_redraw()
+
+
+func _on_psg_panel_applied(sprite_path: String, anim_frames: int, anim_fps: float, _sidecar_path: String) -> void:
+    if _psg_target_kind == "poi":
+        if not systems.has(_psg_target_system_id):
+            _psg_target_kind = ""
+            return
+        var pois: Array = systems[_psg_target_system_id].get("pois", [])
+        if _psg_target_poi_index < 0 or _psg_target_poi_index >= pois.size():
+            _psg_target_kind = ""
+            return
+        if _undo != null:
+            _undo.begin()
+        var poi: Dictionary = pois[_psg_target_poi_index]
+        poi["sprite"] = sprite_path
+        poi["anim_frames"] = anim_frames
+        poi["anim_fps"] = anim_fps
+        if _undo != null:
+            _undo.commit("bake planet sprite")
+        _set_status("Baked: " + sprite_path.get_file())
+    elif _psg_target_kind == "system_star":
+        if not systems.has(_psg_target_system_id):
+            _psg_target_kind = ""
+            return
+        if _undo != null:
+            _undo.begin()
+        var sys: Dictionary = systems[_psg_target_system_id]
+        sys["star_sprite"] = sprite_path
+        sys["star_anim_frames"] = anim_frames
+        sys["star_anim_fps"] = anim_fps
+        if _undo != null:
+            _undo.commit("bake star sprite")
+        _set_status("Baked star: " + sprite_path.get_file())
+    _psg_target_kind = ""
+    _psg_target_system_id = ""
+    _psg_target_poi_index = -1
     queue_redraw()
 
 func _handle_connect_click(sid: String):

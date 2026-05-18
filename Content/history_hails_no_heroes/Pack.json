@@ -1,0 +1,12 @@
+{
+	"author": "",
+	"description": "",
+	"entry_room": "realm_main/region_default/start",
+	"name": "History Hails No Heroes",
+	"pack_id": "history_hails_no_heroes",
+	"schema_version": "1.0",
+	"start_realm": "realm_main",
+	"start_ship_template": "startship",
+	"start_system": "start",
+	"version": "0.1.0"
+}

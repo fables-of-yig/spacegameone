@@ -1,0 +1,92 @@
+{
+	"systems": {
+		"start": {
+			"background_image": "",
+			"connections": [],
+			"description": "Campaign starting system.",
+			"faction": "independent",
+			"name": "Start System",
+			"placed_npcs": [],
+			"pois": [
+				{
+					"anim_fps": 0.0,
+					"anim_frames": 1,
+					"description": "Authored campaign landing point.",
+					"event_id": "",
+					"gravity_radius": 0,
+					"name": "Starter Planet",
+					"orbit_angle": 0,
+					"orbit_dist": 900,
+					"planet_data": {
+						"horizon_color": [
+							0.5,
+							0.6,
+							0.35
+						],
+						"name": "Starter Planet",
+						"pack_id": "history_hails_no_heroes",
+						"patrol_count": [
+							0,
+							0
+						],
+						"realm_id": "realm_main",
+						"region_id": "region_default",
+						"roughness": 0.6,
+						"sky_color": [
+							0.35,
+							0.5,
+							0.8
+						],
+						"spawn_pos": [
+							80.0,
+							208.0
+						],
+						"spawn_room": "start",
+						"surface_pois": [],
+						"terrain_colors": [
+							[
+								0.16,
+								0.3,
+								0.16
+							],
+							[
+								0.1,
+								0.22,
+								0.1
+							],
+							[
+								0.08,
+								0.18,
+								0.06
+							]
+						],
+						"turret_count": [
+							0,
+							0
+						]
+					},
+					"sprite": "",
+					"type": "planet",
+					"visual_scale": 1.0
+				}
+			],
+			"position": [
+				500,
+				500
+			],
+			"spawn_triggers": [],
+			"star_anim_fps": 0.0,
+			"star_anim_frames": 1,
+			"star_class": "G",
+			"star_color": [
+				1.0,
+				0.96,
+				0.78
+			],
+			"star_gravity": 0,
+			"star_size": 60,
+			"star_sprite": "",
+			"threat_level": 1
+		}
+	}
+}

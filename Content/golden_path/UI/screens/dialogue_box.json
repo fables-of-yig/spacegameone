@@ -1,0 +1,116 @@
+{
+	"anchor": "top_left",
+	"anchor_offset": {
+		"x": 0,
+		"y": 0
+	},
+	"children": [
+		{
+			"anchor": "top_left",
+			"anchor_offset": {
+				"x": 0,
+				"y": 0
+			},
+			"children": [],
+			"id": "dialogue_speaker",
+			"properties": {
+				"alignment": "left",
+				"bind_var": "dialogue.speaker",
+				"decimal_places": 0,
+				"format": "{value}",
+				"opacity": 1.0,
+				"static_text": "",
+				"tab_group": "default",
+				"tab_id": "",
+				"text_role": "title",
+				"wrap": false
+			},
+			"rect": {
+				"h": 18,
+				"w": 452,
+				"x": 14,
+				"y": 10
+			},
+			"type": "label"
+		},
+		{
+			"anchor": "top_left",
+			"anchor_offset": {
+				"x": 0,
+				"y": 0
+			},
+			"children": [],
+			"id": "dialogue_text",
+			"properties": {
+				"alignment": "left",
+				"bind_var": "dialogue.text",
+				"decimal_places": 0,
+				"format": "{value}",
+				"opacity": 1.0,
+				"static_text": "",
+				"tab_group": "default",
+				"tab_id": "",
+				"text_role": "body",
+				"wrap": true
+			},
+			"rect": {
+				"h": 52,
+				"w": 452,
+				"x": 14,
+				"y": 32
+			},
+			"type": "label"
+		},
+		{
+			"anchor": "top_left",
+			"anchor_offset": {
+				"x": 0,
+				"y": 0
+			},
+			"children": [],
+			"id": "dialogue_choices",
+			"properties": {
+				"bind_array": "dialogue.choices",
+				"item_action_arg_key": "choice_index",
+				"item_action_id": "choose_dialogue",
+				"item_min_height": 20,
+				"item_template": {
+
+				},
+				"item_wrap": true,
+				"max_visible": 10,
+				"spacing": 6,
+				"tab_group": "default",
+				"tab_id": ""
+			},
+			"rect": {
+				"h": 52,
+				"w": 452,
+				"x": 14,
+				"y": 90
+			},
+			"type": "list"
+		}
+	],
+	"id": "dialogue_box_root",
+	"properties": {
+		"opacity": 1.0,
+		"padding": 8,
+		"scroll": "none",
+		"sprite_mode": "9slice",
+		"sprite_slice_x": 0,
+		"sprite_slice_y": 0,
+		"sprite_source": "",
+		"sprite_tint": "#ffffff",
+		"tab_group": "default",
+		"tab_id": "",
+		"variant": "dark"
+	},
+	"rect": {
+		"h": 156,
+		"w": 480,
+		"x": 0,
+		"y": 0
+	},
+	"type": "panel"
+}

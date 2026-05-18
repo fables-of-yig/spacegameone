@@ -1,0 +1,23 @@
+{
+  "abilities": [
+    {
+      "category": "movement",
+      "description": "Lets the player phase through silver security gates.",
+      "id": "phase_dash",
+      "name": "Phase Dash",
+      "params": {
+        "dash_speed": 360,
+        "duration": 0.18
+      }
+    },
+    {
+      "category": "movement",
+      "description": "Jump higher for tower routes and vertical backtracking.",
+      "id": "high_jump",
+      "name": "High Jump Boots",
+      "params": {
+        "jump_multiplier": 1.4
+      }
+    }
+  ]
+}

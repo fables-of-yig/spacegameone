@@ -1,0 +1,44 @@
+{
+  "id": "realm_main",
+  "realm_grid_cells_x": 102,
+  "realm_grid_cells_y": 102,
+  "realm_name": "Golden Path",
+  "realm_tile_layers": [
+    {
+      "animations": {
+
+      },
+      "name": "Ground",
+      "tiles": []
+    },
+    {
+      "animations": {
+
+      },
+      "name": "Structure",
+      "tiles": []
+    },
+    {
+      "animations": {
+
+      },
+      "name": "Sky",
+      "tiles": []
+    }
+  ],
+  "regions": [
+    {
+      "col": 0,
+      "id": "region_default",
+      "name": "Golden Circuit",
+      "row": 0,
+      "span_h": 1,
+      "span_w": 1
+    }
+  ],
+  "sky_bottom_color": "#152743",
+  "sky_preset": "midnight",
+  "sky_top_color": "#050814",
+  "start_region": "region_default",
+  "version": "2.0"
+}
