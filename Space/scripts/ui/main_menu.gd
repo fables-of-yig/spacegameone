@@ -47,7 +47,7 @@ signal test_fly_pressed
 signal test_planet_pressed
 signal play_pack_pressed(pack_id: String)
 # editor_chosen(kind, pack_id) fires after the user has picked a campaign
-# AND a sub-editor. kind is "ship" | "realm" | "entity" | "behavior" |
+# AND a sub-editor. kind is "ship" | "system" | "entity" | "behavior" |
 # "theme" | "audio" | "player" | "trigger" | "dialogue" | "shop" | "quest".
 # pack_id is always the active campaign pack; "ship" now opens the pack
 # authoring hub rather than editing global SSB state.
@@ -306,7 +306,7 @@ func _handle_click(pos: Vector2):
             _choose_subeditor("ship")
             return
         if _sub_realm_rect.has_point(pos):
-            _choose_subeditor("realm")
+            _choose_subeditor("system")
             return
         if _sub_entity_rect.has_point(pos):
             _choose_subeditor("entity")
@@ -1033,7 +1033,7 @@ func _draw_subeditor_chooser(font: Font, alpha: float):
     _draw_chooser_btn(font, _sub_ship_rect, "CONTENT",
         _sub_ship_rect.has_point(mouse_pos), alpha,
         Color(0.3, 0.85, 0.95), Color(0.75, 0.95, 1.0))
-    _draw_chooser_btn(font, _sub_realm_rect, "REALM",
+    _draw_chooser_btn(font, _sub_realm_rect, "WORLD",
         _sub_realm_rect.has_point(mouse_pos), alpha,
         Color(0.85, 0.3, 0.9), Color(1.0, 0.7, 1.0))
     _draw_chooser_btn(font, _sub_entity_rect, "ENTITY",

@@ -26,7 +26,6 @@ const _UndoManager = preload("res://Space/scripts/editor/undo_manager.gd")
 signal closed
 
 var pack_id: String = ""
-var realm_id: String = ""
 var region_id: String = ""
 var rooms_data: Dictionary = {}
 var current_room_addr: String = ""
@@ -268,9 +267,8 @@ func _current_right_panel_width() -> float:
     return RIGHT_PANEL_W
 
 
-func open_editor(p_pack_id: String = "", p_realm_id: String = "", p_region_id: String = "", p_room_addr: String = ""):
+func open_editor(p_pack_id: String = "", p_region_id: String = "", p_room_addr: String = ""):
     pack_id = p_pack_id
-    realm_id = p_realm_id
     region_id = p_region_id
     visible = true
     _skip_close_frame = true
@@ -281,7 +279,7 @@ func open_editor(p_pack_id: String = "", p_realm_id: String = "", p_region_id: S
     # Ensure the pack has at least a default tileset seeded on disk.
     EnvIO.load_or_init(pack_id)
     if region_id != "":
-        rooms_data = RegIO.load_region_rooms(pack_id, realm_id, region_id)
+        rooms_data = RegIO.load_region_rooms(pack_id, region_id)
     else:
         rooms_data = EnvIO.load_or_init(pack_id)
     _refresh_tileset_cache()
@@ -1656,7 +1654,7 @@ func save_all() -> bool:
                 _sync_room_zones(room_v as Dictionary)
     var ok: bool
     if region_id != "":
-        ok = RegIO.save_region_rooms(pack_id, realm_id, region_id, rooms_data)
+        ok = RegIO.save_region_rooms(pack_id, region_id, rooms_data)
     else:
         ok = EnvIO.save_rooms(pack_id, rooms_data)
     if ok:
@@ -1759,10 +1757,13 @@ func request_playtest() -> void:
         MvTriggerEngine.clear_debug_history()
     # The flat runtime rooms.json (built by RegIO.flatten_to_runtime on save)
     # prefixes every addr with its region_id. Editor state holds the un-
-    # prefixed addr so we need to synthesize the runtime key here.
+    # prefixed addr so we need to pass the bare room addr alongside the
+    # region id so PlanetaryInterface can land in the right room.
     var runtime_addr := _current_runtime_room_addr()
-    PlanetaryInterface.begin_landing(pack_id, runtime_addr, spawn_pos, realm_id)
-    PlanetaryInterface.stage_return_to_editor(pack_id, realm_id, region_id, current_room_addr)
+    # poi_id is empty here because the editor playtest is not coming from a
+    # POI surface; PlanetaryInterface snapshots under "<pack>::<region>".
+    PlanetaryInterface.begin_landing(pack_id, "", region_id, current_room_addr, spawn_pos)
+    PlanetaryInterface.stage_return_to_editor(pack_id, region_id, current_room_addr)
     print("[EnvEditor] playtest: launching pack='%s' room='%s' spawn=%s" % [pack_id, runtime_addr, spawn_pos])
     get_tree().change_scene_to_file.call_deferred("res://MV/scenes/main.tscn")
 
@@ -1791,7 +1792,7 @@ func _rooms_dict() -> Dictionary:
 func _current_runtime_room_addr() -> String:
     if region_id.is_empty():
         return current_room_addr
-    return RegIO.runtime_room_addr(realm_id, region_id, current_room_addr)
+    return RegIO.runtime_room_addr(region_id, current_room_addr)
 
 
 static func _door_target_room(door: Dictionary) -> String:

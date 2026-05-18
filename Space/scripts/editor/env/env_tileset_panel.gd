@@ -41,7 +41,6 @@ var _nibble_rects: Array = []  # [{nibble: int, rect: Rect2}, ...]
 var _entity_rects: Array = []  # [{type: String, rect: Rect2}, ...]
 var _door_dir_rects: Array = []  # [{dir: String, rect: Rect2}, ...]
 var _door_target_rects: Array = []  # [{addr: String, rect: Rect2}, ...]
-var _door_overworld_toggle_rect: Rect2 = Rect2()
 var _door_target_scroll: float = 0.0
 var _door_target_viewport: Rect2 = Rect2()
 var _door_target_content_h: float = 0.0
@@ -84,8 +83,6 @@ var _zone_name_edit: LineEdit = null
 var _zone_id_edit: LineEdit = null
 var _zone_direction_picker: OptionButton = null
 var _zone_target_edit: LineEdit = null
-var _zone_overworld_toggle: CheckBox = null
-var _zone_overworld_region_edit: LineEdit = null
 var _zone_enabled_toggle: CheckBox = null
 var _zone_locked_toggle: CheckBox = null
 var _zone_required_item_edit: LineEdit = null
@@ -211,12 +208,6 @@ func _build_fx_controls() -> void:
     _zone_direction_picker.item_selected.connect(Callable(self, "_on_zone_direction_selected"))
     add_child(_zone_direction_picker)
 
-    _zone_overworld_toggle = CheckBox.new()
-    _zone_overworld_toggle.text = "OVERWORLD"
-    _zone_overworld_toggle.toggled.connect(Callable(self, "_on_zone_overworld_toggled"))
-    add_child(_zone_overworld_toggle)
-
-    _zone_overworld_region_edit = _make_bg_line_edit("overworld_region_id")
     _zone_enabled_toggle = CheckBox.new()
     _zone_enabled_toggle.text = "ENABLED"
     _zone_enabled_toggle.toggled.connect(Callable(self, "_on_zone_state_toggle_changed"))
@@ -315,8 +306,6 @@ func _set_fx_controls_visible(visible_now: bool) -> void:
         _fx_speed_edit,
         _zone_direction_picker,
         _zone_target_edit,
-        _zone_overworld_toggle,
-        _zone_overworld_region_edit,
         _zone_enabled_toggle,
         _zone_locked_toggle,
         _zone_required_item_edit,
@@ -437,15 +426,10 @@ func _layout_fx_controls() -> void:
     _fx_speed_edit.size = Vector2(half_w, 30.0)
     y += 46.0
     _zone_direction_picker.position = Vector2(pad, y)
-    _zone_direction_picker.size = Vector2(half_w, 30.0)
-    _zone_overworld_toggle.position = Vector2(pad + half_w + col_gap, y)
-    _zone_overworld_toggle.size = Vector2(half_w, 30.0)
+    _zone_direction_picker.size = Vector2(full_w, 30.0)
     y += 46.0
     _zone_target_edit.position = Vector2(pad, y)
     _zone_target_edit.size = Vector2(full_w, 30.0)
-    y += 46.0
-    _zone_overworld_region_edit.position = Vector2(pad, y)
-    _zone_overworld_region_edit.size = Vector2(full_w, 30.0)
     y += 46.0
     _zone_enabled_toggle.position = Vector2(pad, y)
     _zone_enabled_toggle.size = Vector2(half_w, 30.0)
@@ -616,7 +600,6 @@ func _sync_fx_controls_from_editor() -> void:
     _set_shader_picker(_fx_shader_picker, str(selected.get("shader_preset", "flicker")))
     _set_option_picker(_zone_direction_picker, str(selected.get("direction", "right")))
     _set_line_edit_if_idle(_zone_target_edit, str(selected.get("target_door_id", selected.get("target_room", ""))))
-    _set_line_edit_if_idle(_zone_overworld_region_edit, str(selected.get("overworld_region_id", "")))
     _set_line_edit_if_idle(_zone_required_item_edit, str(selected.get("required_item_id", "")))
     _set_line_edit_if_idle(_zone_required_item_count_edit, str(selected.get("required_item_count", 1)))
     _set_line_edit_if_idle(_zone_required_var_name_edit, str(selected.get("required_var_name", "")))
@@ -631,8 +614,6 @@ func _sync_fx_controls_from_editor() -> void:
         var wanted_tint: Color = Color.from_string(str(selected.get("shader_tint", "ffffff")), Color.WHITE)
         if _fx_tint_btn.color != wanted_tint:
             _fx_tint_btn.color = wanted_tint
-    if selection_changed and _zone_overworld_toggle != null:
-        _set_checkbox_if_needed(_zone_overworld_toggle, bool(selected.get("send_to_overworld", false)))
     if selection_changed and _zone_enabled_toggle != null:
         _set_checkbox_if_needed(_zone_enabled_toggle, bool(selected.get("enabled", true)))
     if selection_changed and _zone_locked_toggle != null:
@@ -658,10 +639,6 @@ func _sync_fx_controls_from_editor() -> void:
         _zone_id_edit.visible = has_selected and not show_door
     if _zone_target_edit != null:
         _zone_target_edit.visible = show_door
-    if _zone_overworld_toggle != null:
-        _zone_overworld_toggle.visible = show_door
-    if _zone_overworld_region_edit != null:
-        _zone_overworld_region_edit.visible = show_door
     if _zone_enabled_toggle != null:
         _zone_enabled_toggle.visible = show_door
     if _zone_locked_toggle != null:
@@ -757,20 +734,12 @@ func _gui_input(event):
             if is_bg_images:
                 return
             if is_zones:
-                if _door_overworld_toggle_rect.has_point(mb.position):
-                    editor.set_selected_door_send_to_overworld(
-                        not bool(editor.selected_door_send_to_overworld))
-                    accept_event()
-                    return
                 for entry in _door_dir_rects:
                     if (entry["rect"] as Rect2).has_point(mb.position):
                         editor.set_selected_door_direction(str(entry["dir"]))
                         accept_event()
                         return
                 if _door_target_viewport.has_point(mb.position):
-                    if bool(editor.selected_door_send_to_overworld):
-                        accept_event()
-                        return
                     for entry in _door_target_rects:
                         if (entry["rect"] as Rect2).has_point(mb.position):
                             editor.set_selected_door_target_room(str(entry["addr"]))
@@ -891,7 +860,6 @@ func _draw_tile_palette(font: Font) -> void:
     _entity_rects.clear()
     _door_dir_rects.clear()
     _door_target_rects.clear()
-    _door_overworld_toggle_rect = Rect2()
     _dropdown_row_rects.clear()
 
     var title_y: float = 32.0
@@ -1252,7 +1220,6 @@ func _draw_door_palette(font: Font) -> void:
     _entity_rects.clear()
     _door_dir_rects.clear()
     _door_target_rects.clear()
-    _door_overworld_toggle_rect = Rect2()
     _content_h = 0.0
     _scroll_y = 0.0
 
@@ -1296,39 +1263,11 @@ func _draw_door_palette(font: Font) -> void:
     var target_title_y: float = dir_row_y + dir_btn_h + 18.0
     draw_string(font, Vector2(pad, target_title_y), "TARGET ROOM",
         HORIZONTAL_ALIGNMENT_LEFT, -1, 12, UIPanels.TEXT_PANEL)
-    var send_to_overworld: bool = bool(editor.selected_door_send_to_overworld)
-    var toggle_label := "send to overworld"
-    var toggle_font_size := 11
-    var toggle_box_size: float = 16.0
-    var toggle_gap: float = 6.0
-    var toggle_label_w: float = font.get_string_size(toggle_label,
-        HORIZONTAL_ALIGNMENT_LEFT, -1, toggle_font_size).x
-    var toggle_w: float = toggle_box_size + toggle_gap + toggle_label_w
-    var toggle_x: float = maxf(pad + 108.0, size.x - pad - toggle_w)
-    var toggle_y: float = target_title_y - 12.0
-    _door_overworld_toggle_rect = Rect2(toggle_x, toggle_y, toggle_w, 20.0)
-    var toggle_box := Rect2(toggle_x, toggle_y + 2.0, toggle_box_size, toggle_box_size)
-    var toggle_hover := _door_overworld_toggle_rect.has_point(mouse_pos)
-    draw_rect(toggle_box, Color(0.08, 0.12, 0.16, 0.95))
-    draw_rect(toggle_box,
-        Color(0.42, 0.86, 1.0, 1.0) if send_to_overworld else Color(0.32, 0.42, 0.5, 0.95),
-        false, 2.0)
-    if send_to_overworld:
-        draw_line(toggle_box.position + Vector2(3.0, 9.0),
-            toggle_box.position + Vector2(7.0, 13.0), Color(0.85, 1.0, 1.0, 1.0), 2.0)
-        draw_line(toggle_box.position + Vector2(7.0, 13.0),
-            toggle_box.position + Vector2(13.0, 4.0), Color(0.85, 1.0, 1.0, 1.0), 2.0)
-    draw_string(font, Vector2(toggle_x + toggle_box_size + toggle_gap, target_title_y + 1.0),
-        toggle_label, HORIZONTAL_ALIGNMENT_LEFT, -1, toggle_font_size,
-        Color(0.86, 0.96, 1.0, 1.0) if send_to_overworld else Color(0.72, 0.82, 0.9, 1.0))
-    if toggle_hover:
-        EditorTooltip.show_text("When enabled, newly placed doors ignore the room target list and return the player to the overworld.")
 
     var viewport_top: float = target_title_y + 10.0
     var viewport_bot: float = size.y - 24.0
     _door_target_viewport = Rect2(pad, viewport_top, size.x - pad * 2.0, viewport_bot - viewport_top)
-    draw_rect(_door_target_viewport,
-        Color(0.04, 0.05, 0.08, 0.5) if send_to_overworld else Color(0.04, 0.05, 0.08, 0.85))
+    draw_rect(_door_target_viewport, Color(0.04, 0.05, 0.08, 0.85))
 
     var addrs: Array = editor.get_room_addrs()
     var options: Array = [""]  # "" = no target
@@ -1349,13 +1288,11 @@ func _draw_door_palette(font: Font) -> void:
         if rect.position.y + row_h < viewport_top or rect.position.y > viewport_bot:
             continue
 
-        var is_active := (not send_to_overworld) and str(editor.selected_door_target_room) == addr
-        var is_hover := (not send_to_overworld) and rect.has_point(mouse_pos) and _door_target_viewport.has_point(mouse_pos)
+        var is_active := str(editor.selected_door_target_room) == addr
+        var is_hover := rect.has_point(mouse_pos) and _door_target_viewport.has_point(mouse_pos)
 
         var bg: Color
-        if send_to_overworld:
-            bg = Color(0.08, 0.1, 0.12, 0.45)
-        elif is_active:
+        if is_active:
             bg = Color(0.25, 0.5, 0.35, 0.9)
         elif is_hover:
             bg = Color(0.15, 0.22, 0.18, 0.9)
@@ -1364,26 +1301,20 @@ func _draw_door_palette(font: Font) -> void:
         draw_rect(rect, bg)
 
         var text_col: Color
-        if send_to_overworld:
-            text_col = Color(0.46, 0.54, 0.58, 1.0)
-        elif is_active:
+        if is_active:
             text_col = Color(1, 1, 1, 1)
         else:
             text_col = Color(0.75, 0.88, 0.8, 1)
         var label := "— none —" if addr.is_empty() else addr
         draw_string(font, rect.position + Vector2(8, row_h - 7),
             label, HORIZONTAL_ALIGNMENT_LEFT, -1, 11, text_col)
-        if send_to_overworld and _door_target_viewport.has_point(mouse_pos):
-            EditorTooltip.show_text("Disable send to overworld to pick a room destination for doors.")
-        elif is_hover:
+        if is_hover:
             if addr.is_empty():
                 EditorTooltip.show_text("No target. Doors without a target room do nothing — useful for placeholder placement.")
             else:
                 EditorTooltip.show_text("Target room %s. Doors placed after selecting this room will take the player there on contact." % addr)
 
     var sel := str(editor.selected_door_target_room)
-    if send_to_overworld:
-        sel = "OVERWORLD"
     var footer := "dir: %s  target: %s" % [str(editor.selected_door_direction), "—" if sel.is_empty() else sel]
     draw_string(font, Vector2(pad, size.y - 10),
         footer, HORIZONTAL_ALIGNMENT_LEFT, -1, 10, Color(0.75, 0.92, 0.82, 1))
@@ -1510,7 +1441,6 @@ func _draw_bg_image_palette(font: Font) -> void:
     _entity_rects.clear()
     _door_dir_rects.clear()
     _door_target_rects.clear()
-    _door_overworld_toggle_rect = Rect2()
     _content_h = 0.0
     _scroll_y = 0.0
 
@@ -1579,7 +1509,6 @@ func _draw_shader_palette(font: Font) -> void:
     _entity_rects.clear()
     _door_dir_rects.clear()
     _door_target_rects.clear()
-    _door_overworld_toggle_rect = Rect2()
     _content_h = 0.0
     _scroll_y = 0.0
 
@@ -1624,9 +1553,6 @@ func _draw_shader_palette(font: Font) -> void:
             HORIZONTAL_ALIGNMENT_LEFT, -1, 10, UIPanels.TEXT_PANEL_DIM)
     if _zone_target_edit.visible:
         draw_string(font, Vector2(_zone_target_edit.position.x, _zone_target_edit.position.y - label_gap), "Target door ID",
-            HORIZONTAL_ALIGNMENT_LEFT, -1, 10, UIPanels.TEXT_PANEL_DIM)
-    if _zone_overworld_region_edit.visible:
-        draw_string(font, Vector2(_zone_overworld_region_edit.position.x, _zone_overworld_region_edit.position.y - label_gap), "Overworld region",
             HORIZONTAL_ALIGNMENT_LEFT, -1, 10, UIPanels.TEXT_PANEL_DIM)
     if _zone_required_item_edit.visible:
         draw_string(font, Vector2(_zone_required_item_edit.position.x, _zone_required_item_edit.position.y - label_gap), "Required item",
@@ -1699,12 +1625,6 @@ func _on_zone_direction_selected(idx: int) -> void:
     _apply_zone_identity_fields()
     if editor.has_method("set_selected_door_direction"):
         editor.set_selected_door_direction(str(_zone_direction_picker.get_item_metadata(idx)))
-
-
-func _on_zone_overworld_toggled(pressed: bool) -> void:
-    _apply_zone_identity_fields()
-    if editor != null and editor.has_method("set_selected_door_send_to_overworld"):
-        editor.set_selected_door_send_to_overworld(pressed)
 
 
 func _on_zone_target_submitted(text: String) -> void:
@@ -1858,8 +1778,6 @@ func _on_fx_apply_pressed() -> void:
         "direction": _selected_shader_id(_zone_direction_picker, str(selected.get("direction", "right"))),
         "target_door_id": _zone_target_edit.text.strip_edges() if _zone_target_edit != null else str(selected.get("target_door_id", selected.get("target_room", ""))),
         "target_room": "",
-        "send_to_overworld": _zone_overworld_toggle.button_pressed if _zone_overworld_toggle != null else bool(selected.get("send_to_overworld", false)),
-        "overworld_region_id": _zone_overworld_region_edit.text.strip_edges() if _zone_overworld_region_edit != null else str(selected.get("overworld_region_id", "")),
         "enabled": _zone_enabled_toggle.button_pressed if _zone_enabled_toggle != null else bool(selected.get("enabled", true)),
         "locked": _zone_locked_toggle.button_pressed if _zone_locked_toggle != null else bool(selected.get("locked", false)),
         "required_item_id": _zone_required_item_edit.text.strip_edges() if _zone_required_item_edit != null else str(selected.get("required_item_id", "")),

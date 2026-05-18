@@ -201,13 +201,9 @@ func setup_editors(host: Node) -> Dictionary:
     result["content_editor"].editor_requested.connect(host._on_content_editor_editor_requested)
     result["content_editor"].playtest_requested.connect(host._on_content_editor_playtest_requested)
 
-    result["realm_editor"] = _mk_editor(editor_layer, "res://Space/scripts/editor/realm_editor.gd")
-    result["realm_editor"].closed.connect(host._on_realm_closed)
-    result["realm_editor"].region_chosen.connect(host._on_realm_region_chosen)
-
     result["region_editor"] = _mk_editor(editor_layer, "res://Space/scripts/editor/region_editor.gd")
     result["region_editor"].closed.connect(host._on_region_closed)
-    result["region_editor"].back_to_realm.connect(host._on_region_back_to_realm)
+    result["region_editor"].back_to_pack.connect(host._on_region_back_to_pack)
     result["region_editor"].room_chosen.connect(host._on_region_room_chosen)
 
     result["environment_editor"] = _mk_editor(editor_layer, "res://Space/scripts/editor/environment_editor.gd")
@@ -234,6 +230,7 @@ func setup_editors(host: Node) -> Dictionary:
         result[pair[0]] = ed
     if result.has("system_editor"):
         result["system_editor"].systems_saved.connect(host._on_system_editor_saved)
+        result["system_editor"].region_edit_requested.connect(host._open_region_editor_from_system)
     if result.has("ship_editor"):
         result["ship_editor"].test_fly_requested.connect(host._on_ship_editor_test_fly_requested)
         result["ship_editor"].record_ai_requested.connect(host._on_ship_editor_record_ai_requested)

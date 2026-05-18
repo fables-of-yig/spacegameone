@@ -10,6 +10,7 @@ const PsgIO = preload("res://Space/scripts/editor/psg/psg_io.gd")
 
 signal closed
 signal systems_saved(pack_id: String, systems: Dictionary)
+signal region_edit_requested(pack_id: String, region_id: String)
 
 
 var systems: Dictionary = {}
@@ -77,6 +78,7 @@ const _FIELD_TIPS: Dictionary = {
     "star_anim_frames": "If the star sprite is a horizontal strip, set how many frames it contains. 1 = static sprite.",
     "star_anim_fps": "Frames per second for the custom star strip animation. 0 = static.",
     "star_gravity": "Gravity-well radius in pixels. Pulls the ship toward the star within this range; 0 disables.",
+    "poi_id": "Stable POI id used for snapshot keying and trigger lookups. Auto-derived from the name if blank. Should be unique within this system.",
     "poi_name": "POI display name. Appears on the system map and in hail/scan prompts.",
     "poi_type": "POI category: station, hostile_station, salvage, resource, anomaly, ruin, planet. Drives the pip color on the map and which default interactions apply.",
     "poi_desc": "Flavor text shown when the player scans or docks at this POI.",
@@ -88,11 +90,12 @@ const _FIELD_TIPS: Dictionary = {
     "poi_anim_frames": "If the POI sprite is a horizontal strip, set how many frames it contains. 1 = static sprite.",
     "poi_anim_fps": "Frames per second for the POI strip animation. 0 = static.",
     "poi_gravity": "Gravity-well radius around this POI in pixels. 0 disables.",
-    "planet_realm": "Realm id inside the target pack. Blank falls back to the pack's start_realm / first authored realm.",
     "planet_pack": "Optional pack override for cross-pack travel. Leave blank to land inside this campaign pack.",
-    "planet_spawn_room": "Optional direct room spawn. Use a full runtime room address (realm/region/room) or region/room. Leave blank to enter the realm overworld first.",
-    "planet_spawn_x": "Optional X position inside the destination room.",
-    "planet_spawn_y": "Optional Y position inside the destination room.",
+    "region_id": "Stable region id (folder name under Content/<pack>/Regions/). Renaming here renames the region on disk and rewrites POI links.",
+    "region_name": "Display name for this region. Shown in the landing prompt.",
+    "region_spawn_room": "Room address inside this region the player spawns in when landing here. Must exist in the region's rooms.json.",
+    "region_spawn_x": "X position inside the spawn room (pixels).",
+    "region_spawn_y": "Y position inside the spawn room (pixels).",
     "trig_id": "Unique id for this spawn trigger within the system. Used by the once-flag system to remember whether it has fired.",
     "trig_on": "When the trigger fires: enter, proximity, station_destroyed, or event. Proximity arms when the player enters the [min,max] distance band around the current star.",
     "trig_once": "true = fires once per save; false = re-arms when you leave and re-enter the proximity band, or re-evaluates on later enter/event calls.",
@@ -138,6 +141,9 @@ const _BUTTON_TIPS: Dictionary = {
     "toggle_draw_route": "Toggle draw-route mode. While active, click the inset map to add waypoints in order; right-click to finish.",
     "open_planet_generator": "Open the planet shader generator. Pick a body type, scrub seed + params, then bake a rotation strip PNG into the active pack and assign it as the POI's sprite.",
     "open_star_generator": "Open the planet shader generator scoped to the system's central star. Bakes into Systems/AstralBodies/Stars and sets star_sprite + star_anim_frames + star_anim_fps.",
+    "add_region": "Append a new landable region to this POI. Creates a fresh on-disk region (Content/<pack>/Regions/<id>/) with a starter room and adds an entry to this POI's regions[] list.",
+    "region_edit_rooms": "Open the region editor for this region. Use it to author rooms, doors, tiles, entities, and zones.",
+    "region_delete": "Remove this region entry from the POI's regions[] list. The on-disk region (Content/<pack>/Regions/<id>/) is left alone — delete it from the file system or with the region editor if you want it gone for good.",
 }
 
 func _ready():
@@ -241,6 +247,13 @@ func _update_tooltips() -> void:
         if r.has_point(mp):
             var key: String = str(entry.get("key", ""))
             var tip: String = str(_FIELD_TIPS.get(key, ""))
+            if tip == "":
+                # Strip trailing _<index> for list-row fields (region rows).
+                var stripped := key
+                var under := key.rfind("_")
+                if under > 0 and key.substr(under + 1).is_valid_int():
+                    stripped = key.substr(0, under)
+                tip = str(_FIELD_TIPS.get(stripped, ""))
             if tip != "":
                 EditorTooltip.show_text(tip)
             return
@@ -602,6 +615,7 @@ func _draw_panel(font: Font):
         y += 4
         y = _draw_section("POI DETAILS", x, y, font)
         var poi = pois[selected_poi]
+        y = _draw_field("poi_id", "ID", str(poi.get("id", "")), x, y, font)
         y = _draw_field("poi_name", "Name", str(poi.get("name", "")), x, y, font)
         y = _draw_field("poi_type", "Type", str(poi.get("type", "")), x, y, font)
         y = _draw_field("poi_desc", "Desc", str(poi.get("description", "")), x, y, font)
@@ -623,13 +637,9 @@ func _draw_panel(font: Font):
         if str(poi.get("type", "")) == "planet":
             var planet_data: Dictionary = _ensure_planet_data(poi)
             y += 4
-            y = _draw_section("PLANET LINK", x, y, font)
-            y = _draw_field("planet_realm", "Realm", str(planet_data.get("realm_id", "")), x, y, font)
+            y = _draw_section("LANDING TARGET", x, y, font)
             y = _draw_field("planet_pack", "Pack Override", str(planet_data.get("pack_id", _pack_id)), x, y, font)
-            y = _draw_field("planet_spawn_room", "Spawn Room", str(planet_data.get("spawn_room", "")), x, y, font)
-            var spawn_pos: Vector2 = _planet_spawn_pos(planet_data)
-            y = _draw_field("planet_spawn_x", "Spawn X", str(int(spawn_pos.x)), x, y, font)
-            y = _draw_field("planet_spawn_y", "Spawn Y", str(int(spawn_pos.y)), x, y, font)
+            y = _draw_regions_list(x, y, font, planet_data)
 
 
     y += 8
@@ -1075,7 +1085,123 @@ func _handle_button(btn_id: String):
         _open_planet_generator()
     elif btn_id == "open_star_generator":
         _open_star_generator()
+    elif btn_id == "add_region":
+        _add_region_to_selected_poi()
+    elif btn_id.begins_with("region_edit_rooms_"):
+        _open_region_editor_for_row(int(btn_id.replace("region_edit_rooms_", "")))
+    elif btn_id.begins_with("region_delete_"):
+        _delete_region_row(int(btn_id.replace("region_delete_", "")))
     queue_redraw()
+
+
+func _selected_poi_dict() -> Dictionary:
+    if selected_id == "" or not systems.has(selected_id) or selected_poi < 0:
+        return {}
+    var pois: Array = systems[selected_id].get("pois", [])
+    if selected_poi >= pois.size():
+        return {}
+    if typeof(pois[selected_poi]) != TYPE_DICTIONARY:
+        return {}
+    return pois[selected_poi]
+
+
+func _add_region_to_selected_poi() -> void:
+    var poi: Dictionary = _selected_poi_dict()
+    if poi.is_empty():
+        return
+    var planet_data: Dictionary = _ensure_planet_data(poi)
+    var pack_target: String = str(planet_data.get("pack_id", _pack_id)).strip_edges()
+    if pack_target.is_empty():
+        pack_target = _pack_id
+    var regions_v: Variant = planet_data.get("regions", [])
+    if typeof(regions_v) != TYPE_ARRAY:
+        planet_data["regions"] = []
+        regions_v = planet_data["regions"]
+    var regions: Array = regions_v
+    var used: Dictionary = {}
+    for entry_v in regions:
+        if typeof(entry_v) == TYPE_DICTIONARY:
+            used[str((entry_v as Dictionary).get("id", ""))] = true
+    if pack_target == _pack_id:
+        # Also exclude region ids already on disk so we don't collide with
+        # another POI's existing folder.
+        for existing_v in RegIO.list_regions(_pack_id):
+            if typeof(existing_v) == TYPE_DICTIONARY:
+                used[str((existing_v as Dictionary).get("id", ""))] = true
+    var base_name: String = "Region %d" % (regions.size() + 1)
+    var new_id: String = RegIO.unique_content_id(base_name, used, "region")
+
+    if _undo != null:
+        _undo.begin()
+
+    var new_entry: Dictionary = {
+        "id": new_id,
+        "name": base_name,
+        "spawn_room": "start",
+        "spawn_pos": [0.0, 0.0],
+    }
+    regions.append(new_entry)
+    planet_data["regions"] = regions
+
+    # Create the on-disk region so the entry is immediately editable.
+    if pack_target == _pack_id:
+        RegIO.create_region(_pack_id, new_id, base_name)
+
+    if _undo != null:
+        _undo.commit("add region")
+    _set_status("Added region: %s" % new_id)
+
+
+func _delete_region_row(idx: int) -> void:
+    var poi: Dictionary = _selected_poi_dict()
+    if poi.is_empty():
+        return
+    var planet_data: Dictionary = _ensure_planet_data(poi)
+    var regions_v: Variant = planet_data.get("regions", [])
+    if typeof(regions_v) != TYPE_ARRAY:
+        return
+    var regions: Array = regions_v
+    if idx < 0 or idx >= regions.size() or regions.size() <= 1:
+        return
+    if _undo != null:
+        _undo.begin()
+    var removed: String = ""
+    if typeof(regions[idx]) == TYPE_DICTIONARY:
+        removed = str((regions[idx] as Dictionary).get("id", ""))
+    regions.remove_at(idx)
+    planet_data["regions"] = regions
+    if _undo != null:
+        _undo.commit("remove region")
+    if not removed.is_empty():
+        _set_status("Removed region link: %s (region folder kept)" % removed)
+
+
+func _open_region_editor_for_row(idx: int) -> void:
+    var poi: Dictionary = _selected_poi_dict()
+    if poi.is_empty():
+        return
+    var planet_data: Dictionary = _ensure_planet_data(poi)
+    var regions_v: Variant = planet_data.get("regions", [])
+    if typeof(regions_v) != TYPE_ARRAY:
+        return
+    var regions: Array = regions_v
+    if idx < 0 or idx >= regions.size():
+        return
+    if typeof(regions[idx]) != TYPE_DICTIONARY:
+        return
+    var entry: Dictionary = regions[idx]
+    var region_id: String = str(entry.get("id", "")).strip_edges()
+    if region_id.is_empty():
+        return
+    var pack_target: String = str(planet_data.get("pack_id", _pack_id)).strip_edges()
+    if pack_target.is_empty():
+        pack_target = _pack_id
+    # Author edits only the local pack's regions; cross-pack overrides are
+    # browsed in their own campaign session.
+    if pack_target != _pack_id:
+        _set_status("Cannot edit cross-pack region '%s' from this campaign." % region_id)
+        return
+    region_edit_requested.emit(pack_target, region_id)
 
 
 func _draw_generate_planet_button(x: float, y: float, font: Font) -> float:
@@ -1386,6 +1512,14 @@ func _on_field_submitted(text: String):
             sys["star_anim_fps"] = maxf(float(text), 0.0)
         "star_gravity":
             sys["star_gravity"] = maxi(int(text), 0)
+        "poi_id":
+            if selected_poi >= 0:
+                var pois: Array = sys.get("pois", [])
+                if selected_poi < pois.size():
+                    var trimmed_id: String = text.strip_edges()
+                    pois[selected_poi]["id"] = trimmed_id
+                    var planet_data: Dictionary = _ensure_planet_data(pois[selected_poi])
+                    planet_data["poi_id"] = trimmed_id
         "poi_name":
             if selected_poi >= 0:
                 var pois: Array = sys.get("pois", [])
@@ -1403,8 +1537,6 @@ func _on_field_submitted(text: String):
                         var planet_data: Dictionary = _ensure_planet_data(pois[selected_poi])
                         if str(planet_data.get("pack_id", "")).strip_edges().is_empty():
                             planet_data["pack_id"] = _pack_id
-                        if str(planet_data.get("realm_id", "")).strip_edges().is_empty():
-                            planet_data["realm_id"] = RegIO.default_realm_id(_pack_id)
                         if str(planet_data.get("name", "")).strip_edges().is_empty():
                             planet_data["name"] = str(pois[selected_poi].get("name", "Planet"))
         "poi_desc":
@@ -1447,40 +1579,12 @@ func _on_field_submitted(text: String):
                 var pois: Array = sys.get("pois", [])
                 if selected_poi < pois.size():
                     pois[selected_poi]["gravity_radius"] = maxi(int(text), 0)
-        "planet_realm":
-            if selected_poi >= 0:
-                var pois: Array = sys.get("pois", [])
-                if selected_poi < pois.size():
-                    var planet_data: Dictionary = _ensure_planet_data(pois[selected_poi])
-                    planet_data["realm_id"] = text.strip_edges()
         "planet_pack":
             if selected_poi >= 0:
                 var pois: Array = sys.get("pois", [])
                 if selected_poi < pois.size():
                     var planet_data: Dictionary = _ensure_planet_data(pois[selected_poi])
                     planet_data["pack_id"] = text.strip_edges()
-        "planet_spawn_room":
-            if selected_poi >= 0:
-                var pois: Array = sys.get("pois", [])
-                if selected_poi < pois.size():
-                    var planet_data: Dictionary = _ensure_planet_data(pois[selected_poi])
-                    planet_data["spawn_room"] = text.strip_edges()
-        "planet_spawn_x":
-            if selected_poi >= 0:
-                var pois: Array = sys.get("pois", [])
-                if selected_poi < pois.size():
-                    var planet_data: Dictionary = _ensure_planet_data(pois[selected_poi])
-                    var pos_v: Vector2 = _planet_spawn_pos(planet_data)
-                    pos_v.x = float(text)
-                    planet_data["spawn_pos"] = [pos_v.x, pos_v.y]
-        "planet_spawn_y":
-            if selected_poi >= 0:
-                var pois: Array = sys.get("pois", [])
-                if selected_poi < pois.size():
-                    var planet_data: Dictionary = _ensure_planet_data(pois[selected_poi])
-                    var pos_v: Vector2 = _planet_spawn_pos(planet_data)
-                    pos_v.y = float(text)
-                    planet_data["spawn_pos"] = [pos_v.x, pos_v.y]
         "trig_id":
             if selected_trigger >= 0:
                 var trigs: Array = sys.get("spawn_triggers", [])
@@ -1545,6 +1649,8 @@ func _on_field_submitted(text: String):
         _:
             if key.begins_with("npc_"):
                 _apply_npc_field(sys, key, text)
+            elif key.begins_with("region_"):
+                _apply_region_field(sys, key, text)
 
     if _undo != null:
         _undo.commit("edit " + key)
@@ -1607,7 +1713,13 @@ func _add_poi():
         _undo.begin()
     var pois: Array = systems[selected_id].get("pois", [])
     var angle = pois.size() * 60.0
+    var used_ids: Dictionary = {}
+    for existing_v in pois:
+        if typeof(existing_v) == TYPE_DICTIONARY:
+            used_ids[str((existing_v as Dictionary).get("id", ""))] = true
+    var new_poi_id: String = RegIO.unique_content_id("poi_%d" % (pois.size() + 1), used_ids, "poi")
     pois.append({
+        "id": new_poi_id,
         "name": "New POI",
         "type": "anomaly",
         "description": "",
@@ -1619,7 +1731,7 @@ func _add_poi():
         "anim_frames": 1,
         "anim_fps": 0.0,
         "gravity_radius": 0,
-        "planet_data": {},
+        "planet_data": {"poi_id": new_poi_id, "regions": []},
     })
     systems[selected_id]["pois"] = pois
     selected_poi = pois.size() - 1
@@ -1901,6 +2013,67 @@ func _apply_npc_field(sys: Dictionary, key: String, text: String):
         "npc_beh_respawn_hrs":
             npc.get("behavior", {})["respawn_hours"] = maxi(int(text), 0)
 
+
+# Per-region field writes. key shape: "region_<field>_<index>".
+func _apply_region_field(sys: Dictionary, key: String, text: String) -> void:
+    if selected_poi < 0:
+        return
+    var pois: Array = sys.get("pois", [])
+    if selected_poi >= pois.size():
+        return
+    var poi: Dictionary = pois[selected_poi]
+    var planet_data: Dictionary = _ensure_planet_data(poi)
+    var regions_v: Variant = planet_data.get("regions", [])
+    if typeof(regions_v) != TYPE_ARRAY:
+        return
+    var regions: Array = regions_v
+    var under: int = key.rfind("_")
+    if under <= 0:
+        return
+    var suffix: String = key.substr(under + 1)
+    if not suffix.is_valid_int():
+        return
+    var idx: int = int(suffix)
+    if idx < 0 or idx >= regions.size():
+        return
+    if typeof(regions[idx]) != TYPE_DICTIONARY:
+        return
+    var entry: Dictionary = regions[idx]
+    var base_key: String = key.substr(0, under)
+    var pack_target: String = str(planet_data.get("pack_id", _pack_id)).strip_edges()
+    if pack_target.is_empty():
+        pack_target = _pack_id
+    match base_key:
+        "region_id":
+            var raw_id: String = text.strip_edges()
+            if raw_id.is_empty():
+                return
+            var sanitized: String = RegIO.sanitize_content_id(raw_id, "region")
+            var old_id: String = str(entry.get("id", "")).strip_edges()
+            entry["id"] = sanitized
+            # Reflect the change on disk only inside this campaign pack.
+            if pack_target == _pack_id and not old_id.is_empty() and old_id != sanitized:
+                RegIO.rename_region(_pack_id, old_id, sanitized, str(entry.get("name", sanitized)))
+        "region_name":
+            var trimmed_name: String = text.strip_edges()
+            entry["name"] = trimmed_name
+            var region_id: String = str(entry.get("id", "")).strip_edges()
+            if pack_target == _pack_id and not region_id.is_empty() and not trimmed_name.is_empty():
+                var meta: Dictionary = RegIO.load_region(_pack_id, region_id)
+                meta["name"] = trimmed_name
+                RegIO.save_region_meta(_pack_id, region_id, meta)
+        "region_spawn_room":
+            entry["spawn_room"] = text.strip_edges()
+        "region_spawn_x":
+            var pos_x: Vector2 = _region_spawn_pos(entry)
+            pos_x.x = float(text)
+            entry["spawn_pos"] = [pos_x.x, pos_x.y]
+        "region_spawn_y":
+            var pos_y: Vector2 = _region_spawn_pos(entry)
+            pos_y.y = float(text)
+            entry["spawn_pos"] = [pos_y.x, pos_y.y]
+
+
 func _set_status(text: String):
     status_text = text
     status_timer = 3.0
@@ -2134,31 +2307,149 @@ func _ensure_planet_data(poi: Dictionary) -> Dictionary:
         planet_data = {
             "name": str(poi.get("name", "Planet")),
             "pack_id": _pack_id,
-            "realm_id": RegIO.default_realm_id(_pack_id),
-            "spawn_room": "",
-            "spawn_pos": [0.0, 0.0],
+            "poi_id": str(poi.get("id", "")).strip_edges(),
+            "regions": [],
         }
         poi["planet_data"] = planet_data
+
+    # Strip legacy realm fields if present from older saves.
+    planet_data.erase("realm_id")
+    planet_data.erase("region_id")
+    planet_data.erase("spawn_room")
+    planet_data.erase("spawn_pos")
+
     if str(planet_data.get("name", "")).strip_edges().is_empty():
         planet_data["name"] = str(poi.get("name", "Planet"))
     if str(planet_data.get("pack_id", "")).strip_edges().is_empty():
         planet_data["pack_id"] = _pack_id
-    if str(planet_data.get("realm_id", "")).strip_edges().is_empty():
-        var target_pack := str(planet_data.get("pack_id", _pack_id)).strip_edges()
-        if target_pack.is_empty() or target_pack == _pack_id:
-            planet_data["realm_id"] = RegIO.default_realm_id(_pack_id)
+    if str(planet_data.get("poi_id", "")).strip_edges().is_empty():
+        planet_data["poi_id"] = str(poi.get("id", "")).strip_edges()
+
+    var target_pack: String = str(planet_data.get("pack_id", _pack_id)).strip_edges()
+    if target_pack.is_empty():
+        target_pack = _pack_id
+
+    var regions_v: Variant = planet_data.get("regions", null)
+    if typeof(regions_v) != TYPE_ARRAY:
+        planet_data["regions"] = []
+        regions_v = planet_data["regions"]
+    var regions: Array = regions_v
+
+    # Seed a default region row if none exist so the panel is never empty
+    # and the runtime landing always has something to spawn into.
+    if regions.is_empty() and target_pack == _pack_id:
+        var default_region: String = RegIO.default_region_id(target_pack)
+        if not default_region.is_empty():
+            var spawn_room: String = RegIO.get_region_start_room(target_pack, default_region)
+            var bare_room: String = spawn_room
+            var slash: int = spawn_room.find("/")
+            if slash >= 0:
+                bare_room = spawn_room.substr(slash + 1)
+            regions.append({
+                "id": default_region,
+                "name": default_region.capitalize(),
+                "spawn_room": bare_room if not bare_room.is_empty() else "start",
+                "spawn_pos": [0.0, 0.0],
+            })
+            planet_data["regions"] = regions
+
+    # Normalize every entry so the panel can render uniformly.
+    for i in range(regions.size()):
+        var entry_v: Variant = regions[i]
+        if typeof(entry_v) != TYPE_DICTIONARY:
+            regions[i] = {"id": "", "name": "", "spawn_room": "start", "spawn_pos": [0.0, 0.0]}
+            continue
+        var entry: Dictionary = entry_v
+        if not entry.has("id"):
+            entry["id"] = ""
+        if not entry.has("name"):
+            entry["name"] = str(entry.get("id", "")).capitalize()
+        if not entry.has("spawn_room"):
+            entry["spawn_room"] = "start"
+        if not entry.has("spawn_pos"):
+            entry["spawn_pos"] = [0.0, 0.0]
+
     return planet_data
 
 
-func _planet_spawn_pos(planet_data: Dictionary) -> Vector2:
-    var pos_v: Variant = planet_data.get("spawn_pos", Vector2.ZERO)
+func _region_spawn_pos(entry: Dictionary) -> Vector2:
+    var pos_v: Variant = entry.get("spawn_pos", Vector2.ZERO)
     if pos_v is Vector2:
         return pos_v
-    if pos_v is Array and pos_v.size() >= 2:
-        return Vector2(float(pos_v[0]), float(pos_v[1]))
+    if pos_v is Array and (pos_v as Array).size() >= 2:
+        return Vector2(float((pos_v as Array)[0]), float((pos_v as Array)[1]))
     if typeof(pos_v) == TYPE_DICTIONARY:
-        return Vector2(float(pos_v.get("x", 0.0)), float(pos_v.get("y", 0.0)))
+        var pos_dict: Dictionary = pos_v
+        return Vector2(float(pos_dict.get("x", 0.0)), float(pos_dict.get("y", 0.0)))
     return Vector2.ZERO
+
+
+# Renders the per-POI regions[] list. Each row exposes the region id, name,
+# spawn room, and spawn position, with an Edit Rooms button (opens the
+# region editor through the host) and a Delete button (kept only when the
+# list has more than one entry). Returns the next y cursor for the caller.
+func _draw_regions_list(x: float, y: float, font: Font, planet_data: Dictionary) -> float:
+    y += 4
+    y = _draw_section("REGIONS", x, y, font)
+    var regions_v: Variant = planet_data.get("regions", [])
+    var regions: Array = regions_v if typeof(regions_v) == TYPE_ARRAY else []
+    var row_w: float = PANEL_W - 36.0
+
+    for i in range(regions.size()):
+        var entry_v: Variant = regions[i]
+        if typeof(entry_v) != TYPE_DICTIONARY:
+            continue
+        var entry: Dictionary = entry_v
+
+        # Region header strip — keeps the row identifiable.
+        var header_rect: Rect2 = Rect2(x + 4, y, row_w, 18)
+        draw_rect(header_rect, Color(0.1, 0.16, 0.22))
+        draw_rect(header_rect, Color(0.36, 0.52, 0.78, 0.85), false, 1.0)
+        draw_string(font, Vector2(x + 10, y + 13),
+            "Region #%d" % (i + 1), HORIZONTAL_ALIGNMENT_LEFT, -1, 10,
+            Color(0.78, 0.86, 0.96))
+        y += 22
+
+        var spawn_pos_v: Vector2 = _region_spawn_pos(entry)
+        y = _draw_field("region_id_%d" % i, "ID", str(entry.get("id", "")), x, y, font)
+        y = _draw_field("region_name_%d" % i, "Name", str(entry.get("name", "")), x, y, font)
+        y = _draw_field("region_spawn_room_%d" % i, "Spawn Room",
+            str(entry.get("spawn_room", "")), x, y, font)
+        y = _draw_field("region_spawn_x_%d" % i, "Spawn X",
+            str(int(spawn_pos_v.x)), x, y, font)
+        y = _draw_field("region_spawn_y_%d" % i, "Spawn Y",
+            str(int(spawn_pos_v.y)), x, y, font)
+
+        # Edit Rooms + Delete row.
+        var btn_y: float = y + 2
+        var edit_w: float = 110.0
+        var del_w: float = 70.0
+        var edit_r: Rect2 = Rect2(x + 4, btn_y, edit_w, 22)
+        draw_rect(edit_r, Color(0.14, 0.22, 0.32))
+        draw_rect(edit_r, Color(0.36, 0.62, 0.95), false, 1.0)
+        draw_string(font, Vector2(edit_r.position.x + 10, btn_y + 16),
+            "Edit Rooms", HORIZONTAL_ALIGNMENT_LEFT, -1, 11, Color(0.78, 0.92, 1.0))
+        button_rects.append({"id": "region_edit_rooms_%d" % i, "rect": edit_r})
+
+        if regions.size() > 1:
+            var del_r: Rect2 = Rect2(x + 4 + edit_w + 8.0, btn_y, del_w, 22)
+            draw_rect(del_r, Color(0.22, 0.12, 0.14))
+            draw_rect(del_r, Color(0.62, 0.32, 0.38), false, 1.0)
+            draw_string(font, Vector2(del_r.position.x + 12, btn_y + 16),
+                "Delete", HORIZONTAL_ALIGNMENT_LEFT, -1, 11, Color(0.95, 0.65, 0.65))
+            button_rects.append({"id": "region_delete_%d" % i, "rect": del_r})
+        y = btn_y + 28
+
+    # Add region trailing button.
+    var add_y: float = y + 4
+    var add_r: Rect2 = Rect2(x + 4, add_y, row_w, 24)
+    draw_rect(add_r, Color(0.12, 0.18, 0.12))
+    draw_rect(add_r, Color(0.3, 0.62, 0.42), false, 1.0)
+    draw_string(font, Vector2(add_r.position.x + 14, add_y + 17),
+        "+ Add region", HORIZONTAL_ALIGNMENT_LEFT, -1, 12,
+        Color(0.62, 0.92, 0.68))
+    button_rects.append({"id": "add_region", "rect": add_r})
+    return add_y + 30
 
 
 func _request_close() -> void:

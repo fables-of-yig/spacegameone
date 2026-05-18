@@ -43,7 +43,7 @@ static func load_existing(pack_id: String) -> Dictionary:
     return {}
 
 
-static func ensure_starter_system(pack_id: String, realm_id: String, region_id: String,
+static func ensure_starter_system(pack_id: String, region_id: String,
         room_addr: String, spawn_pos) -> String:
     var pid := pack_id.strip_edges()
     if pid.is_empty():
@@ -55,9 +55,9 @@ static func ensure_starter_system(pack_id: String, realm_id: String, region_id: 
     if typeof(system_v) == TYPE_DICTIONARY:
         system_data = (system_v as Dictionary).duplicate(true)
     else:
-        system_data = _starter_system(pid, realm_id, region_id, room_addr, spawn_pos)
+        system_data = _starter_system(pid, region_id, room_addr, spawn_pos)
 
-    _ensure_starter_planet(system_data, pid, realm_id, region_id, room_addr, spawn_pos)
+    _ensure_starter_planet(system_data, pid, region_id, room_addr, spawn_pos)
     systems[STARTER_SYSTEM_ID] = system_data
 
     if not save(pid, systems):
@@ -89,7 +89,7 @@ static func exists(pack_id: String) -> bool:
     return false
 
 
-static func _starter_system(pack_id: String, realm_id: String, region_id: String,
+static func _starter_system(pack_id: String, region_id: String,
         room_addr: String, spawn_pos) -> Dictionary:
     return {
         "name": "Start System",
@@ -106,15 +106,17 @@ static func _starter_system(pack_id: String, realm_id: String, region_id: String
         "threat_level": 1,
         "faction": "independent",
         "connections": [],
-        "pois": [_starter_planet_poi(pack_id, realm_id, region_id, room_addr, spawn_pos)],
+        "pois": [_starter_planet_poi(pack_id, region_id, room_addr, spawn_pos)],
         "spawn_triggers": [],
         "placed_npcs": [],
     }
 
 
-static func _starter_planet_poi(pack_id: String, realm_id: String, region_id: String,
+static func _starter_planet_poi(pack_id: String, region_id: String,
         room_addr: String, spawn_pos) -> Dictionary:
+    var poi_id: String = "starter_planet"
     return {
+        "id": poi_id,
         "name": STARTER_PLANET_NAME,
         "type": "planet",
         "description": "Authored campaign landing point.",
@@ -126,19 +128,26 @@ static func _starter_planet_poi(pack_id: String, realm_id: String, region_id: St
         "anim_frames": 1,
         "anim_fps": 0.0,
         "gravity_radius": 0,
-        "planet_data": _starter_planet_data(pack_id, realm_id, region_id, room_addr, spawn_pos),
+        "planet_data": _starter_planet_data(pack_id, poi_id, region_id, room_addr, spawn_pos),
     }
 
 
-static func _starter_planet_data(pack_id: String, realm_id: String, region_id: String,
+# planet_data follows the Phase 5+ shape:
+#   { pack_id, poi_id, regions: [{ id, name, spawn_room, spawn_pos }] }
+# The old realm_id / top-level spawn_room slot is gone.
+static func _starter_planet_data(pack_id: String, poi_id: String, region_id: String,
         room_addr: String, spawn_pos) -> Dictionary:
+    var region_entry: Dictionary = {
+        "id": region_id.strip_edges(),
+        "name": region_id.strip_edges().capitalize(),
+        "spawn_room": room_addr.strip_edges(),
+        "spawn_pos": _spawn_pos_to_array(spawn_pos),
+    }
     return {
         "name": STARTER_PLANET_NAME,
         "pack_id": pack_id.strip_edges(),
-        "realm_id": realm_id.strip_edges(),
-        "region_id": region_id.strip_edges(),
-        "spawn_room": room_addr.strip_edges(),
-        "spawn_pos": _spawn_pos_to_array(spawn_pos),
+        "poi_id": poi_id.strip_edges(),
+        "regions": [region_entry],
         "sky_color": [0.35, 0.5, 0.8],
         "horizon_color": [0.5, 0.6, 0.35],
         "terrain_colors": [[0.16, 0.3, 0.16], [0.1, 0.22, 0.1], [0.08, 0.18, 0.06]],
@@ -149,7 +158,7 @@ static func _starter_planet_data(pack_id: String, realm_id: String, region_id: S
     }
 
 
-static func _ensure_starter_planet(system_data: Dictionary, pack_id: String, realm_id: String,
+static func _ensure_starter_planet(system_data: Dictionary, pack_id: String,
         region_id: String, room_addr: String, spawn_pos) -> void:
     var pois_v: Variant = system_data.get("pois", [])
     var pois: Array = []
@@ -164,24 +173,56 @@ static func _ensure_starter_planet(system_data: Dictionary, pack_id: String, rea
             break
 
     if planet_idx < 0:
-        pois.append(_starter_planet_poi(pack_id, realm_id, region_id, room_addr, spawn_pos))
+        pois.append(_starter_planet_poi(pack_id, region_id, room_addr, spawn_pos))
     else:
         var poi: Dictionary = (pois[planet_idx] as Dictionary).duplicate(true)
         if str(poi.get("name", "")).strip_edges().is_empty():
             poi["name"] = STARTER_PLANET_NAME
         poi["type"] = "planet"
+        var existing_poi_id: String = str(poi.get("id", "")).strip_edges()
+        if existing_poi_id.is_empty():
+            existing_poi_id = "starter_planet"
+            poi["id"] = existing_poi_id
 
         var planet_v: Variant = poi.get("planet_data", {})
         var planet_data: Dictionary = {}
         if typeof(planet_v) == TYPE_DICTIONARY:
             planet_data = (planet_v as Dictionary).duplicate(true)
+        # Strip legacy realm slots if present.
+        planet_data.erase("realm_id")
+        planet_data.erase("region_id")
+        planet_data.erase("spawn_room")
+        planet_data.erase("spawn_pos")
         if str(planet_data.get("name", "")).strip_edges().is_empty():
             planet_data["name"] = str(poi.get("name", STARTER_PLANET_NAME))
         planet_data["pack_id"] = pack_id.strip_edges()
-        planet_data["realm_id"] = realm_id.strip_edges()
-        planet_data["region_id"] = region_id.strip_edges()
-        planet_data["spawn_room"] = room_addr.strip_edges()
-        planet_data["spawn_pos"] = _spawn_pos_to_array(spawn_pos)
+        planet_data["poi_id"] = existing_poi_id
+
+        var regions_v: Variant = planet_data.get("regions", null)
+        var regions: Array = regions_v if typeof(regions_v) == TYPE_ARRAY else []
+        # Upsert the starter region entry by id.
+        var starter_entry: Dictionary = {
+            "id": region_id.strip_edges(),
+            "name": region_id.strip_edges().capitalize(),
+            "spawn_room": room_addr.strip_edges(),
+            "spawn_pos": _spawn_pos_to_array(spawn_pos),
+        }
+        var matched: bool = false
+        for ri in range(regions.size()):
+            if typeof(regions[ri]) != TYPE_DICTIONARY:
+                continue
+            var entry: Dictionary = regions[ri]
+            if str(entry.get("id", "")).strip_edges() == starter_entry["id"]:
+                entry["spawn_room"] = starter_entry["spawn_room"]
+                entry["spawn_pos"] = starter_entry["spawn_pos"]
+                if str(entry.get("name", "")).strip_edges().is_empty():
+                    entry["name"] = starter_entry["name"]
+                regions[ri] = entry
+                matched = true
+                break
+        if not matched:
+            regions.append(starter_entry)
+        planet_data["regions"] = regions
         poi["planet_data"] = planet_data
         pois[planet_idx] = poi
 

@@ -1308,7 +1308,7 @@ static func _validate_world_hierarchy(pack_id: String, flat_rooms_root: Dictiona
 				if start_room.is_empty():
 					issues.append(Issue.new("error", region_src, "start region has no start_room"))
 				else:
-					expected_start_room = RegIO.runtime_room_addr(realm_id, region_id, start_room)
+					expected_start_room = RegIO.runtime_room_addr(region_id, start_room)
 					var start_room_v: Variant = rooms_dict.get(start_room, {})
 					if typeof(start_room_v) == TYPE_DICTIONARY:
 						start_room_data = start_room_v
@@ -1325,7 +1325,7 @@ static func _validate_world_hierarchy(pack_id: String, flat_rooms_root: Dictiona
 						"room '%s' is not a dictionary" % room_addr))
 					continue
 				var room: Dictionary = room_v
-				var runtime_room_addr: String = RegIO.runtime_room_addr(realm_id, region_id, room_addr)
+				var runtime_room_addr: String = RegIO.runtime_room_addr(region_id, room_addr)
 				expected_flat_rooms[runtime_room_addr] = true
 				var room_src: String = "Room '%s'" % runtime_room_addr
 				var base_col: int = int(room.get("region_col", 0))
@@ -2110,7 +2110,7 @@ static func _expand_room_addr_from_realms(all_realms: Dictionary, realm_id: Stri
 		if typeof(rooms_v) != TYPE_DICTIONARY:
 			continue
 		if (rooms_v as Dictionary).has(trimmed):
-			return RegIO.runtime_room_addr(realm_id, region_id, trimmed)
+			return RegIO.runtime_room_addr(region_id, trimmed)
 	return trimmed
 
 

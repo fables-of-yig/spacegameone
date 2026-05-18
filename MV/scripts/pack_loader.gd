@@ -167,13 +167,11 @@ static func create_empty_pack(pack_id: String, display_name: String = "") -> boo
 		starter_region_id,
 		starter_room_addr
 	)
-	# SystemIO.ensure_starter_system still takes a realm_id positional in
-	# Phase 3 (Space-side cleanup is deferred to Phase 5). Pass "" so the
-	# starter system writes a benign empty realm slot; Phase 5 drops the
-	# parameter outright and migrates existing systems.json files.
+	# Phase 5+ shape: SystemIO.ensure_starter_system seeds a starter POI
+	# with a single regions[] entry built from the region/room/spawn_pos
+	# provided here. No realm_id slot anymore.
 	var start_system_id := SystemIO.ensure_starter_system(
 		pack_id,
-		"",
 		starter_region_id,
 		starter_room_addr,
 		starter_spawn_pos

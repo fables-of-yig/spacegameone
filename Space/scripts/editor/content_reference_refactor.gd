@@ -31,13 +31,11 @@ static func rename_references(pack_id: String, kind: String, old_id: String, new
 	_rewrite_file(pid, "Rooms/rooms.json", result, func(root: Dictionary) -> int:
 		return _rewrite_rooms_root(root, target_kind, from_id, to_id)
 	)
-	for realm_id_v in _list_dir_names(pid, "Realms"):
-		var realm_id := str(realm_id_v)
-		for region_id_v in _list_dir_names(pid, "Realms/%s/Regions" % realm_id):
-			var rel_path := "Realms/%s/Regions/%s/rooms.json" % [realm_id, str(region_id_v)]
-			_rewrite_file(pid, rel_path, result, func(root: Dictionary) -> int:
-				return _rewrite_region_rooms_root(root, target_kind, from_id, to_id)
-			)
+	for region_id_v in _list_dir_names(pid, "Regions"):
+		var rel_path := "Regions/%s/rooms.json" % str(region_id_v)
+		_rewrite_file(pid, rel_path, result, func(root: Dictionary) -> int:
+			return _rewrite_region_rooms_root(root, target_kind, from_id, to_id)
+		)
 	_rewrite_file(pid, "Triggers/global.json", result, func(root: Dictionary) -> int:
 		return _rewrite_trigger_root(root, target_kind, from_id, to_id)
 	)
@@ -78,13 +76,11 @@ static func rename_references(pack_id: String, kind: String, old_id: String, new
 	return result
 
 
-static func rename_room_references(pack_id: String, old_realm_id: String, old_region_id: String,
-		old_room_id: String, new_realm_id: String, new_region_id: String, new_room_id: String) -> Dictionary:
+static func rename_room_references(pack_id: String, old_region_id: String, old_room_id: String,
+		new_region_id: String, new_room_id: String) -> Dictionary:
 	var pid := pack_id.strip_edges()
-	var old_realm := old_realm_id.strip_edges()
 	var old_region := old_region_id.strip_edges()
 	var old_room := old_room_id.strip_edges()
-	var new_realm := new_realm_id.strip_edges()
 	var new_region := new_region_id.strip_edges()
 	var new_room := new_room_id.strip_edges()
 	var result := {
@@ -93,23 +89,20 @@ static func rename_room_references(pack_id: String, old_realm_id: String, old_re
 		"changed_refs": 0,
 		"errors": [],
 	}
-	if pid.is_empty() or old_realm.is_empty() or old_region.is_empty() or old_room.is_empty() \
-			or new_realm.is_empty() or new_region.is_empty() or new_room.is_empty():
+	if pid.is_empty() or old_region.is_empty() or old_room.is_empty() \
+			or new_region.is_empty() or new_room.is_empty():
 		result["ok"] = false
 		result["errors"] = ["Pack, old room address, and new room address are required."]
 		return result
-	if old_realm == new_realm and old_region == new_region and old_room == new_room:
+	if old_region == new_region and old_room == new_room:
 		return result
 
-	var old_full := "%s/%s/%s" % [old_realm, old_region, old_room]
-	var new_full := "%s/%s/%s" % [new_realm, new_region, new_room]
 	var old_region_room := "%s/%s" % [old_region, old_room]
 	var new_region_room := "%s/%s" % [new_region, new_room]
 
-	_rename_exact_room_references(pid, old_full, new_full, result)
 	_rename_exact_room_references(pid, old_region_room, new_region_room, result)
 
-	var scoped_rel_path := "Realms/%s/Regions/%s/rooms.json" % [new_realm, new_region]
+	var scoped_rel_path := "Regions/%s/rooms.json" % new_region
 	_rewrite_file(pid, scoped_rel_path, result, func(root: Dictionary) -> int:
 		return _rewrite_region_rooms_root(root, "room", old_room, new_room)
 	)
@@ -126,13 +119,11 @@ static func _rename_exact_room_references(pack_id: String, old_ref: String, new_
 	_rewrite_file(pack_id, "Rooms/rooms.json", result, func(root: Dictionary) -> int:
 		return _rewrite_rooms_root(root, "room", old_ref, new_ref)
 	)
-	for realm_id_v in _list_dir_names(pack_id, "Realms"):
-		var realm_id := str(realm_id_v)
-		for region_id_v in _list_dir_names(pack_id, "Realms/%s/Regions" % realm_id):
-			var rel_path := "Realms/%s/Regions/%s/rooms.json" % [realm_id, str(region_id_v)]
-			_rewrite_file(pack_id, rel_path, result, func(root: Dictionary) -> int:
-				return _rewrite_region_rooms_root(root, "room", old_ref, new_ref)
-			)
+	for region_id_v in _list_dir_names(pack_id, "Regions"):
+		var rel_path := "Regions/%s/rooms.json" % str(region_id_v)
+		_rewrite_file(pack_id, rel_path, result, func(root: Dictionary) -> int:
+			return _rewrite_region_rooms_root(root, "room", old_ref, new_ref)
+		)
 	_rewrite_file(pack_id, "Triggers/global.json", result, func(root: Dictionary) -> int:
 		return _rewrite_trigger_root(root, "room", old_ref, new_ref)
 	)
@@ -154,8 +145,8 @@ static func _rewrite_manifest(root: Dictionary, kind: String, old_id: String, ne
 		count += _replace_string(root, "start_system", old_id, new_id)
 	elif kind == "ship_template":
 		count += _replace_string(root, "start_ship_template", old_id, new_id)
-	elif kind == "realm":
-		count += _replace_string(root, "start_realm", old_id, new_id)
+	elif kind == "region":
+		count += _replace_string(root, "start_region", old_id, new_id)
 	elif kind == "room":
 		count += _replace_string(root, "entry_room", old_id, new_id)
 	return count
@@ -191,12 +182,23 @@ static func _rewrite_system_pois(pois: Array, kind: String, old_id: String, new_
 		if typeof(planet_v) != TYPE_DICTIONARY:
 			continue
 		var planet: Dictionary = planet_v
-		if kind == "realm":
-			count += _replace_string(planet, "realm_id", old_id, new_id)
-		elif kind == "room":
-			count += _replace_string(planet, "spawn_room", old_id, new_id)
-		elif kind == "pack":
+		if kind == "pack":
 			count += _replace_string(planet, "pack_id", old_id, new_id)
+		elif kind == "region" or kind == "room":
+			# Walk the regions[] entries and rename matching id / spawn_room
+			# fields. Phase 5 dropped the planet-level realm_id / spawn_room
+			# slots in favour of a per-region list.
+			var regions_v: Variant = planet.get("regions", [])
+			if typeof(regions_v) != TYPE_ARRAY:
+				continue
+			for entry_v in regions_v as Array:
+				if typeof(entry_v) != TYPE_DICTIONARY:
+					continue
+				var entry: Dictionary = entry_v
+				if kind == "region":
+					count += _replace_string(entry, "id", old_id, new_id)
+				elif kind == "room":
+					count += _replace_string(entry, "spawn_room", old_id, new_id)
 	return count
 
 

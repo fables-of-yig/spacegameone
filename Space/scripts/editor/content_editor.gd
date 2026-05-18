@@ -26,7 +26,7 @@ const MODE_LABELS: Dictionary = {
 const MODE_DESCRIPTIONS: Dictionary = {
     "campaign": "Pack metadata, start flow, starting ship, and authoring checklist.",
     "objects": "Definitions: player, ships, modules, loot, entities, AI, dialogue, shops.",
-    "world": "Realm, regions, rooms, solar systems, and planet landing pathways.",
+    "world": "Solar systems, POIs, per-POI regions, rooms, and planet landing pathways.",
     "triggers": "Rules for when things happen, what must be true, and what the game should do.",
     "recipes": "One-click setup helpers that generate or wire starter content.",
     "ui": "Theme, authored screens, cinematics, and trigger-driven menu flow.",
@@ -41,9 +41,9 @@ const TILE_GAP: float = 18.0
 const MODE_TILES: Dictionary = {
     "campaign": [
         {
-            "kind": "realm",
+            "kind": "system",
             "label": "WORLD FLOW",
-            "subtitle": "Jump into realm / region authoring.",
+            "subtitle": "Jump into systems, POIs, and region authoring.",
             "accent": Color(0.76, 0.44, 0.95),
         },
         {
@@ -123,15 +123,9 @@ const MODE_TILES: Dictionary = {
     ],
     "world": [
         {
-            "kind": "realm",
-            "label": "REALM + REGIONS",
-            "subtitle": "Overworld graph, regions, room ownership, playtest.",
-            "accent": Color(0.78, 0.38, 0.95),
-        },
-        {
             "kind": "system",
             "label": "SYSTEMS + PLANETS",
-            "subtitle": "Author stars, orbiting POIs, and planet landing links.",
+            "subtitle": "Author stars, orbiting POIs, region landing lists, and per-POI regions.",
             "accent": Color(0.32, 0.8, 0.96),
         },
     ],
@@ -606,7 +600,7 @@ func _draw_campaign_panel(font: Font, rect: Rect2, mouse_pos: Vector2) -> void:
         "1. Set pack identity and intended start flow here.",
         "2. Pick the starting ship template before building encounter content.",
         "3. Author player baseline and module economy together.",
-        "4. Use WORLD for the realm / region / room slice.",
+        "4. Use WORLD for the systems / POI / region / room slice.",
         "5. Use UI + FX for authored menu, HUD, and cinematic surfaces.",
         "6. Use PLAYTEST after every trigger or world-flow change.",
     ]
@@ -752,8 +746,8 @@ func _mode_hints(mode_key: String) -> Array:
             ]
         "world":
             return [
-                "WORLD now covers both realm authoring and the space-side system graph.",
-                "Use Systems + Planets to wire stars, orbiting POIs, and pack landing targets.",
+                "WORLD owns the space-side system graph and the per-POI region lists.",
+                "Use Systems + Planets to wire stars, orbiting POIs, and the regions/rooms each POI lands into.",
             ]
         "triggers":
             return [
@@ -955,7 +949,7 @@ func _on_import_archive_selected(path: String) -> void:
         "[INFO] Files imported: %d" % int(result.get("file_count", 0)),
         "[INFO] Active pack: %s" % imported_pack_id,
     ]
-    if renamed:
+    if was_renamed:
         _validation_lines.append("[WARNING] Pack id already existed here, so the import was renamed from '%s'." % source_pack_id)
 
 

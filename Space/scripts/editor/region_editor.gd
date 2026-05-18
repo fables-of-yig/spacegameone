@@ -9,10 +9,9 @@ extends Control
 #   RMB drag on any cells   → subtract rectangle from pending selection
 #   LMB click on a room     → select (shows detail in sidebar)
 #   LMB double-click a room → open that room in the env editor
-#   ESC                     → cancel pending, or back to realm
+#   ESC                     → cancel pending, or back to the POI panel
 #
-# No pan / zoom — the region grid scales to fit the canvas rect. The camera
-# pass comes in a later phase along with realm tile painting.
+# No pan / zoom — the region grid scales to fit the canvas rect.
 
 const UIPanels = preload("res://Space/scripts/ui/ui_panels.gd")
 const RegIO = preload("res://Space/scripts/editor/reg/reg_io.gd")
@@ -22,8 +21,8 @@ const ContentReferenceRefactor = preload("res://Space/scripts/editor/content_ref
 
 @warning_ignore("unused_signal")
 signal closed
-signal back_to_realm
-signal room_chosen(realm_id: String, region_id: String, room_addr: String)
+signal back_to_pack
+signal room_chosen(region_id: String, room_addr: String)
 
 enum Mode { IDLE, DRAWING_ADD, DRAWING_SUB, PENDING }
 
@@ -33,7 +32,6 @@ const CONFIRM_H: float = 72.0
 const DOUBLE_CLICK_DELAY: float = 0.35
 
 var pack_id: String = ""
-var realm_id: String = ""
 var region_id: String = ""
 var region_meta: Dictionary = {}
 var rooms_data: Dictionary = {}
@@ -68,9 +66,6 @@ const REGION_FIELDS: Array = [
     {"key": "visual_theme", "label": "Visual Theme", "kind": "string", "hint": "e.g. 'neon', 'ruin'"},
     {"key": "hazard_type", "label": "Hazard", "kind": "string", "hint": "e.g. 'lava', 'toxic'"},
     {"key": "gravity_mult", "label": "Gravity Mult", "kind": "float", "hint": "1.0 = normal"},
-    {"key": "cam_height", "label": "Cam Height", "kind": "float", "hint": "Mode 7 default 120"},
-    {"key": "horizon", "label": "Horizon", "kind": "float", "hint": "Mode 7 default 0.35"},
-    {"key": "fov_scale", "label": "FOV Scale", "kind": "float", "hint": "Mode 7 default 1.5"},
 ]
 
 
@@ -107,9 +102,8 @@ func _process(_delta):
         queue_redraw()
 
 
-func open_editor(p_pack_id: String, p_realm_id: String, p_region_id: String) -> void:
+func open_editor(p_pack_id: String, p_region_id: String) -> void:
     pack_id = p_pack_id
-    realm_id = p_realm_id
     region_id = p_region_id
     _skip_close_frame = true
     visible = true
@@ -122,13 +116,8 @@ func open_editor(p_pack_id: String, p_realm_id: String, p_region_id: String) -> 
 
 
 func _reload() -> void:
-    var bundle := RegIO.load_or_init(pack_id, realm_id)
-    var regions_by_id: Dictionary = bundle.get("regions", {})
-    region_meta = regions_by_id.get(region_id, {})
-    if region_meta.is_empty():
-        region_meta = RegIO.default_region(region_id, region_id)
-        RegIO.save_region_meta(pack_id, realm_id, region_id, region_meta)
-    rooms_data = RegIO.load_region_rooms(pack_id, realm_id, region_id)
+    region_meta = RegIO.load_region(pack_id, region_id)
+    rooms_data = RegIO.load_region_rooms(pack_id, region_id)
     _rebuild_cell_index()
     if _undo != null:
         _undo.clear()
@@ -299,7 +288,7 @@ func _handle_room_click(addr: String) -> void:
     if addr == _last_click_room and (now - _last_click_time) < DOUBLE_CLICK_DELAY:
         _last_click_time = 0.0
         _last_click_room = ""
-        room_chosen.emit(realm_id, region_id, addr)
+        room_chosen.emit(region_id, addr)
         return
     _selected_room = addr
     _last_click_time = now
@@ -399,13 +388,13 @@ func _next_room_identity() -> Dictionary:
 
 
 func _save_all() -> void:
-    RegIO.save_region_rooms(pack_id, realm_id, region_id, rooms_data)
-    RegIO.save_region_meta(pack_id, realm_id, region_id, region_meta)
+    RegIO.save_region_rooms(pack_id, region_id, rooms_data)
+    RegIO.save_region_meta(pack_id, region_id, region_meta)
 
 
 func _emit_back() -> void:
     visible = false
-    back_to_realm.emit()
+    back_to_pack.emit()
 
 
 func _cell_at(pos: Vector2) -> Vector2i:
@@ -441,7 +430,7 @@ func _draw():
     var title := "REGION  %s" % str(region_meta.get("name", region_id))
     draw_string(font, Vector2(24, 36),
         title, HORIZONTAL_ALIGNMENT_LEFT, -1, 16, UIPanels.TEXT_PANEL)
-    var sub := "CAMPAIGN  %s     REALM  %s     ID  %s" % [pack_id, realm_id, region_id]
+    var sub := "CAMPAIGN  %s     ID  %s" % [pack_id, region_id]
     draw_string(font, Vector2(24, 54),
         sub, HORIZONTAL_ALIGNMENT_LEFT, -1, 10, UIPanels.TEXT_PANEL_DIM)
 
@@ -450,7 +439,7 @@ func _draw():
     _back_rect = Rect2(size.x - 16.0 - btn_w, 16.0, btn_w, btn_h)
     var back_hover := _back_rect.has_point(mouse_pos)
     UIPanels.draw_button_bg(self, _back_rect, back_hover, Color(0.95, 0.45, 0.4, 1))
-    var back_label := "< REALM"
+    var back_label := "< PACK"
     var back_lw := float(back_label.length()) * 6.0
     var back_col: Color
     if back_hover:
@@ -461,7 +450,7 @@ func _draw():
         _back_rect.position.y + 21),
         back_label, HORIZONTAL_ALIGNMENT_LEFT, -1, 13, back_col)
     if back_hover:
-        EditorTooltip.show_text("Return to the realm editor. Unsaved changes stay in memory — use SAVE first if you want them on disk.")
+        EditorTooltip.show_text("Return to the previous editor surface. Unsaved changes stay in memory — use SAVE first if you want them on disk.")
 
     _save_rect = Rect2(_back_rect.position.x - btn_w - 8, 16.0, btn_w, btn_h)
     var save_hover := _save_rect.has_point(mouse_pos)
@@ -493,7 +482,7 @@ func _draw():
     draw_rect(_canvas_rect, Color(0.06, 0.08, 0.13, 1))
     draw_rect(_canvas_rect, Color(0.25, 0.35, 0.5, 1), false, 2.0)
     if _canvas_rect.has_point(mouse_pos):
-        EditorTooltip.show_text("Region grid. LMB-drag empty cells to mark a pending rectangle. RMB-drag cells to subtract from the pending rectangle. Click a placed room to select. Double-click a room to open it in the environment editor. ESC cancels pending or goes back to realm.")
+        EditorTooltip.show_text("Region grid. LMB-drag empty cells to mark a pending rectangle. RMB-drag cells to subtract from the pending rectangle. Click a placed room to select. Double-click a room to open it in the environment editor. ESC cancels pending or goes back to the POI panel.")
 
     var grid_w := int(region_meta.get("grid_cells_x", RegIO.DEFAULT_REGION_GRID_X))
     var grid_h := int(region_meta.get("grid_cells_y", RegIO.DEFAULT_REGION_GRID_Y))
@@ -738,10 +727,10 @@ func _apply_name_edit(new_name: String) -> void:
     if trimmed == current_name and new_addr == _selected_room:
         return
     var old_addr := _selected_room
-    if not RegIO.rename_room(pack_id, realm_id, region_id, _selected_room, new_addr, trimmed):
+    if not RegIO.rename_room(pack_id, region_id, _selected_room, new_addr, trimmed):
         return
     _update_room_rename_references(old_addr, new_addr)
-    rooms_data = RegIO.load_region_rooms(pack_id, realm_id, region_id)
+    rooms_data = RegIO.load_region_rooms(pack_id, region_id)
     _selected_room = new_addr
     _rebuild_cell_index()
     queue_redraw()
@@ -750,10 +739,8 @@ func _apply_name_edit(new_name: String) -> void:
 func _update_room_rename_references(old_addr: String, new_addr: String) -> void:
     var refactor := ContentReferenceRefactor.rename_room_references(
         pack_id,
-        realm_id,
         region_id,
         old_addr,
-        realm_id,
         region_id,
         new_addr
     )

@@ -84,7 +84,7 @@ const CONTROL_SECTIONS: Array = [
     {
         "id": SECTION_PLANETARY,
         "label": "Planetary",
-        "description": "Mode-7 surface / overworld movement and planet interaction.",
+        "description": "Planet-surface movement and POI interaction.",
         "actions": [
             "move_up", "move_down", "move_left", "move_right",
             "interact", "liftoff", "map", "toggle_pause",

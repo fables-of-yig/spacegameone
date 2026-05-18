@@ -34,7 +34,6 @@ var builder = null
 var star_map = null
 var event_panel = null
 var content_editor = null
-var realm_editor = null
 var region_editor = null
 var environment_editor = null
 var entity_editor = null
@@ -51,7 +50,6 @@ var dialogue_editor = null
 var shop_editor = null
 var quest_editor = null
 var _editor_active_pack_id: String = ""
-var _editor_active_realm_id: String = ""
 var _editor_active_region_id: String = ""
 var _editor_return_to_content_hub: bool = false
 var _content_editor_return_mode: String = "campaign"
@@ -226,7 +224,6 @@ func _ready():
     event_panel = _ui.setup_event_panel(self)
     var editors = _ui.setup_editors(self)
     content_editor = editors["content_editor"]
-    realm_editor = editors["realm_editor"]
     region_editor = editors["region_editor"]
     environment_editor = editors["environment_editor"]
     entity_editor = editors["entity_editor"]
@@ -873,7 +870,6 @@ func _toggle_editor(pack_id: String = "demo"):
     if editor_open or builder_open or star_map_open or jumping or event_open:
         return
     _editor_active_pack_id = pack_id
-    _editor_active_realm_id = ""
     _editor_active_region_id = ""
     _editor_return_to_content_hub = false
     _content_editor_return_mode = "campaign"
@@ -889,7 +885,6 @@ func _on_editor_closed():
     _editor_return_to_content_hub = false
     _content_editor_return_mode = "campaign"
     _editor_active_pack_id = ""
-    _editor_active_realm_id = ""
     _editor_active_region_id = ""
     if menu_open and main_menu:
         main_menu.reopen_editor_picker()
@@ -1074,11 +1069,6 @@ func _on_editor_chosen(kind: String, pack_id: String):
     match kind:
         "ship":
             _toggle_editor(pack_id)
-        "realm":
-            _editor_active_pack_id = pack_id
-            _editor_active_realm_id = ""
-            _editor_active_region_id = ""
-            _open_mv_editor(realm_editor, pack_id)
         "entity":
             _open_mv_editor(entity_editor, pack_id)
         "behavior":
@@ -1120,23 +1110,17 @@ func _open_mv_editor(target: Node, pack_id: String):
     # pack's palette/9-slice art.
     UIPanels.load_pack_theme(pack_id)
     _apply_pack_systems(pack_id)
-    if target == realm_editor:
-        target.open_editor(pack_id, _editor_active_realm_id)
-    else:
-        target.open_editor(pack_id)
+    target.open_editor(pack_id)
     editor_open = true
 
 
 func _on_content_editor_editor_requested(kind: String, pack_id: String) -> void:
     _editor_active_pack_id = pack_id
-    _editor_active_realm_id = ""
     _editor_active_region_id = ""
     _editor_return_to_content_hub = true
     if content_editor != null and content_editor.has_method("current_mode"):
         _content_editor_return_mode = str(content_editor.current_mode())
     match kind:
-        "realm":
-            _open_mv_editor(realm_editor, pack_id)
         "entity":
             _open_mv_editor(entity_editor, pack_id)
         "behavior":
@@ -1171,7 +1155,6 @@ func _on_content_editor_playtest_requested(pack_id: String) -> void:
     _editor_return_to_content_hub = false
     _content_editor_return_mode = "playtest"
     _editor_active_pack_id = pack_id
-    _editor_active_realm_id = ""
     _editor_active_region_id = ""
     editor_open = false
     if content_editor != null:
@@ -1258,28 +1241,30 @@ func _on_system_editor_saved(pack_id: String, _systems: Dictionary) -> void:
     _apply_pack_systems(pack_id)
 
 
-# Realm → main menu. Clears active pack/region state.
-func _on_realm_closed():
-    if not _editor_return_to_content_hub:
-        _editor_active_pack_id = ""
-    _editor_active_realm_id = ""
-    _editor_active_region_id = ""
-    _on_mv_editor_closed()
-
-
-# Realm → region. Called when the user picks a region row in realm_editor.
-func _on_realm_region_chosen(realm_id: String, region_id: String):
-    _editor_active_realm_id = realm_id
+# Region editor opened from the POI detail panel. system_editor stays open
+# underneath; closing the region editor returns there.
+func _open_region_editor_from_system(pack_id: String, region_id: String) -> void:
+    if region_editor == null:
+        return
+    _editor_active_pack_id = pack_id
     _editor_active_region_id = region_id
-    realm_editor.visible = false
-    region_editor.open_editor(_editor_active_pack_id, realm_id, region_id)
+    if system_editor != null:
+        system_editor.visible = false
+    region_editor.open_editor(pack_id, region_id)
 
 
-# Region → realm. User pressed BACK in region_editor.
-func _on_region_back_to_realm():
+# Region → pack (close button or BACK). Returns to whichever surface opened
+# the region editor: the POI detail panel if system_editor is active, else
+# the mv-editor close path.
+func _on_region_back_to_pack():
     _editor_active_region_id = ""
     region_editor.visible = false
-    realm_editor.open_editor(_editor_active_pack_id, _editor_active_realm_id)
+    if system_editor != null:
+        UIPanels.load_pack_theme(_editor_active_pack_id)
+        system_editor.open_editor(_editor_active_pack_id)
+        editor_open = true
+        return
+    _on_mv_editor_closed()
 
 
 # Region → main menu (direct close path; currently unreachable through the UI
@@ -1287,17 +1272,15 @@ func _on_region_back_to_realm():
 func _on_region_closed():
     if not _editor_return_to_content_hub:
         _editor_active_pack_id = ""
-    _editor_active_realm_id = ""
     _editor_active_region_id = ""
     _on_mv_editor_closed()
 
 
 # Region → env. User double-clicked a room in region_editor.
-func _on_region_room_chosen(realm_id: String, region_id: String, room_addr: String):
-    _editor_active_realm_id = realm_id
+func _on_region_room_chosen(region_id: String, room_addr: String):
     _editor_active_region_id = region_id
     region_editor.visible = false
-    environment_editor.open_editor(_editor_active_pack_id, realm_id, region_id, room_addr)
+    environment_editor.open_editor(_editor_active_pack_id, region_id, room_addr)
 
 
 # Called from _ready after _setup_editor. When MvMain's Ctrl+9 return
@@ -1310,7 +1293,6 @@ func _restore_editor_from_playtest_if_any() -> void:
         return
     var info: Dictionary = pi.consume_return_to_editor()
     var pack_id: String = str(info.get("pack_id", ""))
-    var realm_id: String = str(info.get("realm_id", ""))
     var region_id: String = str(info.get("region_id", ""))
     var room_addr: String = str(info.get("room_addr", ""))
     if pack_id.is_empty():
@@ -1319,17 +1301,16 @@ func _restore_editor_from_playtest_if_any() -> void:
         main_menu.visible = false
     menu_open = false
     _editor_active_pack_id = pack_id
-    _editor_active_realm_id = realm_id
     _editor_active_region_id = region_id
     UIPanels.load_pack_theme(pack_id)
     editor_open = true
-    environment_editor.open_editor.call_deferred(pack_id, realm_id, region_id, room_addr)
+    environment_editor.open_editor.call_deferred(pack_id, region_id, room_addr)
 
 
 # Env → region (or menu, if there's no active region context).
 func _on_env_editor_closed():
     if _editor_active_region_id != "" and region_editor != null:
-        region_editor.open_editor(_editor_active_pack_id, _editor_active_realm_id, _editor_active_region_id)
+        region_editor.open_editor(_editor_active_pack_id, _editor_active_region_id)
         return
     _on_mv_editor_closed()
 

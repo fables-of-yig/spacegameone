@@ -9,8 +9,8 @@ const EntIO := preload("res://Space/scripts/editor/ent/ent_io.gd")
 const TriggerRecipes := preload("res://Space/scripts/editor/dlg/trigger_recipes.gd")
 const PackPaths := preload("res://Space/scripts/editor/pack_paths.gd")
 
-const REALM_ID := RegIO.DEFAULT_REALM_ID
 const REGION_ID := RegIO.DEFAULT_REGION_ID
+const RECIPE_POI_ID := "recipe_landing"
 const LANDING_ROOM := "landing"
 const GATE_ROOM := "gate_room"
 const BOSS_ROOM := "boss_room"
@@ -59,7 +59,7 @@ static func apply(pack_id: String, options: Dictionary = {}) -> Dictionary:
 		"pack_id": pid,
 		"system_id": system_id,
 		"planet_name": planet_name,
-		"start_room": RegIO.runtime_room_addr(REALM_ID, REGION_ID, LANDING_ROOM),
+		"start_room": RegIO.runtime_room_addr(REGION_ID, LANDING_ROOM),
 	}
 
 
@@ -74,8 +74,8 @@ static func _write_manifest(pack_id: String, system_id: String) -> bool:
 		manifest["version"] = "0.1.0"
 	manifest["start_system"] = system_id
 	manifest["start_ship_template"] = str(manifest.get("start_ship_template", "startship"))
-	manifest["start_realm"] = REALM_ID
-	manifest["entry_room"] = RegIO.runtime_room_addr(REALM_ID, REGION_ID, LANDING_ROOM)
+	manifest["start_region"] = REGION_ID
+	manifest["entry_room"] = RegIO.runtime_room_addr(REGION_ID, LANDING_ROOM)
 	return _write_json(path, manifest)
 
 
@@ -144,17 +144,12 @@ static func _entity(id: String, display_name: String, category: String, hp: int)
 
 
 static func _write_world(pack_id: String, item_id: String) -> bool:
-	var realm := RegIO.default_realm(REALM_ID, "Main")
-	realm["start_region"] = REGION_ID
-	realm["regions"] = [{"id": REGION_ID, "name": "Recipe Region", "col": 0, "row": 0, "span_w": 1, "span_h": 1}]
-	if not RegIO.save_realm(pack_id, REALM_ID, realm):
-		return false
 	var region := RegIO.default_region(REGION_ID, "Recipe Region")
 	region["cell_blocks_x"] = ROOM_W
 	region["cell_blocks_y"] = ROOM_H
 	region["grid_cells_x"] = 6
 	region["grid_cells_y"] = 2
-	if not RegIO.save_region_meta(pack_id, REALM_ID, REGION_ID, region):
+	if not RegIO.save_region_meta(pack_id, REGION_ID, region):
 		return false
 
 	var rooms := {
@@ -174,7 +169,7 @@ static func _write_world(pack_id: String, item_id: String) -> bool:
 			_exit_door("boss_exit", 28, 9, 2, 5),
 		]),
 	}
-	return RegIO.save_region_rooms(pack_id, REALM_ID, REGION_ID, {
+	return RegIO.save_region_rooms(pack_id, REGION_ID, {
 		"version": "3.0",
 		"region_id": REGION_ID,
 		"start_room": LANDING_ROOM,
@@ -211,7 +206,7 @@ static func _door(id: String, target_room: String, target_door_id: String, direc
 	zone["id"] = id
 	zone["name"] = id.capitalize()
 	zone["kind"] = "door"
-	zone["target_room"] = RegIO.runtime_room_addr(REALM_ID, REGION_ID, target_room)
+	zone["target_room"] = RegIO.runtime_room_addr(REGION_ID, target_room)
 	zone["target_door_id"] = target_door_id
 	zone["direction"] = direction
 	zone["x_blocks"] = x_blocks
@@ -290,6 +285,7 @@ static func _write_system(pack_id: String, system_id: String, planet_name: Strin
 				continue
 			pois.append(poi.duplicate(true))
 	pois.append({
+		"id": RECIPE_POI_ID,
 		"name": planet_name,
 		"type": "planet",
 		"description": "Recipe-created landing route.",
@@ -304,10 +300,13 @@ static func _write_system(pack_id: String, system_id: String, planet_name: Strin
 		"planet_data": {
 			"name": planet_name,
 			"pack_id": pack_id,
-			"realm_id": REALM_ID,
-			"region_id": REGION_ID,
-			"spawn_room": RegIO.runtime_room_addr(REALM_ID, REGION_ID, LANDING_ROOM),
-			"spawn_pos": [80.0, 208.0],
+			"poi_id": RECIPE_POI_ID,
+			"regions": [{
+				"id": REGION_ID,
+				"name": "Recipe Region",
+				"spawn_room": LANDING_ROOM,
+				"spawn_pos": [80.0, 208.0],
+			}],
 			"planet_key": "recipe_landing",
 			"sky_color": [0.35, 0.43, 0.62],
 			"horizon_color": [0.72, 0.58, 0.32],

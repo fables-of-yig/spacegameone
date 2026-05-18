@@ -49,7 +49,7 @@ const EVENT_HELP: Dictionary = {
     "door_use_success": "Fires when a door use passes enabled/lock checks and begins transitioning.",
     "door_use_blocked": "Fires when a door is disabled or locked without satisfying its requirements.",
     "door_arrived": "Fires after the destination room loads and the player is spawned from the target door.",
-    "region_enter": "Fires when a region is entered from the overworld handoff.",
+    "region_enter": "Fires when a region is entered from the Space-to-MV landing handoff.",
     "zone_enter": "Fires when the player enters a trigger-volume zone.",
     "zone_exit": "Fires when the player leaves a trigger-volume zone.",
     "ability_grant": "Fires when an ability is granted to the player.",
@@ -304,9 +304,6 @@ const ACTION_TYPES: Array = [
      "help": "Persist the current game state to the given save slot."},
     {"type": "return_to_space", "label": "Return To Space", "fields": [],
      "help": "Exit the MV room layer, snapshot the planet state, and return to the ship's orbit position."},
-    {"type": "return_to_overworld", "label": "Return To Overworld",
-     "fields": [["region_id", "region id", "opt_string"], ["x", "spawn x", "opt_string"], ["y", "spawn y", "opt_string"]],
-     "help": "Exit the MV room layer and reopen the current realm's atmosphere overworld. Leave fields blank to return above the current region; set region_id to snap to a specific region cell, or x/y to use an explicit overworld position."},
     {"type": "end_dialogue", "label": "End conversation", "fields": [],
      "help": "Close the conversation window right away."},
     {"type": "log", "label": "Write debug message",
@@ -616,8 +613,6 @@ static func action_summary(action: Dictionary) -> String:
             return "Save checkpoint in slot %s" % str(action.get("slot", 0))
         "return_to_space":
             return "Return to space"
-        "return_to_overworld":
-            return "Return to the overworld"
         "end_dialogue":
             return "End the conversation"
         "log":
