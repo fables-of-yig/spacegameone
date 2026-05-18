@@ -15,7 +15,7 @@ const _MANIFEST_DEFAULTS := {
     "author": "",
     "description": "",
     "entry_room": "",
-    "start_realm": "",
+    "start_region": "",
     "start_system": "",
     "start_ship_template": "",
 }

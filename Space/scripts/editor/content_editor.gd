@@ -254,7 +254,7 @@ func _ready() -> void:
 
 
 func _build_campaign_controls() -> void:
-    var field_names: Array = ["name", "author", "version", "entry_room", "start_realm", "start_system", "start_ship_template"]
+    var field_names: Array = ["name", "author", "version", "entry_room", "start_region", "start_system", "start_ship_template"]
     for key in field_names:
         var le: LineEdit = LineEdit.new()
         le.visible = false
@@ -550,7 +550,7 @@ func _draw_campaign_panel(font: Font, rect: Rect2, mouse_pos: Vector2) -> void:
         ["author", "Author"],
         ["version", "Version"],
         ["entry_room", "Entry Room"],
-        ["start_realm", "Start Realm"],
+        ["start_region", "Start Region"],
         ["start_system", "Start System"],
         ["start_ship_template", "Starting Ship"],
     ]
@@ -859,7 +859,7 @@ func _load_manifest() -> void:
         "author": "",
         "description": "",
         "entry_room": "",
-        "start_realm": "",
+        "start_region": "",
         "start_system": "",
         "start_ship_template": "",
     }
@@ -872,7 +872,8 @@ func _load_manifest() -> void:
             if typeof(parsed) == TYPE_DICTIONARY:
                 for key in (parsed as Dictionary).keys():
                     _manifest[str(key)] = (parsed as Dictionary)[key]
-    _manifest.erase("start_region")
+    # Strip the removed legacy key if a Phase 6 pack still has it on disk.
+    _manifest.erase("start_realm")
     _manifest_dirty = false
     _refresh_manifest_controls()
 
@@ -976,7 +977,7 @@ func _layout_campaign_controls() -> void:
     if not should_show:
         return
 
-    var labels: Array = ["name", "author", "version", "entry_room", "start_realm", "start_system", "start_ship_template"]
+    var labels: Array = ["name", "author", "version", "entry_room", "start_region", "start_system", "start_ship_template"]
     var label_w: float = 104.0
     var field_w: float = (left_rect.size.x - 58.0 - label_w * 2.0) * 0.5
     var base_x: float = left_rect.position.x + 18.0

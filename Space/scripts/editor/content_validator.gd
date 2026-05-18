@@ -13,8 +13,20 @@ const BOOTSTRAP_REQUIRED_PACK_FIELDS: Array = [
 	"pack_id",
 	"start_system",
 	"start_ship_template",
-	"start_realm",
+	"start_region",
 	"entry_room",
+]
+const REMOVED_PACK_FIELDS: Array = [
+	"start_realm",
+]
+const REMOVED_DOOR_FIELDS: Array = [
+	"send_to_overworld",
+	"overworld_region_id",
+]
+const REMOVED_REGION_FIELDS: Array = [
+	"cam_height",
+	"horizon",
+	"fov_scale",
 ]
 const BOOTSTRAP_REQUIRED_FILES: Array = [
 	"Systems/systems.json",
@@ -196,6 +208,11 @@ static func _validate_pack_manifest(pack_id: String, issues: Array) -> void:
 		var field := str(field_v)
 		if not manifest.has(field) or str(manifest.get(field, "")).strip_edges().is_empty():
 			issues.append(Issue.new("error", "Pack", "Pack.json is missing required field '%s'" % field))
+	for removed_field_v in REMOVED_PACK_FIELDS:
+		var removed_field := str(removed_field_v)
+		if manifest.has(removed_field):
+			issues.append(Issue.new("error", "Pack",
+				"Pack.json uses removed field '%s' — use 'start_region' instead" % removed_field))
 	var schema_v: Variant = manifest.get("schema_version", "")
 	if not _schema_version_is_supported(schema_v):
 		issues.append(Issue.new("error", "Pack",
@@ -204,6 +221,16 @@ static func _validate_pack_manifest(pack_id: String, issues: Array) -> void:
 	if not manifest_pack_id.is_empty() and manifest_pack_id != pack_id:
 		issues.append(Issue.new("error", "Pack",
 			"pack_id '%s' does not match selected pack '%s'" % [manifest_pack_id, pack_id]))
+	var start_region := str(manifest.get("start_region", "")).strip_edges()
+	if not start_region.is_empty():
+		var region_ids: Dictionary = _region_ids_for_pack(pack_id)
+		if not region_ids.has(start_region):
+			issues.append(Issue.new("error", "Pack",
+				"start_region '%s' has no matching Regions/%s/region.json" % [start_region, start_region]))
+	var entry_room := str(manifest.get("entry_room", "")).strip_edges()
+	if not entry_room.is_empty() and entry_room.count("/") > 1:
+		issues.append(Issue.new("error", "Pack",
+			"entry_room '%s' uses removed 3-slot realm/region/room format — use '<region>/<room>' or '<room>'" % entry_room))
 	var starter_id := _normalize_ship_template_id(str(manifest.get("start_ship_template", "")))
 	if starter_id.is_empty():
 		return
@@ -299,53 +326,100 @@ static func _validate_systems(pack_id: String, systems: Dictionary,
 				issues.append(Issue.new("error", poi_src, "planet_data is missing"))
 				continue
 			var planet_data: Dictionary = planet_v
+			# Reject removed top-level slots from the old realm shape.
+			for legacy_key_v in ["realm_id", "spawn_room", "spawn_pos", "region_id"]:
+				var legacy_key := str(legacy_key_v)
+				if planet_data.has(legacy_key):
+					issues.append(Issue.new("error", poi_src,
+						"planet_data uses removed top-level field '%s' — move it into planet_data.regions[]" % legacy_key))
 			var target_pack: String = str(planet_data.get("pack_id", "")).strip_edges()
 			if target_pack.is_empty():
 				issues.append(Issue.new("error", poi_src, "planet_data.pack_id is required"))
 				continue
-			var target_realm: String = str(planet_data.get("realm_id", "")).strip_edges()
-			if target_realm.is_empty():
-				issues.append(Issue.new("error", poi_src, "planet_data.realm_id is required"))
-				continue
-			var target_realms: Dictionary = _realm_ids_for_pack(target_pack)
-			if not target_realms.has(target_realm):
+			var poi_id: String = str(planet_data.get("poi_id", "")).strip_edges()
+			if poi_id.is_empty():
+				issues.append(Issue.new("error", poi_src, "planet_data.poi_id is required (stable id for snapshot keying)"))
+			var regions_v: Variant = planet_data.get("regions", null)
+			if typeof(regions_v) != TYPE_ARRAY or (regions_v as Array).is_empty():
 				issues.append(Issue.new("error", poi_src,
-					"planet_data.realm_id '%s' does not exist in target pack '%s'" % [target_realm, target_pack]))
-			var target_region := str(planet_data.get("region_id", "")).strip_edges()
-			if target_region.is_empty():
-				issues.append(Issue.new("error", poi_src, "planet_data.region_id is required"))
-			var raw_spawn_room := str(planet_data.get("spawn_room", "")).strip_edges()
-			if raw_spawn_room.is_empty():
-				issues.append(Issue.new("error", poi_src, "planet_data.spawn_room is required"))
+					"planet_data.regions must be a non-empty array of region entries"))
 				continue
-			var spawn_pos_v: Variant = planet_data.get("spawn_pos", null)
-			if spawn_pos_v != null and not _is_vec2_like(spawn_pos_v):
-				issues.append(Issue.new("error", poi_src, "planet_data.spawn_pos must be [x, y] or {x, y}"))
-			var planet_key := str(planet_data.get("snapshot_key",
-				planet_data.get("planet_key", ""))).strip_edges()
+			var target_region_ids: Dictionary = _region_ids_for_pack(target_pack)
+			var target_rooms_by_region: Dictionary = {}
+			var seen_region_ids: Dictionary = {}
+			for ri in range((regions_v as Array).size()):
+				var entry_v: Variant = (regions_v as Array)[ri]
+				var entry_src := "%s planet_data.regions[%d]" % [poi_src, ri]
+				if typeof(entry_v) != TYPE_DICTIONARY:
+					issues.append(Issue.new("error", entry_src, "region entry is not a dictionary"))
+					continue
+				var entry: Dictionary = entry_v
+				var entry_region_id := str(entry.get("id", "")).strip_edges()
+				if entry_region_id.is_empty():
+					issues.append(Issue.new("error", entry_src, "region entry 'id' is required"))
+					continue
+				if seen_region_ids.has(entry_region_id):
+					issues.append(Issue.new("error", entry_src,
+						"duplicate region id '%s' within planet_data.regions[]" % entry_region_id))
+					continue
+				seen_region_ids[entry_region_id] = true
+				if str(entry.get("name", "")).strip_edges().is_empty():
+					issues.append(Issue.new("error", entry_src, "region entry 'name' is required"))
+				if not target_region_ids.has(entry_region_id):
+					issues.append(Issue.new("error", entry_src,
+						"region '%s' has no Regions/%s/region.json in target pack '%s'" %
+						[entry_region_id, entry_region_id, target_pack]))
+				var entry_spawn_room := str(entry.get("spawn_room", "")).strip_edges()
+				if entry_spawn_room.is_empty():
+					issues.append(Issue.new("error", entry_src, "region entry 'spawn_room' is required"))
+				else:
+					if entry_spawn_room.find("/") >= 0:
+						issues.append(Issue.new("error", entry_src,
+							"region entry 'spawn_room' must be a bare room address (no '/') — got '%s'" % entry_spawn_room))
+					else:
+						var region_rooms := _region_rooms_dict(target_pack, entry_region_id, target_rooms_by_region)
+						if region_rooms.is_empty():
+							issues.append(Issue.new("error", entry_src,
+								"spawn_room '%s' cannot be validated — Regions/%s/rooms.json has no rooms" %
+								[entry_spawn_room, entry_region_id]))
+						elif not region_rooms.has(entry_spawn_room):
+							issues.append(Issue.new("error", entry_src,
+								"spawn_room '%s' does not exist in Regions/%s/rooms.json" %
+								[entry_spawn_room, entry_region_id]))
+						else:
+							var runtime_addr: String = RegIO.runtime_room_addr(entry_region_id, entry_spawn_room)
+							var target_rooms_index: Dictionary = (
+								current_pack_room_addrs if target_pack == pack_id else _room_addrs_for_pack(target_pack)
+							)
+							if not target_rooms_index.is_empty() and not target_rooms_index.has(runtime_addr):
+								issues.append(Issue.new("error", entry_src,
+									"spawn_room '%s' resolves to '%s' which is missing from the flat rooms.json — re-flatten the pack" %
+									[entry_spawn_room, runtime_addr]))
+							var target_room: Dictionary = _room_for_pack(target_pack, runtime_addr)
+							if not target_room.is_empty() and not _room_has_player_spawn(target_room):
+								issues.append(Issue.new("error", entry_src,
+									"spawn_room '%s' has no player_spawn entity" % runtime_addr))
+				var spawn_pos_v: Variant = entry.get("spawn_pos", null)
+				if spawn_pos_v == null:
+					issues.append(Issue.new("error", entry_src, "region entry 'spawn_pos' is required"))
+				elif typeof(spawn_pos_v) != TYPE_ARRAY or (spawn_pos_v as Array).size() < 2:
+					issues.append(Issue.new("error", entry_src,
+						"region entry 'spawn_pos' must be a [x, y] array"))
+				else:
+					var spawn_arr: Array = spawn_pos_v
+					if typeof(spawn_arr[0]) != TYPE_FLOAT and typeof(spawn_arr[0]) != TYPE_INT:
+						issues.append(Issue.new("error", entry_src,
+							"region entry 'spawn_pos[0]' must be a number"))
+					if typeof(spawn_arr[1]) != TYPE_FLOAT and typeof(spawn_arr[1]) != TYPE_INT:
+						issues.append(Issue.new("error", entry_src,
+							"region entry 'spawn_pos[1]' must be a number"))
+			var planet_key := poi_id
 			if planet_key.is_empty():
 				planet_key = "%s/%s" % [system_id, str(poi.get("name", i)).strip_edges()]
 			if seen_planet_keys.has(planet_key):
 				issues.append(Issue.new("error", poi_src,
 					"duplicate planet snapshot key '%s' in this system" % planet_key))
 			seen_planet_keys[planet_key] = true
-			var spawn_room: String = _expand_room_addr_for_validation(
-				target_pack,
-				target_realm,
-				raw_spawn_room)
-			var target_rooms: Dictionary = current_pack_room_addrs if target_pack == pack_id else _room_addrs_for_pack(target_pack)
-			if target_rooms.is_empty():
-				issues.append(Issue.new("error", poi_src,
-					"spawn_room '%s' could not be validated because target pack '%s' has no readable rooms" %
-					[spawn_room, target_pack]))
-			elif not target_rooms.has(spawn_room):
-				issues.append(Issue.new("error", poi_src,
-					"spawn_room '%s' does not exist in target pack '%s'" % [spawn_room, target_pack]))
-			else:
-				var target_room := _room_for_pack(target_pack, spawn_room)
-				if not target_room.is_empty() and not _room_has_player_spawn(target_room):
-					issues.append(Issue.new("error", poi_src,
-						"spawn_room '%s' has no player_spawn entity" % spawn_room))
 
 
 static func _validate_spawn_triggers(triggers_v: Variant, system_src: String, issues: Array) -> void:
@@ -451,35 +525,23 @@ static func _validate_rooms(rooms: Array, entity_ids: Dictionary,
 		if height_blocks > 0 and height_px > 0 and height_px != height_blocks * 16:
 			issues.append(Issue.new("error", src,
 				"height_px %d does not match height_blocks %d * 16" % [height_px, height_blocks]))
-		var room_realm_id := str(r.get("realm_id", "")).strip_edges()
+		if r.has("realm_id"):
+			issues.append(Issue.new("error", src,
+				"room uses removed field 'realm_id' — the realm layer is gone"))
 		var room_region_id := str(r.get("region_id", "")).strip_edges()
 		if addr.contains("/"):
 			var parts := addr.split("/", false)
-			if parts.size() == 3:
-				var addr_realm_id := str(parts[0]).strip_edges()
-				var addr_region_id := str(parts[1]).strip_edges()
-				var local_addr := str(parts[2]).strip_edges()
-				if room_realm_id.is_empty():
-					issues.append(Issue.new("warning", src,
-						"flat room is missing realm_id; expected '%s'" % addr_realm_id))
-				elif room_realm_id != addr_realm_id:
-					issues.append(Issue.new("error", src,
-						"realm_id '%s' does not match addr prefix '%s'" % [room_realm_id, addr_realm_id]))
+			if parts.size() > 2:
+				issues.append(Issue.new("error", src,
+					"room addr '%s' uses removed 3-slot realm/region/room format — use '<region>/<room>'" % addr))
+			elif parts.size() == 2:
+				var addr_region_id := str(parts[0]).strip_edges()
 				if room_region_id.is_empty():
 					issues.append(Issue.new("warning", src,
 						"flat room is missing region_id; expected '%s'" % addr_region_id))
 				elif room_region_id != addr_region_id:
 					issues.append(Issue.new("error", src,
 						"region_id '%s' does not match addr prefix '%s'" % [room_region_id, addr_region_id]))
-				var inner_addr := str(r.get("addr", "")).strip_edges()
-				if inner_addr != addr and inner_addr != local_addr:
-					issues.append(Issue.new("warning", src,
-						"room addr field '%s' does not match flat key '%s'" % [inner_addr, addr]))
-			elif parts.size() == 2:
-				var legacy_region_id := str(parts[0]).strip_edges()
-				if room_region_id.is_empty():
-					issues.append(Issue.new("warning", src,
-						"legacy flat room is missing region_id; expected '%s'" % legacy_region_id))
 
 		var room_ents: Variant = r.get("entities", [])
 		if typeof(room_ents) == TYPE_ARRAY:
@@ -505,12 +567,20 @@ static func _validate_rooms(rooms: Array, entity_ids: Dictionary,
 				if typeof(d_v) != TYPE_DICTIONARY:
 					continue
 				var d: Dictionary = d_v
+				for removed_field_v in REMOVED_DOOR_FIELDS:
+					var removed_field := str(removed_field_v)
+					if d.has(removed_field):
+						issues.append(Issue.new("error", src,
+							"door uses removed overworld field '%s' — use 'launch_to_space' instead" % removed_field))
 				var target := _room_target_from_door(d)
-				var sends_to_overworld := bool(d.get("send_to_overworld", false))
+				if not target.is_empty() and target.count("/") > 1:
+					issues.append(Issue.new("error", src,
+						"door target '%s' uses removed 3-slot realm/region/room format" % target))
+				var launches_to_space := bool(d.get("launch_to_space", false))
 				if not target.is_empty() and not room_addrs.has(target):
 					var tags: Variant = d.get("tags", [])
 					var is_exit := typeof(tags) == TYPE_ARRAY and (tags as Array).has("exit_to_space")
-					if not is_exit and not sends_to_overworld:
+					if not is_exit and not launches_to_space:
 						issues.append(Issue.new("error", src,
 							"door targets unknown room '%s'" % target))
 				var dests: Variant = d.get("destinations", [])
@@ -519,7 +589,10 @@ static func _validate_rooms(rooms: Array, entity_ids: Dictionary,
 						if typeof(dest) != TYPE_DICTIONARY:
 							continue
 						var dt := str(dest.get("target", ""))
-						if not dt.is_empty() and not room_addrs.has(dt):
+						if not dt.is_empty() and dt.count("/") > 1:
+							issues.append(Issue.new("error", src,
+								"door destination target '%s' uses removed 3-slot realm/region/room format" % dt))
+						elif not dt.is_empty() and not room_addrs.has(dt):
 							issues.append(Issue.new("error", src,
 								"door destination targets unknown room '%s'" % dt))
 		var room_triggers: Variant = r.get("triggers", [])
@@ -1171,219 +1244,148 @@ static func _first_nonempty(data: Dictionary, keys: Array) -> String:
 
 static func _validate_world_hierarchy(pack_id: String, flat_rooms_root: Dictionary,
 		flat_room_addrs: Dictionary, issues: Array) -> void:
-	var all_realms: Dictionary = _load_all_realms_existing(pack_id)
-	var realm_list_v: Variant = all_realms.get("realm_list", [])
-	var realms_v: Variant = all_realms.get("realms", {})
-	if typeof(realm_list_v) != TYPE_ARRAY or (realm_list_v as Array).is_empty():
-		issues.append(Issue.new("error", "World", "pack has no authored realms"))
-		return
-	if typeof(realms_v) != TYPE_DICTIONARY:
-		issues.append(Issue.new("error", "World", "realm bundle map is malformed"))
+	# Walk Regions/<id>/ directly. The realm layer was removed in Phase 6.
+	var manifest: Dictionary = _load_pack_manifest(pack_id)
+	var start_region: String = str(manifest.get("start_region", "")).strip_edges()
+	var region_ids: Array = _list_region_ids_existing(pack_id)
+	if region_ids.is_empty():
+		issues.append(Issue.new("error", "World", "pack has no authored regions under Regions/"))
 		return
 
-	var manifest: Dictionary = _load_pack_manifest(pack_id)
-	var start_realm: String = str(manifest.get("start_realm", "")).strip_edges()
-	if start_realm.is_empty():
-		issues.append(Issue.new("error", "Pack", "start_realm is empty"))
-	elif not (realms_v as Dictionary).has(start_realm):
+	var region_id_set: Dictionary = {}
+	for region_id_v in region_ids:
+		region_id_set[str(region_id_v)] = true
+
+	if not start_region.is_empty() and not region_id_set.has(start_region):
 		issues.append(Issue.new("error", "Pack",
-			"start_realm '%s' does not exist in this pack" % start_realm))
+			"start_region '%s' does not match any directory under Regions/" % start_region))
 
 	var expected_flat_rooms: Dictionary = {}
 	var expected_start_room := ""
 	var start_room_data: Dictionary = {}
-	for realm_entry_v in realm_list_v:
-		if typeof(realm_entry_v) != TYPE_DICTIONARY:
-			issues.append(Issue.new("error", "World", "realm list entry is not a dictionary"))
+	for region_id_v in region_ids:
+		var region_id := str(region_id_v)
+		var region_src: String = "Region '%s'" % region_id
+		var region_meta := _load_pack_json_root(pack_id, "Regions/%s/region.json" % region_id)
+		if region_meta.is_empty():
+			issues.append(Issue.new("error", region_src, "Regions/%s/region.json is missing or malformed" % region_id))
 			continue
-		var realm_entry: Dictionary = realm_entry_v
-		var realm_id: String = str(realm_entry.get("id", "")).strip_edges()
-		if realm_id.is_empty():
-			issues.append(Issue.new("error", "World", "realm list entry is missing id"))
-			continue
-		var realm_src := "Realm '%s'" % realm_id
-		var bundle_v: Variant = (realms_v as Dictionary).get(realm_id, null)
-		if typeof(bundle_v) != TYPE_DICTIONARY:
-			issues.append(Issue.new("error", realm_src, "realm bundle is missing"))
-			continue
-		var bundle: Dictionary = bundle_v
-		var realm: Dictionary = bundle.get("realm", {})
-		var regions_meta: Dictionary = bundle.get("regions", {})
-		var region_rooms_roots: Dictionary = bundle.get("rooms", {})
-		var grid_x := int(realm.get("realm_grid_cells_x", 0))
-		var grid_y := int(realm.get("realm_grid_cells_y", 0))
-		if grid_x < 1:
-			issues.append(Issue.new("error", realm_src, "realm_grid_cells_x must be >= 1"))
-		if grid_y < 1:
-			issues.append(Issue.new("error", realm_src, "realm_grid_cells_y must be >= 1"))
-
-		var region_entries_v: Variant = realm.get("regions", [])
-		if typeof(region_entries_v) != TYPE_ARRAY or (region_entries_v as Array).is_empty():
-			issues.append(Issue.new("error", realm_src, "realm has no regions"))
-			continue
-
-		var realm_region_ids: Dictionary = {}
-		var realm_region_cells: Dictionary = {}
-		for i in range((region_entries_v as Array).size()):
-			var entry_v: Variant = (region_entries_v as Array)[i]
-			if typeof(entry_v) != TYPE_DICTIONARY:
-				issues.append(Issue.new("error", realm_src, "regions[%d] is not a dictionary" % i))
-				continue
-			var entry: Dictionary = entry_v
-			var region_id: String = str(entry.get("id", "")).strip_edges()
-			var region_src: String = "%s region #%d" % [realm_src, i]
-			if region_id.is_empty():
-				issues.append(Issue.new("error", region_src, "region is missing id"))
-				continue
-			region_src = "Region '%s/%s'" % [realm_id, region_id]
-			if realm_region_ids.has(region_id):
-				issues.append(Issue.new("error", region_src, "duplicate region id"))
-				continue
-			realm_region_ids[region_id] = true
-			if str(entry.get("name", "")).strip_edges().is_empty():
-				issues.append(Issue.new("warning", region_src, "region name is empty"))
-			var col: int = int(entry.get("col", 0))
-			var row: int = int(entry.get("row", 0))
-			var cell_key: String = "%d,%d" % [col, row]
-			if realm_region_cells.has(cell_key):
+		for removed_field_v in REMOVED_REGION_FIELDS:
+			var removed_field := str(removed_field_v)
+			if region_meta.has(removed_field):
 				issues.append(Issue.new("error", region_src,
-					"shares realm cell (%d,%d) with region '%s'" % [col, row, str(realm_region_cells[cell_key])]))
-			else:
-				realm_region_cells[cell_key] = region_id
-			if grid_x > 0 and (col < 0 or col >= grid_x):
-				issues.append(Issue.new("error", region_src, "col %d is outside realm grid width %d" % [col, grid_x]))
-			if grid_y > 0 and (row < 0 or row >= grid_y):
-				issues.append(Issue.new("error", region_src, "row %d is outside realm grid height %d" % [row, grid_y]))
-			if not regions_meta.has(region_id):
-				issues.append(Issue.new("error", region_src, "region.json is missing"))
+					"region.json uses removed mode-7 field '%s' — drop it" % removed_field))
+		if str(region_meta.get("id", "")).strip_edges() != region_id:
+			issues.append(Issue.new("error", region_src,
+				"region.json id '%s' does not match directory name" % str(region_meta.get("id", ""))))
+		if str(region_meta.get("name", "")).strip_edges().is_empty():
+			issues.append(Issue.new("warning", region_src, "region.json 'name' is empty"))
+		var cell_blocks_x := int(region_meta.get("cell_blocks_x", 0))
+		var cell_blocks_y := int(region_meta.get("cell_blocks_y", 0))
+		var region_grid_x := int(region_meta.get("grid_cells_x", 0))
+		var region_grid_y := int(region_meta.get("grid_cells_y", 0))
+		if cell_blocks_x < 1:
+			issues.append(Issue.new("error", region_src, "cell_blocks_x must be >= 1"))
+		if cell_blocks_y < 1:
+			issues.append(Issue.new("error", region_src, "cell_blocks_y must be >= 1"))
+		if region_grid_x < 1:
+			issues.append(Issue.new("error", region_src, "grid_cells_x must be >= 1"))
+		if region_grid_y < 1:
+			issues.append(Issue.new("error", region_src, "grid_cells_y must be >= 1"))
 
-		var start_region_id: String = str(realm.get("start_region", "")).strip_edges()
-		if start_region_id.is_empty():
-			issues.append(Issue.new("error", realm_src, "start_region is empty"))
-		elif not realm_region_ids.has(start_region_id):
-			issues.append(Issue.new("error", realm_src,
-				"start_region '%s' is not present in realm.regions" % start_region_id))
-
-		for region_id_v in regions_meta.keys():
-			var region_id: String = str(region_id_v)
-			if not realm_region_ids.has(region_id):
-				issues.append(Issue.new("warning", "Region '%s/%s'" % [realm_id, region_id],
-					"region.json exists but region is not placed in realm.json"))
-
-		for region_id_v in realm_region_ids.keys():
-			var region_id: String = str(region_id_v)
-			var meta_v: Variant = regions_meta.get(region_id, {})
-			var region_src: String = "Region '%s/%s'" % [realm_id, region_id]
-			if typeof(meta_v) != TYPE_DICTIONARY:
-				continue
-			var meta: Dictionary = meta_v
-			if str(meta.get("id", "")).strip_edges() != region_id:
-				issues.append(Issue.new("error", region_src, "region.json id does not match realm region id"))
-			var cell_blocks_x := int(meta.get("cell_blocks_x", 0))
-			var cell_blocks_y := int(meta.get("cell_blocks_y", 0))
-			var region_grid_x := int(meta.get("grid_cells_x", 0))
-			var region_grid_y := int(meta.get("grid_cells_y", 0))
-			if cell_blocks_x < 1:
-				issues.append(Issue.new("error", region_src, "cell_blocks_x must be >= 1"))
-			if cell_blocks_y < 1:
-				issues.append(Issue.new("error", region_src, "cell_blocks_y must be >= 1"))
-			if region_grid_x < 1:
-				issues.append(Issue.new("error", region_src, "grid_cells_x must be >= 1"))
-			if region_grid_y < 1:
-				issues.append(Issue.new("error", region_src, "grid_cells_y must be >= 1"))
-
-			var rooms_root: Dictionary = {}
-			var rooms_root_v: Variant = region_rooms_roots.get(region_id, {})
-			if typeof(rooms_root_v) == TYPE_DICTIONARY:
-				rooms_root = rooms_root_v
-			if not _pack_file_exists(pack_id, "Realms/%s/Regions/%s/rooms.json" % [realm_id, region_id]):
-				issues.append(Issue.new("error", region_src, "rooms.json is missing"))
-			var start_room: String = str(rooms_root.get("start_room", "")).strip_edges()
-			var rooms_v: Variant = rooms_root.get("rooms", {})
-			if typeof(rooms_v) != TYPE_DICTIONARY:
-				issues.append(Issue.new("error", region_src, "rooms.json 'rooms' must be a dictionary"))
-				continue
-			var rooms_dict: Dictionary = rooms_v
-			if realm_id == start_realm and region_id == start_region_id:
-				if start_room.is_empty():
-					issues.append(Issue.new("error", region_src, "start region has no start_room"))
-				else:
-					expected_start_room = RegIO.runtime_room_addr(region_id, start_room)
-					var start_room_v: Variant = rooms_dict.get(start_room, {})
-					if typeof(start_room_v) == TYPE_DICTIONARY:
-						start_room_data = start_room_v
-			elif not start_room.is_empty() and not rooms_dict.has(start_room):
-				issues.append(Issue.new("error", region_src,
-					"start_room '%s' does not exist in this region" % start_room))
-
-			var occupied_cells: Dictionary = {}
-			for room_addr_v in rooms_dict.keys():
-				var room_addr: String = str(room_addr_v)
-				var room_v: Variant = rooms_dict[room_addr]
-				if typeof(room_v) != TYPE_DICTIONARY:
-					issues.append(Issue.new("error", region_src,
-						"room '%s' is not a dictionary" % room_addr))
-					continue
-				var room: Dictionary = room_v
-				var runtime_room_addr: String = RegIO.runtime_room_addr(region_id, room_addr)
-				expected_flat_rooms[runtime_room_addr] = true
-				var room_src: String = "Room '%s'" % runtime_room_addr
-				var base_col: int = int(room.get("region_col", 0))
-				var base_row: int = int(room.get("region_row", 0))
-				var mask_v: Variant = room.get("mask", [])
-				if typeof(mask_v) != TYPE_ARRAY or (mask_v as Array).is_empty():
-					issues.append(Issue.new("error", room_src, "mask is missing or empty"))
-					continue
-				var mask_cells: Dictionary = {}
-				var max_dx: int = -1
-				var max_dy: int = -1
-				for cell_v in mask_v:
-					if typeof(cell_v) != TYPE_ARRAY or (cell_v as Array).size() < 2:
-						issues.append(Issue.new("error", room_src, "mask contains malformed cell entry"))
-						continue
-					var cell_arr: Array = cell_v
-					var dx: int = int(cell_arr[0])
-					var dy: int = int(cell_arr[1])
-					if dx < 0 or dy < 0:
-						issues.append(Issue.new("error", room_src, "mask cells must be >= 0"))
-						continue
-					var local_key: String = "%d,%d" % [dx, dy]
-					if mask_cells.has(local_key):
-						issues.append(Issue.new("warning", room_src,
-							"mask duplicates local cell (%d,%d)" % [dx, dy]))
-						continue
-					mask_cells[local_key] = true
-					max_dx = maxi(max_dx, dx)
-					max_dy = maxi(max_dy, dy)
-					var abs_col: int = base_col + dx
-					var abs_row: int = base_row + dy
-					if region_grid_x > 0 and (abs_col < 0 or abs_col >= region_grid_x):
-						issues.append(Issue.new("error", room_src,
-							"occupies region col %d outside grid width %d" % [abs_col, region_grid_x]))
-					if region_grid_y > 0 and (abs_row < 0 or abs_row >= region_grid_y):
-						issues.append(Issue.new("error", room_src,
-							"occupies region row %d outside grid height %d" % [abs_row, region_grid_y]))
-					var abs_key: String = "%d,%d" % [abs_col, abs_row]
-					if occupied_cells.has(abs_key):
-						issues.append(Issue.new("error", room_src,
-							"overlaps region cell (%d,%d) already used by room '%s'" %
-							[abs_col, abs_row, str(occupied_cells[abs_key])]))
-					else:
-						occupied_cells[abs_key] = room_addr
-				var expected_w: int = maxi(1, max_dx + 1) * maxi(1, cell_blocks_x)
-				var expected_h: int = maxi(1, max_dy + 1) * maxi(1, cell_blocks_y)
-				if int(room.get("width_blocks", 0)) != expected_w:
-					issues.append(Issue.new("error", room_src,
-						"width_blocks %d does not match mask/cell size expectation %d" %
-						[int(room.get("width_blocks", 0)), expected_w]))
-				if int(room.get("height_blocks", 0)) != expected_h:
-					issues.append(Issue.new("error", room_src,
-						"height_blocks %d does not match mask/cell size expectation %d" %
-						[int(room.get("height_blocks", 0)), expected_h]))
-
-			if not start_room.is_empty() and not rooms_dict.has(start_room):
+		if not _pack_file_exists(pack_id, "Regions/%s/rooms.json" % region_id):
+			issues.append(Issue.new("error", region_src, "rooms.json is missing"))
+			continue
+		var rooms_root := _load_pack_json_root(pack_id, "Regions/%s/rooms.json" % region_id)
+		var rooms_v: Variant = rooms_root.get("rooms", {})
+		if typeof(rooms_v) != TYPE_DICTIONARY:
+			issues.append(Issue.new("error", region_src, "rooms.json 'rooms' must be a dictionary"))
+			continue
+		var rooms_dict: Dictionary = rooms_v
+		var start_room: String = str(rooms_root.get("start_room", "")).strip_edges()
+		if region_id == start_region:
+			if start_room.is_empty():
+				issues.append(Issue.new("error", region_src, "start region has no start_room"))
+			elif not rooms_dict.has(start_room):
 				issues.append(Issue.new("error", region_src,
 					"start_room '%s' does not exist in rooms.json" % start_room))
+			else:
+				expected_start_room = RegIO.runtime_room_addr(region_id, start_room)
+				var start_room_v: Variant = rooms_dict.get(start_room, {})
+				if typeof(start_room_v) == TYPE_DICTIONARY:
+					start_room_data = start_room_v
+		elif not start_room.is_empty() and not rooms_dict.has(start_room):
+			issues.append(Issue.new("error", region_src,
+				"start_room '%s' does not exist in rooms.json" % start_room))
+
+		var occupied_cells: Dictionary = {}
+		for room_addr_v in rooms_dict.keys():
+			var room_addr: String = str(room_addr_v)
+			if room_addr.find("/") >= 0:
+				issues.append(Issue.new("error", region_src,
+					"room key '%s' must be a bare addr (no '/')" % room_addr))
+				continue
+			var room_v: Variant = rooms_dict[room_addr]
+			if typeof(room_v) != TYPE_DICTIONARY:
+				issues.append(Issue.new("error", region_src,
+					"room '%s' is not a dictionary" % room_addr))
+				continue
+			var room: Dictionary = room_v
+			var runtime_room_addr: String = RegIO.runtime_room_addr(region_id, room_addr)
+			expected_flat_rooms[runtime_room_addr] = true
+			var room_src: String = "Room '%s'" % runtime_room_addr
+			var base_col: int = int(room.get("region_col", 0))
+			var base_row: int = int(room.get("region_row", 0))
+			var mask_v: Variant = room.get("mask", [])
+			if typeof(mask_v) != TYPE_ARRAY or (mask_v as Array).is_empty():
+				issues.append(Issue.new("error", room_src, "mask is missing or empty"))
+				continue
+			var mask_cells: Dictionary = {}
+			var max_dx: int = -1
+			var max_dy: int = -1
+			for cell_v in mask_v:
+				if typeof(cell_v) != TYPE_ARRAY or (cell_v as Array).size() < 2:
+					issues.append(Issue.new("error", room_src, "mask contains malformed cell entry"))
+					continue
+				var cell_arr: Array = cell_v
+				var dx: int = int(cell_arr[0])
+				var dy: int = int(cell_arr[1])
+				if dx < 0 or dy < 0:
+					issues.append(Issue.new("error", room_src, "mask cells must be >= 0"))
+					continue
+				var local_key: String = "%d,%d" % [dx, dy]
+				if mask_cells.has(local_key):
+					issues.append(Issue.new("warning", room_src,
+						"mask duplicates local cell (%d,%d)" % [dx, dy]))
+					continue
+				mask_cells[local_key] = true
+				max_dx = maxi(max_dx, dx)
+				max_dy = maxi(max_dy, dy)
+				var abs_col: int = base_col + dx
+				var abs_row: int = base_row + dy
+				if region_grid_x > 0 and (abs_col < 0 or abs_col >= region_grid_x):
+					issues.append(Issue.new("error", room_src,
+						"occupies region col %d outside grid width %d" % [abs_col, region_grid_x]))
+				if region_grid_y > 0 and (abs_row < 0 or abs_row >= region_grid_y):
+					issues.append(Issue.new("error", room_src,
+						"occupies region row %d outside grid height %d" % [abs_row, region_grid_y]))
+				var abs_key: String = "%d,%d" % [abs_col, abs_row]
+				if occupied_cells.has(abs_key):
+					issues.append(Issue.new("error", room_src,
+						"overlaps region cell (%d,%d) already used by room '%s'" %
+						[abs_col, abs_row, str(occupied_cells[abs_key])]))
+				else:
+					occupied_cells[abs_key] = room_addr
+			var expected_w: int = maxi(1, max_dx + 1) * maxi(1, cell_blocks_x)
+			var expected_h: int = maxi(1, max_dy + 1) * maxi(1, cell_blocks_y)
+			if int(room.get("width_blocks", 0)) != expected_w:
+				issues.append(Issue.new("error", room_src,
+					"width_blocks %d does not match mask/cell size expectation %d" %
+					[int(room.get("width_blocks", 0)), expected_w]))
+			if int(room.get("height_blocks", 0)) != expected_h:
+				issues.append(Issue.new("error", room_src,
+					"height_blocks %d does not match mask/cell size expectation %d" %
+					[int(room.get("height_blocks", 0)), expected_h]))
 
 	var flat_start_room := str(flat_rooms_root.get("start_room", "")).strip_edges()
 	if expected_start_room.is_empty():
@@ -1392,9 +1394,9 @@ static func _validate_world_hierarchy(pack_id: String, flat_rooms_root: Dictiona
 				"flat start_room '%s' is missing from flat rooms.json" % flat_start_room))
 	elif flat_start_room != expected_start_room:
 		issues.append(Issue.new("error", "Rooms",
-			"flat start_room '%s' does not match realm/region start '%s'" %
+			"flat start_room '%s' does not match canonical region start '%s'" %
 			[flat_start_room, expected_start_room]))
-	_validate_bootstrap_entry_room(pack_id, manifest, all_realms, flat_room_addrs,
+	_validate_bootstrap_entry_room(pack_id, manifest, flat_room_addrs,
 		expected_start_room, start_room_data, issues)
 
 	for expected_addr in expected_flat_rooms.keys():
@@ -1404,17 +1406,20 @@ static func _validate_world_hierarchy(pack_id: String, flat_rooms_root: Dictiona
 	for flat_addr in flat_room_addrs.keys():
 		if not expected_flat_rooms.has(flat_addr):
 			issues.append(Issue.new("warning", "Rooms",
-				"flat rooms.json contains room '%s' not present in realm hierarchy" % str(flat_addr)))
+				"flat rooms.json contains room '%s' not present in Regions/ hierarchy" % str(flat_addr)))
 
 
 static func _validate_bootstrap_entry_room(pack_id: String, manifest: Dictionary,
-		all_realms: Dictionary, flat_room_addrs: Dictionary, expected_start_room: String,
+		flat_room_addrs: Dictionary, expected_start_room: String,
 		start_room_data: Dictionary, issues: Array) -> void:
-	var start_realm := str(manifest.get("start_realm", "")).strip_edges()
+	var start_region := str(manifest.get("start_region", "")).strip_edges()
 	var entry_room := str(manifest.get("entry_room", "")).strip_edges()
 	if entry_room.is_empty():
 		return
-	var normalized_entry_room := _expand_room_addr_from_realms(all_realms, start_realm, entry_room)
+	if entry_room.count("/") > 1:
+		# Already flagged by _validate_pack_manifest; skip secondary spam.
+		return
+	var normalized_entry_room := _normalize_entry_room(pack_id, start_region, entry_room)
 	if normalized_entry_room.is_empty():
 		issues.append(Issue.new("error", "Pack", "entry_room could not be resolved"))
 		return
@@ -1430,6 +1435,21 @@ static func _validate_bootstrap_entry_room(pack_id: String, manifest: Dictionary
 	if not _room_has_player_spawn(start_room_data):
 		issues.append(Issue.new("error", "Room '%s'" % expected_start_room,
 			"start room must contain a player_spawn entity"))
+
+
+static func _normalize_entry_room(pack_id: String, start_region: String, entry_room: String) -> String:
+	var trimmed := entry_room.strip_edges()
+	if trimmed.is_empty():
+		return ""
+	if trimmed.count("/") == 1:
+		return trimmed
+	if start_region.is_empty():
+		return trimmed
+	# Bare addr: prepend the configured start_region only if the room exists there.
+	var rooms := _region_rooms_dict(pack_id, start_region, {})
+	if not rooms.has(trimmed):
+		return trimmed
+	return RegIO.runtime_room_addr(start_region, trimmed)
 
 
 static func _room_has_player_spawn(room: Dictionary) -> bool:
@@ -1659,7 +1679,10 @@ static func _validate_action_refs(action: Dictionary, src: String,
 			pass
 		"set_room_weather":
 			var weather_room := str(action.get("room", "")).strip_edges()
-			if not weather_room.is_empty() and not room_addrs.has(weather_room):
+			if not weather_room.is_empty() and weather_room.count("/") > 1:
+				issues.append(Issue.new("error", src,
+					"set_room_weather action room '%s' uses removed 3-slot realm/region/room format" % weather_room))
+			elif not weather_room.is_empty() and not room_addrs.has(weather_room):
 				issues.append(Issue.new("error", src, "set_room_weather action references unknown room '%s'" % weather_room))
 			var preset := str(action.get("preset", "")).strip_edges().to_lower()
 			if preset.is_empty():
@@ -1678,7 +1701,10 @@ static func _validate_action_refs(action: Dictionary, src: String,
 				issues.append(Issue.new("error", src, "set_trigger_enabled action is missing id"))
 		"teleport_player":
 			var room_addr := str(action.get("room", "")).strip_edges()
-			if not room_addr.is_empty() and not room_addrs.has(room_addr):
+			if not room_addr.is_empty() and room_addr.count("/") > 1:
+				issues.append(Issue.new("error", src,
+					"teleport_player action room '%s' uses removed 3-slot realm/region/room format" % room_addr))
+			elif not room_addr.is_empty() and not room_addrs.has(room_addr):
 				issues.append(Issue.new("error", src, "teleport_player action references unknown room '%s'" % room_addr))
 		"set_var", "add_var", "set_flag":
 			var name := str(action.get("name", "")).strip_edges()
@@ -1846,54 +1872,10 @@ static func _load_systems_existing(pack_id: String, issues: Array) -> Dictionary
 	return (systems_v as Dictionary).duplicate(true)
 
 
-static func _load_all_realms_existing(pack_id: String) -> Dictionary:
-	var realm_list: Array = []
-	var realms: Dictionary = {}
-	for realm_id_v in _list_realm_ids_existing(pack_id):
-		var realm_id := str(realm_id_v)
-		var realm := _load_pack_json_root(pack_id, "Realms/%s/realm.json" % realm_id)
-		realm_list.append({
-			"id": realm_id,
-			"name": str(realm.get("realm_name", realm.get("name", realm_id))),
-		})
-		var regions: Dictionary = {}
-		var rooms: Dictionary = {}
-		var region_ids := _list_region_ids_existing(pack_id, realm_id)
-		var region_entries_v: Variant = realm.get("regions", [])
-		if typeof(region_entries_v) == TYPE_ARRAY:
-			for entry_v in region_entries_v:
-				if typeof(entry_v) != TYPE_DICTIONARY:
-					continue
-				var placed_region_id := str((entry_v as Dictionary).get("id", "")).strip_edges()
-				if not placed_region_id.is_empty() and not region_ids.has(placed_region_id):
-					region_ids.append(placed_region_id)
-		for region_id_v in region_ids:
-			var region_id := str(region_id_v)
-			var region := _load_pack_json_root(pack_id,
-				"Realms/%s/Regions/%s/region.json" % [realm_id, region_id])
-			if not region.is_empty():
-				regions[region_id] = region
-			var rooms_root := _load_pack_json_root(pack_id,
-				"Realms/%s/Regions/%s/rooms.json" % [realm_id, region_id])
-			if not rooms_root.is_empty():
-				rooms[region_id] = rooms_root
-		realms[realm_id] = {
-			"realm": realm,
-			"regions": regions,
-			"rooms": rooms,
-			"realm_id": realm_id,
-		}
-	realm_list.sort_custom(func(a: Dictionary, b: Dictionary): return str(a.get("id", "")) < str(b.get("id", "")))
-	return {
-		"realm_list": realm_list,
-		"realms": realms,
-	}
-
-
-static func _list_realm_ids_existing(pack_id: String) -> Array:
+static func _list_region_ids_existing(pack_id: String) -> Array:
 	var ids: Array = []
 	var seen: Dictionary = {}
-	for root in _pack_dir_paths(pack_id, "Realms"):
+	for root in _pack_dir_paths(pack_id, "Regions"):
 		var dir := DirAccess.open(root)
 		if dir == null:
 			continue
@@ -1901,29 +1883,30 @@ static func _list_realm_ids_existing(pack_id: String) -> Array:
 		var name := dir.get_next()
 		while not name.is_empty():
 			if dir.current_is_dir() and not name.begins_with(".") and not seen.has(name):
-				seen[name] = true
-				ids.append(name)
+				# Only accept directories that contain a region.json.
+				if _pack_file_exists(pack_id, "Regions/%s/region.json" % name):
+					seen[name] = true
+					ids.append(name)
 			name = dir.get_next()
 		dir.list_dir_end()
+	ids.sort()
 	return ids
 
 
-static func _list_region_ids_existing(pack_id: String, realm_id: String) -> Array:
-	var ids: Array = []
-	var seen: Dictionary = {}
-	for root in _pack_dir_paths(pack_id, "Realms/%s/Regions" % realm_id):
-		var dir := DirAccess.open(root)
-		if dir == null:
-			continue
-		dir.list_dir_begin()
-		var name := dir.get_next()
-		while not name.is_empty():
-			if dir.current_is_dir() and not name.begins_with(".") and not seen.has(name):
-				seen[name] = true
-				ids.append(name)
-			name = dir.get_next()
-		dir.list_dir_end()
-	return ids
+# Returns the room-addr dictionary for Regions/<region_id>/rooms.json. The
+# optional cache lets POI validation avoid re-reading the same region rooms
+# for every POI entry that targets it.
+static func _region_rooms_dict(pack_id: String, region_id: String,
+		cache: Dictionary) -> Dictionary:
+	if cache.has(region_id):
+		var cached_v: Variant = cache[region_id]
+		if typeof(cached_v) == TYPE_DICTIONARY:
+			return cached_v
+	var root := _load_pack_json_root(pack_id, "Regions/%s/rooms.json" % region_id)
+	var rooms_v: Variant = root.get("rooms", {})
+	var rooms: Dictionary = rooms_v if typeof(rooms_v) == TYPE_DICTIONARY else {}
+	cache[region_id] = rooms
+	return rooms
 
 
 static func _known_ship_template_ids() -> Dictionary:
@@ -2041,77 +2024,13 @@ static func _room_addrs_for_pack(pack_id: String) -> Dictionary:
 	return addrs
 
 
-static func _realm_ids_for_pack(pack_id: String) -> Dictionary:
+static func _region_ids_for_pack(pack_id: String) -> Dictionary:
 	var ids: Dictionary = {}
-	var all_realms: Dictionary = _load_all_realms_existing(pack_id)
-	var realm_list_v: Variant = all_realms.get("realm_list", [])
-	if typeof(realm_list_v) != TYPE_ARRAY:
-		return ids
-	for entry_v in realm_list_v:
-		if typeof(entry_v) != TYPE_DICTIONARY:
-			continue
-		var realm_id: String = str((entry_v as Dictionary).get("id", "")).strip_edges()
-		if not realm_id.is_empty():
-			ids[realm_id] = true
+	for region_id_v in _list_region_ids_existing(pack_id):
+		var region_id: String = str(region_id_v).strip_edges()
+		if not region_id.is_empty():
+			ids[region_id] = true
 	return ids
-
-
-static func _start_realm_for_pack(pack_id: String) -> String:
-	var manifest: Dictionary = _load_pack_manifest(pack_id)
-	var start_realm: String = str(manifest.get("start_realm", "")).strip_edges()
-	return start_realm
-
-
-static func _expand_room_addr_for_validation(pack_id: String, realm_id: String, room_addr: String) -> String:
-	var trimmed: String = room_addr.strip_edges()
-	if trimmed.is_empty():
-		return ""
-	if trimmed.count("/") >= 2:
-		return trimmed
-	if trimmed.count("/") == 1 and not realm_id.is_empty():
-		return "%s/%s" % [realm_id, trimmed]
-	if realm_id.is_empty():
-		return trimmed
-	var all_realms := _load_all_realms_existing(pack_id)
-	return _expand_room_addr_from_realms(all_realms, realm_id, trimmed)
-
-
-static func _expand_room_addr_from_realms(all_realms: Dictionary, realm_id: String, room_addr: String) -> String:
-	var trimmed: String = room_addr.strip_edges()
-	if trimmed.is_empty():
-		return ""
-	if trimmed.count("/") >= 2:
-		return trimmed
-	if trimmed.count("/") == 1 and not realm_id.is_empty():
-		return "%s/%s" % [realm_id, trimmed]
-	if realm_id.is_empty():
-		return trimmed
-	var realms_v: Variant = all_realms.get("realms", {})
-	if typeof(realms_v) != TYPE_DICTIONARY:
-		return trimmed
-	var bundle_v: Variant = (realms_v as Dictionary).get(realm_id, {})
-	if typeof(bundle_v) != TYPE_DICTIONARY:
-		return trimmed
-	var bundle: Dictionary = bundle_v
-	var realm: Dictionary = bundle.get("realm", {})
-	var region_list: Array = realm.get("regions", [])
-	var region_rooms_roots: Dictionary = bundle.get("rooms", {})
-	for region_entry_v in region_list:
-		if typeof(region_entry_v) != TYPE_DICTIONARY:
-			continue
-		var region_id: String = str((region_entry_v as Dictionary).get("id", "")).strip_edges()
-		if region_id.is_empty():
-			continue
-		var rooms_root_v: Variant = region_rooms_roots.get(region_id, {})
-		if typeof(rooms_root_v) != TYPE_DICTIONARY:
-			continue
-		var rooms_root: Dictionary = rooms_root_v
-		var rooms_v: Variant = rooms_root.get("rooms", {})
-		if typeof(rooms_v) != TYPE_DICTIONARY:
-			continue
-		if (rooms_v as Dictionary).has(trimmed):
-			return RegIO.runtime_room_addr(region_id, trimmed)
-	return trimmed
 
 
 static func _list_dialogue_ids(pack_id: String) -> Dictionary:

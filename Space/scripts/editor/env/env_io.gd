@@ -704,8 +704,7 @@ static func default_zone() -> Dictionary:
         "direction": "right",
         "target_door_id": "",
         "target_room": "",
-        "send_to_overworld": false,
-        "overworld_region_id": "",
+        "launch_to_space": false,
         "enabled": true,
         "locked": false,
         "required_item_id": "",
@@ -916,8 +915,8 @@ static func _normalize_zone_entry(entry: Dictionary, room_w_blocks: int, room_h_
     zone["direction"] = _normalize_zone_direction(str(entry.get("direction", defaults["direction"])))
     zone["target_door_id"] = str(entry.get("target_door_id", defaults["target_door_id"])).strip_edges()
     zone["target_room"] = str(entry.get("target_room", defaults["target_room"])).strip_edges()
-    zone["send_to_overworld"] = bool(entry.get("send_to_overworld", defaults["send_to_overworld"]))
-    zone["overworld_region_id"] = str(entry.get("overworld_region_id", defaults["overworld_region_id"])).strip_edges()
+    zone["launch_to_space"] = bool(entry.get("launch_to_space",
+        entry.get("send_to_overworld", defaults["launch_to_space"])))
     zone["enabled"] = bool(entry.get("enabled", defaults["enabled"]))
     zone["locked"] = bool(entry.get("locked", defaults["locked"]))
     zone["required_item_id"] = str(entry.get("required_item_id", defaults["required_item_id"])).strip_edges()
@@ -948,7 +947,8 @@ static func _legacy_door_to_zone(door: Dictionary, used_ids: Dictionary) -> Dict
     var direction := _normalize_zone_direction(str(door.get("direction", "right")))
     var target_door_id := str(door.get("target_door_id", "")).strip_edges()
     var target_room := str(door.get("target_room", "")).strip_edges()
-    var send_to_overworld := bool(door.get("send_to_overworld", false))
+    var launch_to_space := bool(door.get("launch_to_space",
+        door.get("send_to_overworld", false)))
     var name := "Door %d %d" % [col, row]
     var zone_id := RegIO.unique_content_id(name, used_ids, "door")
     return _normalize_zone_entry({
@@ -962,7 +962,7 @@ static func _legacy_door_to_zone(door: Dictionary, used_ids: Dictionary) -> Dict
         "direction": direction,
         "target_door_id": target_door_id,
         "target_room": target_room,
-        "send_to_overworld": send_to_overworld,
+        "launch_to_space": launch_to_space,
     }, DEFAULT_ROOM_W_BLOCKS, DEFAULT_ROOM_H_BLOCKS, zone_id, used_ids)
 
 
@@ -1058,7 +1058,8 @@ static func normalize_zones(room: Dictionary) -> void:
                 "direction": door.get("direction", "right"),
                 "target_door_id": door.get("target_door_id", ""),
                 "target_room": door.get("target_room", ""),
-                "send_to_overworld": door.get("send_to_overworld", false),
+                "launch_to_space": door.get("launch_to_space",
+                    door.get("send_to_overworld", false)),
                 "enabled": door.get("enabled", true),
                 "locked": door.get("locked", false),
                 "required_item_id": door.get("required_item_id", ""),
@@ -1069,7 +1070,6 @@ static func normalize_zones(room: Dictionary) -> void:
                 "blocked_event_name": door.get("blocked_event_name", ""),
                 "success_event_name": door.get("success_event_name", ""),
                 "arrive_event_name": door.get("arrive_event_name", ""),
-                "overworld_region_id": door.get("overworld_region_id", ""),
             }, room_w_blocks, room_h_blocks, "", used_ids)
             used_ids[str(door_zone.get("id", ""))] = true
             out.append(door_zone)

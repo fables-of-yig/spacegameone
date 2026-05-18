@@ -45,8 +45,7 @@ var selected_crumble_reload_only: bool = false
 var selected_entity_type: String = "npc"
 var selected_door_direction: String = "right"
 var selected_door_target_room: String = ""
-var selected_door_send_to_overworld: bool = false
-var selected_door_overworld_region_id: String = ""
+var selected_door_launch_to_space: bool = false
 var selected_door_enabled: bool = true
 var selected_door_locked: bool = false
 var selected_door_required_item_id: String = ""
@@ -502,11 +501,11 @@ func set_selected_door_direction(d: String) -> void:
 
 func set_selected_door_target_room(addr: String) -> void:
     selected_door_target_room = addr
-    selected_door_send_to_overworld = false
+    selected_door_launch_to_space = false
     _apply_selected_door_fields_to_zone()
 
-func set_selected_door_send_to_overworld(enabled: bool) -> void:
-    selected_door_send_to_overworld = enabled
+func set_selected_door_launch_to_space(enabled: bool) -> void:
+    selected_door_launch_to_space = enabled
     _apply_selected_door_fields_to_zone()
 
 
@@ -517,8 +516,7 @@ func _apply_selected_door_fields_to_zone() -> void:
         "direction": selected_door_direction,
         "target_door_id": selected_door_target_room,
         "target_room": "",
-        "send_to_overworld": selected_door_send_to_overworld,
-        "overworld_region_id": selected_door_overworld_region_id,
+        "launch_to_space": selected_door_launch_to_space,
         "enabled": selected_door_enabled,
         "locked": selected_door_locked,
         "required_item_id": selected_door_required_item_id,
@@ -535,8 +533,8 @@ func _apply_selected_door_fields_to_zone() -> void:
 func _sync_selected_door_fields(entry: Dictionary) -> void:
     selected_door_direction = str(entry.get("direction", selected_door_direction))
     selected_door_target_room = str(entry.get("target_door_id", entry.get("target_room", selected_door_target_room)))
-    selected_door_send_to_overworld = bool(entry.get("send_to_overworld", selected_door_send_to_overworld))
-    selected_door_overworld_region_id = str(entry.get("overworld_region_id", selected_door_overworld_region_id)).strip_edges()
+    selected_door_launch_to_space = bool(entry.get("launch_to_space",
+        entry.get("send_to_overworld", selected_door_launch_to_space)))
     selected_door_enabled = bool(entry.get("enabled", selected_door_enabled))
     selected_door_locked = bool(entry.get("locked", selected_door_locked))
     selected_door_required_item_id = str(entry.get("required_item_id", selected_door_required_item_id)).strip_edges()
@@ -1686,7 +1684,7 @@ func _warn_dangling_door_targets() -> void:
             var zone: Dictionary = zone_v
             if _normalize_zone_kind(str(zone.get("kind", ""))) != "door":
                 continue
-            if bool(zone.get("send_to_overworld", false)):
+            if bool(zone.get("launch_to_space", false)):
                 continue
             var target_door_id := str(zone.get("target_door_id", "")).strip_edges()
             var legacy_target_room := str(zone.get("target_room", "")).strip_edges()
@@ -1799,8 +1797,8 @@ static func _door_target_room(door: Dictionary) -> String:
     return str(door.get("target_room", door.get("target", ""))).strip_edges()
 
 
-static func _door_sends_to_overworld(door: Dictionary) -> bool:
-    return bool(door.get("send_to_overworld", false))
+static func _door_launches_to_space(door: Dictionary) -> bool:
+    return bool(door.get("launch_to_space", false))
 
 
 # ─── Modal prompt plumbing ───────────────────────────────────────────────
@@ -2533,9 +2531,8 @@ func _sync_room_zones(room: Dictionary) -> void:
                         "cap_x": col,
                         "cap_y": row,
                         "direction": str(zone.get("direction", selected_door_direction)),
-                        "target_room": "" if bool(zone.get("send_to_overworld", false)) else target_room_addr,
-                        "send_to_overworld": bool(zone.get("send_to_overworld", false)),
-                        "overworld_region_id": str(zone.get("overworld_region_id", "")).strip_edges(),
+                        "target_room": "" if bool(zone.get("launch_to_space", false)) else target_room_addr,
+                        "launch_to_space": bool(zone.get("launch_to_space", false)),
                         "enabled": bool(zone.get("enabled", true)),
                         "locked": bool(zone.get("locked", false)),
                         "required_item_id": str(zone.get("required_item_id", "")).strip_edges(),
@@ -2939,8 +2936,7 @@ func create_zone(rect_blocks: Rect2) -> bool:
         entry["direction"] = selected_door_direction
         entry["target_door_id"] = selected_door_target_room
         entry["target_room"] = ""
-        entry["send_to_overworld"] = selected_door_send_to_overworld
-        entry["overworld_region_id"] = selected_door_overworld_region_id
+        entry["launch_to_space"] = selected_door_launch_to_space
         entry["enabled"] = selected_door_enabled
         entry["locked"] = selected_door_locked
         entry["required_item_id"] = selected_door_required_item_id

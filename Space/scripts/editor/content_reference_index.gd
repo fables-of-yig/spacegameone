@@ -97,7 +97,7 @@ static func _scan_manifest(pack_id: String, index: Dictionary) -> void:
 	var source := "Pack.json"
 	_add_ref(index, "system", str(manifest.get("start_system", "")).strip_edges(), source, "start_system", "start system")
 	_add_ref(index, "ship_template", str(manifest.get("start_ship_template", "")).strip_edges(), source, "start_ship_template", "start ship")
-	_add_ref(index, "realm", str(manifest.get("start_realm", "")).strip_edges(), source, "start_realm", "start realm")
+	_add_ref(index, "region", str(manifest.get("start_region", "")).strip_edges(), source, "start_region", "start region")
 	_add_ref(index, "room", str(manifest.get("entry_room", "")).strip_edges(), source, "entry_room", "entry room")
 
 
@@ -194,16 +194,14 @@ static func _scan_entity_refs(pack_id: String, index: Dictionary) -> void:
 
 
 static func _scan_world(pack_id: String, index: Dictionary) -> void:
-	for realm_id_v in _list_dir_names(pack_id, "Realms"):
-		var realm_id := str(realm_id_v)
-		var realm := _load_pack_json_root(pack_id, "Realms/%s/realm.json" % realm_id)
-		_add_def(index, "realm", realm_id, "Realms/%s/realm.json" % realm_id, str(realm.get("name", realm.get("realm_name", ""))))
-		for region_id_v in _list_dir_names(pack_id, "Realms/%s/Regions" % realm_id):
-			var region_id := str(region_id_v)
-			var region := _load_pack_json_root(pack_id, "Realms/%s/Regions/%s/region.json" % [realm_id, region_id])
-			_add_def(index, "region", "%s/%s" % [realm_id, region_id],
-				"Realms/%s/Regions/%s/region.json" % [realm_id, region_id],
-				str(region.get("name", region.get("region_name", ""))))
+	for region_id_v in _list_dir_names(pack_id, "Regions"):
+		var region_id := str(region_id_v)
+		var region := _load_pack_json_root(pack_id, "Regions/%s/region.json" % region_id)
+		if region.is_empty():
+			continue
+		_add_def(index, "region", region_id,
+			"Regions/%s/region.json" % region_id,
+			str(region.get("name", "")))
 
 	var rooms_root := _load_pack_json_root(pack_id, "Rooms/rooms.json")
 	var rooms_v: Variant = rooms_root.get("rooms", {})
@@ -290,12 +288,22 @@ static func _scan_system_pois(source: String, pois: Array, index: Dictionary) ->
 		if typeof(planet_v) != TYPE_DICTIONARY:
 			continue
 		var planet: Dictionary = planet_v
-		var realm_id := str(planet.get("realm_id", "")).strip_edges()
-		var region_id := str(planet.get("region_id", "")).strip_edges()
-		_add_ref(index, "realm", realm_id, poi_source, "planet_data.realm_id", "planet landing")
-		if not realm_id.is_empty() and not region_id.is_empty():
-			_add_ref(index, "region", "%s/%s" % [realm_id, region_id], poi_source, "planet_data.region_id", "planet landing")
-		_add_ref(index, "room", str(planet.get("spawn_room", "")).strip_edges(), poi_source, "planet_data.spawn_room", "planet spawn")
+		var regions_v: Variant = planet.get("regions", [])
+		if typeof(regions_v) != TYPE_ARRAY:
+			continue
+		for ri in range((regions_v as Array).size()):
+			var entry_v: Variant = (regions_v as Array)[ri]
+			if typeof(entry_v) != TYPE_DICTIONARY:
+				continue
+			var entry: Dictionary = entry_v
+			var region_id := str(entry.get("id", "")).strip_edges()
+			var spawn_room := str(entry.get("spawn_room", "")).strip_edges()
+			if not region_id.is_empty():
+				_add_ref(index, "region", region_id, poi_source,
+					"planet_data.regions[%d].id" % ri, "planet landing")
+			if not region_id.is_empty() and not spawn_room.is_empty():
+				_add_ref(index, "room", "%s/%s" % [region_id, spawn_room], poi_source,
+					"planet_data.regions[%d].spawn_room" % ri, "planet spawn")
 
 
 static func _scan_system_spawn_triggers(source: String, triggers: Array, index: Dictionary) -> void:

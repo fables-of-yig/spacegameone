@@ -1089,13 +1089,13 @@ func _draw_doors(room: Dictionary, rows: int, cols: int) -> void:
         var cap_y := int(d.get("cap_y", 0))
         var direction := str(d.get("direction", "right"))
         var target := str(d.get("target_room", ""))
-        var send_to_overworld := bool(d.get("send_to_overworld", false))
+        var launches_to_space := bool(d.get("launch_to_space", false))
         if cap_x < 0 or cap_x >= cols or cap_y < 0 or cap_y >= rows:
             continue
-        var target_valid: bool = send_to_overworld or (not target.is_empty() and known_rooms.has(target))
+        var target_valid: bool = launches_to_space or (not target.is_empty() and known_rooms.has(target))
         var fill_col: Color = Color(0.2, 0.85, 0.4, fill_a)
         var stroke_col: Color = Color(0.3, 1.0, 0.55, stroke_a)
-        if send_to_overworld:
+        if launches_to_space:
             fill_col = Color(0.22, 0.62, 0.95, fill_a)
             stroke_col = Color(0.46, 0.82, 1.0, stroke_a)
         elif not target_valid:
@@ -1107,18 +1107,18 @@ func _draw_doors(room: Dictionary, rows: int, cols: int) -> void:
         draw_rect(rect, stroke_col, false, 2.0)
         var tag := "→" if direction == "right" else ("←" if direction == "left" else ("↑" if direction == "up" else "↓"))
         var tag_color: Color = Color(0.2, 1, 0.5, 1)
-        if send_to_overworld:
+        if launches_to_space:
             tag_color = Color(0.88, 0.96, 1.0, 1.0)
         elif not target_valid:
             tag_color = Color(1, 0.85, 0.75, 1)
         draw_string(font, pos + Vector2(4, cell_size * 0.5 + 4),
             tag, HORIZONTAL_ALIGNMENT_LEFT, -1, 12, tag_color)
         if editing_doors:
-            var label: String = "OVERWORLD" if send_to_overworld else (target if not target.is_empty() else "(no target)")
-            if not send_to_overworld and not target_valid:
+            var label: String = "LAUNCH TO SPACE" if launches_to_space else (target if not target.is_empty() else "(no target)")
+            if not launches_to_space and not target_valid:
                 label += "  [!]"
             var col: Color = Color(0.7, 1, 0.8, 0.95)
-            if send_to_overworld:
+            if launches_to_space:
                 col = Color(0.72, 0.9, 1.0, 0.95)
             elif not target_valid:
                 col = Color(1.0, 0.75, 0.7, 0.95)
