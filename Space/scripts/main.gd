@@ -152,11 +152,16 @@ var planet_viewport: SubViewport = null
 var planet_overlay_layer: CanvasLayer = null
 var planet_overlay_root: Control = null
 var planet_main_instance: Node = null
-var _overworld_instance: Node = null
 var _planet_overlay_hud: Control = null
-var _overworld_pack_id: String = ""
-var _overworld_realm_id: String = ""
 var _surface_death_blocked: bool = false
+
+# Region landing picker — populated by UICoordinator. Opened when the player
+# presses interact on a landable planet POI; emits region_chosen / cancelled.
+var region_picker: Control = null
+# Tracks the POI currently associated with the open picker so we can auto-
+# close if the player drifts out of range while it's up.
+var _region_picker_poi: Node2D = null
+var _region_picker_pending_data: Dictionary = {}
 
 # Tracks whether the current planet visit was launched from the SSB main
 # menu (TEST PLANET / EDITOR buttons) so that on launch, we return to the
@@ -254,10 +259,10 @@ func _ready():
     _planet_iface = get_node_or_null("/root/PlanetaryInterface")
     if _planet_iface and _planet_iface.has_signal("launch_requested"):
         _planet_iface.launch_requested.connect(_on_launch_requested)
-        if _planet_iface.has_signal("return_to_overworld_requested"):
-            _planet_iface.return_to_overworld_requested.connect(_on_return_to_overworld_requested)
     else:
         push_warning("PlanetaryInterface autoload not found — planet handoff disabled")
+
+    region_picker = _ui.setup_region_picker(self)
 
     if MvTriggerEngine != null and MvTriggerEngine.has_signal("action_spawn_space_ship"):
         if not MvTriggerEngine.action_spawn_space_ship.is_connected(_on_trigger_spawn_space_ship):
@@ -895,10 +900,123 @@ func _on_editor_closed():
 func _on_planet_entered(data: Dictionary):
     if on_surface or jumping or builder_open or star_map_open or event_open or editor_open:
         return
-    _entered_planet_from_menu = false
-    _planet_visit_from_space_session = true
-    _entered_authored_pack_from_menu = false
-    _begin_mvmania_landing(data)
+    if region_picker != null and region_picker.has_method("is_open") and region_picker.is_open():
+        return
+    _open_region_picker_for_poi(data)
+
+
+# Resolves the POI's planet_data into a picker invocation. Pulls the pack id
+# off planet_data (Phase 6 will populate it on the authored side; for now we
+# fall back to the active pack so test/dev sessions keep working). Builds a
+# synthetic single-region list out of RegIO if the POI has no authored
+# regions[] entry yet — Phase 6 rewrites packs to populate this field.
+func _open_region_picker_for_poi(data: Dictionary) -> void:
+    var pack_id: String = _resolve_planet_pack_id(data)
+    if pack_id.is_empty():
+        push_error("PlanetaryInterface: planet POI has no resolvable pack_id")
+        return
+    var poi_id: String = str(data.get("poi_id", "")).strip_edges()
+    if poi_id.is_empty():
+        poi_id = str(data.get("planet_key", "")).strip_edges()
+    var poi_name: String = str(data.get("poi_name", data.get("name", ""))).strip_edges()
+    var regions: Array = _resolve_landing_regions(pack_id, data)
+
+    var pending: Dictionary = data.duplicate(true)
+    pending["pack_id"] = pack_id
+    pending["poi_id"] = poi_id
+    pending["poi_name"] = poi_name
+    _region_picker_pending_data = pending
+    _region_picker_poi = _find_planet_poi_for_data(data)
+
+    if region_picker == null:
+        push_error("UI: region picker not mounted — cannot open landing prompt")
+        return
+    region_picker.call("open", pack_id, poi_id, poi_name, regions)
+
+
+# Returns the regions[] entries declared in planet_data, or a synthetic
+# single-entry array built from RegIO defaults if the POI has none (Phase 6
+# packs will populate the field; pre-Phase-6 packs need this fallback so the
+# picker doesn't show "No landable regions" against a perfectly valid pack).
+func _resolve_landing_regions(pack_id: String, data: Dictionary) -> Array:
+    var regions_v: Variant = data.get("regions", null)
+    if regions_v == null:
+        var planet_v: Variant = data.get("planet_data", null)
+        if typeof(planet_v) == TYPE_DICTIONARY:
+            regions_v = (planet_v as Dictionary).get("regions", null)
+    if typeof(regions_v) == TYPE_ARRAY:
+        var out: Array = []
+        for entry_v in (regions_v as Array):
+            if typeof(entry_v) == TYPE_DICTIONARY:
+                out.append((entry_v as Dictionary).duplicate(true))
+        if not out.is_empty():
+            return out
+
+    var default_region: String = RegIO.default_region_id(pack_id)
+    if default_region.is_empty():
+        return []
+    var spawn_room: String = RegIO.get_region_start_room(pack_id, default_region)
+    var fallback: Dictionary = {
+        "id": default_region,
+        "name": default_region.capitalize(),
+        "spawn_room": spawn_room,
+        "spawn_pos": [0.0, 0.0],
+    }
+    return [fallback]
+
+
+# Walks the live POI cache looking for the marker whose planet_data matches
+# the dict we were handed. Used so the picker can auto-close if the player
+# drifts out of range while it's open.
+func _find_planet_poi_for_data(data: Dictionary) -> Node2D:
+    var planet_key: String = str(data.get("planet_key", "")).strip_edges()
+    var poi_name: String = str(data.get("poi_name", data.get("name", ""))).strip_edges()
+    for poi in _cached_pois:
+        if not is_instance_valid(poi):
+            continue
+        if not ("planet_data" in poi):
+            continue
+        var pd_v: Variant = poi.planet_data
+        if typeof(pd_v) != TYPE_DICTIONARY:
+            continue
+        var pd: Dictionary = pd_v
+        if not planet_key.is_empty() and str(pd.get("planet_key", "")).strip_edges() == planet_key:
+            return poi
+        if not poi_name.is_empty() and "poi_name" in poi and str(poi.poi_name) == poi_name:
+            return poi
+    return null
+
+
+# Picker confirmed — stage the landing and hand off to the existing MV
+# landing flow. region is the dict the picker emitted (copy of the entry
+# from planet_data.regions[] or the synthetic RegIO fallback).
+func _on_region_picker_chosen(pack_id: String, poi_id: String, region: Dictionary) -> void:
+    _region_picker_poi = null
+    var pending: Dictionary = _region_picker_pending_data
+    _region_picker_pending_data = {}
+    if region.is_empty() or pack_id.is_empty():
+        return
+    var region_id: String = str(region.get("id", "")).strip_edges()
+    var spawn_room: String = str(region.get("spawn_room", "")).strip_edges()
+    if spawn_room.is_empty() and not region_id.is_empty():
+        spawn_room = RegIO.get_region_start_room(pack_id, region_id)
+    var spawn_pos: Vector2 = Vector2.ZERO
+    var spawn_pos_v: Variant = region.get("spawn_pos", null)
+    if spawn_pos_v is Vector2:
+        spawn_pos = spawn_pos_v
+    elif typeof(spawn_pos_v) == TYPE_ARRAY and (spawn_pos_v as Array).size() >= 2:
+        spawn_pos = Vector2(float((spawn_pos_v as Array)[0]), float((spawn_pos_v as Array)[1]))
+    elif typeof(spawn_pos_v) == TYPE_DICTIONARY:
+        spawn_pos = Vector2(
+            float((spawn_pos_v as Dictionary).get("x", 0.0)),
+            float((spawn_pos_v as Dictionary).get("y", 0.0)),
+        )
+    _trigger_landing(pack_id, poi_id, region_id, spawn_room, spawn_pos, pending)
+
+
+func _on_region_picker_cancelled() -> void:
+    _region_picker_poi = null
+    _region_picker_pending_data = {}
 
 # Main-menu TEST PLANET button. Lands on the demo pack inside the planet
 # viewport. SSB stays paused (MVMania runs via the planet layer's always-
@@ -913,7 +1031,10 @@ func _on_test_planet():
         menu_open = false
     if main_menu:
         main_menu.visible = false
-    _begin_mvmania_landing({"pack_id": "demo", "name": "Test Planet"})
+    var demo_region: String = RegIO.default_region_id("demo")
+    var demo_room: String = RegIO.get_region_start_room("demo", demo_region)
+    _trigger_landing("demo", "", demo_region, demo_room, Vector2.ZERO,
+        {"pack_id": "demo", "name": "Test Planet"})
 
 
 func _on_play_pack(pack_id: String):
@@ -935,15 +1056,14 @@ func _on_play_pack(pack_id: String):
     if main_menu:
         main_menu.visible = false
     var manifest: Dictionary = _load_pack_manifest(pack_id)
-    var start_realm: String = _resolve_pack_start_realm(pack_id, manifest)
-    var entry_room: String = _normalize_planet_spawn_room(
-        pack_id,
-        start_realm,
-        str(manifest.get("entry_room", "")).strip_edges())
-    _begin_mvmania_landing({
+    var start_region: String = str(manifest.get("start_region", "")).strip_edges()
+    if start_region.is_empty():
+        start_region = RegIO.default_region_id(pack_id)
+    var entry_room: String = str(manifest.get("entry_room", "")).strip_edges()
+    if entry_room.is_empty():
+        entry_room = RegIO.get_region_start_room(pack_id, start_region)
+    _trigger_landing(pack_id, "", start_region, entry_room, Vector2.ZERO, {
         "pack_id": pack_id,
-        "realm_id": start_realm,
-        "spawn_room": entry_room,
         "name": pack_id,
     })
 
@@ -1213,7 +1333,8 @@ func _on_env_editor_closed():
         return
     _on_mv_editor_closed()
 
-func _begin_mvmania_landing(data: Dictionary):
+func _trigger_landing(pack_id: String, poi_id: String, region_id: String,
+        spawn_room: String, spawn_pos: Vector2, data: Dictionary = {}) -> void:
     if planet_viewport == null:
         var pv = _ui.setup_planet_viewport()
         planet_viewport_layer = pv["layer"]
@@ -1238,43 +1359,23 @@ func _begin_mvmania_landing(data: Dictionary):
         return
     var edit_mode: bool = _planet_iface.pending_edit_mode
 
-    # Tell PlanetaryInterface which pack to load BEFORE we instantiate Main.
-    # MVMania.Main._EnterTree reads PlanetaryInterface.PendingPackId, so this
-    # assignment has to happen first or Main will boot into "demo" by default.
-    var pack_id: String = _resolve_planet_pack_id(data)
-    if pack_id.is_empty():
-        push_error("PlanetaryInterface: planet landing has no authored pack_id")
+    var pid: String = pack_id.strip_edges()
+    if pid.is_empty():
+        push_error("PlanetaryInterface: _trigger_landing called without pack_id")
         return
-    var manifest: Dictionary = _load_pack_manifest(pack_id)
+    var manifest: Dictionary = _load_pack_manifest(pid)
     if manifest.is_empty():
-        push_error("PlanetaryInterface: pack '%s' has no readable Pack.json" % pack_id)
+        push_error("PlanetaryInterface: pack '%s' has no readable Pack.json" % pid)
         return
-    var realm_id: String = _resolve_authored_realm(
-        pack_id,
-        str(data.get("realm_id", "")).strip_edges(),
-        manifest)
-    var spawn_room: String = _normalize_planet_spawn_room(
-        pack_id,
-        realm_id,
-        str(data.get("spawn_room", "")).strip_edges())
-    var spawn_pos_raw: Variant = data.get("spawn_pos", Vector2(-1, -1))
-    var spawn_pos_v: Vector2 = Vector2(-1, -1)
-    if spawn_pos_raw is Vector2:
-        spawn_pos_v = spawn_pos_raw
-    elif spawn_pos_raw is Array and spawn_pos_raw.size() >= 2:
-        spawn_pos_v = Vector2(float(spawn_pos_raw[0]), float(spawn_pos_raw[1]))
-    elif typeof(spawn_pos_raw) == TYPE_DICTIONARY:
-        spawn_pos_v = Vector2(
-            float(spawn_pos_raw.get("x", 0.0)),
-            float(spawn_pos_raw.get("y", 0.0))
-        )
-    var has_overworld: bool = _pack_has_overworld_tiles(pack_id, realm_id)
-    if spawn_room.is_empty() and not has_overworld and not realm_id.is_empty():
-        spawn_room = RegIO.get_realm_start_room(pack_id, realm_id)
-    if not spawn_room.is_empty() and (spawn_pos_v.x < 0.0 or spawn_pos_v.y < 0.0):
-        spawn_pos_v = _resolve_room_player_spawn(pack_id, realm_id, spawn_room)
-    var planet_key: String = _resolve_planet_snapshot_key(data, pack_id, realm_id, spawn_room)
-    _planet_iface.begin_landing(pack_id, spawn_room, spawn_pos_v, realm_id, planet_key)
+
+    var resolved_region: String = region_id.strip_edges()
+    if resolved_region.is_empty():
+        resolved_region = RegIO.default_region_id(pid)
+    var resolved_room: String = spawn_room.strip_edges()
+    if resolved_room.is_empty() and not resolved_region.is_empty():
+        resolved_room = RegIO.get_region_start_room(pid, resolved_region)
+
+    _planet_iface.begin_landing(pid, poi_id, resolved_region, resolved_room, spawn_pos)
 
     # Configure the planet viewport for the right mode.
     #   Editor: stretch_shrink=1 → SubViewport renders at native 1920x1080
@@ -1293,13 +1394,9 @@ func _begin_mvmania_landing(data: Dictionary):
     # inner size on NOTIFICATION_SORT_CHILDREN.
     planet_viewport_container.queue_sort()
 
-    # Tear down any stale MVMania / overworld instance before loading a new one.
+    # Tear down any stale MVMania instance before loading a new one.
     _teardown_planet_instances()
-
-    if not edit_mode and spawn_room.is_empty() and has_overworld:
-        _enter_overworld_for_pack(pack_id, realm_id, spawn_pos_v)
-    else:
-        _enter_mv_for_pack()
+    _enter_mv_for_pack()
 
     _surface_death_blocked = false
     on_surface = true
@@ -1310,8 +1407,8 @@ func _begin_mvmania_landing(data: Dictionary):
     get_tree().paused = true
 
     AudioManager.set_ambient_varied("surface")
-    print("PlanetaryInterface: landed on pack='%s' (edit_mode=%s overworld=%s)" % [
-        pack_id, edit_mode, _overworld_instance != null])
+    print("PlanetaryInterface: landed on pack='%s' region='%s' room='%s' edit_mode=%s" % [
+        pid, resolved_region, resolved_room, edit_mode])
 
 func _on_launch_requested(_pack_id: String):
     _teardown_planet_instances()
@@ -1532,11 +1629,6 @@ func _reset_mv_runtime_for_launcher() -> void:
 
 func _teardown_planet_instances() -> void:
     _close_mv_runtime_overlays()
-    if _overworld_instance and is_instance_valid(_overworld_instance):
-        _overworld_instance.queue_free()
-        _overworld_instance = null
-    _overworld_pack_id = ""
-    _overworld_realm_id = ""
     _surface_death_blocked = false
     _clear_planet_overlay()
     if planet_main_instance and is_instance_valid(planet_main_instance):
@@ -1544,18 +1636,6 @@ func _teardown_planet_instances() -> void:
             planet_main_instance.call("prepare_for_teardown")
         planet_main_instance.queue_free()
         planet_main_instance = null
-
-
-func _mount_overworld_overlay() -> void:
-    _clear_planet_overlay()
-    if planet_overlay_layer == null or planet_overlay_root == null:
-        return
-    var OverworldHud = preload("res://MV/scripts/overworld_hud.gd")
-    _planet_overlay_hud = OverworldHud.new()
-    _planet_overlay_hud.name = "OverworldHudOverlay"
-    planet_overlay_root.add_child(_planet_overlay_hud)
-    planet_overlay_root.visible = true
-    planet_overlay_layer.visible = true
 
 
 func _clear_planet_overlay() -> void:
@@ -1566,53 +1646,6 @@ func _clear_planet_overlay() -> void:
         planet_overlay_root.visible = false
     if planet_overlay_layer:
         planet_overlay_layer.visible = false
-
-
-func _on_overworld_hud_info_changed(
-    region_name: String,
-    can_land: bool,
-    col: int,
-    row: int,
-    grid_w: int,
-    grid_h: int
-) -> void:
-    if _planet_overlay_hud == null or not is_instance_valid(_planet_overlay_hud):
-        return
-    _planet_overlay_hud.call("update_info", region_name, can_land, col, row, grid_w, grid_h)
-
-
-func _pack_has_overworld_tiles(pack_id: String, realm_id: String = "") -> bool:
-    var bundle: Dictionary = RegIO.load_or_init(pack_id, realm_id)
-    var realm: Dictionary = bundle.get("realm", {})
-    var layers_v: Variant = realm.get("realm_tile_layers", [])
-    if typeof(layers_v) != TYPE_ARRAY:
-        return false
-    var layers: Array = layers_v
-    if layers.is_empty():
-        return false
-    var ground_v: Variant = layers[0]
-    if typeof(ground_v) != TYPE_DICTIONARY:
-        return false
-    var tiles: Array = (ground_v as Dictionary).get("tiles", [])
-    return not tiles.is_empty()
-
-
-func _enter_overworld_for_pack(
-    pack_id: String,
-    realm_id: String = "",
-    spawn_pos: Vector2 = Vector2(-1, -1)
-) -> void:
-    var OverworldMain = preload("res://MV/scripts/overworld_main.gd")
-    _overworld_instance = OverworldMain.new()
-    _overworld_instance.process_mode = Node.PROCESS_MODE_ALWAYS
-    _overworld_pack_id = pack_id
-    _overworld_realm_id = realm_id
-    _mount_overworld_overlay()
-    planet_viewport.add_child(_overworld_instance)
-    _overworld_instance.land_requested.connect(_on_overworld_land)
-    _overworld_instance.exit_requested.connect(_on_overworld_exit)
-    _overworld_instance.hud_info_changed.connect(_on_overworld_hud_info_changed)
-    _overworld_instance.enter_overworld(pack_id, realm_id, spawn_pos)
 
 
 func _enter_mv_for_pack() -> void:
@@ -1626,36 +1659,6 @@ func _enter_mv_for_pack() -> void:
     planet_viewport.add_child(planet_main_instance)
 
 
-func _on_overworld_land(region_id: String) -> void:
-    if _overworld_instance and is_instance_valid(_overworld_instance):
-        _overworld_instance.exit_overworld()
-        _overworld_instance.queue_free()
-        _overworld_instance = null
-    _clear_planet_overlay()
-    _planet_iface.pending_spawn_room = RegIO.get_region_start_room(_overworld_pack_id, _overworld_realm_id, region_id)
-    _planet_iface.pending_spawn_pos = _resolve_room_player_spawn(
-        _overworld_pack_id,
-        _overworld_realm_id,
-        _planet_iface.pending_spawn_room
-    )
-    _stage_region_meta(_overworld_pack_id, _overworld_realm_id, region_id)
-    _enter_mv_for_pack()
-    print("Overworld: landed on realm '%s' region '%s'" % [_overworld_realm_id, region_id])
-
-
-func _stage_region_meta(pack_id: String, realm_id: String, region_id: String) -> void:
-    _planet_iface.pending_region_id = region_id
-    _planet_iface.pending_region_meta = {}
-    if pack_id == "" or realm_id == "" or region_id == "":
-        return
-    var bundle: Dictionary = RegIO.load_or_init(pack_id, realm_id)
-    var regions: Dictionary = bundle.get("regions", {})
-    var meta_v: Variant = regions.get(region_id, null)
-    if typeof(meta_v) != TYPE_DICTIONARY:
-        return
-    _planet_iface.pending_region_meta = (meta_v as Dictionary).duplicate(true)
-
-
 func _resolve_planet_pack_id(data: Dictionary) -> String:
     var pack_id := str(data.get("pack_id", "")).strip_edges()
     if not pack_id.is_empty():
@@ -1667,33 +1670,6 @@ func _resolve_planet_pack_id(data: Dictionary) -> String:
     if _entered_planet_from_menu:
         return "demo"
     return "demo"
-
-
-func _resolve_planet_snapshot_key(data: Dictionary, pack_id: String, realm_id: String,
-        spawn_room: String) -> String:
-    for key_field in ["snapshot_key", "planet_key", "id"]:
-        var explicit_key := str(data.get(key_field, "")).strip_edges()
-        if not explicit_key.is_empty():
-            return explicit_key
-    var source_system := str(data.get("source_system", loaded_system)).strip_edges()
-    var poi_name := str(data.get("poi_name", data.get("name", ""))).strip_edges()
-    if not source_system.is_empty() and not poi_name.is_empty():
-        return "%s/%s" % [source_system, _snapshot_key_part(poi_name)]
-    var poi_index := str(data.get("poi_index", "")).strip_edges()
-    if not source_system.is_empty() and not poi_index.is_empty():
-        return "%s/poi_%s" % [source_system, poi_index]
-    if not realm_id.is_empty() or not spawn_room.is_empty():
-        return "%s/%s" % [realm_id, spawn_room]
-    return pack_id
-
-
-func _snapshot_key_part(value: String) -> String:
-    var out := value.strip_edges().to_lower()
-    out = out.replace("\\", "/")
-    out = out.replace("/", "_")
-    out = out.replace(" ", "_")
-    out = out.replace(":", "_")
-    return "planet" if out.is_empty() else out
 
 
 func _load_pack_manifest(pack_id: String) -> Dictionary:
@@ -1711,144 +1687,6 @@ func _load_pack_manifest(pack_id: String) -> Dictionary:
         if typeof(parsed) == TYPE_DICTIONARY:
             return parsed
     return {}
-
-
-func _resolve_pack_start_realm(pack_id: String, manifest: Dictionary = {}) -> String:
-    var manifest_data: Dictionary = manifest
-    if manifest_data.is_empty():
-        manifest_data = _load_pack_manifest(pack_id)
-    var start_realm: String = str(manifest_data.get("start_realm", "")).strip_edges()
-    if not start_realm.is_empty():
-        for realm_entry_v in RegIO.list_realms(pack_id):
-            if typeof(realm_entry_v) != TYPE_DICTIONARY:
-                continue
-            if str((realm_entry_v as Dictionary).get("id", "")).strip_edges() == start_realm:
-                return start_realm
-    return RegIO.default_realm_id(pack_id)
-
-
-func _resolve_authored_realm(pack_id: String, requested_realm: String, manifest: Dictionary = {}) -> String:
-    var trimmed: String = requested_realm.strip_edges()
-    if trimmed.is_empty():
-        return _resolve_pack_start_realm(pack_id, manifest)
-    for realm_entry_v in RegIO.list_realms(pack_id):
-        if typeof(realm_entry_v) != TYPE_DICTIONARY:
-            continue
-        if str((realm_entry_v as Dictionary).get("id", "")).strip_edges() == trimmed:
-            return trimmed
-    return _resolve_pack_start_realm(pack_id, manifest)
-
-
-func _normalize_planet_spawn_room(pack_id: String, realm_id: String, spawn_room: String) -> String:
-    var trimmed: String = spawn_room.strip_edges()
-    if trimmed.is_empty():
-        return ""
-    if trimmed.count("/") >= 2:
-        return trimmed
-    if trimmed.count("/") == 1 and not realm_id.is_empty():
-        return "%s/%s" % [realm_id, trimmed]
-    if realm_id.is_empty():
-        return trimmed
-    var bundle: Dictionary = RegIO.load_or_init(pack_id, realm_id)
-    var realm: Dictionary = bundle.get("realm", {})
-    var region_list: Array = realm.get("regions", [])
-    for region_entry_v in region_list:
-        if typeof(region_entry_v) != TYPE_DICTIONARY:
-            continue
-        var region_id: String = str((region_entry_v as Dictionary).get("id", "")).strip_edges()
-        if region_id.is_empty():
-            continue
-        var rooms_root: Dictionary = RegIO.load_region_rooms(pack_id, realm_id, region_id)
-        var rooms_v: Variant = rooms_root.get("rooms", {})
-        if typeof(rooms_v) != TYPE_DICTIONARY:
-            continue
-        if (rooms_v as Dictionary).has(trimmed):
-            return RegIO.runtime_room_addr(realm_id, region_id, trimmed)
-    return trimmed
-
-
-func _resolve_room_player_spawn(pack_id: String, realm_id: String, room_addr: String) -> Vector2:
-    var trimmed_room_addr: String = room_addr.strip_edges()
-    if trimmed_room_addr.is_empty():
-        return Vector2(-1, -1)
-    var parts: PackedStringArray = trimmed_room_addr.split("/", false)
-    var target_realm_id: String = realm_id.strip_edges()
-    var target_region_id: String = ""
-    var local_room_addr: String = trimmed_room_addr
-    if parts.size() >= 3:
-        target_realm_id = str(parts[0]).strip_edges()
-        target_region_id = str(parts[1]).strip_edges()
-        local_room_addr = str(parts[2]).strip_edges()
-    elif parts.size() == 2:
-        target_region_id = str(parts[0]).strip_edges()
-        local_room_addr = str(parts[1]).strip_edges()
-    if target_realm_id.is_empty() or target_region_id.is_empty() or local_room_addr.is_empty():
-        return Vector2(-1, -1)
-    var rooms_root: Dictionary = RegIO.load_region_rooms(pack_id, target_realm_id, target_region_id)
-    var rooms_v: Variant = rooms_root.get("rooms", {})
-    if typeof(rooms_v) != TYPE_DICTIONARY:
-        return Vector2(-1, -1)
-    var room_v: Variant = (rooms_v as Dictionary).get(local_room_addr, null)
-    if typeof(room_v) != TYPE_DICTIONARY:
-        return Vector2(-1, -1)
-    var room: Dictionary = room_v
-    var entities_v: Variant = room.get("entities", [])
-    if typeof(entities_v) != TYPE_ARRAY:
-        return Vector2(-1, -1)
-    for entity_v in entities_v:
-        if typeof(entity_v) != TYPE_DICTIONARY:
-            continue
-        var entity: Dictionary = entity_v
-        if str(entity.get("type", "")).strip_edges() != "player_spawn":
-            continue
-        var pos_v: Variant = entity.get("position", null)
-        if pos_v is Vector2:
-            return pos_v
-        if typeof(pos_v) == TYPE_DICTIONARY:
-            return Vector2(float(pos_v.get("x", -1.0)), float(pos_v.get("y", -1.0)))
-        if typeof(pos_v) == TYPE_ARRAY:
-            var pos_arr: Array = pos_v
-            if pos_arr.size() >= 2:
-                return Vector2(float(pos_arr[0]), float(pos_arr[1]))
-        if entity.has("x") and entity.has("y"):
-            return Vector2(float(entity.get("x", -1.0)), float(entity.get("y", -1.0)))
-    return Vector2(-1, -1)
-
-
-func _on_overworld_exit() -> void:
-    _planet_iface.begin_launch(null)
-
-
-func _on_return_to_overworld_requested(pack_id: String, realm_id: String, spawn_pos: Vector2) -> void:
-    var target_pack_id: String = pack_id.strip_edges()
-    if target_pack_id.is_empty() and _planet_iface != null:
-        target_pack_id = str(_planet_iface.pending_pack_id).strip_edges()
-    if target_pack_id.is_empty():
-        push_error("PlanetaryInterface: return_to_overworld requested without a pack id")
-        return
-
-    var target_realm_id: String = realm_id.strip_edges()
-    if target_realm_id.is_empty() and _planet_iface != null:
-        target_realm_id = str(_planet_iface.pending_realm_id).strip_edges()
-
-    if not _pack_has_overworld_tiles(target_pack_id, target_realm_id):
-        push_error("PlanetaryInterface: pack '%s' realm '%s' has no overworld tiles" % [
-            target_pack_id,
-            target_realm_id,
-        ])
-        return
-
-    if planet_main_instance and is_instance_valid(planet_main_instance):
-        planet_main_instance.queue_free()
-        planet_main_instance = null
-    if _overworld_instance and is_instance_valid(_overworld_instance):
-        _overworld_instance.exit_overworld()
-        _overworld_instance.queue_free()
-        _overworld_instance = null
-    _clear_planet_overlay()
-
-    _enter_overworld_for_pack(target_pack_id, target_realm_id, spawn_pos)
-    print("Overworld: returned from MV to realm '%s'" % target_realm_id)
 
 
 func _enter_surface(data: Dictionary):
@@ -2037,7 +1875,10 @@ func _exit_surface():
 
 
 func _any_panel_open() -> bool:
-    return builder_open or star_map_open or event_open or editor_open or pause_open
+    var picker_open: bool = region_picker != null \
+        and region_picker.has_method("is_open") \
+        and region_picker.is_open()
+    return builder_open or star_map_open or event_open or editor_open or pause_open or picker_open
 
 func _toggle_builder():
     if builder_open or star_map_open or jumping or event_open or editor_open:
@@ -2792,6 +2633,11 @@ func _unhandled_input(event: InputEvent):
             get_viewport().set_input_as_handled()
             return
 
+    if region_picker != null and region_picker.has_method("is_open") and region_picker.is_open():
+        # Picker owns its own input handling — let it consume the event and
+        # don't let SSB's ESC chain fall through to the pause menu.
+        return
+
     var _is_back_pressed = event is InputEventKey and event.pressed and event.keycode == KEY_ESCAPE
     if _is_back_pressed:
         if pause_open:
@@ -3218,6 +3064,30 @@ func _tick_poi_detection():
             continue
         if ppos.distance_to(se.global_position) <= det_range:
             _discover_poi(se.poi_marker)
+
+    _tick_region_picker_proximity(ppos)
+
+
+# Closes the open region picker if the player drifts out of the source POI's
+# interact_radius (no-op when the picker is closed or the source POI was
+# already freed). Keeps the picker honest with the ship's actual landing
+# range so the player can't sit still in space with a stale prompt up.
+func _tick_region_picker_proximity(ppos: Vector2) -> void:
+    if region_picker == null or not region_picker.has_method("is_open") or not region_picker.is_open():
+        return
+    if _region_picker_poi == null or not is_instance_valid(_region_picker_poi):
+        region_picker.call("close")
+        _region_picker_pending_data = {}
+        _region_picker_poi = null
+        return
+    var poi_pos: Vector2 = _region_picker_poi.global_position
+    var radius: float = 600.0
+    if "interact_radius" in _region_picker_poi:
+        radius = float(_region_picker_poi.interact_radius)
+    if ppos.distance_to(poi_pos) > radius:
+        region_picker.call("close")
+        _region_picker_pending_data = {}
+        _region_picker_poi = null
 
 func _on_scan_hit(target: Node2D):
 

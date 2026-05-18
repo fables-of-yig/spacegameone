@@ -16,6 +16,8 @@ var _planet_container: SubViewportContainer = null
 var _planet_viewport: SubViewport = null
 var _planet_overlay_layer: CanvasLayer = null
 var _planet_overlay_root: Control = null
+var _region_picker_layer: CanvasLayer = null
+var _region_picker: Control = null
 
 func _make_layer(layer_num: int) -> CanvasLayer:
     var cl = CanvasLayer.new()
@@ -311,3 +313,26 @@ func setup_planet_viewport() -> Dictionary:
         "overlay_layer": _planet_overlay_layer,
         "overlay_root": _planet_overlay_root,
     }
+
+
+# Mounts the region picker modal on its own CanvasLayer above the HUD/star
+# map and below the pause menu. Wires region_chosen + cancelled to the host
+# (main.gd) handlers so the picker stays a dumb view — host owns the actual
+# begin_landing call.
+func setup_region_picker(host: Node) -> Control:
+    if _region_picker != null:
+        return _region_picker
+    _region_picker_layer = CanvasLayer.new()
+    _region_picker_layer.name = "RegionPickerLayer"
+    _region_picker_layer.layer = 60
+    _region_picker_layer.process_mode = Node.PROCESS_MODE_ALWAYS
+    add_child(_region_picker_layer)
+
+    var picker_script = preload("res://Space/scripts/ui/region_picker_panel.gd")
+    _region_picker = Control.new()
+    _region_picker.set_script(picker_script)
+    _region_picker.name = "RegionPickerPanel"
+    _region_picker_layer.add_child(_region_picker)
+    _region_picker.region_chosen.connect(host._on_region_picker_chosen)
+    _region_picker.cancelled.connect(host._on_region_picker_cancelled)
+    return _region_picker
