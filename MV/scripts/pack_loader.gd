@@ -94,7 +94,7 @@ static func _ensure_user_pack_dir(user_path: String) -> void:
 		"Rooms", "Tilesets", "Sprites", "Beams",
 		"Audio/Music", "Audio/Sfx",
 		"Entities", "Items", "Dialogue", "Shops", "Triggers", "Abilities",
-		"Systems", "Realms", "Player", "Projectiles", "UI", "UI/screens",
+		"Systems", "Regions", "Player", "Projectiles", "UI", "UI/screens",
 		"Assets", "Assets/UI", "Ships", "ShipTemplates",
 	]
 	for sub in subs:
@@ -160,18 +160,20 @@ static func create_empty_pack(pack_id: String, display_name: String = "") -> boo
 
 	var manifest_path := user_path + "Pack.json"
 	var starter_world: Dictionary = RegIO.ensure_starter_world(pack_id)
-	var starter_realm_id: String = str(starter_world.get("realm_id", RegIO.DEFAULT_REALM_ID)).strip_edges()
 	var starter_region_id: String = str(starter_world.get("region_id", RegIO.DEFAULT_REGION_ID)).strip_edges()
 	var starter_room_addr: String = str(starter_world.get("room_addr", RegIO.STARTER_ROOM_ADDR)).strip_edges()
 	var starter_spawn_pos := _resolve_starter_spawn_pos(
 		pack_id,
-		starter_realm_id,
 		starter_region_id,
 		starter_room_addr
 	)
+	# SystemIO.ensure_starter_system still takes a realm_id positional in
+	# Phase 3 (Space-side cleanup is deferred to Phase 5). Pass "" so the
+	# starter system writes a benign empty realm slot; Phase 5 drops the
+	# parameter outright and migrates existing systems.json files.
 	var start_system_id := SystemIO.ensure_starter_system(
 		pack_id,
-		starter_realm_id,
+		"",
 		starter_region_id,
 		starter_room_addr,
 		starter_spawn_pos
@@ -192,10 +194,10 @@ static func create_empty_pack(pack_id: String, display_name: String = "") -> boo
 	_set_manifest_default(manifest, "start_system",
 		start_system_id if not start_system_id.is_empty() else SystemIO.STARTER_SYSTEM_ID)
 	_set_manifest_default(manifest, "start_ship_template", "startship")
-	_set_manifest_default(manifest, "start_realm", starter_realm_id)
+	_set_manifest_default(manifest, "start_region", starter_region_id)
 	_set_manifest_default(manifest, "entry_room",
 		str(starter_world.get("start_room",
-			RegIO.runtime_room_addr(starter_realm_id, starter_region_id, starter_room_addr))))
+			RegIO.runtime_room_addr(starter_region_id, starter_room_addr))))
 
 	if FileAccess.file_exists(manifest_path) and manifest == original_manifest:
 		return true
@@ -217,9 +219,9 @@ static func _set_manifest_default(manifest: Dictionary, key: String, value: Vari
 		manifest[key] = value
 
 
-static func _resolve_starter_spawn_pos(pack_id: String, realm_id: String,
-		region_id: String, room_addr: String) -> Vector2:
-	var rooms_root: Dictionary = RegIO.load_region_rooms(pack_id, realm_id, region_id)
+static func _resolve_starter_spawn_pos(pack_id: String, region_id: String,
+		room_addr: String) -> Vector2:
+	var rooms_root: Dictionary = RegIO.load_region_rooms(pack_id, region_id)
 	var rooms_v: Variant = rooms_root.get("rooms", {})
 	if typeof(rooms_v) != TYPE_DICTIONARY:
 		return Vector2.ZERO

@@ -4,8 +4,6 @@ extends Node2D
 signal camera_focus_finished
 
 const RegIO = preload("res://Space/scripts/editor/reg/reg_io.gd")
-const OverworldLayout = preload("res://MV/scripts/overworld_layout.gd")
-const OVERWORLD_BLOCK_SIZE: float = 16.0
 const HUD_SCRIPT = preload("res://MV/scripts/hud.gd")
 
 # Top-level game orchestrator for the MVMania planet layer. Ported from the
@@ -290,11 +288,18 @@ func _ensure_hud() -> void:
 
 # ===== Region meta =====
 
+# Loads the region meta for PlanetaryInterface.pending_region_id (the
+# authoritative region target for this landing) and applies music/gravity
+# overrides. Does NOT clear pending_region_id — _resolve_current_region_id
+# falls back to it later in the boot flow.
 func _apply_pending_region_meta() -> void:
-    var meta: Dictionary = PlanetaryInterface.pending_region_meta
-    var region_id: String = PlanetaryInterface.pending_region_id
-    PlanetaryInterface.pending_region_id = ""
-    PlanetaryInterface.pending_region_meta = {}
+    var region_id: String = PlanetaryInterface.pending_region_id.strip_edges()
+    if region_id.is_empty():
+        return
+    var pack: MvPackRef = MvPackLoader.current_pack
+    if pack == null:
+        return
+    var meta: Dictionary = RegIO.load_region(pack.pack_id, region_id)
     if meta.is_empty():
         return
 
@@ -305,12 +310,10 @@ func _apply_pending_region_meta() -> void:
             am.set_ambient(music_id)
 
     var gravity_mult: float = float(meta.get("gravity_mult", 1.0))
-    if absf(gravity_mult - 1.0) > 0.0001:
-        var pack: MvPackRef = MvPackLoader.current_pack
-        if pack != null and pack.physics != null:
-            pack.physics.gravity *= gravity_mult
-            if _player != null and _player.has_method("set_physics_profile"):
-                _player.set_physics_profile(pack.physics)
+    if absf(gravity_mult - 1.0) > 0.0001 and pack.physics != null:
+        pack.physics.gravity *= gravity_mult
+        if _player != null and _player.has_method("set_physics_profile"):
+            _player.set_physics_profile(pack.physics)
 
     MvTriggerEngine.fire_event("region_enter", {
         "region_id": region_id,
@@ -546,31 +549,6 @@ func debug_force_launch_from_here() -> void:
     PlanetaryInterface.begin_launch(self)
 
 
-func request_return_to_overworld(region_id: String = "", spawn_pos: Vector2 = Vector2(-1, -1)) -> void:
-    var pack_id: String = PlanetaryInterface.pending_pack_id.strip_edges()
-    if pack_id.is_empty() and MvPackLoader.current_pack != null:
-        pack_id = MvPackLoader.current_pack.pack_id
-    if pack_id.is_empty():
-        push_error("MvMain: request_return_to_overworld with no active pack")
-        return
-
-    var realm_id: String = _resolve_current_realm_id()
-    if realm_id.is_empty():
-        push_error("MvMain: request_return_to_overworld with no active realm")
-        return
-
-    var target_spawn: Vector2 = spawn_pos
-    if target_spawn.x < 0.0 or target_spawn.y < 0.0:
-        var target_region_id: String = region_id.strip_edges()
-        if target_region_id.is_empty():
-            target_region_id = _resolve_current_region_id()
-        target_spawn = _resolve_overworld_spawn_for_region(pack_id, realm_id, target_region_id)
-
-    if PlanetaryInterface.has_method("snapshot_current_mv"):
-        PlanetaryInterface.snapshot_current_mv(self)
-    PlanetaryInterface.request_return_to_overworld(pack_id, realm_id, target_spawn)
-
-
 # ===== Snapshot helpers (post-port rebuild target) =====
 
 func get_current_room_addr() -> String:
@@ -590,42 +568,24 @@ func get_player_snapshot() -> Dictionary:
     return d
 
 
-func _resolve_current_realm_id() -> String:
-    var room_addr: String = get_current_room_addr()
-    var parts: PackedStringArray = room_addr.split("/", false)
-    if parts.size() >= 3:
-        return str(parts[0]).strip_edges()
-    return PlanetaryInterface.pending_realm_id.strip_edges()
-
-
+# Returns the region id this MV session is tied to. First tries the
+# current room addr (region-prefixed in the flattened pack), then falls
+# back to PlanetaryInterface.pending_region_id (set by SSB on landing),
+# then to the pack's default region. Used by trigger/door code that needs
+# to resolve bare room addresses against "the current region".
 func _resolve_current_region_id() -> String:
     var room_addr: String = get_current_room_addr()
-    var parts: PackedStringArray = room_addr.split("/", false)
-    if parts.size() >= 3:
-        return str(parts[1]).strip_edges()
-    return ""
-
-
-func _resolve_overworld_spawn_for_region(pack_id: String, realm_id: String, region_id: String) -> Vector2:
-    var bundle: Dictionary = RegIO.load_or_init(pack_id, realm_id)
-    var realm: Dictionary = bundle.get("realm", {})
-    var regions_v: Variant = realm.get("regions", [])
-    if typeof(regions_v) == TYPE_ARRAY:
-        var regions: Array = regions_v
-        for entry_v in regions:
-            if typeof(entry_v) != TYPE_DICTIONARY:
-                continue
-            var entry: Dictionary = entry_v
-            if str(entry.get("id", "")).strip_edges() != region_id:
-                continue
-            var col: int = int(entry.get("col", 0))
-            var row: int = int(entry.get("row", 0))
-            var span_w: int = maxi(1, int(entry.get("span_w", 1)))
-            var span_h: int = maxi(1, int(entry.get("span_h", 1)))
-            return OverworldLayout.shifted_region_center_world_pos(
-                col, row, span_w, span_h, realm, OVERWORLD_BLOCK_SIZE
-            )
-    return Vector2(-1, -1)
+    var parsed: Dictionary = RegIO.parse_room_addr(room_addr)
+    var from_addr: String = str(parsed.get("region_id", "")).strip_edges()
+    if not from_addr.is_empty():
+        return from_addr
+    var pending: String = PlanetaryInterface.pending_region_id.strip_edges()
+    if not pending.is_empty():
+        return pending
+    var pack: MvPackRef = MvPackLoader.current_pack
+    if pack == null:
+        return ""
+    return RegIO.default_region_id(pack.pack_id)
 
 
 func _on_trigger_spawn_entity(entity_id: String, pos: Vector2, data: Dictionary) -> void:
@@ -975,13 +935,9 @@ func _load_destination_room() -> bool:
         _abort_door_transition()
         return false
 
-    if bool(door.get("send_to_overworld", false)):
-        print("MvMain: overworld door traversed - returning to overworld")
-        request_return_to_overworld(str(door.get("overworld_region_id", "")).strip_edges())
-        return true
     var tags: Array = door.get("tags", [])
-    if tags.has("exit_to_space"):
-        print("MvMain: exit_to_space door traversed — requesting launch")
+    if bool(door.get("launch_to_space", false)) or tags.has("exit_to_space"):
+        print("MvMain: launch_to_space door traversed — requesting launch")
         PlanetaryInterface.begin_launch(self)
         return true
 
@@ -1128,8 +1084,7 @@ func _build_door_payload(door: Dictionary, target_link: Dictionary = {}, from_ro
         "door_direction": str(door.get("direction", "")).strip_edges(),
         "enabled": _door_enabled(door),
         "locked": _door_locked(door),
-        "send_to_overworld": bool(door.get("send_to_overworld", false)),
-        "overworld_region_id": str(door.get("overworld_region_id", "")).strip_edges(),
+        "launch_to_space": bool(door.get("launch_to_space", false)),
         "tags": tags,
     }
 

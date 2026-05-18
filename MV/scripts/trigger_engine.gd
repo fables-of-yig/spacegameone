@@ -812,7 +812,6 @@ func _register_builtins() -> void:
 	register_action("set_door_locked", _act_set_door_locked)
 	register_action("save_checkpoint", _act_save_checkpoint)
 	register_action("return_to_space", _act_return_to_space)
-	register_action("return_to_overworld", _act_return_to_overworld)
 
 
 # ── Condition implementations ──────────────────────────────────────────
@@ -1451,22 +1450,6 @@ func _act_save_checkpoint(action: Dictionary, _payload: Dictionary) -> void:
 	var slot: int = int(action.get("slot", 0))
 	if MvSaveManager != null and MvSaveManager.has_method("save_game"):
 		MvSaveManager.save_game(slot)
-
-
-func _act_return_to_overworld(action: Dictionary, _payload: Dictionary) -> void:
-	if MvGame.main == null or not MvGame.main.has_method("request_return_to_overworld"):
-		return
-	var region_id: String = str(action.get("region_id", "")).strip_edges()
-	var spawn_pos: Vector2 = Vector2(-1, -1)
-	var x_text: String = str(action.get("x", "")).strip_edges()
-	var y_text: String = str(action.get("y", "")).strip_edges()
-	if _is_optional_float(x_text) and _is_optional_float(y_text) \
-			and not x_text.is_empty() and not y_text.is_empty():
-		spawn_pos = Vector2(
-			float(x_text),
-			float(y_text)
-		)
-	MvGame.main.call("request_return_to_overworld", region_id, spawn_pos)
 
 
 func _act_return_to_space(_action: Dictionary, _payload: Dictionary) -> void:

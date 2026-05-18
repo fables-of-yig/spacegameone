@@ -6,6 +6,7 @@ const _MvPickup := preload("res://MV/scripts/pickup.gd")
 const _MvTriggerVolume := preload("res://MV/scripts/trigger_volume.gd")
 const _MvBoss := preload("res://MV/scripts/boss.gd")
 const _MvWeatherOverlay := preload("res://MV/scripts/weather_overlay.gd")
+const RegIO := preload("res://Space/scripts/editor/reg/reg_io.gd")
 
 # Loads room definitions from the current content pack, builds a dynamic
 # stack of TileMapLayers per room (bg layers behind the player, main at
@@ -739,8 +740,7 @@ func _parse_door_from_zone(zone: Dictionary) -> Dictionary:
         "target_door_id": str(zone.get("target_door_id", zone.get("target_room", ""))).strip_edges(),
         "target": str(zone.get("target_room", "")).strip_edges(),
         "direction": str(zone.get("direction", "right")).strip_edges().to_lower(),
-        "send_to_overworld": bool(zone.get("send_to_overworld", false)),
-        "overworld_region_id": str(zone.get("overworld_region_id", "")).strip_edges(),
+        "launch_to_space": bool(zone.get("launch_to_space", false)),
         "enabled": bool(zone.get("enabled", true)),
         "locked": bool(zone.get("locked", false)),
         "required_item_id": str(zone.get("required_item_id", "")).strip_edges(),
@@ -776,8 +776,7 @@ func _parse_legacy_door(door: Dictionary) -> Dictionary:
         "target_door_id": str(door.get("target_door_id", "")).strip_edges(),
         "target": str(door.get("target_room", door.get("target", ""))).strip_edges(),
         "direction": str(door.get("direction", "right")).strip_edges().to_lower(),
-        "send_to_overworld": bool(door.get("send_to_overworld", false)),
-        "overworld_region_id": str(door.get("overworld_region_id", "")).strip_edges(),
+        "launch_to_space": bool(door.get("launch_to_space", false)),
         "enabled": bool(door.get("enabled", true)),
         "locked": bool(door.get("locked", false)),
         "required_item_id": str(door.get("required_item_id", "")).strip_edges(),
@@ -2386,28 +2385,29 @@ func resolve_room_addr(addr: String, from_room_addr: String = "") -> String:
     if _rooms.has(trimmed):
         return trimmed
 
-    var realm_id := ""
+    # Figure out the source region — explicit from_room_addr first, then
+    # the active room, then MvMain's region resolver (which falls back to
+    # pending_region_id / the pack's default region for bare boot states).
     var region_id := ""
     var source_addr := from_room_addr.strip_edges()
     if source_addr.is_empty():
         source_addr = _current_room_addr
-    var source_parts := source_addr.split("/", false)
-    if source_parts.size() >= 3:
-        realm_id = str(source_parts[0]).strip_edges()
-        region_id = str(source_parts[1]).strip_edges()
-    elif source_parts.size() == 2:
-        region_id = str(source_parts[0]).strip_edges()
-    if not realm_id.is_empty() and trimmed.count("/") == 1:
-        var realm_prefixed := "%s/%s" % [realm_id, trimmed]
-        if _rooms.has(realm_prefixed):
-            return realm_prefixed
-    if not region_id.is_empty() and not trimmed.contains("/"):
-        var regional := "%s/%s/%s" % [realm_id, region_id, trimmed] if not realm_id.is_empty() else "%s/%s" % [region_id, trimmed]
-        if _rooms.has(regional):
-            return regional
+    var source_parsed: Dictionary = RegIO.parse_room_addr(source_addr)
+    region_id = str(source_parsed.get("region_id", "")).strip_edges()
+    if region_id.is_empty() and MvGame.main != null and MvGame.main.has_method("_resolve_current_region_id"):
+        var resolved_v: Variant = MvGame.main.call("_resolve_current_region_id")
+        region_id = str(resolved_v).strip_edges()
 
-    var regional_name_match := ""
-    var realm_name_match := ""
+    # Bare addresses (no slash) resolve under the active region.
+    if not region_id.is_empty() and not trimmed.contains("/"):
+        var qualified := RegIO.runtime_room_addr(region_id, trimmed)
+        if _rooms.has(qualified):
+            return qualified
+
+    # Friendly-name lookup as a fallback: prefer matches under the active
+    # region, but accept any region as a last resort so cross-region links
+    # using a room's display name keep resolving.
+    var name_match := ""
     for key_v in _rooms.keys():
         var key := str(key_v)
         var room_v: Variant = _rooms[key]
@@ -2416,19 +2416,11 @@ func resolve_room_addr(addr: String, from_room_addr: String = "") -> String:
         var room: Dictionary = room_v
         if str(room.get("name", "")).strip_edges() != trimmed:
             continue
-        if not realm_id.is_empty() and not region_id.is_empty() and key.begins_with("%s/%s/" % [realm_id, region_id]):
-            return key
-        if not realm_id.is_empty() and key.begins_with(realm_id + "/"):
-            if realm_name_match.is_empty():
-                realm_name_match = key
-            continue
         if not region_id.is_empty() and key.begins_with(region_id + "/"):
             return key
-        if regional_name_match.is_empty():
-            regional_name_match = key
-    if not realm_name_match.is_empty():
-        return realm_name_match
-    return regional_name_match
+        if name_match.is_empty():
+            name_match = key
+    return name_match
 
 
 func start_room() -> String:
