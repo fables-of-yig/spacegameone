@@ -1394,6 +1394,8 @@ static func _validate_world_hierarchy(pack_id: String, flat_rooms_root: Dictiona
 					"height_blocks %d does not match mask/cell size expectation %d" %
 					[int(room.get("height_blocks", 0)), expected_h]))
 
+		_validate_region_variants(pack_id, region_id, rooms_dict, region_src, issues)
+
 	var flat_start_room := str(flat_rooms_root.get("start_room", "")).strip_edges()
 	if expected_start_room.is_empty():
 		if not flat_start_room.is_empty() and not flat_room_addrs.has(flat_start_room):
@@ -1414,6 +1416,110 @@ static func _validate_world_hierarchy(pack_id: String, flat_rooms_root: Dictiona
 		if not expected_flat_rooms.has(flat_addr):
 			issues.append(Issue.new("warning", "Rooms",
 				"flat rooms.json contains room '%s' not present in Regions/ hierarchy" % str(flat_addr)))
+
+
+# Validates Regions/<region>/room_variants.json against the region's
+# rooms.json. The file is optional — no file or an empty `variants` map
+# means "no variants in this region" and is silently accepted.
+#
+# Errors:
+#   - variants key references a room not in this region's rooms.json
+#   - variant 'use' references a missing room
+#   - variant 'use' equals the canonical key (no-op rule)
+#   - variant 'use' targets another canonical variant key (chains banned)
+#   - missing/malformed 'when' clause (scope/flag/equals shape)
+#
+# Warning:
+#   - two rules in the same list have identical when-clauses (second is
+#     dead — the first match wins at resolve time).
+static func _validate_region_variants(pack_id: String, region_id: String,
+		rooms_dict: Dictionary, region_src: String, issues: Array) -> void:
+	var variants_root := RegIO.load_room_variants(pack_id, region_id)
+	var variants_v: Variant = variants_root.get("variants", {})
+	if typeof(variants_v) != TYPE_DICTIONARY:
+		issues.append(Issue.new("error", region_src,
+			"room_variants.json 'variants' must be a dictionary"))
+		return
+	var variants: Dictionary = variants_v
+	if variants.is_empty():
+		return
+	var canonical_keys: Dictionary = {}
+	for canonical_room_v in variants.keys():
+		canonical_keys[str(canonical_room_v)] = true
+	for canonical_room_v in variants.keys():
+		var canonical_room: String = str(canonical_room_v)
+		var owner_src: String = "%s room_variants[%s]" % [region_src, canonical_room]
+		if not rooms_dict.has(canonical_room):
+			issues.append(Issue.new("error", owner_src,
+				"variants key '%s' is not a room in this region's rooms.json" % canonical_room))
+			continue
+		var rules_v: Variant = variants[canonical_room]
+		if typeof(rules_v) != TYPE_ARRAY:
+			issues.append(Issue.new("error", owner_src,
+				"variant rules must be an array of { when, use } entries"))
+			continue
+		var rules: Array = rules_v
+		var seen_when_keys: Dictionary = {}
+		for ri in range(rules.size()):
+			var rule_v: Variant = rules[ri]
+			var rule_src: String = "%s[%d]" % [owner_src, ri]
+			if typeof(rule_v) != TYPE_DICTIONARY:
+				issues.append(Issue.new("error", rule_src,
+					"variant rule must be a dictionary"))
+				continue
+			var rule: Dictionary = rule_v
+			var use_room: String = str(rule.get("use", "")).strip_edges()
+			if use_room.is_empty():
+				issues.append(Issue.new("error", rule_src, "variant rule 'use' is required"))
+			elif use_room == canonical_room:
+				issues.append(Issue.new("error", rule_src,
+					"variant 'use' targets the same canonical room '%s' — drop the rule" % use_room))
+			elif not rooms_dict.has(use_room):
+				issues.append(Issue.new("error", rule_src,
+					"variant 'use' targets room '%s' which is not in this region's rooms.json" % use_room))
+			elif canonical_keys.has(use_room):
+				issues.append(Issue.new("error", rule_src,
+					"variant 'use' targets '%s' which itself has variants — chains are not allowed" % use_room))
+			var when_key: String = _validate_variant_when_clause(rule.get("when", null), rule_src, issues)
+			if not when_key.is_empty():
+				if seen_when_keys.has(when_key):
+					issues.append(Issue.new("warning", rule_src,
+						"another rule above has the same condition '%s' — this rule will never match" % when_key))
+				else:
+					seen_when_keys[when_key] = true
+
+
+# Validates a single variant 'when' clause. On success, returns a stable
+# string key for duplicate-detection (e.g. "planet::flag_name==true"); on
+# failure, appends an issue and returns "".
+static func _validate_variant_when_clause(when_v: Variant, src: String, issues: Array) -> String:
+	if typeof(when_v) != TYPE_DICTIONARY:
+		issues.append(Issue.new("error", src,
+			"variant 'when' clause is required and must be a dictionary"))
+		return ""
+	var when_dict: Dictionary = when_v
+	var scope: String = str(when_dict.get("scope", "")).strip_edges().to_lower()
+	if scope != "planet" and scope != "global":
+		issues.append(Issue.new("error", src,
+			"variant 'when.scope' must be 'planet' or 'global' (got '%s')" % scope))
+		return ""
+	var flag_name: String = str(when_dict.get("flag", "")).strip_edges()
+	if flag_name.is_empty():
+		issues.append(Issue.new("error", src, "variant 'when.flag' is required"))
+		return ""
+	if not when_dict.has("equals"):
+		issues.append(Issue.new("error", src,
+			"variant 'when.equals' is required (use null to match an unset flag)"))
+		return ""
+	var equals_v: Variant = when_dict.get("equals", null)
+	var equals_kind: int = typeof(equals_v)
+	if equals_kind != TYPE_BOOL and equals_kind != TYPE_INT \
+			and equals_kind != TYPE_FLOAT and equals_kind != TYPE_STRING \
+			and equals_kind != TYPE_NIL:
+		issues.append(Issue.new("error", src,
+			"variant 'when.equals' must be bool, int, float, string, or null"))
+		return ""
+	return "%s::%s==%s" % [scope, flag_name, str(equals_v)]
 
 
 static func _validate_bootstrap_entry_room(pack_id: String, manifest: Dictionary,

@@ -86,6 +86,10 @@ static func region_rooms_json_path(pack_id: String, region_id: String) -> String
     return region_dir(pack_id, region_id) + "rooms.json"
 
 
+static func region_variants_json_path(pack_id: String, region_id: String) -> String:
+    return region_dir(pack_id, region_id) + "room_variants.json"
+
+
 static func flat_rooms_json_path(pack_id: String) -> String:
     return user_pack_dir(pack_id) + "Rooms/rooms.json"
 
@@ -215,6 +219,54 @@ static func save_region_rooms(pack_id: String, region_id: String, rooms_data: Di
     var ok := _save_json(region_rooms_json_path(pack_id, region_id), rooms_data)
     flatten_to_runtime(pack_id)
     return ok
+
+
+# Loads Regions/<region>/room_variants.json. Returns the default shape
+# (empty variants map) when the file is missing or malformed so callers can
+# treat "no file" and "file with no rules" identically. The on-disk shape:
+#
+#   {
+#     "version": "1.0",
+#     "variants": {
+#       "<canonical_room_id>": [
+#         {
+#           "when": { "scope": "planet"|"global", "flag": "<name>", "equals": <value> },
+#           "use":  "<alternate_room_id>"
+#         },
+#         ...
+#       ],
+#       ...
+#     }
+#   }
+#
+# Variant resolution at room-load time walks each rule in order and returns
+# the first `use` whose `when` matches the current PlanetaryInterface flag
+# state — see MvRoomManager.resolve_room_addr (added in slice 2).
+static func load_room_variants(pack_id: String, region_id: String) -> Dictionary:
+    var path := region_variants_json_path(pack_id, region_id)
+    if not FileAccess.file_exists(path):
+        return default_room_variants(region_id)
+    var data := _load_json_dict(path)
+    if data.is_empty():
+        return default_room_variants(region_id)
+    if typeof(data.get("variants", null)) != TYPE_DICTIONARY:
+        data["variants"] = {}
+    if str(data.get("version", "")).is_empty():
+        data["version"] = "1.0"
+    return data
+
+
+static func save_room_variants(pack_id: String, region_id: String, variants_data: Dictionary) -> bool:
+    _ensure_dir(region_dir(pack_id, region_id))
+    return _save_json(region_variants_json_path(pack_id, region_id), variants_data)
+
+
+static func default_room_variants(region_id: String) -> Dictionary:
+    return {
+        "version": "1.0",
+        "region_id": region_id,
+        "variants": {},
+    }
 
 
 static func create_region(pack_id: String, region_id: String, region_name: String) -> bool:
