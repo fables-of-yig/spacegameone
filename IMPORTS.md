@@ -44,7 +44,7 @@ D:/spaceboatmania/
 └── tools/import_pack.gd              ← Asset ingester (this doc explains how)
 ```
 
-Room addresses are `<region>/<room>` or a bare `<room>` (resolved against the current region). The old 3-slot `<realm>/<region>/<room>` form is rejected by `content_validator.gd`. POIs in `Systems/systems.json` carry `planet_data: { pack_id, poi_id, regions: [{ id, name, spawn_room, spawn_pos: [x, y] }] }`; the Space-side region picker reads this list when the player presses `interact` near the POI.
+Room addresses are `<region>/<room>` or a bare `<room>` (resolved against the current region). The old 3-slot `<realm>/<region>/<room>` form is rejected by `content_validator.gd`. POIs in `Systems/systems.json` carry `planet_data: { pack_id, poi_id, regions: [{ id, name, spawn_room }] }`; the Space-side region picker reads this list when the player presses `interact` near the POI. The exact spawn position inside `spawn_room` comes from that room's `player_spawn` entity — regions do not carry pixel coordinates.
 
 ## Asset pack ingestion
 

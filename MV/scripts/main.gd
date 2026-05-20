@@ -199,21 +199,21 @@ func _ready() -> void:
     var restored_player_progression: bool = PlanetaryInterface.has_method("has_player_progression_snapshot") \
         and bool(PlanetaryInterface.call("has_player_progression_snapshot"))
 
-    # Editor playtest handoff: if the env editor staged a spawn room/pos
-    # via begin_landing, load that instead of start_room. This runs AFTER
+    # Editor playtest handoff: if the env editor staged a spawn room via
+    # begin_landing, load that instead of start_room. This runs AFTER
     # restore_pending_if_any so it wins over any stale per-planet snapshot.
+    # Pass Vector2(-1, -1) for the position so load_from_snapshot falls back
+    # to the room's player_spawn entity (single source of truth for where
+    # the player materializes inside a room).
     var playtest_spawn_override: bool = false
     var has_spawn_override: bool = not PlanetaryInterface.pending_spawn_room.is_empty()
     if has_spawn_override and (PlanetaryInterface.pending_return_to_editor or not restored_snapshot):
         var target_room: String = PlanetaryInterface.pending_spawn_room
-        var target_pos: Vector2 = PlanetaryInterface.pending_spawn_pos
         playtest_spawn_override = PlanetaryInterface.pending_return_to_editor
         PlanetaryInterface.pending_spawn_room = ""
-        PlanetaryInterface.pending_spawn_pos = Vector2.ZERO
-        load_from_snapshot(target_room, target_pos, -1)
+        load_from_snapshot(target_room, Vector2(-1, -1), -1)
     elif has_spawn_override:
         PlanetaryInterface.pending_spawn_room = ""
-        PlanetaryInterface.pending_spawn_pos = Vector2.ZERO
 
     var boot_room_addr: String = _room_manager.current_room_addr() if _room_manager != null else ""
     var startup_payload: Dictionary = {

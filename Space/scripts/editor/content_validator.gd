@@ -461,20 +461,6 @@ static func _validate_systems(pack_id: String, systems: Dictionary,
 							if not target_room.is_empty() and not _room_has_player_spawn(target_room):
 								issues.append(Issue.new("error", entry_src,
 									"spawn_room '%s' has no player_spawn entity" % runtime_addr))
-				var spawn_pos_v: Variant = entry.get("spawn_pos", null)
-				if spawn_pos_v == null:
-					issues.append(Issue.new("error", entry_src, "region entry 'spawn_pos' is required"))
-				elif typeof(spawn_pos_v) != TYPE_ARRAY or (spawn_pos_v as Array).size() < 2:
-					issues.append(Issue.new("error", entry_src,
-						"region entry 'spawn_pos' must be a [x, y] array"))
-				else:
-					var spawn_arr: Array = spawn_pos_v
-					if typeof(spawn_arr[0]) != TYPE_FLOAT and typeof(spawn_arr[0]) != TYPE_INT:
-						issues.append(Issue.new("error", entry_src,
-							"region entry 'spawn_pos[0]' must be a number"))
-					if typeof(spawn_arr[1]) != TYPE_FLOAT and typeof(spawn_arr[1]) != TYPE_INT:
-						issues.append(Issue.new("error", entry_src,
-							"region entry 'spawn_pos[1]' must be a number"))
 			var planet_key := poi_id
 			if planet_key.is_empty():
 				planet_key = "%s/%s" % [system_id, str(poi.get("name", i)).strip_edges()]

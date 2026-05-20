@@ -98,9 +98,7 @@ const _FIELD_TIPS: Dictionary = {
     # spawn_space_enemies action. See dlg/eca_schema.gd.
     "region_id": "Stable region id (folder name under Content/<pack>/Regions/). Renaming here renames the region on disk and rewrites POI links.",
     "region_name": "Display name for this region. Shown in the landing prompt.",
-    "region_spawn_room": "Room address inside this region the player spawns in when landing here. Must exist in the region's rooms.json.",
-    "region_spawn_x": "X position inside the spawn room (pixels).",
-    "region_spawn_y": "Y position inside the spawn room (pixels).",
+    "region_spawn_room": "Room address inside this region the player spawns in when landing here. Must exist in the region's rooms.json. The exact spawn position inside the room comes from that room's player_spawn entity.",
     "npc_id": "Unique NPC id within this system. Used by dialogue and event effects to reference this specific NPC.",
     "npc_name": "NPC display name shown in hails and on the HUD.",
     "npc_template": "Template id from the NPC templates library. Applies a default ship + stat block. Click to open the picker.",
@@ -1075,7 +1073,6 @@ func _add_region_to_selected_poi() -> void:
         "id": new_id,
         "name": base_name,
         "spawn_room": "start",
-        "spawn_pos": [0.0, 0.0],
     }
     regions.append(new_entry)
     planet_data["regions"] = regions
@@ -1912,14 +1909,6 @@ func _apply_region_field(sys: Dictionary, key: String, text: String) -> void:
                 RegIO.save_region_meta(_pack_id, region_id, meta)
         "region_spawn_room":
             entry["spawn_room"] = text.strip_edges()
-        "region_spawn_x":
-            var pos_x: Vector2 = _region_spawn_pos(entry)
-            pos_x.x = float(text)
-            entry["spawn_pos"] = [pos_x.x, pos_x.y]
-        "region_spawn_y":
-            var pos_y: Vector2 = _region_spawn_pos(entry)
-            pos_y.y = float(text)
-            entry["spawn_pos"] = [pos_y.x, pos_y.y]
 
 
 func _set_status(text: String):
@@ -2197,15 +2186,15 @@ func _ensure_planet_data(poi: Dictionary) -> Dictionary:
                 "id": default_region,
                 "name": default_region.capitalize(),
                 "spawn_room": bare_room if not bare_room.is_empty() else "start",
-                "spawn_pos": [0.0, 0.0],
             })
             planet_data["regions"] = regions
 
-    # Normalize every entry so the panel can render uniformly.
+    # Normalize every entry so the panel can render uniformly. Strip the
+    # retired spawn_pos field if a prior save left one behind.
     for i in range(regions.size()):
         var entry_v: Variant = regions[i]
         if typeof(entry_v) != TYPE_DICTIONARY:
-            regions[i] = {"id": "", "name": "", "spawn_room": "start", "spawn_pos": [0.0, 0.0]}
+            regions[i] = {"id": "", "name": "", "spawn_room": "start"}
             continue
         var entry: Dictionary = entry_v
         if not entry.has("id"):
@@ -2214,28 +2203,16 @@ func _ensure_planet_data(poi: Dictionary) -> Dictionary:
             entry["name"] = str(entry.get("id", "")).capitalize()
         if not entry.has("spawn_room"):
             entry["spawn_room"] = "start"
-        if not entry.has("spawn_pos"):
-            entry["spawn_pos"] = [0.0, 0.0]
+        entry.erase("spawn_pos")
 
     return planet_data
 
 
-func _region_spawn_pos(entry: Dictionary) -> Vector2:
-    var pos_v: Variant = entry.get("spawn_pos", Vector2.ZERO)
-    if pos_v is Vector2:
-        return pos_v
-    if pos_v is Array and (pos_v as Array).size() >= 2:
-        return Vector2(float((pos_v as Array)[0]), float((pos_v as Array)[1]))
-    if typeof(pos_v) == TYPE_DICTIONARY:
-        var pos_dict: Dictionary = pos_v
-        return Vector2(float(pos_dict.get("x", 0.0)), float(pos_dict.get("y", 0.0)))
-    return Vector2.ZERO
-
-
 # Renders the per-POI regions[] list. Each row exposes the region id, name,
-# spawn room, and spawn position, with an Edit Rooms button (opens the
-# region editor through the host) and a Delete button (kept only when the
-# list has more than one entry). Returns the next y cursor for the caller.
+# and spawn room, with an Edit Rooms button (opens the region editor through
+# the host) and a Delete button (kept only when the list has more than one
+# entry). The exact spawn position inside the room comes from that room's
+# player_spawn entity at land time. Returns the next y cursor for the caller.
 func _draw_regions_list(x: float, y: float, font: Font, planet_data: Dictionary) -> float:
     y += 4
     y = _draw_section("REGIONS", x, y, font)
@@ -2258,15 +2235,10 @@ func _draw_regions_list(x: float, y: float, font: Font, planet_data: Dictionary)
             Color(0.78, 0.86, 0.96))
         y += 22
 
-        var spawn_pos_v: Vector2 = _region_spawn_pos(entry)
         y = _draw_field("region_id_%d" % i, "ID", str(entry.get("id", "")), x, y, font)
         y = _draw_field("region_name_%d" % i, "Name", str(entry.get("name", "")), x, y, font)
         y = _draw_field("region_spawn_room_%d" % i, "Spawn Room",
             str(entry.get("spawn_room", "")), x, y, font)
-        y = _draw_field("region_spawn_x_%d" % i, "Spawn X",
-            str(int(spawn_pos_v.x)), x, y, font)
-        y = _draw_field("region_spawn_y_%d" % i, "Spawn Y",
-            str(int(spawn_pos_v.y)), x, y, font)
 
         # Edit Rooms + Delete row.
         var btn_y: float = y + 2

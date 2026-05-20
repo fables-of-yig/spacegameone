@@ -110,7 +110,7 @@ Do the canonical pack in this order:
 
 ## Editor Playtest Roundtrip
 
-The environment editor's Test button calls `PlanetaryInterface.begin_landing(pack_id, "", region_id, room_addr, spawn_pos)` and `PlanetaryInterface.stage_return_to_editor(pack_id, region_id, room_addr)` before scene-changing to MV. Ctrl+9 inside MV scene-changes back to Space and `consume_return_to_editor()` re-opens the environment editor at the same region/room.
+The environment editor's Test button calls `PlanetaryInterface.begin_landing(pack_id, "", region_id, room_addr)` and `PlanetaryInterface.stage_return_to_editor(pack_id, region_id, room_addr)` before scene-changing to MV. Ctrl+9 inside MV scene-changes back to Space and `consume_return_to_editor()` re-opens the environment editor at the same region/room. The player spawn point inside the room comes from the room's `player_spawn` entity; the playtest refuses to launch if the room has no such entity.
 
 ## Phase 1: Create The Pack
 
@@ -284,7 +284,7 @@ Recommended room ids:
 System / planet setup:
 - author one system
 - author one planet POI
-- add one region to the POI's Regions sub-panel; set its `spawn_room` and `spawn_pos`
+- add one region to the POI's Regions sub-panel; set its `spawn_room` (the room editor's `player_spawn` entity inside that room controls where the player materializes)
 - leave `Pack Override` blank unless you are intentionally testing cross-pack routing
 - set the Pack manifest's `start_region` to the region id
 

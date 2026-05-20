@@ -58,7 +58,7 @@ Status: completed.
 
 Required work:
 
-- Planet destination contract: `pack_id`, `realm_id`, `region_id`, `spawn_room`, `spawn_pos`, return/orbit state, stable planet snapshot key.
+- Planet destination contract: `pack_id`, `poi_id`, `region_id`, `spawn_room`, return/orbit state, stable planet snapshot key. The exact spawn position inside the room comes from that room's `player_spawn` entity — no per-region pixel coords.
 - Remove silent demo routing for authored planet POIs.
 - Expand `PlanetaryInterface` snapshots for room, player, inventory, vars, planet flags, and global flags where appropriate.
 - Validate Space POI events, NPC hail events/templates, hull/static sprite paths, spawn trigger enemy classes, star/POI/background assets.

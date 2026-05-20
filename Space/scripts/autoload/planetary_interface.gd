@@ -14,7 +14,6 @@ var pending_poi_id: String = ""
 var pending_region_id: String = ""
 var pending_planet_key: String = ""
 var pending_spawn_room: String = ""
-var pending_spawn_pos: Vector2 = Vector2.ZERO
 # When true, MvMain opens the editor overlay on first frame. SSB sets this
 # from the EDITOR main-menu chooser when "Sidescroller" is selected. Cleared
 # by Main on read. (Editor overlay itself is deferred; this flag is live.)
@@ -151,11 +150,12 @@ func has_pending_snapshot() -> bool:
     return not _pending_snapshot.is_empty()
 
 # Called by SSB when the player picks a region from a POI's location list.
-# Stages the pack id, POI id, region id, and spawn coords for MvMain._enter_tree
+# Stages the pack id, POI id, region id, and spawn room for MvMain._enter_tree
 # to read, and pulls any prior snapshot for that planet+region so MvMain._ready
-# can rehydrate state.
+# can rehydrate state. The spawn point inside the room comes from the room's
+# own player_spawn entity (resolved MV-side).
 func begin_landing(pack_id: String, poi_id: String, region_id: String,
-        spawn_room: String, spawn_pos: Vector2) -> void:
+        spawn_room: String) -> void:
     pack_id = pack_id.strip_edges()
     if pack_id.is_empty():
         push_error("PlanetaryInterface.begin_landing: empty pack_id")
@@ -167,7 +167,6 @@ func begin_landing(pack_id: String, poi_id: String, region_id: String,
     pending_region_id = region_id.strip_edges()
     pending_planet_key = resolved_planet_key
     pending_spawn_room = spawn_room
-    pending_spawn_pos = spawn_pos
     if _planet_snapshots.has(resolved_planet_key):
         _pending_snapshot = _planet_snapshots[resolved_planet_key].duplicate(true)
     else:
@@ -256,7 +255,6 @@ func _emit_launch_after_snapshot():
     pending_region_id = ""
     pending_planet_key = ""
     pending_spawn_room = ""
-    pending_spawn_pos = Vector2.ZERO
     _pending_snapshot = {}
     launch_requested.emit(launching)
 
@@ -436,7 +434,6 @@ func reset_runtime_state(clear_editor_return: bool = true, clear_snapshots: bool
     pending_region_id = ""
     pending_planet_key = ""
     pending_spawn_room = ""
-    pending_spawn_pos = Vector2.ZERO
     pending_edit_mode = false
     _pending_snapshot = {}
     if clear_snapshots:
@@ -457,7 +454,6 @@ func snapshot_all() -> Dictionary:
         "pending_region_id": pending_region_id,
         "pending_planet_key": pending_planet_key,
         "pending_spawn_room": pending_spawn_room,
-        "pending_spawn_pos": [pending_spawn_pos.x, pending_spawn_pos.y],
         "planet_flags": _planet_flags.duplicate(true),
         "global_flags": _global_flags.duplicate(true),
         "planet_snapshots": _planet_snapshots.duplicate(true),
@@ -474,11 +470,6 @@ func restore_all(data: Dictionary) -> void:
     pending_region_id = str(data.get("pending_region_id", "")).strip_edges()
     pending_planet_key = str(data.get("pending_planet_key", "")).strip_edges()
     pending_spawn_room = str(data.get("pending_spawn_room", "")).strip_edges()
-    var pos_v: Variant = data.get("pending_spawn_pos", [0.0, 0.0])
-    if typeof(pos_v) == TYPE_ARRAY and (pos_v as Array).size() >= 2:
-        pending_spawn_pos = Vector2(float((pos_v as Array)[0]), float((pos_v as Array)[1]))
-    else:
-        pending_spawn_pos = Vector2.ZERO
     restore_planet_flags(data.get("planet_flags", {}))
     _global_flags.clear()
     var global_flags_v: Variant = data.get("global_flags", {})

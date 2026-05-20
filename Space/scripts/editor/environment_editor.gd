@@ -1717,8 +1717,10 @@ func request_playtest() -> void:
     if room.is_empty():
         push_warning("[EnvEditor] playtest: current room '%s' not found" % current_room_addr)
         return
-    var spawn_pos := _find_player_spawn_pos(room)
-    if spawn_pos.x < 0.0:
+    # Refuse playtest if the room doesn't carry a player_spawn entity —
+    # without one MV would fall back to the first floor tile, which is
+    # almost always not what the author wants when testing a specific room.
+    if _find_player_spawn_pos(room).x < 0.0:
         push_warning("[EnvEditor] playtest: room '%s' has no player_spawn entity — place one and retry" % current_room_addr)
         return
     if dirty:
@@ -1734,9 +1736,9 @@ func request_playtest() -> void:
     var runtime_addr := _current_runtime_room_addr()
     # poi_id is empty here because the editor playtest is not coming from a
     # POI surface; PlanetaryInterface snapshots under "<pack>::<region>".
-    PlanetaryInterface.begin_landing(pack_id, "", region_id, current_room_addr, spawn_pos)
+    PlanetaryInterface.begin_landing(pack_id, "", region_id, current_room_addr)
     PlanetaryInterface.stage_return_to_editor(pack_id, region_id, current_room_addr)
-    print("[EnvEditor] playtest: launching pack='%s' room='%s' spawn=%s" % [pack_id, runtime_addr, spawn_pos])
+    print("[EnvEditor] playtest: launching pack='%s' room='%s'" % [pack_id, runtime_addr])
     get_tree().change_scene_to_file.call_deferred("res://MV/scenes/main.tscn")
 
 

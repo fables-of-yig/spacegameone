@@ -303,7 +303,6 @@ static func _write_system(pack_id: String, system_id: String, planet_name: Strin
 				"id": REGION_ID,
 				"name": "Recipe Region",
 				"spawn_room": LANDING_ROOM,
-				"spawn_pos": [80.0, 208.0],
 			}],
 			"planet_key": "recipe_landing",
 			"sky_color": [0.35, 0.43, 0.62],

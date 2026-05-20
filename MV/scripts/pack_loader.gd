@@ -173,19 +173,14 @@ static func create_empty_pack(pack_id: String, display_name: String = "") -> boo
 	var starter_world: Dictionary = RegIO.ensure_starter_world(pack_id)
 	var starter_region_id: String = str(starter_world.get("region_id", RegIO.DEFAULT_REGION_ID)).strip_edges()
 	var starter_room_addr: String = str(starter_world.get("room_addr", RegIO.STARTER_ROOM_ADDR)).strip_edges()
-	var starter_spawn_pos := _resolve_starter_spawn_pos(
-		pack_id,
-		starter_region_id,
-		starter_room_addr
-	)
 	# Phase 5+ shape: SystemIO.ensure_starter_system seeds a starter POI
-	# with a single regions[] entry built from the region/room/spawn_pos
-	# provided here. No realm_id slot anymore.
+	# with a single regions[] entry pointing at the starter region/room.
+	# The spawn point inside the room comes from the room's player_spawn
+	# entity at land time — no per-region pixel coords.
 	var start_system_id := SystemIO.ensure_starter_system(
 		pack_id,
 		starter_region_id,
-		starter_room_addr,
-		starter_spawn_pos
+		starter_room_addr
 	)
 	UIIo.ensure_stock_screens(pack_id)
 	PedIO.ensure_starter_player_data(pack_id)
@@ -226,51 +221,6 @@ static func _set_manifest_default(manifest: Dictionary, key: String, value: Vari
 		return
 	if fill_empty and str(manifest.get(key, "")).strip_edges().is_empty():
 		manifest[key] = value
-
-
-static func _resolve_starter_spawn_pos(pack_id: String, region_id: String,
-		room_addr: String) -> Vector2:
-	var rooms_root: Dictionary = RegIO.load_region_rooms(pack_id, region_id)
-	var rooms_v: Variant = rooms_root.get("rooms", {})
-	if typeof(rooms_v) != TYPE_DICTIONARY:
-		return Vector2.ZERO
-	var rooms: Dictionary = rooms_v
-	var room_v: Variant = rooms.get(room_addr, {})
-	if typeof(room_v) != TYPE_DICTIONARY:
-		return Vector2.ZERO
-	var room: Dictionary = room_v
-	return _find_player_spawn_pos(room)
-
-
-static func _find_player_spawn_pos(room: Dictionary) -> Vector2:
-	var entities_v: Variant = room.get("entities", [])
-	if typeof(entities_v) != TYPE_ARRAY:
-		return Vector2.ZERO
-	for entity_v in entities_v:
-		if typeof(entity_v) != TYPE_DICTIONARY:
-			continue
-		var entity: Dictionary = entity_v
-		if str(entity.get("type", "")).strip_edges() != "player_spawn":
-			continue
-		var position_v: Variant = entity.get("position", null)
-		if position_v is Vector2:
-			var position_vec: Vector2 = position_v
-			return position_vec
-		if position_v is Vector2i:
-			var position_vec_i: Vector2i = position_v
-			return Vector2(position_vec_i)
-		if typeof(position_v) == TYPE_ARRAY:
-			var position_arr: Array = position_v
-			if position_arr.size() >= 2:
-				return Vector2(float(position_arr[0]), float(position_arr[1]))
-		if typeof(position_v) == TYPE_DICTIONARY:
-			var position: Dictionary = position_v
-			return Vector2(
-				float(position.get("x", entity.get("x", 0.0))),
-				float(position.get("y", entity.get("y", 0.0)))
-			)
-		return Vector2(float(entity.get("x", 0.0)), float(entity.get("y", 0.0)))
-	return Vector2.ZERO
 
 
 static func _clear_inventory() -> void:

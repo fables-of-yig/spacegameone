@@ -877,7 +877,6 @@ func _resolve_landing_regions(pack_id: String, data: Dictionary) -> Array:
         "id": default_region,
         "name": default_region.capitalize(),
         "spawn_room": spawn_room,
-        "spawn_pos": [0.0, 0.0],
     }
     return [fallback]
 
@@ -917,18 +916,7 @@ func _on_region_picker_chosen(pack_id: String, poi_id: String, region: Dictionar
     var spawn_room: String = str(region.get("spawn_room", "")).strip_edges()
     if spawn_room.is_empty() and not region_id.is_empty():
         spawn_room = RegIO.get_region_start_room(pack_id, region_id)
-    var spawn_pos: Vector2 = Vector2.ZERO
-    var spawn_pos_v: Variant = region.get("spawn_pos", null)
-    if spawn_pos_v is Vector2:
-        spawn_pos = spawn_pos_v
-    elif typeof(spawn_pos_v) == TYPE_ARRAY and (spawn_pos_v as Array).size() >= 2:
-        spawn_pos = Vector2(float((spawn_pos_v as Array)[0]), float((spawn_pos_v as Array)[1]))
-    elif typeof(spawn_pos_v) == TYPE_DICTIONARY:
-        spawn_pos = Vector2(
-            float((spawn_pos_v as Dictionary).get("x", 0.0)),
-            float((spawn_pos_v as Dictionary).get("y", 0.0)),
-        )
-    _trigger_landing(pack_id, poi_id, region_id, spawn_room, spawn_pos, pending)
+    _trigger_landing(pack_id, poi_id, region_id, spawn_room, pending)
 
 
 func _on_region_picker_cancelled() -> void:
@@ -950,7 +938,7 @@ func _on_test_planet():
         main_menu.visible = false
     var demo_region: String = RegIO.default_region_id("demo")
     var demo_room: String = RegIO.get_region_start_room("demo", demo_region)
-    _trigger_landing("demo", "", demo_region, demo_room, Vector2.ZERO,
+    _trigger_landing("demo", "", demo_region, demo_room,
         {"pack_id": "demo", "name": "Test Planet"})
 
 
@@ -979,7 +967,7 @@ func _on_play_pack(pack_id: String):
     var entry_room: String = str(manifest.get("entry_room", "")).strip_edges()
     if entry_room.is_empty():
         entry_room = RegIO.get_region_start_room(pack_id, start_region)
-    _trigger_landing(pack_id, "", start_region, entry_room, Vector2.ZERO, {
+    _trigger_landing(pack_id, "", start_region, entry_room, {
         "pack_id": pack_id,
         "name": pack_id,
     })
@@ -1271,7 +1259,7 @@ func _on_env_editor_closed():
     _on_mv_editor_closed()
 
 func _trigger_landing(pack_id: String, poi_id: String, region_id: String,
-        spawn_room: String, spawn_pos: Vector2, data: Dictionary = {}) -> void:
+        spawn_room: String, data: Dictionary = {}) -> void:
     if planet_viewport == null:
         var pv = _ui.setup_planet_viewport()
         planet_viewport_layer = pv["layer"]
@@ -1312,7 +1300,7 @@ func _trigger_landing(pack_id: String, poi_id: String, region_id: String,
     if resolved_room.is_empty() and not resolved_region.is_empty():
         resolved_room = RegIO.get_region_start_room(pid, resolved_region)
 
-    _planet_iface.begin_landing(pid, poi_id, resolved_region, resolved_room, spawn_pos)
+    _planet_iface.begin_landing(pid, poi_id, resolved_region, resolved_room)
 
     # Configure the planet viewport for the right mode.
     #   Editor: stretch_shrink=1 → SubViewport renders at native 1920x1080

@@ -83,9 +83,10 @@ func _run(pack_id: String) -> bool:
 		return false
 
 	var room_addr := ROOM_ADDR
-	# New begin_landing signature: (pack_id, poi_id, region_id, spawn_room, spawn_pos).
+	# begin_landing signature: (pack_id, poi_id, region_id, spawn_room).
 	# The planet snapshot key derives from "<pack_id>::<poi_id>::<region_id>".
-	pi.call("begin_landing", pack_id, POI_ID, REGION_ID, ROOM_NAME, Vector2(42, 84))
+	# Spawn position inside the room comes from the room's player_spawn entity.
+	pi.call("begin_landing", pack_id, POI_ID, REGION_ID, ROOM_NAME)
 	var expected_snapshot_key := "%s::%s::%s" % [pack_id, POI_ID, REGION_ID]
 	if str(pi.get("pending_planet_key")) != expected_snapshot_key:
 		push_error("phase2_runtime_smoke: pending planet key mismatch (got '%s' expected '%s')" % [str(pi.get("pending_planet_key")), expected_snapshot_key])
@@ -121,7 +122,7 @@ func _run(pack_id: String) -> bool:
 	trigger_engine.call("clear")
 	pi.call("clear_planet_flags")
 
-	pi.call("begin_landing", pack_id, POI_ID, REGION_ID, ROOM_NAME, Vector2.ZERO)
+	pi.call("begin_landing", pack_id, POI_ID, REGION_ID, ROOM_NAME)
 	var restored := bool(pi.call("restore_pending_if_any", main))
 	if not restored:
 		push_error("phase2_runtime_smoke: restore_pending_if_any returned false")

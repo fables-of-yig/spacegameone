@@ -44,7 +44,7 @@ static func load_existing(pack_id: String) -> Dictionary:
 
 
 static func ensure_starter_system(pack_id: String, region_id: String,
-        room_addr: String, spawn_pos) -> String:
+        room_addr: String) -> String:
     var pid := pack_id.strip_edges()
     if pid.is_empty():
         return ""
@@ -55,9 +55,9 @@ static func ensure_starter_system(pack_id: String, region_id: String,
     if typeof(system_v) == TYPE_DICTIONARY:
         system_data = (system_v as Dictionary).duplicate(true)
     else:
-        system_data = _starter_system(pid, region_id, room_addr, spawn_pos)
+        system_data = _starter_system(pid, region_id, room_addr)
 
-    _ensure_starter_planet(system_data, pid, region_id, room_addr, spawn_pos)
+    _ensure_starter_planet(system_data, pid, region_id, room_addr)
     systems[STARTER_SYSTEM_ID] = system_data
 
     if not save(pid, systems):
@@ -90,7 +90,7 @@ static func exists(pack_id: String) -> bool:
 
 
 static func _starter_system(pack_id: String, region_id: String,
-        room_addr: String, spawn_pos) -> Dictionary:
+        room_addr: String) -> Dictionary:
     return {
         "name": "Start System",
         "position": [500, 500],
@@ -106,13 +106,13 @@ static func _starter_system(pack_id: String, region_id: String,
         "threat_level": 1,
         "faction": "independent",
         "connections": [],
-        "pois": [_starter_planet_poi(pack_id, region_id, room_addr, spawn_pos)],
+        "pois": [_starter_planet_poi(pack_id, region_id, room_addr)],
         "placed_npcs": [],
     }
 
 
 static func _starter_planet_poi(pack_id: String, region_id: String,
-        room_addr: String, spawn_pos) -> Dictionary:
+        room_addr: String) -> Dictionary:
     var poi_id: String = "starter_planet"
     return {
         "id": poi_id,
@@ -127,20 +127,21 @@ static func _starter_planet_poi(pack_id: String, region_id: String,
         "anim_frames": 1,
         "anim_fps": 0.0,
         "gravity_radius": 0,
-        "planet_data": _starter_planet_data(pack_id, poi_id, region_id, room_addr, spawn_pos),
+        "planet_data": _starter_planet_data(pack_id, poi_id, region_id, room_addr),
     }
 
 
-# planet_data follows the Phase 5+ shape:
-#   { pack_id, poi_id, regions: [{ id, name, spawn_room, spawn_pos }] }
-# The old realm_id / top-level spawn_room slot is gone.
+# planet_data follows the region-only shape:
+#   { pack_id, poi_id, regions: [{ id, name, spawn_room }] }
+# The spawn point inside the room comes from the room's player_spawn entity
+# at land time. The old realm_id / top-level spawn_room / spawn_pos slots
+# are gone.
 static func _starter_planet_data(pack_id: String, poi_id: String, region_id: String,
-        room_addr: String, spawn_pos) -> Dictionary:
+        room_addr: String) -> Dictionary:
     var region_entry: Dictionary = {
         "id": region_id.strip_edges(),
         "name": region_id.strip_edges().capitalize(),
         "spawn_room": room_addr.strip_edges(),
-        "spawn_pos": _spawn_pos_to_array(spawn_pos),
     }
     return {
         "name": STARTER_PLANET_NAME,
@@ -158,7 +159,7 @@ static func _starter_planet_data(pack_id: String, poi_id: String, region_id: Str
 
 
 static func _ensure_starter_planet(system_data: Dictionary, pack_id: String,
-        region_id: String, room_addr: String, spawn_pos) -> void:
+        region_id: String, room_addr: String) -> void:
     var pois_v: Variant = system_data.get("pois", [])
     var pois: Array = []
     if typeof(pois_v) == TYPE_ARRAY:
@@ -172,7 +173,7 @@ static func _ensure_starter_planet(system_data: Dictionary, pack_id: String,
             break
 
     if planet_idx < 0:
-        pois.append(_starter_planet_poi(pack_id, region_id, room_addr, spawn_pos))
+        pois.append(_starter_planet_poi(pack_id, region_id, room_addr))
     else:
         var poi: Dictionary = (pois[planet_idx] as Dictionary).duplicate(true)
         if str(poi.get("name", "")).strip_edges().is_empty():
@@ -187,7 +188,7 @@ static func _ensure_starter_planet(system_data: Dictionary, pack_id: String,
         var planet_data: Dictionary = {}
         if typeof(planet_v) == TYPE_DICTIONARY:
             planet_data = (planet_v as Dictionary).duplicate(true)
-        # Strip legacy realm slots if present.
+        # Strip legacy realm slots + the retired top-level spawn_pos if present.
         planet_data.erase("realm_id")
         planet_data.erase("region_id")
         planet_data.erase("spawn_room")
@@ -204,7 +205,6 @@ static func _ensure_starter_planet(system_data: Dictionary, pack_id: String,
             "id": region_id.strip_edges(),
             "name": region_id.strip_edges().capitalize(),
             "spawn_room": room_addr.strip_edges(),
-            "spawn_pos": _spawn_pos_to_array(spawn_pos),
         }
         var matched: bool = false
         for ri in range(regions.size()):
@@ -213,7 +213,9 @@ static func _ensure_starter_planet(system_data: Dictionary, pack_id: String,
             var entry: Dictionary = regions[ri]
             if str(entry.get("id", "")).strip_edges() == starter_entry["id"]:
                 entry["spawn_room"] = starter_entry["spawn_room"]
-                entry["spawn_pos"] = starter_entry["spawn_pos"]
+                # Strip the retired per-region spawn_pos field if a prior
+                # save left one behind.
+                entry.erase("spawn_pos")
                 if str(entry.get("name", "")).strip_edges().is_empty():
                     entry["name"] = starter_entry["name"]
                 regions[ri] = entry
@@ -234,21 +236,6 @@ static func _ensure_starter_planet(system_data: Dictionary, pack_id: String,
     system_data.erase("spawn_triggers")
     if typeof(system_data.get("placed_npcs", [])) != TYPE_ARRAY:
         system_data["placed_npcs"] = []
-
-
-static func _spawn_pos_to_array(spawn_pos) -> Array:
-    if spawn_pos is Vector2:
-        return [spawn_pos.x, spawn_pos.y]
-    if spawn_pos is Vector2i:
-        return [spawn_pos.x, spawn_pos.y]
-    if typeof(spawn_pos) == TYPE_ARRAY:
-        var arr: Array = spawn_pos
-        if arr.size() >= 2:
-            return [float(arr[0]), float(arr[1])]
-    if typeof(spawn_pos) == TYPE_DICTIONARY:
-        var dict: Dictionary = spawn_pos
-        return [float(dict.get("x", 0.0)), float(dict.get("y", 0.0))]
-    return [0.0, 0.0]
 
 
 static func _read_systems(path: String) -> Dictionary:
