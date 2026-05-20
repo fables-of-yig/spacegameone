@@ -63,6 +63,13 @@ var _camera_focus_target: String = ""
 var _camera_focus_pos: Vector2 = Vector2.ZERO
 var _camera_pan_active: bool = false
 var _camera_pan_tween: Tween = null
+# Live re-resolve state for room_variants. When a planet/global flag flips
+# such that the current canonical addr would now resolve to a different
+# variant than the one currently loaded, we record the canonical here and
+# flush it (reload + reposition) once the defer gate clears. Always stores
+# the canonical addr — load_room re-runs the resolver to pick the right
+# variant for the current flag state at flush time.
+var _pending_variant_swap_addr: String = ""
 const FADE_OUT_FRAMES: int = 12
 const FADE_IN_FRAMES: int = 18
 const BLOCKED_DOOR_COOLDOWN_MS: int = 350
@@ -187,6 +194,13 @@ func _ready() -> void:
         MvTriggerEngine.action_camera_unlock.connect(_on_trigger_camera_unlock)
     if not MvTriggerEngine.action_set_room_weather.is_connected(_on_trigger_set_room_weather):
         MvTriggerEngine.action_set_room_weather.connect(_on_trigger_set_room_weather)
+    # Live re-resolve for room_variants: every planet/global flag write
+    # routes here so we can check whether the current room's variant
+    # resolution changed. Slice 3 owns the defer-and-flush path; slice 2
+    # already handles the swap on room entry.
+    if PlanetaryInterface.has_signal("flag_changed") \
+            and not PlanetaryInterface.flag_changed.is_connected(_on_flag_changed_for_variants):
+        PlanetaryInterface.flag_changed.connect(_on_flag_changed_for_variants)
     _fade = 1.0
     _fade_frame = 0
 
@@ -279,6 +293,116 @@ func _physics_process(_delta: float) -> void:
         _fade_rect.color = Color(0.0, 0.0, 0.0, _fade)
 
     _tick_door_transition()
+    _tick_pending_variant_swap()
+
+
+# ===== Room variant live re-resolve =====
+#
+# When a planet/global flag flips while the player is inside a room whose
+# canonical addr has room_variants rules, the resolution may change. We
+# detect that, capture the canonical addr as pending, and flush it during
+# _physics_process once the defer gate clears so we don't yank the rug
+# out from under an active dialogue / cinematic / trigger sequence.
+
+# Handler for PlanetaryInterface.flag_changed. Cheap check: ask the room
+# manager what the canonical currently resolves to with the new flag
+# state; if that's different from what's loaded, queue a swap. We always
+# store the canonical addr — load_room() re-runs the resolver at flush
+# time, so even if more flags flip while the swap is queued the resolver
+# picks whichever variant matches at the moment of flush.
+func _on_flag_changed_for_variants(_scope: String, _name: String, _old: Variant, _new: Variant) -> void:
+    if _room_manager == null:
+        return
+    var canonical: String = _room_manager.current_room_addr()
+    if canonical.is_empty():
+        return
+    var resolved_now: String = _room_manager.resolve_room_variant(canonical)
+    var currently_loaded: String = _room_manager._current_loaded_room_addr()
+    if resolved_now == currently_loaded:
+        # No-op: flag changed but the rule outcome didn't.
+        return
+    _pending_variant_swap_addr = canonical
+
+
+func _tick_pending_variant_swap() -> void:
+    if _pending_variant_swap_addr.is_empty():
+        return
+    if not _can_apply_variant_swap_now():
+        return
+    var canonical: String = _pending_variant_swap_addr
+    _pending_variant_swap_addr = ""
+    _execute_variant_swap(canonical)
+
+
+# Defer gate: hold the swap while the player is mid-flow so we don't
+# yank state out from under anything that's mid-execution. The flag
+# change is already recorded in PlanetaryInterface — flushing later
+# picks up whatever variant resolves at that point.
+func _can_apply_variant_swap_now() -> bool:
+    if _transitioning:
+        return false  # mid door transition; let it finish
+    if MvGame.simulation_paused:
+        return false  # editor overlay / pause menu open
+    if _camera_pan_active:
+        return false  # scripted camera pan in flight
+    if MvDialogueRunner != null and MvDialogueRunner.is_active():
+        return false
+    if MvTriggerEngine != null and not MvTriggerEngine.get_active_sequences().is_empty():
+        return false
+    if _player != null and _player.has_method("is_scripted_move_active") \
+            and bool(_player.call("is_scripted_move_active")):
+        return false
+    return true
+
+
+# Executes the swap: capture the player's current position, reload the
+# canonical addr (so the room manager re-resolves to whatever variant
+# matches the live flag state right now), then place the player at the
+# captured position clamped to the new room's bounds. A brief screen
+# flash makes the swap visible without a full fade-out cycle.
+func _execute_variant_swap(canonical: String) -> void:
+    if _room_manager == null or _player == null:
+        return
+    var captured_pos: Vector2 = _player.position
+    var captured_facing: String = ""
+    if _player.has_method("get_facing_direction"):
+        captured_facing = str(_player.call("get_facing_direction"))
+    _room_manager.load_room(canonical)
+    _setup_camera()
+    var clamped: Vector2 = _clamp_pos_to_room(captured_pos, _room_manager.current_room())
+    _player.spawn_at(clamped, "", captured_facing)
+    _flash_variant_swap()
+    print("MvMain: variant swap applied for '%s' -> loaded '%s'" % [canonical, _room_manager._current_loaded_room_addr()])
+
+
+# Clamps a coordinate to lie inside a room's pixel bounds, with a small
+# inset so the player doesn't land flush against a wall. Falls back to
+# the input pos when the room has no usable size metadata.
+func _clamp_pos_to_room(pos: Vector2, room: Dictionary) -> Vector2:
+    if room.is_empty():
+        return pos
+    var wpx: float = float(room.get("width_px", 0))
+    var hpx: float = float(room.get("height_px", 0))
+    var out := pos
+    if wpx > 0.0:
+        out.x = clampf(out.x, 8.0, maxf(8.0, wpx - 8.0))
+    if hpx > 0.0:
+        out.y = clampf(out.y, 16.0, maxf(16.0, hpx - 16.0))
+    return out
+
+
+# Brief white flash via the existing _flash_rect overlay. Reuses the
+# screen_flash plumbing but with a short, fixed duration so the swap
+# reads as deliberate rather than visually jarring.
+func _flash_variant_swap() -> void:
+    _ensure_flash_overlay()
+    if _flash_rect == null:
+        return
+    if _flash_tween != null and _flash_tween.is_valid():
+        _flash_tween.kill()
+    _flash_rect.color = Color(1.0, 1.0, 1.0, 0.45)
+    _flash_tween = create_tween()
+    _flash_tween.tween_property(_flash_rect, "color", Color(0, 0, 0, 0), 0.18)
 
 
 func _on_viewport_size_changed() -> void:

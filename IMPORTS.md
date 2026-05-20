@@ -269,8 +269,22 @@ region's `rooms.json`. `use` targets cannot themselves have variants
 (no chains). `when.scope` is `planet` or `global`; `when.equals` may
 be a bool, int, float, string, or `null` (matches an unset flag).
 Rule order matters — the first matching rule wins. Authoring is
-validated by `content_validator.gd`; runtime resolution arrives in
-slice 2 (`MvRoomManager.resolve_room_addr`).
+validated by `content_validator.gd`.
+
+`MvRoomManager.resolve_room_variant(canonical_addr)` resolves the
+addr to either the canonical or a variant alt at room-load time;
+`current_room()` returns the loaded data and `current_room_addr()`
+returns the canonical id so doors, the map, and save snapshots all
+keep using stable identities. `MvMain` subscribes to
+`PlanetaryInterface.flag_changed` and queues a live swap when the
+current room's resolution flips; the swap is deferred while a
+dialogue, trigger sequence, scripted camera pan, scripted player
+move, or pause menu is active. When it flushes the player keeps
+their position clamped to the new room's bounds and a brief screen
+flash plays.
+
+Authors edit the rules per room via the environment editor's
+VARIANTS button (next to TRIGGERS).
 
 ## Doors that launch the player back to space
 

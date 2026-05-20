@@ -21,6 +21,7 @@ var _new_room_rect: Rect2 = Rect2()
 var _play_rect: Rect2 = Rect2()
 var _validate_rect: Rect2 = Rect2()
 var _triggers_rect: Rect2 = Rect2()
+var _variants_rect: Rect2 = Rect2()
 var _meta_rect: Rect2 = Rect2()
 var _save_rect: Rect2 = Rect2()
 var _close_rect: Rect2 = Rect2()
@@ -93,6 +94,10 @@ func _gui_input(event):
             return
         if _triggers_rect.has_point(event.position):
             editor.request_edit_room_triggers()
+            accept_event()
+            return
+        if _variants_rect.has_point(event.position):
+            editor.request_edit_room_variants()
             accept_event()
             return
         if _meta_rect.has_point(event.position):
@@ -194,8 +199,9 @@ func _draw():
     var trigger_btn_w: float = 96.0
     var gap: float = 8.0
 
-    # Right-side buttons laid out from right edge: CLOSE, SAVE, META, TRIGGERS, VALIDATE, PLAY
+    # Right-side buttons laid out from right edge: CLOSE, SAVE, META, VARIANTS, TRIGGERS, VALIDATE, PLAY
     var rx: float = size.x - pad
+    var variants_btn_w: float = 96.0
 
     _close_rect = Rect2(rx - btn_w, 16, btn_w, btn_h)
     rx -= btn_w + gap
@@ -205,6 +211,9 @@ func _draw():
 
     _meta_rect = Rect2(rx - small_btn_w, 16, small_btn_w, btn_h)
     rx -= small_btn_w + gap
+
+    _variants_rect = Rect2(rx - variants_btn_w, 16, variants_btn_w, btn_h)
+    rx -= variants_btn_w + gap
 
     _triggers_rect = Rect2(rx - trigger_btn_w, 16, trigger_btn_w, btn_h)
     rx -= trigger_btn_w + gap
@@ -265,6 +274,19 @@ func _draw():
     draw_string(font, Vector2(_triggers_rect.position.x + (trigger_btn_w - triggers_w) * 0.5,
         _triggers_rect.position.y + 21),
         triggers_label, HORIZONTAL_ALIGNMENT_LEFT, -1, 13, triggers_col)
+
+    # Draw VARIANTS — flag-gated room swap rules for this room.
+    var variants_hover := _variants_rect.has_point(mouse_pos)
+    UIPanels.draw_button_bg(self, _variants_rect, variants_hover,
+        Color(0.55, 0.85, 0.95, 1))
+    if variants_hover:
+        EditorTooltip.show_text("Edit flag-gated variant rules for this room. When a planet/global flag matches, this room loads an alternate room's data instead — doors and saves keep using the canonical id.")
+    var variants_label := "VARIANTS"
+    var variants_w := font.get_string_size(variants_label, HORIZONTAL_ALIGNMENT_LEFT, -1, 13).x
+    var variants_col: Color = Color(1, 1, 1, 1) if variants_hover else Color(0.85, 0.96, 1.0, 1)
+    draw_string(font, Vector2(_variants_rect.position.x + (_variants_rect.size.x - variants_w) * 0.5,
+        _variants_rect.position.y + 21),
+        variants_label, HORIZONTAL_ALIGNMENT_LEFT, -1, 13, variants_col)
 
     # Draw VALIDATE
     var validate_hover := _validate_rect.has_point(mouse_pos)

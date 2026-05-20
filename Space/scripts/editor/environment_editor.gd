@@ -87,6 +87,7 @@ var spike_modal: Control = null
 var anim_modal: Control = null
 var entity_modal: Control = null
 var room_trigger_modal: Control = null
+var variants_modal: Control = null
 var _trigger_camera_preview: Array = []
 var _spike_profiles: Array = []
 var _slope_shapes: Array = []
@@ -197,6 +198,14 @@ func _build_layout() -> void:
     room_trigger_modal.status_changed.connect(_on_room_trigger_status_changed)
     room_trigger_modal.camera_preview_changed.connect(_on_room_trigger_camera_preview_changed)
     room_trigger_modal.camera_preview_cleared.connect(_on_room_trigger_camera_preview_cleared)
+
+    variants_modal = Control.new()
+    variants_modal.set_script(preload("res://Space/scripts/editor/env/env_variants_modal.gd"))
+    variants_modal.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+    variants_modal.visible = false
+    add_child(variants_modal)
+    variants_modal.submitted.connect(_on_variants_modal_submit)
+    variants_modal.cancelled.connect(_on_variants_modal_cancel)
 
     _tutorial_btn = Button.new()
     _tutorial_btn.text = "TUTORIAL"
@@ -1836,6 +1845,43 @@ func _apply_room_triggers(root: Dictionary) -> void:
         return
     room["triggers"] = root.duplicate(true)
     dirty = true
+
+
+# Opens the per-room variants editor. Loads the region's room_variants.json
+# (or seeds the default shape if missing), shows the modal scoped to the
+# current room, and gathers sibling room ids so the "use" picker can offer
+# them. Variants are persisted directly via RegIO on submit — they don't
+# round-trip through rooms_data because the file is its own concern.
+func request_edit_room_variants() -> void:
+    if variants_modal == null:
+        return
+    if region_id.is_empty():
+        push_warning("[EnvEditor] variants editor needs a region context (open a region first)")
+        return
+    if current_room_addr.is_empty():
+        push_warning("[EnvEditor] variants editor needs an active room")
+        return
+    var variants_root: Dictionary = RegIO.load_room_variants(pack_id, region_id)
+    var siblings: Array = _rooms_dict().keys()
+    variants_modal.call("open_for_room", pack_id, region_id, current_room_addr, siblings, variants_root)
+    variants_modal.visible = true
+    variants_modal.size = get_viewport_rect().size
+    variants_modal.set_anchors_preset(PRESET_FULL_RECT)
+    _set_background_panels_paused(true)
+
+
+func _on_variants_modal_submit(variants_root: Dictionary) -> void:
+    if region_id.is_empty():
+        return
+    if not RegIO.save_room_variants(pack_id, region_id, variants_root):
+        push_error("[EnvEditor] failed to save room_variants.json for region '%s'" % region_id)
+    else:
+        print("[EnvEditor] saved room_variants.json for region '%s'" % region_id)
+    _set_background_panels_paused(false)
+
+
+func _on_variants_modal_cancel() -> void:
+    _set_background_panels_paused(false)
 
 
 func _on_room_trigger_modal_closed() -> void:

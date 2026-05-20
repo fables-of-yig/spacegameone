@@ -1105,6 +1105,92 @@ func reload_rooms() -> void:
     _load_room_data(pack.rooms_path())
 
 
+# Variant resolution: takes a fully-qualified canonical addr like
+# "forest/town_square" and returns either the same addr (no variant fired)
+# or the qualified addr of an alternate (e.g. "forest/town_square_burned").
+#
+# Walks Regions/<region_id>/room_variants.json's rule list for the canonical
+# bare room id, evaluates each rule's `when` clause against the live
+# PlanetaryInterface flag state, and returns the first matching `use`.
+# Empty or missing variants file -> canonical unchanged.
+#
+# Resolution is recomputed on every load_room call so updated flag state
+# is honored on each room entry. Slice 3 adds live re-resolve while the
+# player is already inside the room.
+func resolve_room_variant(canonical_addr: String) -> String:
+    var parsed: Dictionary = RegIO.parse_room_addr(canonical_addr)
+    var region_id: String = str(parsed.get("region_id", "")).strip_edges()
+    var bare_room: String = str(parsed.get("room_addr", "")).strip_edges()
+    if region_id.is_empty() or bare_room.is_empty():
+        return canonical_addr
+    if _pack == null:
+        return canonical_addr
+
+    var variants_path: String = _pack.room_variants_path(region_id)
+    if not FileAccess.file_exists(variants_path):
+        return canonical_addr
+    var file := FileAccess.open(variants_path, FileAccess.READ)
+    if file == null:
+        return canonical_addr
+    var parsed_v: Variant = JSON.parse_string(file.get_as_text())
+    file.close()
+    if typeof(parsed_v) != TYPE_DICTIONARY:
+        return canonical_addr
+
+    var root: Dictionary = parsed_v
+    var variants_v: Variant = root.get("variants", {})
+    if typeof(variants_v) != TYPE_DICTIONARY:
+        return canonical_addr
+    var rules_v: Variant = (variants_v as Dictionary).get(bare_room, [])
+    if typeof(rules_v) != TYPE_ARRAY:
+        return canonical_addr
+
+    for rule_v in (rules_v as Array):
+        if typeof(rule_v) != TYPE_DICTIONARY:
+            continue
+        var rule: Dictionary = rule_v
+        if not _variant_when_matches(rule.get("when", null)):
+            continue
+        var use_room: String = str(rule.get("use", "")).strip_edges()
+        if use_room.is_empty():
+            continue
+        return RegIO.runtime_room_addr(region_id, use_room)
+
+    return canonical_addr
+
+
+# Evaluates a single variant `when` clause against PlanetaryInterface
+# flag state. Returns true iff the named flag (scope-qualified) currently
+# equals the authored `equals` value. `equals: null` matches an unset flag.
+# Bad/missing PlanetaryInterface returns false so the canonical wins.
+func _variant_when_matches(when_v: Variant) -> bool:
+    if typeof(when_v) != TYPE_DICTIONARY:
+        return false
+    var when_dict: Dictionary = when_v
+    var scope: String = str(when_dict.get("scope", "")).strip_edges().to_lower()
+    var flag_name: String = str(when_dict.get("flag", "")).strip_edges()
+    if flag_name.is_empty():
+        return false
+    if not when_dict.has("equals"):
+        return false
+    var pi: Node = get_node_or_null("/root/PlanetaryInterface")
+    if pi == null:
+        return false
+    var actual: Variant = null
+    if scope == "planet":
+        actual = pi.call("get_planet_flag", flag_name, null)
+    elif scope == "global":
+        actual = pi.call("get_global_flag", flag_name, null)
+    else:
+        return false
+    var expected: Variant = when_dict.get("equals", null)
+    if expected == null:
+        return actual == null
+    if actual == null:
+        return false
+    return typeof(actual) == typeof(expected) and actual == expected
+
+
 func load_room(addr: String) -> void:
     if not _rooms.has(addr):
         push_error("MvRoomManager: unknown room '%s'" % addr)
@@ -2453,92 +2539,6 @@ func resolve_room_addr(addr: String, from_room_addr: String = "") -> String:
         if name_match.is_empty():
             name_match = key
     return name_match
-
-
-# Variant resolution: takes a fully-qualified canonical addr like
-# "forest/town_square" and returns either the same addr (no variant fired)
-# or the qualified addr of an alternate (e.g. "forest/town_square_burned").
-#
-# Walks Regions/<region_id>/room_variants.json's rule list for the canonical
-# bare room id, evaluates each rule's `when` clause against the live
-# PlanetaryInterface flag state, and returns the first matching `use`.
-# Empty or missing variants file -> canonical unchanged.
-#
-# Resolution is recomputed on every load_room call so updated flag state
-# is honored on each room entry. Slice 3 adds live re-resolve while the
-# player is already inside the room.
-func resolve_room_variant(canonical_addr: String) -> String:
-    var parsed: Dictionary = RegIO.parse_room_addr(canonical_addr)
-    var region_id: String = str(parsed.get("region_id", "")).strip_edges()
-    var bare_room: String = str(parsed.get("room_addr", "")).strip_edges()
-    if region_id.is_empty() or bare_room.is_empty():
-        return canonical_addr
-    if _pack == null:
-        return canonical_addr
-
-    var variants_path: String = _pack.room_variants_path(region_id)
-    if not FileAccess.file_exists(variants_path):
-        return canonical_addr
-    var file := FileAccess.open(variants_path, FileAccess.READ)
-    if file == null:
-        return canonical_addr
-    var parsed_v: Variant = JSON.parse_string(file.get_as_text())
-    file.close()
-    if typeof(parsed_v) != TYPE_DICTIONARY:
-        return canonical_addr
-
-    var root: Dictionary = parsed_v
-    var variants_v: Variant = root.get("variants", {})
-    if typeof(variants_v) != TYPE_DICTIONARY:
-        return canonical_addr
-    var rules_v: Variant = (variants_v as Dictionary).get(bare_room, [])
-    if typeof(rules_v) != TYPE_ARRAY:
-        return canonical_addr
-
-    for rule_v in (rules_v as Array):
-        if typeof(rule_v) != TYPE_DICTIONARY:
-            continue
-        var rule: Dictionary = rule_v
-        if not _variant_when_matches(rule.get("when", null)):
-            continue
-        var use_room: String = str(rule.get("use", "")).strip_edges()
-        if use_room.is_empty():
-            continue
-        return RegIO.runtime_room_addr(region_id, use_room)
-
-    return canonical_addr
-
-
-# Evaluates a single variant `when` clause against PlanetaryInterface
-# flag state. Returns true iff the named flag (scope-qualified) currently
-# equals the authored `equals` value. `equals: null` matches an unset flag.
-# Bad/missing PlanetaryInterface returns false so the canonical wins.
-func _variant_when_matches(when_v: Variant) -> bool:
-    if typeof(when_v) != TYPE_DICTIONARY:
-        return false
-    var when_dict: Dictionary = when_v
-    var scope: String = str(when_dict.get("scope", "")).strip_edges().to_lower()
-    var flag_name: String = str(when_dict.get("flag", "")).strip_edges()
-    if flag_name.is_empty():
-        return false
-    if not when_dict.has("equals"):
-        return false
-    var pi: Node = get_node_or_null("/root/PlanetaryInterface")
-    if pi == null:
-        return false
-    var actual: Variant = null
-    if scope == "planet":
-        actual = pi.call("get_planet_flag", flag_name, null)
-    elif scope == "global":
-        actual = pi.call("get_global_flag", flag_name, null)
-    else:
-        return false
-    var expected: Variant = when_dict.get("equals", null)
-    if expected == null:
-        return actual == null
-    if actual == null:
-        return false
-    return typeof(actual) == typeof(expected) and actual == expected
 
 
 func start_room() -> String:
