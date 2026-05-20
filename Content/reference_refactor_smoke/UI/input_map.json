@@ -1,0 +1,8 @@
+{
+	"escape_mv": "inventory",
+	"escape_space": "pause",
+	"game_start": "main_menu",
+	"interact_npc": "dialogue_box",
+	"map_key": "map",
+	"player_died": "game_over"
+}

@@ -2,16 +2,12 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://bihxxgvf8lroh"
-path="res://.godot/imported/chuch.png-b0e3b468b7810c4f35863626e32ab4d7.ctex"
-metadata={
-"vram_texture": false
-}
+uid="uid://chjukf1undkwn"
+valid=false
 
 [deps]
 
 source_file="res://Content/demo/TilesetSources/imported/Environments/Town/props/Sprites/chuch.png"
-dest_files=["res://.godot/imported/chuch.png-b0e3b468b7810c4f35863626e32ab4d7.ctex"]
 
 [params]
 

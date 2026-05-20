@@ -2,16 +2,12 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://dyua4yw64l6j6"
-path="res://.godot/imported/Stars.png-a7e2a202abe0b114082815a543c96b44.ctex"
-metadata={
-"vram_texture": false
-}
+uid="uid://bdx1754debwb7"
+valid=false
 
 [deps]
 
 source_file="res://Content/demo/TilesetSources/imported/space-shooter-2d-game-backgrounds/PNG/Space_BG_02/Layers/Stars.png"
-dest_files=["res://.godot/imported/Stars.png-a7e2a202abe0b114082815a543c96b44.ctex"]
 
 [params]
 

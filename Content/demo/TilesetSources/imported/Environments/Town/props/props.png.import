@@ -2,16 +2,12 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://rtam60wihelw"
-path="res://.godot/imported/props.png-87c153a8afd22595c26d3883762958ba.ctex"
-metadata={
-"vram_texture": false
-}
+uid="uid://djwhdn7ee6tbo"
+valid=false
 
 [deps]
 
 source_file="res://Content/demo/TilesetSources/imported/Environments/Town/props/props.png"
-dest_files=["res://.godot/imported/props.png-87c153a8afd22595c26d3883762958ba.ctex"]
 
 [params]
 

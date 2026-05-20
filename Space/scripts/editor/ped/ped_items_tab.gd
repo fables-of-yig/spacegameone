@@ -1,6 +1,6 @@
 extends Control
 
-const PedIO = preload("res://Space/scripts/editor/ped/ped_io.gd")
+const PedIO = preload("res://Space/scripts/shared/ped/ped_io.gd")
 const PedUtil = preload("res://Space/scripts/editor/ped/ped_util.gd")
 
 # Player editor — Items tab. List + detail editor for items.json. Items are

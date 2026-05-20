@@ -2,16 +2,12 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://cb7arud8t1nbk"
-path="res://.godot/imported/duct-tileset.png-57653f770634c6a2a2303e34c6f74395.ctex"
-metadata={
-"vram_texture": false
-}
+uid="uid://cllt4vdayker"
+valid=false
 
 [deps]
 
 source_file="res://Content/demo/TilesetSources/imported/Warped Collection Files/Assets/Items, VFX and Props/Props Pack 2/sprites/duct-tileset.png"
-dest_files=["res://.godot/imported/duct-tileset.png-57653f770634c6a2a2303e34c6f74395.ctex"]
 
 [params]
 

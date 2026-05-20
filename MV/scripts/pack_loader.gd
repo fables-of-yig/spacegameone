@@ -1,11 +1,11 @@
 class_name MvPackLoader
 
-const RegIO := preload("res://Space/scripts/editor/reg/reg_io.gd")
-const SystemIO := preload("res://Space/scripts/editor/system_io.gd")
-const UIIo := preload("res://Space/scripts/editor/ui/ui_io.gd")
-const PedIO := preload("res://Space/scripts/editor/ped/ped_io.gd")
-const PspIO := preload("res://Space/scripts/editor/psp/psp_io.gd")
-const PackPaths := preload("res://Space/scripts/editor/pack_paths.gd")
+const RegIO := preload("res://Space/scripts/shared/reg/reg_io.gd")
+const SystemIO := preload("res://Space/scripts/shared/system_io.gd")
+const UIIo := preload("res://Space/scripts/shared/ui/ui_io.gd")
+const PedIO := preload("res://Space/scripts/shared/ped/ped_io.gd")
+const PspIO := preload("res://Space/scripts/shared/psp/psp_io.gd")
+const PackPaths := preload("res://Space/scripts/shared/pack_paths.gd")
 const PORTABLE_PACK_ID_TOKEN := "__BUNDLED_PACK_ID__"
 const INTERNAL_TOOL_PACK_IDS := {
 	"phase1_bootstrap": true,
@@ -66,6 +66,17 @@ static func load_pack(pack_id: String) -> MvPackRef:
 	pack.manifest = manifest
 	pack.physics = physics
 	current_pack = pack
+	# Faction table is per-pack data now (Content/<pack>/Factions/factions.json);
+	# populate it into DataManager.galaxy_data so runtime color/disposition
+	# lookups in npc_ship / station_entity / star_map see the right set for
+	# the just-loaded pack. Guarded because this loader is used by headless
+	# tools too where DataManager may not be present in the scene tree.
+	if Engine.has_singleton("DataManager") or (Engine.get_main_loop() != null
+			and Engine.get_main_loop().has_method("get_root")
+			and (Engine.get_main_loop().get_root().has_node("/root/DataManager"))):
+		var dm: Node = Engine.get_main_loop().get_root().get_node_or_null("/root/DataManager")
+		if dm != null and dm.has_method("load_pack_factions"):
+			dm.call("load_pack_factions", pack_id)
 	print("[MvPackLoader] loaded '%s' — %s v%s" % [
 		pack_id, manifest.get("name", ""), manifest.get("version", "")
 	])

@@ -2,16 +2,12 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://cv8bt0gf21sex"
-path="res://.godot/imported/13.png-9f32f1e946252b124e90c00955fcfa9a.ctex"
-metadata={
-"vram_texture": false
-}
+uid="uid://ddtj8kw1kmlsx"
+valid=false
 
 [deps]
 
 source_file="res://Content/demo/TilesetSources/imported/residential-area-tileset-pixel-art/3 Objects/Symbols/13.png"
-dest_files=["res://.godot/imported/13.png-9f32f1e946252b124e90c00955fcfa9a.ctex"]
 
 [params]
 

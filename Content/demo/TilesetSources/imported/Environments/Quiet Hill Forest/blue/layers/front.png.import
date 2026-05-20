@@ -2,16 +2,12 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://dg2x3hxi0lc5p"
-path="res://.godot/imported/front.png-9f8b08a5b840adbd5f8174026b50cb4d.ctex"
-metadata={
-"vram_texture": false
-}
+uid="uid://cs1n4t3i5m1wy"
+valid=false
 
 [deps]
 
 source_file="res://Content/demo/TilesetSources/imported/Environments/Quiet Hill Forest/blue/layers/front.png"
-dest_files=["res://.godot/imported/front.png-9f8b08a5b840adbd5f8174026b50cb4d.ctex"]
 
 [params]
 

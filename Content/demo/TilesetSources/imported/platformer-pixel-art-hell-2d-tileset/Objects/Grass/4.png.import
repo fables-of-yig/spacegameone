@@ -2,16 +2,12 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://bv4qi173td4kg"
-path="res://.godot/imported/4.png-55e5c7b430c9d832e16cc292c3bed114.ctex"
-metadata={
-"vram_texture": false
-}
+uid="uid://dw8qd6678km7d"
+valid=false
 
 [deps]
 
 source_file="res://Content/demo/TilesetSources/imported/platformer-pixel-art-hell-2d-tileset/Objects/Grass/4.png"
-dest_files=["res://.godot/imported/4.png-55e5c7b430c9d832e16cc292c3bed114.ctex"]
 
 [params]
 

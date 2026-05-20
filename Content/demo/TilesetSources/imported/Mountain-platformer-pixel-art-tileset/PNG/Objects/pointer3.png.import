@@ -2,16 +2,12 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://bht8ait3xdrf8"
-path="res://.godot/imported/pointer3.png-a2238a3a2cd20fc1047dba381371ff2a.ctex"
-metadata={
-"vram_texture": false
-}
+uid="uid://d3qqd8v20yxar"
+valid=false
 
 [deps]
 
 source_file="res://Content/demo/TilesetSources/imported/Mountain-platformer-pixel-art-tileset/PNG/Objects/pointer3.png"
-dest_files=["res://.godot/imported/pointer3.png-a2238a3a2cd20fc1047dba381371ff2a.ctex"]
 
 [params]
 

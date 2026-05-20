@@ -2,16 +2,12 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://k5ba4k3g4pwv"
-path="res://.godot/imported/Mid Fog.png-d9b2f8bc29d7a43f59ab8f3825609cea.ctex"
-metadata={
-"vram_texture": false
-}
+uid="uid://cbu10iin46ntr"
+valid=false
 
 [deps]
 
 source_file="res://Content/demo/TilesetSources/imported/Sidescroller Shooter - Central City/Background/Mid Fog.png"
-dest_files=["res://.godot/imported/Mid Fog.png-d9b2f8bc29d7a43f59ab8f3825609cea.ctex"]
 
 [params]
 

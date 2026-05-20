@@ -11,7 +11,7 @@ extends RefCounted
 # restarting. For the common "open editor, save, restart, play" workflow
 # the cache just warms on the first lookup of the new session.
 
-const PedIO := preload("res://Space/scripts/editor/ped/ped_io.gd")
+const PedIO := preload("res://Space/scripts/shared/ped/ped_io.gd")
 
 static var _cached_pack: String = ""
 static var _params_by_id: Dictionary = {}

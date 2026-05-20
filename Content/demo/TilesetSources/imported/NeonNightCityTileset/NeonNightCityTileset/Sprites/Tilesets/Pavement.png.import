@@ -2,16 +2,12 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://bpy2coxg8cnd2"
-path="res://.godot/imported/Pavement.png-9ad32a085e7655943ee3a1ffcfbc3596.ctex"
-metadata={
-"vram_texture": false
-}
+uid="uid://cdpav0ww7yi2t"
+valid=false
 
 [deps]
 
 source_file="res://Content/demo/TilesetSources/imported/NeonNightCityTileset/NeonNightCityTileset/Sprites/Tilesets/Pavement.png"
-dest_files=["res://.godot/imported/Pavement.png-9ad32a085e7655943ee3a1ffcfbc3596.ctex"]
 
 [params]
 

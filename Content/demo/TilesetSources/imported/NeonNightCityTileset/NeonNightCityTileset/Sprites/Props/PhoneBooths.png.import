@@ -2,16 +2,12 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://chi03ay67ohhx"
-path="res://.godot/imported/PhoneBooths.png-e2de20c6944c36222ae8db8672f576dc.ctex"
-metadata={
-"vram_texture": false
-}
+uid="uid://l2kxvy67u8s5"
+valid=false
 
 [deps]
 
 source_file="res://Content/demo/TilesetSources/imported/NeonNightCityTileset/NeonNightCityTileset/Sprites/Props/PhoneBooths.png"
-dest_files=["res://.godot/imported/PhoneBooths.png-e2de20c6944c36222ae8db8672f576dc.ctex"]
 
 [params]
 

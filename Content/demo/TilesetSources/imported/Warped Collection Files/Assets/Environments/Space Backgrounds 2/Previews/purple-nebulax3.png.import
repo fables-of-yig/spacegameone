@@ -3,15 +3,11 @@
 importer="texture"
 type="CompressedTexture2D"
 uid="uid://cr820myb1hhvy"
-path="res://.godot/imported/purple-nebulax3.png-e44c5f9915947d9d1a28e273606ecf78.ctex"
-metadata={
-"vram_texture": false
-}
+valid=false
 
 [deps]
 
 source_file="res://Content/demo/TilesetSources/imported/Warped Collection Files/Assets/Environments/Space Backgrounds 2/Previews/purple-nebulax3.png"
-dest_files=["res://.godot/imported/purple-nebulax3.png-e44c5f9915947d9d1a28e273606ecf78.ctex"]
 
 [params]
 

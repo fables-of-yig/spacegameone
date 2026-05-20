@@ -3,15 +3,11 @@
 importer="texture"
 type="CompressedTexture2D"
 uid="uid://8niycb1vn6by"
-path="res://.godot/imported/power-up-2.png-0816dd8eda29ea0f51f61fd36925d6d0.ctex"
-metadata={
-"vram_texture": false
-}
+valid=false
 
 [deps]
 
 source_file="res://Content/demo/TilesetSources/imported/Warped Collection Files/Assets/Items, VFX and Props/Caves Fx/Sprites/power-up/power-up-2.png"
-dest_files=["res://.godot/imported/power-up-2.png-0816dd8eda29ea0f51f61fd36925d6d0.ctex"]
 
 [params]
 

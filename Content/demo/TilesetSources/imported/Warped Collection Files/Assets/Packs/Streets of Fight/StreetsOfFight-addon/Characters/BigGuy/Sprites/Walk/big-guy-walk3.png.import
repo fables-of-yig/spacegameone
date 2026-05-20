@@ -2,16 +2,12 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://dayw1pd1px0l6"
-path="res://.godot/imported/big-guy-walk3.png-80bf6940d6c5d5ea1b1db6de494a9f16.ctex"
-metadata={
-"vram_texture": false
-}
+uid="uid://d1hgxxneii5n2"
+valid=false
 
 [deps]
 
 source_file="res://Content/demo/TilesetSources/imported/Warped Collection Files/Assets/Packs/Streets of Fight/StreetsOfFight-addon/Characters/BigGuy/Sprites/Walk/big-guy-walk3.png"
-dest_files=["res://.godot/imported/big-guy-walk3.png-80bf6940d6c5d5ea1b1db6de494a9f16.ctex"]
 
 [params]
 

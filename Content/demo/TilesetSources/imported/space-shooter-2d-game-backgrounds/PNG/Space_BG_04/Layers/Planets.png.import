@@ -3,15 +3,11 @@
 importer="texture"
 type="CompressedTexture2D"
 uid="uid://cudywwqtb4bsv"
-path="res://.godot/imported/Planets.png-2d6cbb9bdf1c3383c69015e56966cb56.ctex"
-metadata={
-"vram_texture": false
-}
+valid=false
 
 [deps]
 
 source_file="res://Content/demo/TilesetSources/imported/space-shooter-2d-game-backgrounds/PNG/Space_BG_04/Layers/Planets.png"
-dest_files=["res://.godot/imported/Planets.png-2d6cbb9bdf1c3383c69015e56966cb56.ctex"]
 
 [params]
 

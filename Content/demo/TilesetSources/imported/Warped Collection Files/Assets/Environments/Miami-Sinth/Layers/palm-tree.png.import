@@ -2,16 +2,12 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://dqledtopkfk1g"
-path="res://.godot/imported/palm-tree.png-f37fd6a2db8f9e22d0fca0ab8fb20a70.ctex"
-metadata={
-"vram_texture": false
-}
+uid="uid://ccbwjk7rs23yd"
+valid=false
 
 [deps]
 
 source_file="res://Content/demo/TilesetSources/imported/Warped Collection Files/Assets/Environments/Miami-Sinth/Layers/palm-tree.png"
-dest_files=["res://.godot/imported/palm-tree.png-f37fd6a2db8f9e22d0fca0ab8fb20a70.ctex"]
 
 [params]
 

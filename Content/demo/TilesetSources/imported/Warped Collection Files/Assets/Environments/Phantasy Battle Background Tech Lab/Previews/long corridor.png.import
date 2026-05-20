@@ -3,15 +3,11 @@
 importer="texture"
 type="CompressedTexture2D"
 uid="uid://g4e4c4gygolx"
-path="res://.godot/imported/long corridor.png-d159b79fbdec182f4254d068e412568c.ctex"
-metadata={
-"vram_texture": false
-}
+valid=false
 
 [deps]
 
 source_file="res://Content/demo/TilesetSources/imported/Warped Collection Files/Assets/Environments/Phantasy Battle Background Tech Lab/Previews/long corridor.png"
-dest_files=["res://.godot/imported/long corridor.png-d159b79fbdec182f4254d068e412568c.ctex"]
 
 [params]
 

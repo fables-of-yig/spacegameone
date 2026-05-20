@@ -2,16 +2,12 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://0wls2pgcs5bj"
-path="res://.godot/imported/rino-fish-rolling2.png-649ce610fb1940b3cb4fed34cebc53b1.ctex"
-metadata={
-"vram_texture": false
-}
+uid="uid://vrgxwdectwyx"
+valid=false
 
 [deps]
 
 source_file="res://Content/demo/TilesetSources/imported/Warped Collection Files/Assets/Enemies/RinoFish Add-on 1/rino-fish-rolling/sprites/rino-fish-rolling2.png"
-dest_files=["res://.godot/imported/rino-fish-rolling2.png-649ce610fb1940b3cb4fed34cebc53b1.ctex"]
 
 [params]
 

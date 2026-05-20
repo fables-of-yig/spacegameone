@@ -3,15 +3,11 @@
 importer="texture"
 type="CompressedTexture2D"
 uid="uid://bkr08ttlevoho"
-path="res://.godot/imported/Button_01.png-3b437605ea901d19916a11d5e8f509a6.ctex"
-metadata={
-"vram_texture": false
-}
+valid=false
 
 [deps]
 
 source_file="res://Content/demo/TilesetSources/imported/space-shooter-game-level-map-pack/PNG/Level_Elements/Button_01.png"
-dest_files=["res://.godot/imported/Button_01.png-3b437605ea901d19916a11d5e8f509a6.ctex"]
 
 [params]
 

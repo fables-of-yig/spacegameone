@@ -2,16 +2,12 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://biwc6svdq34hw"
-path="res://.godot/imported/idle2.png-2e6498b5824c94e2e461c6e28927f45a.ctex"
-metadata={
-"vram_texture": false
-}
+uid="uid://c61k6b20l6dud"
+valid=false
 
 [deps]
 
 source_file="res://Content/demo/TilesetSources/imported/Warped Collection Files/Assets/Packs/Streets of Fight/Streets of Fight Base/Sprites/Brawler-Girl/Idle/idle2.png"
-dest_files=["res://.godot/imported/idle2.png-2e6498b5824c94e2e461c6e28927f45a.ctex"]
 
 [params]
 

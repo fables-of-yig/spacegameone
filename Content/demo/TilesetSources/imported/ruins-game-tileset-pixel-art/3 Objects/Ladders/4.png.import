@@ -2,16 +2,12 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://dchfhamtskp87"
-path="res://.godot/imported/4.png-00e07f862858ecb24ce7013d18d04510.ctex"
-metadata={
-"vram_texture": false
-}
+uid="uid://cep5d0vuhso8j"
+valid=false
 
 [deps]
 
 source_file="res://Content/demo/TilesetSources/imported/ruins-game-tileset-pixel-art/3 Objects/Ladders/4.png"
-dest_files=["res://.godot/imported/4.png-00e07f862858ecb24ce7013d18d04510.ctex"]
 
 [params]
 

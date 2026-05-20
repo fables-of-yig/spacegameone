@@ -3,15 +3,11 @@
 importer="texture"
 type="CompressedTexture2D"
 uid="uid://3ttlw8xu8tdb"
-path="res://.godot/imported/floor.png-8c966d9b0422b3a9a63b83b61426bac5.ctex"
-metadata={
-"vram_texture": false
-}
+valid=false
 
 [deps]
 
 source_file="res://Content/demo/TilesetSources/imported/Warped Collection Files/Assets/Environments/bulkhead-walls/PNG/floor.png"
-dest_files=["res://.godot/imported/floor.png-8c966d9b0422b3a9a63b83b61426bac5.ctex"]
 
 [params]
 

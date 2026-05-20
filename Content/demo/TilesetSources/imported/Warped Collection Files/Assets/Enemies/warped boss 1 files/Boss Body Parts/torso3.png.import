@@ -2,16 +2,12 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://1116kqy0ngrq"
-path="res://.godot/imported/torso3.png-0ead49c7c7f7b29d186a75d980f46a75.ctex"
-metadata={
-"vram_texture": false
-}
+uid="uid://bobvyy466rtyu"
+valid=false
 
 [deps]
 
 source_file="res://Content/demo/TilesetSources/imported/Warped Collection Files/Assets/Enemies/warped boss 1 files/Boss Body Parts/torso3.png"
-dest_files=["res://.godot/imported/torso3.png-0ead49c7c7f7b29d186a75d980f46a75.ctex"]
 
 [params]
 

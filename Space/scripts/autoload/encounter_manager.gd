@@ -1,6 +1,6 @@
 extends Node
 
-const PedIO := preload("res://Space/scripts/editor/ped/ped_io.gd")
+const PedIO := preload("res://Space/scripts/shared/ped/ped_io.gd")
 
 signal encounter_started(event_id: String, enc_id: int)
 

@@ -2,16 +2,12 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://c7gtn7afhof6j"
-path="res://.godot/imported/tileset.png-563a6b9e89ee3b4a7705e4ae38a84a8f.ctex"
-metadata={
-"vram_texture": false
-}
+uid="uid://bvxr116rivwy8"
+valid=false
 
 [deps]
 
 source_file="res://Content/demo/TilesetSources/imported/Warped Collection Files/Assets/Environments/Warped Station Environment/tileset.png"
-dest_files=["res://.godot/imported/tileset.png-563a6b9e89ee3b4a7705e4ae38a84a8f.ctex"]
 
 [params]
 

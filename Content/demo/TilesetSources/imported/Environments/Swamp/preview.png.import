@@ -2,16 +2,12 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://u7l4cut4c72h"
-path="res://.godot/imported/preview.png-3214020af49a7db38a05bb79a945149c.ctex"
-metadata={
-"vram_texture": false
-}
+uid="uid://ckf68nea7qidu"
+valid=false
 
 [deps]
 
 source_file="res://Content/demo/TilesetSources/imported/Environments/Swamp/preview.png"
-dest_files=["res://.godot/imported/preview.png-3214020af49a7db38a05bb79a945149c.ctex"]
 
 [params]
 

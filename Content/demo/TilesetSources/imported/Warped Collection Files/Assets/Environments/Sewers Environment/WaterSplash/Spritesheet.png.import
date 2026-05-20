@@ -3,15 +3,11 @@
 importer="texture"
 type="CompressedTexture2D"
 uid="uid://dywtenb6h6rxs"
-path="res://.godot/imported/Spritesheet.png-a90d028f62cb45e5cc843ba63a90b1cf.ctex"
-metadata={
-"vram_texture": false
-}
+valid=false
 
 [deps]
 
 source_file="res://Content/demo/TilesetSources/imported/Warped Collection Files/Assets/Environments/Sewers Environment/WaterSplash/Spritesheet.png"
-dest_files=["res://.godot/imported/Spritesheet.png-a90d028f62cb45e5cc843ba63a90b1cf.ctex"]
 
 [params]
 

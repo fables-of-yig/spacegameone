@@ -2,16 +2,12 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://dsfydc3ie6hf6"
-path="res://.godot/imported/middle.png-87598a84e7a3b834dfe4745e8d25aa71.ctex"
-metadata={
-"vram_texture": false
-}
+uid="uid://bbdjcsq6hxflf"
+valid=false
 
 [deps]
 
 source_file="res://Content/demo/TilesetSources/imported/Environments/underwater-fantasy-files/Addon/Reef/Layers/middle.png"
-dest_files=["res://.godot/imported/middle.png-87598a84e7a3b834dfe4745e8d25aa71.ctex"]
 
 [params]
 

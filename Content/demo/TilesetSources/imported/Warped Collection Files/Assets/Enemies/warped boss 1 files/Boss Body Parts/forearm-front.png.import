@@ -2,16 +2,12 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://dyl4atdm5iy3p"
-path="res://.godot/imported/forearm-front.png-aeb2399577478ff930ec3dc4a9286476.ctex"
-metadata={
-"vram_texture": false
-}
+uid="uid://b2vwtm0bjnlh6"
+valid=false
 
 [deps]
 
 source_file="res://Content/demo/TilesetSources/imported/Warped Collection Files/Assets/Enemies/warped boss 1 files/Boss Body Parts/forearm-front.png"
-dest_files=["res://.godot/imported/forearm-front.png-aeb2399577478ff930ec3dc4a9286476.ctex"]
 
 [params]
 

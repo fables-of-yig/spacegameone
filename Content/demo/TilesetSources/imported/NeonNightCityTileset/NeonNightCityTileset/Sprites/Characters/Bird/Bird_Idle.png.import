@@ -2,16 +2,12 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://b5y5kfdebuyuu"
-path="res://.godot/imported/Bird_Idle.png-4d9aed6e78c8eaa38021254502270d62.ctex"
-metadata={
-"vram_texture": false
-}
+uid="uid://fk2n78e7hsig"
+valid=false
 
 [deps]
 
 source_file="res://Content/demo/TilesetSources/imported/NeonNightCityTileset/NeonNightCityTileset/Sprites/Characters/Bird/Bird_Idle.png"
-dest_files=["res://.godot/imported/Bird_Idle.png-4d9aed6e78c8eaa38021254502270d62.ctex"]
 
 [params]
 

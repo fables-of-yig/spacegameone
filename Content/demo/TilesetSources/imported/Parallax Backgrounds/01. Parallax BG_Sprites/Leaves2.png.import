@@ -3,15 +3,11 @@
 importer="texture"
 type="CompressedTexture2D"
 uid="uid://bpa1tly05h03s"
-path="res://.godot/imported/Leaves2.png-21431eaaf6b1c0942abf65b1c02707b4.ctex"
-metadata={
-"vram_texture": false
-}
+valid=false
 
 [deps]
 
 source_file="res://Content/demo/TilesetSources/imported/Parallax Backgrounds/01. Parallax BG_Sprites/Leaves2.png"
-dest_files=["res://.godot/imported/Leaves2.png-21431eaaf6b1c0942abf65b1c02707b4.ctex"]
 
 [params]
 

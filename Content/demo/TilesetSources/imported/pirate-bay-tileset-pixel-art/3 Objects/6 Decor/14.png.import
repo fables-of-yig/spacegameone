@@ -2,16 +2,12 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://b0jjkh0l3emt1"
-path="res://.godot/imported/14.png-67941eba201207727dae87ccd56102ab.ctex"
-metadata={
-"vram_texture": false
-}
+uid="uid://q2jhsbqm6ecw"
+valid=false
 
 [deps]
 
 source_file="res://Content/demo/TilesetSources/imported/pirate-bay-tileset-pixel-art/3 Objects/6 Decor/14.png"
-dest_files=["res://.godot/imported/14.png-67941eba201207727dae87ccd56102ab.ctex"]
 
 [params]
 

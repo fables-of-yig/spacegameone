@@ -1,6 +1,6 @@
 extends Node
 
-const PedIO := preload("res://Space/scripts/editor/ped/ped_io.gd")
+const PedIO := preload("res://Space/scripts/shared/ped/ped_io.gd")
 const _StationGenerator := preload("res://Space/scripts/autoload/station_generator.gd")
 const _InputSetup := preload("res://Space/scripts/autoload/input_setup.gd")
 const _ModuleSprites := preload("res://Space/scripts/autoload/module_sprites.gd")
@@ -79,6 +79,10 @@ var station_populations: Dictionary = {}
 
 var in_combat: bool = false
 var consumed_pois: Array = []
+# sys_id -> Array[String] of poi.id values that have been unlocked at runtime.
+# A POI authored with `hidden: true` is skipped during spawn until its id
+# appears in this map; the unlock_poi trigger action writes here.
+var unlocked_pois: Dictionary = {}
 var killed_placed_npcs: Dictionary = {}
 
 
@@ -533,6 +537,7 @@ func reset_to_new_game():
     visited_events = {}
     pending_events = []
     consumed_pois = []
+    unlocked_pois = {}
     killed_placed_npcs = {}
     ship_modules = []
     module_inventory = {}
@@ -1118,12 +1123,20 @@ func init_faction_reputation():
 
     var factions = DataManager.galaxy_data.get("factions", {})
     for fid in factions:
-        if not faction_reputation.has(fid):
-            var base = factions[fid].get("disposition", "neutral")
-            match base:
-                "friendly": faction_reputation[fid] = 25.0
-                "hostile": faction_reputation[fid] = -25.0
-                _: faction_reputation[fid] = 0.0
+        if faction_reputation.has(fid):
+            continue
+        var entry: Dictionary = factions[fid]
+        # Authored player_rep_start wins when present (new factions.json
+        # schema); fall back to disposition-based default for back-compat
+        # with the original hardcoded HUMAN_FACTIONS shape.
+        if entry.has("player_rep_start"):
+            faction_reputation[fid] = float(entry["player_rep_start"])
+            continue
+        var base = entry.get("disposition_to_player", entry.get("disposition", "neutral"))
+        match base:
+            "friendly": faction_reputation[fid] = 25.0
+            "hostile": faction_reputation[fid] = -25.0
+            _: faction_reputation[fid] = 0.0
 
 
 
@@ -2136,6 +2149,7 @@ func save_game(slot: int = -1) -> bool:
         "npc_id_counter": npc_id_counter, 
         "faction_reputation": faction_reputation, 
         "consumed_pois": consumed_pois,
+        "unlocked_pois": unlocked_pois,
         "killed_placed_npcs": killed_placed_npcs,
         "game_hour": game_hour,
         "game_day": game_day, 
@@ -2205,6 +2219,8 @@ func load_game(slot: int = -1) -> bool:
     pending_events = data.get("pending_events", [])
     equipped_core = data.get("equipped_core", "core_pod")
     consumed_pois = data.get("consumed_pois", [])
+    var loaded_unlocked_v: Variant = data.get("unlocked_pois", {})
+    unlocked_pois = loaded_unlocked_v if typeof(loaded_unlocked_v) == TYPE_DICTIONARY else {}
     killed_placed_npcs = data.get("killed_placed_npcs", {})
     game_hour = data.get("game_hour", 6)
     game_day = data.get("game_day", 1)
@@ -2242,15 +2258,11 @@ func load_game(slot: int = -1) -> bool:
     npc_id_counter = data.get("npc_id_counter", 0)
     faction_reputation = data.get("faction_reputation", {})
 
-    var saved_seed = int(data.get("galaxy_seed", 0))
-    var saved_size = int(data.get("galaxy_size", 40))
-    if saved_seed != 0:
-
-        var saved_visited = visited_systems.duplicate()
-        var saved_current = current_system
-        DataManager.generate_new_galaxy(saved_seed, saved_size)
-        visited_systems = saved_visited
-        current_system = saved_current
+    # Procedural saves used to call DataManager.generate_new_galaxy here
+    # to reconstitute the seeded galaxy. With procedural deleted, saves
+    # are pack-based; the active pack's authored systems are loaded by
+    # MvPackLoader at boot, so nothing needs to be regenerated. Old
+    # procedural saves are unloadable.
     persistent_stations = data.get("persistent_stations", {})
 
     for sk in persistent_stations:
@@ -2615,6 +2627,33 @@ func is_station_destroyed(station_key: String) -> bool:
         return false
     var sdata = persistent_stations[station_key]
     return sdata.get("health", 1.0) <= 0
+
+
+# True when a hidden POI has been unlocked at runtime by an unlock_poi
+# trigger action. Compared against the POI's `id` field (stable identifier
+# authored in systems.json).
+func is_poi_unlocked(sys_id: String, poi_id: String) -> bool:
+    if sys_id.is_empty() or poi_id.is_empty():
+        return false
+    var arr_v: Variant = unlocked_pois.get(sys_id, null)
+    if typeof(arr_v) != TYPE_ARRAY:
+        return false
+    return poi_id in (arr_v as Array)
+
+
+# Append `poi_id` to unlocked_pois[sys_id] if not already present. The
+# system re-renders this on next entry (spawn_system_pois reads the map
+# when iterating each POI), so an active session won't see the change
+# until the player jumps out and back into the system.
+func unlock_poi(sys_id: String, poi_id: String) -> void:
+    if sys_id.is_empty() or poi_id.is_empty():
+        return
+    var arr_v: Variant = unlocked_pois.get(sys_id, [])
+    var arr: Array = arr_v if typeof(arr_v) == TYPE_ARRAY else []
+    if poi_id in arr:
+        return
+    arr.append(poi_id)
+    unlocked_pois[sys_id] = arr
 
 
 

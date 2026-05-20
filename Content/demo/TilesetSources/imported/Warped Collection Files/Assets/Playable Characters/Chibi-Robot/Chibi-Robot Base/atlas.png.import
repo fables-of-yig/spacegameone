@@ -2,16 +2,12 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://dnqmjgob5r618"
-path="res://.godot/imported/atlas.png-b0a2b371cdbaca19df6df1caa2f99536.ctex"
-metadata={
-"vram_texture": false
-}
+uid="uid://cmc1fj72tdjph"
+valid=false
 
 [deps]
 
 source_file="res://Content/demo/TilesetSources/imported/Warped Collection Files/Assets/Playable Characters/Chibi-Robot/Chibi-Robot Base/atlas.png"
-dest_files=["res://.godot/imported/atlas.png-b0a2b371cdbaca19df6df1caa2f99536.ctex"]
 
 [params]
 

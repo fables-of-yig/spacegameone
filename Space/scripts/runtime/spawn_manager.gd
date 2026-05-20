@@ -136,6 +136,16 @@ func spawn_system_pois(sys_id: String):
         if eid != "" and eid in GameManager.consumed_pois:
             continue
 
+        # Hidden POIs are skipped until an unlock_poi action records the
+        # POI's id in GameManager.unlocked_pois. The check happens here
+        # (rather than after marker construction) so no marker is drawn,
+        # no station entity is spawned, and the planet enrichment above
+        # is wasted at worst on a single duplicated dict.
+        if bool(poi_data.get("hidden", false)):
+            var poi_id_check: String = str(poi_data.get("id", "")).strip_edges()
+            if poi_id_check.is_empty() or not GameManager.is_poi_unlocked(sys_id, poi_id_check):
+                continue
+
         var marker = Area2D.new()
         marker.set_script(host.poi_script)
 

@@ -3,15 +3,11 @@
 importer="texture"
 type="CompressedTexture2D"
 uid="uid://bldiiaur7hhfh"
-path="res://.godot/imported/1.png-e1632ad86046d36be455248b20019ee1.ctex"
-metadata={
-"vram_texture": false
-}
+valid=false
 
 [deps]
 
 source_file="res://Content/demo/TilesetSources/imported/lab-game-tileset-pixel-art/2 Background/Day/1.png"
-dest_files=["res://.godot/imported/1.png-e1632ad86046d36be455248b20019ee1.ctex"]
 
 [params]
 

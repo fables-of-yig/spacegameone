@@ -3,15 +3,11 @@
 importer="texture"
 type="CompressedTexture2D"
 uid="uid://c7ngbu3kw7n5y"
-path="res://.godot/imported/back.png-3a538a2a034dbc57a1def03eec346de1.ctex"
-metadata={
-"vram_texture": false
-}
+valid=false
 
 [deps]
 
 source_file="res://Content/demo/TilesetSources/imported/Environments/underwater-fantasy-files/Addon/Sunken/Layers/back.png"
-dest_files=["res://.godot/imported/back.png-3a538a2a034dbc57a1def03eec346de1.ctex"]
 
 [params]
 

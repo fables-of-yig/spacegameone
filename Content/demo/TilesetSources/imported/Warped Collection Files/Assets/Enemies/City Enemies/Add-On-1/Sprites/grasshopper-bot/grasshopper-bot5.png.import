@@ -2,16 +2,12 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://dekiiy2gq4nrw"
-path="res://.godot/imported/grasshopper-bot5.png-2db228ec40609b41b018de45bd53d9b6.ctex"
-metadata={
-"vram_texture": false
-}
+uid="uid://dgsqedlafl3tr"
+valid=false
 
 [deps]
 
 source_file="res://Content/demo/TilesetSources/imported/Warped Collection Files/Assets/Enemies/City Enemies/Add-On-1/Sprites/grasshopper-bot/grasshopper-bot5.png"
-dest_files=["res://.godot/imported/grasshopper-bot5.png-2db228ec40609b41b018de45bd53d9b6.ctex"]
 
 [params]
 

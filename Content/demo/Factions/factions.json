@@ -1,0 +1,132 @@
+{
+	"factions": {
+		"cotac": {
+			"name": "COTAC",
+			"symbol_path": "",
+			"disposition_to_player": "friendly",
+			"player_rep_start": 25,
+			"relations": {
+				"isd": "ally",
+				"castellan": "neutral",
+				"union_militia": "ally",
+				"bulwark": "neutral",
+				"xenoculture": "ally",
+				"fringe": "enemy",
+				"independent": "neutral"
+			},
+			"desc": "Church of Technological Advancement and Continuity"
+		},
+		"castellan": {
+			"name": "Castellan",
+			"symbol_path": "",
+			"disposition_to_player": "neutral",
+			"player_rep_start": 0,
+			"relations": {
+				"cotac": "neutral",
+				"isd": "ally",
+				"union_militia": "neutral",
+				"bulwark": "ally",
+				"xenoculture": "neutral",
+				"fringe": "enemy",
+				"independent": "neutral"
+			},
+			"desc": "Local governance authority"
+		},
+		"isd": {
+			"name": "ISD",
+			"symbol_path": "",
+			"disposition_to_player": "friendly",
+			"player_rep_start": 25,
+			"relations": {
+				"cotac": "ally",
+				"castellan": "ally",
+				"union_militia": "ally",
+				"bulwark": "neutral",
+				"xenoculture": "neutral",
+				"fringe": "enemy",
+				"independent": "neutral"
+			},
+			"desc": "Interstellar Security Directorate"
+		},
+		"union_militia": {
+			"name": "Union Militia",
+			"symbol_path": "",
+			"disposition_to_player": "friendly",
+			"player_rep_start": 25,
+			"relations": {
+				"cotac": "ally",
+				"castellan": "neutral",
+				"isd": "ally",
+				"bulwark": "neutral",
+				"xenoculture": "ally",
+				"fringe": "enemy",
+				"independent": "neutral"
+			},
+			"desc": "Blue collar defense force"
+		},
+		"bulwark": {
+			"name": "Bulwark",
+			"symbol_path": "",
+			"disposition_to_player": "neutral",
+			"player_rep_start": 0,
+			"relations": {
+				"cotac": "neutral",
+				"castellan": "ally",
+				"isd": "neutral",
+				"union_militia": "neutral",
+				"xenoculture": "neutral",
+				"fringe": "enemy",
+				"independent": "neutral"
+			},
+			"desc": "Elite exterminator corps"
+		},
+		"xenoculture": {
+			"name": "Xenoculture Emissariat",
+			"symbol_path": "",
+			"disposition_to_player": "friendly",
+			"player_rep_start": 25,
+			"relations": {
+				"cotac": "ally",
+				"castellan": "neutral",
+				"isd": "neutral",
+				"union_militia": "ally",
+				"bulwark": "neutral",
+				"fringe": "neutral",
+				"independent": "neutral"
+			},
+			"desc": "Alien research and diplomacy"
+		},
+		"fringe": {
+			"name": "The Fringe",
+			"symbol_path": "",
+			"disposition_to_player": "hostile",
+			"player_rep_start": -25,
+			"relations": {
+				"cotac": "enemy",
+				"castellan": "enemy",
+				"isd": "enemy",
+				"union_militia": "enemy",
+				"bulwark": "enemy",
+				"xenoculture": "neutral",
+				"independent": "neutral"
+			},
+			"desc": "Lawless frontier operators"
+		},
+		"independent": {
+			"name": "Independent",
+			"symbol_path": "",
+			"disposition_to_player": "neutral",
+			"player_rep_start": 0,
+			"relations": {
+				"cotac": "neutral",
+				"castellan": "neutral",
+				"isd": "neutral",
+				"union_militia": "neutral",
+				"bulwark": "neutral",
+				"xenoculture": "neutral",
+				"fringe": "neutral"
+			},
+			"desc": "No faction affiliation"
+		}
+	}
+}

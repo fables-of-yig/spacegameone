@@ -2,16 +2,12 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://bq0dbgw4mct2u"
-path="res://.godot/imported/hurt.png-9e148e9b74e634ad09a3e6573354bcc8.ctex"
-metadata={
-"vram_texture": false
-}
+uid="uid://h5tumuctslrf"
+valid=false
 
 [deps]
 
 source_file="res://Content/demo/TilesetSources/imported/Warped Collection Files/Assets/Packs/Streets of Fight/Streets of Fight Base/Spritesheets/Brawler Girl/hurt.png"
-dest_files=["res://.godot/imported/hurt.png-9e148e9b74e634ad09a3e6573354bcc8.ctex"]
 
 [params]
 

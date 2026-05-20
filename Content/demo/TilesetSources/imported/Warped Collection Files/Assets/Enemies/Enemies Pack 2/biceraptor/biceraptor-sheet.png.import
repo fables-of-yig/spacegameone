@@ -2,16 +2,12 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://caijyspkrfcpt"
-path="res://.godot/imported/biceraptor-sheet.png-54da09444487ab4122ddd40f43fa7e3d.ctex"
-metadata={
-"vram_texture": false
-}
+uid="uid://bflmkppwgo35q"
+valid=false
 
 [deps]
 
 source_file="res://Content/demo/TilesetSources/imported/Warped Collection Files/Assets/Enemies/Enemies Pack 2/biceraptor/biceraptor-sheet.png"
-dest_files=["res://.godot/imported/biceraptor-sheet.png-54da09444487ab4122ddd40f43fa7e3d.ctex"]
 
 [params]
 

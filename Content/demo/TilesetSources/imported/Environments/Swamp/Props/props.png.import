@@ -2,16 +2,12 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://dadfsn2jpfbme"
-path="res://.godot/imported/props.png-f54b59094980d976511b6bc0ea8400c8.ctex"
-metadata={
-"vram_texture": false
-}
+uid="uid://vp6rumwkqnwj"
+valid=false
 
 [deps]
 
 source_file="res://Content/demo/TilesetSources/imported/Environments/Swamp/Props/props.png"
-dest_files=["res://.godot/imported/props.png-f54b59094980d976511b6bc0ea8400c8.ctex"]
 
 [params]
 

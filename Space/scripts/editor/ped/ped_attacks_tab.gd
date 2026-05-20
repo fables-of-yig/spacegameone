@@ -1,9 +1,8 @@
 extends Control
 
-const PedIO = preload("res://Space/scripts/editor/ped/ped_io.gd")
+const PedIO = preload("res://Space/scripts/shared/ped/ped_io.gd")
 const PedUtil = preload("res://Space/scripts/editor/ped/ped_util.gd")
-const PspIO = preload("res://Space/scripts/editor/psp/psp_io.gd")
-const ContentReferenceRefactor = preload("res://Space/scripts/editor/content_reference_refactor.gd")
+const PspIO = preload("res://Space/scripts/shared/psp/psp_io.gd")
 
 signal edit_projectile_requested(projectile_id: String)
 

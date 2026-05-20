@@ -12,7 +12,7 @@ signal scripted_animation_finished(anim_name: String)
 # directly — so the simplest NPC-authoring path (entity + dialogue file)
 # works without needing a separate trigger rule.
 
-const EntIO := preload("res://Space/scripts/editor/ent/ent_io.gd")
+const EntIO := preload("res://Space/scripts/shared/ent/ent_io.gd")
 
 const PLACEHOLDER_SIZE: Vector2 = Vector2(14, 24)
 const INTERACT_RADIUS: float = 24.0

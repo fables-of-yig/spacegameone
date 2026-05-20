@@ -2,16 +2,12 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://bqr8n2fsgh2ju"
-path="res://.godot/imported/planets1.png-41acffcbd918b59805645ae1a068ddf6.ctex"
-metadata={
-"vram_texture": false
-}
+uid="uid://boc50hcr2kiw4"
+valid=false
 
 [deps]
 
 source_file="res://Content/demo/TilesetSources/imported/pixel-art-space-2d-game-backgrounds/x2_1920_1080/PNG/Space3/Bright/planets1.png"
-dest_files=["res://.godot/imported/planets1.png-41acffcbd918b59805645ae1a068ddf6.ctex"]
 
 [params]
 

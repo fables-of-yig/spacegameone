@@ -2,16 +2,12 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://cj53og7kdbrf"
-path="res://.godot/imported/myst.png-ab920323d921276bcf3fdbbbf68e3686.ctex"
-metadata={
-"vram_texture": false
-}
+uid="uid://cererledotl1m"
+valid=false
 
 [deps]
 
 source_file="res://Content/demo/TilesetSources/imported/Environments/Super Mountain Dusk/version B/Layers/myst.png"
-dest_files=["res://.godot/imported/myst.png-ab920323d921276bcf3fdbbbf68e3686.ctex"]
 
 [params]
 

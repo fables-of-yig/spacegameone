@@ -2,16 +2,12 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://8yoqajct200a"
-path="res://.godot/imported/Tile_32.png-b87ec94aacb2a549e52eac518788a6b0.ctex"
-metadata={
-"vram_texture": false
-}
+uid="uid://cl7wljjmfob3i"
+valid=false
 
 [deps]
 
 source_file="res://Content/demo/TilesetSources/imported/sunken-city-tileset-pixel-art/2 Tileset/Tile_32.png"
-dest_files=["res://.godot/imported/Tile_32.png-b87ec94aacb2a549e52eac518788a6b0.ctex"]
 
 [params]
 

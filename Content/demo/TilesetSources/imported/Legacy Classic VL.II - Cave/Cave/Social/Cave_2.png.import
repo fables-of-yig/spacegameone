@@ -2,16 +2,12 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://bhos0i7voas2o"
-path="res://.godot/imported/Cave_2.png-4bdf248a1708e8bc9cf495daae9b3f2b.ctex"
-metadata={
-"vram_texture": false
-}
+uid="uid://dyhcsj2oufonn"
+valid=false
 
 [deps]
 
 source_file="res://Content/demo/TilesetSources/imported/Legacy Classic VL.II - Cave/Cave/Social/Cave_2.png"
-dest_files=["res://.godot/imported/Cave_2.png-4bdf248a1708e8bc9cf495daae9b3f2b.ctex"]
 
 [params]
 

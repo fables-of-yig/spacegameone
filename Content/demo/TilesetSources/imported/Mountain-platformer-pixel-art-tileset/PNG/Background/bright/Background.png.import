@@ -3,15 +3,11 @@
 importer="texture"
 type="CompressedTexture2D"
 uid="uid://b8kdwcdm58ipp"
-path="res://.godot/imported/Background.png-70f43904f10316952907b4172d2fb8bd.ctex"
-metadata={
-"vram_texture": false
-}
+valid=false
 
 [deps]
 
 source_file="res://Content/demo/TilesetSources/imported/Mountain-platformer-pixel-art-tileset/PNG/Background/bright/Background.png"
-dest_files=["res://.godot/imported/Background.png-70f43904f10316952907b4172d2fb8bd.ctex"]
 
 [params]
 

@@ -2,16 +2,12 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://cejldkrw7762f"
-path="res://.godot/imported/Column3.png-8081f169ae655389c7ba6705878ffcb0.ctex"
-metadata={
-"vram_texture": false
-}
+uid="uid://0ioiyaqoj2wr"
+valid=false
 
 [deps]
 
 source_file="res://Content/demo/TilesetSources/imported/Parallax Backgrounds/01. Parallax BG_Sprites/Column3.png"
-dest_files=["res://.godot/imported/Column3.png-8081f169ae655389c7ba6705878ffcb0.ctex"]
 
 [params]
 

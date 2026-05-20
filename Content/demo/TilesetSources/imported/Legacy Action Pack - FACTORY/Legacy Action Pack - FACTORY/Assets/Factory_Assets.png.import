@@ -3,15 +3,11 @@
 importer="texture"
 type="CompressedTexture2D"
 uid="uid://cyrl3ek44k2q1"
-path="res://.godot/imported/Factory_Assets.png-a1401a99e178b6058ccf902837b7508d.ctex"
-metadata={
-"vram_texture": false
-}
+valid=false
 
 [deps]
 
 source_file="res://Content/demo/TilesetSources/imported/Legacy Action Pack - FACTORY/Legacy Action Pack - FACTORY/Assets/Factory_Assets.png"
-dest_files=["res://.godot/imported/Factory_Assets.png-a1401a99e178b6058ccf902837b7508d.ctex"]
 
 [params]
 

@@ -1,7 +1,5 @@
 extends Control
 
-const InputSetup := preload("res://Space/scripts/autoload/input_setup.gd")
-
 signal closed
 
 var _dim: ColorRect = null

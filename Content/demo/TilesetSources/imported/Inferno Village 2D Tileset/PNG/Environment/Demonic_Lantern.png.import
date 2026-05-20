@@ -2,16 +2,12 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://bvfg33q2c14ym"
-path="res://.godot/imported/Demonic_Lantern.png-f1fcafa689f78b073a4d469504be651b.ctex"
-metadata={
-"vram_texture": false
-}
+uid="uid://cya245t4an2xf"
+valid=false
 
 [deps]
 
 source_file="res://Content/demo/TilesetSources/imported/Inferno Village 2D Tileset/PNG/Environment/Demonic_Lantern.png"
-dest_files=["res://.godot/imported/Demonic_Lantern.png-f1fcafa689f78b073a4d469504be651b.ctex"]
 
 [params]
 

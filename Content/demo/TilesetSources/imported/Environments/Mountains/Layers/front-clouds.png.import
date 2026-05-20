@@ -3,15 +3,11 @@
 importer="texture"
 type="CompressedTexture2D"
 uid="uid://d3nl5pwjql0q5"
-path="res://.godot/imported/front-clouds.png-1bafe1a0bdd26445e183cd78fad005b6.ctex"
-metadata={
-"vram_texture": false
-}
+valid=false
 
 [deps]
 
 source_file="res://Content/demo/TilesetSources/imported/Environments/Mountains/Layers/front-clouds.png"
-dest_files=["res://.godot/imported/front-clouds.png-1bafe1a0bdd26445e183cd78fad005b6.ctex"]
 
 [params]
 

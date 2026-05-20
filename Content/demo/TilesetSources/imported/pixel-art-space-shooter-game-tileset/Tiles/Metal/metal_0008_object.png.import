@@ -3,15 +3,11 @@
 importer="texture"
 type="CompressedTexture2D"
 uid="uid://cir22t22mfk8t"
-path="res://.godot/imported/metal_0008_object.png-b95f7b8a55d25233466a9dcbcdaa2548.ctex"
-metadata={
-"vram_texture": false
-}
+valid=false
 
 [deps]
 
 source_file="res://Content/demo/TilesetSources/imported/pixel-art-space-shooter-game-tileset/Tiles/Metal/metal_0008_object.png"
-dest_files=["res://.godot/imported/metal_0008_object.png-b95f7b8a55d25233466a9dcbcdaa2548.ctex"]
 
 [params]
 

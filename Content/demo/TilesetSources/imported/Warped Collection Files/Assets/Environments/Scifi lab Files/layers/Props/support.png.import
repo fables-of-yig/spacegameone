@@ -3,15 +3,11 @@
 importer="texture"
 type="CompressedTexture2D"
 uid="uid://c3bnjj5qfrqax"
-path="res://.godot/imported/support.png-8723aeeaa3eaa500bc7b4cefe21cd585.ctex"
-metadata={
-"vram_texture": false
-}
+valid=false
 
 [deps]
 
 source_file="res://Content/demo/TilesetSources/imported/Warped Collection Files/Assets/Environments/Scifi lab Files/layers/Props/support.png"
-dest_files=["res://.godot/imported/support.png-8723aeeaa3eaa500bc7b4cefe21cd585.ctex"]
 
 [params]
 

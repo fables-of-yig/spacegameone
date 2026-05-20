@@ -2,16 +2,12 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://c2hnryq0j0i3d"
-path="res://.godot/imported/SpringUpRightTrigger.png-e168b4948959c1c7e45f9ba74579cd97.ctex"
-metadata={
-"vram_texture": false
-}
+uid="uid://ba4rjlxo4uwqd"
+valid=false
 
 [deps]
 
 source_file="res://Content/demo/TilesetSources/imported/PlatformerPrototypePack/Release/Springs/SpringUpRightTrigger.png"
-dest_files=["res://.godot/imported/SpringUpRightTrigger.png-e168b4948959c1c7e45f9ba74579cd97.ctex"]
 
 [params]
 

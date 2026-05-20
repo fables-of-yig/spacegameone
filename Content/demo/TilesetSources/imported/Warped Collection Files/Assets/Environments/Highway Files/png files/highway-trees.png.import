@@ -2,16 +2,12 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://bt6exxxvylxty"
-path="res://.godot/imported/highway-trees.png-1f1a18cd6b56b3c7593142a99724d8b6.ctex"
-metadata={
-"vram_texture": false
-}
+uid="uid://dkuoy5wa145vm"
+valid=false
 
 [deps]
 
 source_file="res://Content/demo/TilesetSources/imported/Warped Collection Files/Assets/Environments/Highway Files/png files/highway-trees.png"
-dest_files=["res://.godot/imported/highway-trees.png-1f1a18cd6b56b3c7593142a99724d8b6.ctex"]
 
 [params]
 

@@ -2,16 +2,12 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://bn6u8ampe4kep"
-path="res://.godot/imported/Grass_02.png-163c5bd465b83d93f3c74d63abffbf65.ctex"
-metadata={
-"vram_texture": false
-}
+uid="uid://cgbnbili548qw"
+valid=false
 
 [deps]
 
 source_file="res://Content/demo/TilesetSources/imported/Inferno Village 2D Tileset/PNG/Environment/Grass_02.png"
-dest_files=["res://.godot/imported/Grass_02.png-163c5bd465b83d93f3c74d63abffbf65.ctex"]
 
 [params]
 

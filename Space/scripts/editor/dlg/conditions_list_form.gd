@@ -8,6 +8,7 @@ var _add_btn: Button = null
 var _rows: Array = []  # [{row, form}]
 var _suppress_emit: bool = false
 var _pack_id: String = ""
+var _rule_event: String = ""
 
 
 func _ready() -> void:
@@ -38,6 +39,15 @@ func set_pack_id(pack_id: String) -> void:
         var form: DlgConditionForm = row.get("form")
         if form != null and form.has_method("set_pack_id"):
             form.set_pack_id(_pack_id)
+
+
+func set_rule_event(event_name: String) -> void:
+    _rule_event = event_name.strip_edges()
+    for row_v in _rows:
+        var row: Dictionary = row_v
+        var form: DlgConditionForm = row.get("form")
+        if form != null and form.has_method("set_rule_event"):
+            form.set_rule_event(_rule_event)
 
 
 func open(conditions: Array) -> void:
@@ -109,6 +119,8 @@ func _append_row(seed_data: Dictionary) -> void:
     var form := DlgConditionForm.new()
     if form.has_method("set_pack_id"):
         form.set_pack_id(_pack_id)
+    if form.has_method("set_rule_event"):
+        form.set_rule_event(_rule_event)
     form.changed.connect(_emit_changed)
     row.add_child(form)
     form.open(seed_data)

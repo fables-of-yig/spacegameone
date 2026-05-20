@@ -2,16 +2,12 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://bjiqv3aq2h6tu"
-path="res://.godot/imported/flying-snake-5.png-417c165720a00e7aa9243914dba59b5a.ctex"
-metadata={
-"vram_texture": false
-}
+uid="uid://bluye4pcnjib2"
+valid=false
 
 [deps]
 
 source_file="res://Content/demo/TilesetSources/imported/Warped Collection Files/Assets/Enemies/Warped Lava Enemies/Sprites/flying-snake/flying-snake-5.png"
-dest_files=["res://.godot/imported/flying-snake-5.png-417c165720a00e7aa9243914dba59b5a.ctex"]
 
 [params]
 

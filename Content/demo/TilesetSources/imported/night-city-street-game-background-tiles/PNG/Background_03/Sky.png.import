@@ -2,16 +2,12 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://ivqwydcw5dvq"
-path="res://.godot/imported/Sky.png-d47b8383ef688d367631215102a27094.ctex"
-metadata={
-"vram_texture": false
-}
+uid="uid://cnow6ajdhmsgo"
+valid=false
 
 [deps]
 
 source_file="res://Content/demo/TilesetSources/imported/night-city-street-game-background-tiles/PNG/Background_03/Sky.png"
-dest_files=["res://.godot/imported/Sky.png-d47b8383ef688d367631215102a27094.ctex"]
 
 [params]
 

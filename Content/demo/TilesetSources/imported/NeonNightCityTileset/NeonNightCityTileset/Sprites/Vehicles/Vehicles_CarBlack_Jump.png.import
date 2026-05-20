@@ -2,16 +2,12 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://dgf86m2b0x8d0"
-path="res://.godot/imported/Vehicles_CarBlack_Jump.png-317e217c20be9ce71461794fc99dadc5.ctex"
-metadata={
-"vram_texture": false
-}
+uid="uid://cm2xi8omvxmdn"
+valid=false
 
 [deps]
 
 source_file="res://Content/demo/TilesetSources/imported/NeonNightCityTileset/NeonNightCityTileset/Sprites/Vehicles/Vehicles_CarBlack_Jump.png"
-dest_files=["res://.godot/imported/Vehicles_CarBlack_Jump.png-317e217c20be9ce71461794fc99dadc5.ctex"]
 
 [params]
 

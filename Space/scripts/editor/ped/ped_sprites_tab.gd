@@ -1,6 +1,6 @@
 extends Control
 
-const PspIO = preload("res://Space/scripts/editor/psp/psp_io.gd")
+const PspIO = preload("res://Space/scripts/shared/psp/psp_io.gd")
 const PedUtil = preload("res://Space/scripts/editor/ped/ped_util.gd")
 const FRAME_ROTATION_STEP_DEG: float = 22.5
 

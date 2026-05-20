@@ -1,10 +1,10 @@
 extends Control
 
-const EnvIO = preload("res://Space/scripts/editor/env/env_io.gd")
+const EnvIO = preload("res://Space/scripts/shared/env/env_io.gd")
 const EnvTypes = preload("res://Space/scripts/editor/env/env_types.gd")
-const PackAssetIndex = preload("res://Space/scripts/editor/pack_asset_index.gd")
-const RegIO = preload("res://Space/scripts/editor/reg/reg_io.gd")
-const EntIO = preload("res://Space/scripts/editor/ent/ent_io.gd")
+const PackAssetIndex = preload("res://Space/scripts/shared/pack_asset_index.gd")
+const RegIO = preload("res://Space/scripts/shared/reg/reg_io.gd")
+const EntIO = preload("res://Space/scripts/shared/ent/ent_io.gd")
 const _ContentValidator = preload("res://Space/scripts/editor/content_validator.gd")
 const _UndoManager = preload("res://Space/scripts/editor/undo_manager.gd")
 
@@ -893,12 +893,6 @@ func _on_tileset_files_selected(paths: PackedStringArray) -> void:
     # When the user submits, _finish_tileset_import reads _pending_import_paths.
     _pending_import_paths = paths
     _show_tileset_import_modal("%d" % EnvIO.BLOCK_SIZE)
-    return
-    var prompt := "Pixel size of each logical tile (multiple of %d, ≥ %d). 16 is a plain 16×16 tileset; 32/48/64/… for bigger art. Storage stays 16-px under the hood — large tiles paint as N×N brushes." % [EnvIO.BLOCK_SIZE, EnvIO.BLOCK_SIZE]
-    show_text_modal("Tile size",
-        "%d" % EnvIO.BLOCK_SIZE,
-        prompt,
-        Callable(self, "_finish_tileset_import"))
 
 
 func _finish_tileset_import(tile_size_str: String) -> void:
@@ -923,26 +917,6 @@ func _finish_tileset_import(tile_size_str: String) -> void:
         EnvIO.save_tileset_name(pack_id, imported_idx, import_name)
     _refresh_tileset_cache()
     selected_tileset_id = imported_idx
-    selected_metatile_idx = 0
-    selected_metatile_span = Vector2i.ONE
-    return
-    var tile_size: int = EnvIO.BLOCK_SIZE
-    var parsed := int(tile_size_str.strip_edges())
-    if parsed >= EnvIO.BLOCK_SIZE and parsed % EnvIO.BLOCK_SIZE == 0:
-        tile_size = parsed
-    else:
-        push_warning("[EnvEditor] tile size '%s' invalid — falling back to %d" % [tile_size_str, EnvIO.BLOCK_SIZE])
-    var new_idx := EnvIO.import_tileset(pack_id, paths, tile_size)
-    if new_idx < 0:
-        return
-    # Default the display name to the first source file's basename —
-    # usually the folder-of-tiles name or a descriptive filename the
-    # user chose. They can rename via the dropdown later.
-    var default_name := str(paths[0]).get_file().get_basename()
-    if not default_name.is_empty():
-        EnvIO.save_tileset_name(pack_id, new_idx, default_name)
-    _refresh_tileset_cache()
-    selected_tileset_id = new_idx
     selected_metatile_idx = 0
     selected_metatile_span = Vector2i.ONE
 
@@ -2280,7 +2254,7 @@ func _rebase_room_door_ids(room: Dictionary, room_addr: String) -> Dictionary:
         var old_id := str(zone.get("id", "")).strip_edges()
         if not old_id.is_empty():
             used_ids.erase(old_id)
-    var remap: Dictionary = {}
+    var door_remap: Dictionary = {}
     for i in zones.size():
         if typeof(zones[i]) != TYPE_DICTIONARY:
             continue
@@ -2297,7 +2271,7 @@ func _rebase_room_door_ids(room: Dictionary, room_addr: String) -> Dictionary:
         zone["name"] = new_id
         zones[i] = zone
         if not old_id.is_empty() and old_id != new_id:
-            remap[old_id] = new_id
+            door_remap[old_id] = new_id
         used_ids[new_id] = true
     for i in zones.size():
         if typeof(zones[i]) != TYPE_DICTIONARY:
@@ -2306,13 +2280,13 @@ func _rebase_room_door_ids(room: Dictionary, room_addr: String) -> Dictionary:
         if _normalize_zone_kind(str(zone.get("kind", ""))) != "door":
             continue
         var target_id := str(zone.get("target_door_id", "")).strip_edges()
-        if target_id.is_empty() or not remap.has(target_id):
+        if target_id.is_empty() or not door_remap.has(target_id):
             continue
-        zone["target_door_id"] = str(remap[target_id])
+        zone["target_door_id"] = str(door_remap[target_id])
         zones[i] = zone
     room["zones"] = zones
     _sync_room_zones(room)
-    return remap
+    return door_remap
 
 
 func _normalize_zone_kind(kind: String) -> String:
@@ -2337,22 +2311,22 @@ func _zone_default_name(kind: String, arr: Array) -> String:
 func _normalize_zone_for_room(entry: Dictionary, room: Dictionary, arr: Array,
         fallback_name: String = "", exclude_id: String = "") -> Dictionary:
     var source: Dictionary = entry.duplicate(true)
-    var name := str(source.get("name", fallback_name)).strip_edges()
-    if name.is_empty():
-        name = fallback_name if not fallback_name.is_empty() else str(source.get("id", "Zone")).strip_edges()
-    if name.is_empty():
-        name = "Zone"
+    var zone_name := str(source.get("name", fallback_name)).strip_edges()
+    if zone_name.is_empty():
+        zone_name = fallback_name if not fallback_name.is_empty() else str(source.get("id", "Zone")).strip_edges()
+    if zone_name.is_empty():
+        zone_name = "Zone"
     var kind := _normalize_zone_kind(str(source.get("kind", "")))
     if kind == "door":
         var room_addr := str(room.get("addr", current_room_addr)).strip_edges()
-        var desired_id := _door_full_id(room_addr, name if not name.is_empty() else str(source.get("id", "")))
+        var desired_id := _door_full_id(room_addr, zone_name if not zone_name.is_empty() else str(source.get("id", "")))
         source["id"] = RegIO.unique_content_id(desired_id, _door_id_map(exclude_id), "door", exclude_id)
         source["name"] = str(source["id"])
     else:
-        source["name"] = name
-        var desired_id := str(source.get("id", name)).strip_edges()
+        source["name"] = zone_name
+        var desired_id := str(source.get("id", zone_name)).strip_edges()
         if desired_id.is_empty():
-            desired_id = name
+            desired_id = zone_name
         source["id"] = RegIO.unique_content_id(desired_id, _zone_id_map(arr, exclude_id), "zone", exclude_id)
     return EnvIO._normalize_zone_entry(
         source,
@@ -2593,14 +2567,14 @@ func _suggest_background_image_id(arr: Array) -> String:
     return "bg_1"
 
 
-func _find_shader_region_index(arr: Array, region_id: String) -> int:
-    if region_id.is_empty():
+func _find_shader_region_index(arr: Array, target_region_id: String) -> int:
+    if target_region_id.is_empty():
         return -1
     for i in arr.size():
         var entry_v: Variant = arr[i]
         if typeof(entry_v) != TYPE_DICTIONARY:
             continue
-        if str((entry_v as Dictionary).get("id", "")).strip_edges() == region_id:
+        if str((entry_v as Dictionary).get("id", "")).strip_edges() == target_region_id:
             return i
     return -1
 
@@ -2819,15 +2793,16 @@ func merge_background_images_to_baked() -> bool:
         if typeof(entry_v) != TYPE_DICTIONARY:
             continue
         var entry: Dictionary = entry_v
-        var rel_path := str(entry.get("image", "")).strip_edges()
-        if rel_path.is_empty():
+        var entry_rel_path := str(entry.get("image", "")).strip_edges()
+        if entry_rel_path.is_empty():
             continue
-        var src: Image = EnvIO.load_backdrop_image(pack_id, rel_path)
+        var src: Image = EnvIO.load_backdrop_image(pack_id, entry_rel_path)
         if src == null:
             continue
         if src.get_format() != Image.FORMAT_RGBA8:
             src.convert(Image.FORMAT_RGBA8)
         var frame_count := maxi(1, int(entry.get("anim_frames", 1)))
+        @warning_ignore("integer_division")
         var frame_w := maxi(1, int(src.get_width() / frame_count))
         var frame_img: Image = src.get_region(Rect2i(0, 0, frame_w, src.get_height()))
         var target_w := maxi(1, int(round(float(entry.get("width_blocks", 0.0)) * EnvIO.BLOCK_SIZE)))
@@ -3659,16 +3634,16 @@ func _pick_entity_preview_png(pngs: Array) -> String:
     if pngs.is_empty():
         return ""
     for name_v in pngs:
-        var name := str(name_v).to_lower()
-        if name.contains("idle"):
+        var png_name := str(name_v).to_lower()
+        if png_name.contains("idle"):
             return str(name_v)
     for name_v in pngs:
-        var name := str(name_v).to_lower()
-        if name.contains("walk"):
+        var png_name := str(name_v).to_lower()
+        if png_name.contains("walk"):
             return str(name_v)
     for name_v in pngs:
-        var name := str(name_v).to_lower()
-        if name.contains("default"):
+        var png_name := str(name_v).to_lower()
+        if png_name.contains("default"):
             return str(name_v)
     return str(pngs[0])
 
@@ -3706,9 +3681,9 @@ func get_entity_preview_texture(type_id: String) -> Texture2D:
 func get_entity_preview_label(type_id: String) -> String:
     var entity := _entity_def_for_type(type_id.strip_edges())
     if not entity.is_empty():
-        var name := str(entity.get("name", "")).strip_edges()
-        if not name.is_empty():
-            return name
+        var entity_name := str(entity.get("name", "")).strip_edges()
+        if not entity_name.is_empty():
+            return entity_name
     return EnvTypes.entity_label(type_id)
 
 

@@ -2,16 +2,12 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://c01o3n6tkul4p"
-path="res://.godot/imported/grass6.png-d0e046bb1a8c7f006d21d5e198b5435a.ctex"
-metadata={
-"vram_texture": false
-}
+uid="uid://celfl0tuoekko"
+valid=false
 
 [deps]
 
 source_file="res://Content/demo/TilesetSources/imported/Mountain-platformer-pixel-art-tileset/PNG/Objects/grass6.png"
-dest_files=["res://.godot/imported/grass6.png-d0e046bb1a8c7f006d21d5e198b5435a.ctex"]
 
 [params]
 

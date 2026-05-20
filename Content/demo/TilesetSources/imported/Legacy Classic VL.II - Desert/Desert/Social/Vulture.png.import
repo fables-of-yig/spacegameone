@@ -2,16 +2,12 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://dp2mmlfjgw7m1"
-path="res://.godot/imported/Vulture.png-ce686d43cfd469b597f9ae58747fe9c6.ctex"
-metadata={
-"vram_texture": false
-}
+uid="uid://rth4idw7bjqa"
+valid=false
 
 [deps]
 
 source_file="res://Content/demo/TilesetSources/imported/Legacy Classic VL.II - Desert/Desert/Social/Vulture.png"
-dest_files=["res://.godot/imported/Vulture.png-ce686d43cfd469b597f9ae58747fe9c6.ctex"]
 
 [params]
 

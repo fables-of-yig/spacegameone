@@ -2,16 +2,12 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://c2o1chvkrtsew"
-path="res://.godot/imported/lake.png-32bcd14082b0f46707de40701daa7b60.ctex"
-metadata={
-"vram_texture": false
-}
+uid="uid://drtwgrflko28q"
+valid=false
 
 [deps]
 
 source_file="res://Content/demo/TilesetSources/imported/Environments/Quiet Hill Forest/lake/layers/lake.png"
-dest_files=["res://.godot/imported/lake.png-32bcd14082b0f46707de40701daa7b60.ctex"]
 
 [params]
 

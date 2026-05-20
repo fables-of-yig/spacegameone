@@ -2,16 +2,12 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://df25teel4l8la"
-path="res://.godot/imported/ArrowDownLeftLarge.png-d55463c88204d82f42e605935862ef68.ctex"
-metadata={
-"vram_texture": false
-}
+uid="uid://di21sqfrj2fqd"
+valid=false
 
 [deps]
 
 source_file="res://Content/demo/TilesetSources/imported/PlatformerPrototypePack/Release/Signposts/ArrowDownLeftLarge.png"
-dest_files=["res://.godot/imported/ArrowDownLeftLarge.png-d55463c88204d82f42e605935862ef68.ctex"]
 
 [params]
 

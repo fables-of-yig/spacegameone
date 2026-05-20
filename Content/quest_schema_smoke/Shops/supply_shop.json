@@ -1,0 +1,16 @@
+{
+  "id": "supply_shop",
+  "items": [
+    {
+      "count": 1,
+      "id": "coin",
+      "name": "Coin Pack",
+      "price": 0,
+      "stock_id": "coin_pack",
+      "use_amount": 0,
+      "use_arg": "",
+      "use_effect": ""
+    }
+  ],
+  "name": "Supply Shop"
+}

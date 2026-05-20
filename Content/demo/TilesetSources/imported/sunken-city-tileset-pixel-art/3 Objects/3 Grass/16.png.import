@@ -2,16 +2,12 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://bkpuadeccgcno"
-path="res://.godot/imported/16.png-d8ca708876fa99384ce4ec8675e2858b.ctex"
-metadata={
-"vram_texture": false
-}
+uid="uid://blren5w1qoxdr"
+valid=false
 
 [deps]
 
 source_file="res://Content/demo/TilesetSources/imported/sunken-city-tileset-pixel-art/3 Objects/3 Grass/16.png"
-dest_files=["res://.godot/imported/16.png-d8ca708876fa99384ce4ec8675e2858b.ctex"]
 
 [params]
 

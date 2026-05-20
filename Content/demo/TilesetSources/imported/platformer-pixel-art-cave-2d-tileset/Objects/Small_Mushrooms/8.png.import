@@ -3,15 +3,11 @@
 importer="texture"
 type="CompressedTexture2D"
 uid="uid://bd1f47o5he6l1"
-path="res://.godot/imported/8.png-0d9c5b6a0b7fe6e5498b4a4ce2b6df70.ctex"
-metadata={
-"vram_texture": false
-}
+valid=false
 
 [deps]
 
 source_file="res://Content/demo/TilesetSources/imported/platformer-pixel-art-cave-2d-tileset/Objects/Small_Mushrooms/8.png"
-dest_files=["res://.godot/imported/8.png-0d9c5b6a0b7fe6e5498b4a4ce2b6df70.ctex"]
 
 [params]
 

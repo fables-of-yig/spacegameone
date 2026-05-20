@@ -2,16 +2,12 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://bn05s2qt6otp0"
-path="res://.godot/imported/idle2.png-ccfb2348bf90c002c683b43edadb1061.ctex"
-metadata={
-"vram_texture": false
-}
+uid="uid://duwqeva3sakvn"
+valid=false
 
 [deps]
 
 source_file="res://Content/demo/TilesetSources/imported/Warped Collection Files/Assets/Packs/Streets of Fight/StreetsOfFight-addon/Characters/Big Tako/Sprites/idle/idle2.png"
-dest_files=["res://.godot/imported/idle2.png-ccfb2348bf90c002c683b43edadb1061.ctex"]
 
 [params]
 

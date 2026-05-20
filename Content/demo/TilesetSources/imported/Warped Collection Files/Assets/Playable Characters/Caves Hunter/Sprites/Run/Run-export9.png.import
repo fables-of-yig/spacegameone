@@ -2,16 +2,12 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://dfiwo1r7tlpgm"
-path="res://.godot/imported/Run-export9.png-36ddd63d5d003ac8d7b648863b2271c1.ctex"
-metadata={
-"vram_texture": false
-}
+uid="uid://dm5wx1dmy8l48"
+valid=false
 
 [deps]
 
 source_file="res://Content/demo/TilesetSources/imported/Warped Collection Files/Assets/Playable Characters/Caves Hunter/Sprites/Run/Run-export9.png"
-dest_files=["res://.godot/imported/Run-export9.png-36ddd63d5d003ac8d7b648863b2271c1.ctex"]
 
 [params]
 

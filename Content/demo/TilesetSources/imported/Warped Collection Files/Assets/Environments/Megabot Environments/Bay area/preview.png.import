@@ -2,16 +2,12 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://c765vj4peo645"
-path="res://.godot/imported/preview.png-672157b4dad65d5a6a8cf69d695c73cf.ctex"
-metadata={
-"vram_texture": false
-}
+uid="uid://cp3pblmt3h8px"
+valid=false
 
 [deps]
 
 source_file="res://Content/demo/TilesetSources/imported/Warped Collection Files/Assets/Environments/Megabot Environments/Bay area/preview.png"
-dest_files=["res://.godot/imported/preview.png-672157b4dad65d5a6a8cf69d695c73cf.ctex"]
 
 [params]
 

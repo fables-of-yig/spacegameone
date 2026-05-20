@@ -2,16 +2,12 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://ccwdlxe07qrcd"
-path="res://.godot/imported/Canopy_02.png-adf7a607ea3d132331935ed9282867a0.ctex"
-metadata={
-"vram_texture": false
-}
+uid="uid://deksdrm4xsc0r"
+valid=false
 
 [deps]
 
 source_file="res://Content/demo/TilesetSources/imported/Inferno Village 2D Tileset/PNG/Building/Canopy_02.png"
-dest_files=["res://.godot/imported/Canopy_02.png-adf7a607ea3d132331935ed9282867a0.ctex"]
 
 [params]
 

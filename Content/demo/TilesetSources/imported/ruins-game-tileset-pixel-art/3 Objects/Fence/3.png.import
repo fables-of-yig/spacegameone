@@ -2,16 +2,12 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://ljpd1bsd6kjc"
-path="res://.godot/imported/3.png-bb40b4f915c287d8e3a7b03ce3508b8d.ctex"
-metadata={
-"vram_texture": false
-}
+uid="uid://c4kfslwprmtmg"
+valid=false
 
 [deps]
 
 source_file="res://Content/demo/TilesetSources/imported/ruins-game-tileset-pixel-art/3 Objects/Fence/3.png"
-dest_files=["res://.godot/imported/3.png-bb40b4f915c287d8e3a7b03ce3508b8d.ctex"]
 
 [params]
 

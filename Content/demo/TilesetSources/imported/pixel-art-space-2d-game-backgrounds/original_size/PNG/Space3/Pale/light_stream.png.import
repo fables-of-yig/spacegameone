@@ -2,16 +2,12 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://cckey74aruivs"
-path="res://.godot/imported/light_stream.png-b30f44a1c4dec8e1fd8e955171f2e971.ctex"
-metadata={
-"vram_texture": false
-}
+uid="uid://bwseor2daaidc"
+valid=false
 
 [deps]
 
 source_file="res://Content/demo/TilesetSources/imported/pixel-art-space-2d-game-backgrounds/original_size/PNG/Space3/Pale/light_stream.png"
-dest_files=["res://.godot/imported/light_stream.png-b30f44a1c4dec8e1fd8e955171f2e971.ctex"]
 
 [params]
 

@@ -2,16 +2,12 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://bylpxbihqwmpm"
-path="res://.godot/imported/f-7.png-3284455ef9ff9006502fab4341d8e86d.ctex"
-metadata={
-"vram_texture": false
-}
+uid="uid://b7sn06jylp1nv"
+valid=false
 
 [deps]
 
 source_file="res://Content/demo/TilesetSources/imported/Warped Collection Files/Assets/Packs/Streets of Fight/StreetsOfFight-addon/Characters/Long-Tail/Sprites/Taunt/f-7.png"
-dest_files=["res://.godot/imported/f-7.png-3284455ef9ff9006502fab4341d8e86d.ctex"]
 
 [params]
 

@@ -2,16 +2,12 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://dfeif0xeoj1o0"
-path="res://.godot/imported/Vehicles_TrainInterior_Jump.png-27c847e01696513ca1b6757b1a99785f.ctex"
-metadata={
-"vram_texture": false
-}
+uid="uid://biio1w14exmyn"
+valid=false
 
 [deps]
 
 source_file="res://Content/demo/TilesetSources/imported/NeonNightCityTileset/NeonNightCityTileset/Sprites/Vehicles/Vehicles_TrainInterior_Jump.png"
-dest_files=["res://.godot/imported/Vehicles_TrainInterior_Jump.png-27c847e01696513ca1b6757b1a99785f.ctex"]
 
 [params]
 

@@ -1,0 +1,52 @@
+{
+	"quests": [
+		{
+			"description": "A recipe smoke quest.",
+			"id": "boss_gate",
+			"repeatable": false,
+			"stages": [
+				{
+					"description": "Find the key.",
+					"id": "prepare",
+					"objectives": [
+						{
+							"count": 1,
+							"id": "get_key",
+							"item_id": "key_silver",
+							"type": "collect_item"
+						}
+					],
+					"rewards": {
+						"abilities": [],
+						"events": [],
+						"items": []
+					},
+					"title": "Prepare"
+				},
+				{
+					"description": "Defeat the boss.",
+					"id": "clear_boss",
+					"objectives": [
+						{
+							"count": 1,
+							"entity_id": "golden_boss",
+							"id": "defeat_boss",
+							"type": "kill_entity"
+						}
+					],
+					"rewards": {
+						"abilities": [],
+						"events": [
+							"boss_gate_complete"
+						],
+						"items": [
+							"boss_core"
+						]
+					},
+					"title": "Clear Boss"
+				}
+			],
+			"title": "Boss Gate"
+		}
+	]
+}

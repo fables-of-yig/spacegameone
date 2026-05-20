@@ -3,15 +3,11 @@
 importer="texture"
 type="CompressedTexture2D"
 uid="uid://ba36qg24nsju2"
-path="res://.godot/imported/run-export1.png-e125dc7823e5e3c94b0caff38a1b772e.ctex"
-metadata={
-"vram_texture": false
-}
+valid=false
 
 [deps]
 
 source_file="res://Content/demo/TilesetSources/imported/Warped Collection Files/Assets/Enemies/Sewers Soldier Enemy/Sprites/Soldier/run/run-export1.png"
-dest_files=["res://.godot/imported/run-export1.png-e125dc7823e5e3c94b0caff38a1b772e.ctex"]
 
 [params]
 

@@ -1,0 +1,14 @@
+{
+  "cell_blocks_x": 1.0,
+  "cell_blocks_y": 1.0,
+  "encounter_id": "",
+  "gravity_mult": 1.0,
+  "grid_cells_x": 128.0,
+  "grid_cells_y": 96.0,
+  "hazard_type": "",
+  "id": "733b_island",
+  "music_id": "",
+  "name": "Island",
+  "version": "2.0",
+  "visual_theme": ""
+}

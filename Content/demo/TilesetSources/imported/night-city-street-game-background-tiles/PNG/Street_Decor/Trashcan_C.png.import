@@ -2,16 +2,12 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://c0jtvuvfxo4rx"
-path="res://.godot/imported/Trashcan_C.png-c399ce9e4ee4fc63d9c28ceb28f05f55.ctex"
-metadata={
-"vram_texture": false
-}
+uid="uid://crkdixsit6ev6"
+valid=false
 
 [deps]
 
 source_file="res://Content/demo/TilesetSources/imported/night-city-street-game-background-tiles/PNG/Street_Decor/Trashcan_C.png"
-dest_files=["res://.godot/imported/Trashcan_C.png-c399ce9e4ee4fc63d9c28ceb28f05f55.ctex"]
 
 [params]
 

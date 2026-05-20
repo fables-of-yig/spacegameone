@@ -2,16 +2,12 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://3ilcoyc4dtfo"
-path="res://.godot/imported/green-stars.png-e0f25c26504e9d084c9ade6394ebf0d7.ctex"
-metadata={
-"vram_texture": false
-}
+uid="uid://de3jfd8wpnqud"
+valid=false
 
 [deps]
 
 source_file="res://Content/demo/TilesetSources/imported/Warped Collection Files/Assets/Environments/Space Backgrounds 1/Backgrounds/green/Layered/green-stars.png"
-dest_files=["res://.godot/imported/green-stars.png-e0f25c26504e9d084c9ade6394ebf0d7.ctex"]
 
 [params]
 

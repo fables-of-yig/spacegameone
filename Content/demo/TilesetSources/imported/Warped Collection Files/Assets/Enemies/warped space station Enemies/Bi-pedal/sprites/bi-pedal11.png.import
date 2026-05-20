@@ -2,16 +2,12 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://blyi6dx4s77e1"
-path="res://.godot/imported/bi-pedal11.png-b7c5312b367886a065fe0327d9becc07.ctex"
-metadata={
-"vram_texture": false
-}
+uid="uid://clns0wvf4oebb"
+valid=false
 
 [deps]
 
 source_file="res://Content/demo/TilesetSources/imported/Warped Collection Files/Assets/Enemies/warped space station Enemies/Bi-pedal/sprites/bi-pedal11.png"
-dest_files=["res://.godot/imported/bi-pedal11.png-b7c5312b367886a065fe0327d9becc07.ctex"]
 
 [params]
 

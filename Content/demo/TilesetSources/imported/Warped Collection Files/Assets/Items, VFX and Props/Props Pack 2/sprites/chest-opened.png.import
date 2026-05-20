@@ -2,16 +2,12 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://b0e5i1o0fxc0p"
-path="res://.godot/imported/chest-opened.png-01d1385cf3c53ba290dad411d659126f.ctex"
-metadata={
-"vram_texture": false
-}
+uid="uid://cio1bbphjiqle"
+valid=false
 
 [deps]
 
 source_file="res://Content/demo/TilesetSources/imported/Warped Collection Files/Assets/Items, VFX and Props/Props Pack 2/sprites/chest-opened.png"
-dest_files=["res://.godot/imported/chest-opened.png-01d1385cf3c53ba290dad411d659126f.ctex"]
 
 [params]
 

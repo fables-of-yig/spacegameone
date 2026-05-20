@@ -65,6 +65,15 @@ var _octaves_slider: HSlider = null
 var _time_speed_slider: HSlider = null
 var _light_angle_slider: HSlider = null
 
+# Clickable swatch rects rebuilt every redraw, plus the popup that lets
+# the user override a single color manually instead of having to keep
+# Randomize-rolling. Indices map into the body's full color list as
+# returned by get_colors().
+var _palette_rects: Array = []  # [{ index: int, rect: Rect2 }]
+var _color_picker_popup: PopupPanel = null
+var _color_picker: ColorPicker = null
+var _editing_color_index: int = -1
+
 
 func _ready() -> void:
 	mouse_filter = MOUSE_FILTER_STOP
@@ -75,9 +84,22 @@ func _ready() -> void:
 	_preview.set_script(PsgPreview)
 	add_child(_preview)
 
+	_color_picker_popup = PopupPanel.new()
+	_color_picker_popup.exclusive = false
+	_color_picker = ColorPicker.new()
+	_color_picker.edit_alpha = false
+	_color_picker.color_changed.connect(_on_color_picker_changed)
+	_color_picker_popup.add_child(_color_picker)
+	_color_picker_popup.popup_hide.connect(_on_color_picker_closed)
+	add_child(_color_picker_popup)
+
 	_size_slider = _make_slider(1.0, 50.0, 0.5, 9.0, "size")
 	_octaves_slider = _make_slider(0.0, 20.0, 1.0, 5.0, "OCTAVES")
-	_time_speed_slider = _make_slider(-1.0, 1.0, 0.05, 0.2, "time_speed")
+	# Anim speed multiplier: 0 = paused, 1 = native rate, 3 = sped up.
+	# The slider is not bound to the shader's `time_speed` uniform —
+	# psg_preview drives the body's update_time() at this rate instead,
+	# because Planet.gd's get_multiplier cancels the shader uniform out.
+	_time_speed_slider = _make_slider(0.0, 3.0, 0.05, 1.0, "anim_speed")
 	_light_angle_slider = _make_slider(0.0, 360.0, 1.0, 45.0, "light_angle")
 
 	_size_slider.value_changed.connect(_on_size_changed)
@@ -86,13 +108,13 @@ func _ready() -> void:
 	_light_angle_slider.value_changed.connect(_on_light_angle_changed)
 
 
-func _make_slider(min_v: float, max_v: float, step: float, default_v: float, name: String) -> HSlider:
+func _make_slider(min_v: float, max_v: float, step: float, default_v: float, slider_name: String) -> HSlider:
 	var s := HSlider.new()
 	s.min_value = min_v
 	s.max_value = max_v
 	s.step = step
 	s.value = default_v
-	s.name = name
+	s.name = slider_name
 	add_child(s)
 	return s
 
@@ -118,6 +140,7 @@ func open(initial_type: String = "GasPlanet", initial_seed: int = 0,
 
 
 func close() -> void:
+	_hide_color_picker()
 	visible = false
 
 
@@ -159,18 +182,22 @@ func _apply_selection_to_preview() -> void:
 		_preview.set_seed(_current_seed)
 	if _preview.has_method("set_light_angle_deg") and _light_angle_slider != null:
 		_preview.set_light_angle_deg(_light_angle_slider.value)
+	if _preview.has_method("set_anim_speed") and _time_speed_slider != null:
+		_preview.set_anim_speed(_time_speed_slider.value)
 
 
 func _refresh_sliders_from_body() -> void:
 	if _preview == null:
 		return
-	# Read the freshly-instantiated body's defaults and mirror them into
-	# the sliders without re-triggering the value_changed handlers
-	# (otherwise we'd immediately apply the slider's default-from-init
-	# value back onto the body and lose its authored shader defaults).
+	# Mirror the freshly-instantiated body's per-body shader defaults
+	# (size, OCTAVES) into the sliders without re-triggering the
+	# value_changed handlers — otherwise we'd immediately push the
+	# panel's init-defaults back onto the body and lose its tuned
+	# values. The time_speed slider is intentionally NOT refreshed here:
+	# it controls our anim_speed multiplier, which lives on the preview
+	# and is independent of whichever body is currently loaded.
 	var size_v: Variant = _preview.get_shader_param("size", null)
 	var oct_v: Variant = _preview.get_shader_param("OCTAVES", null)
-	var ts_v: Variant = _preview.get_shader_param("time_speed", null)
 	if _size_slider != null and size_v != null:
 		_size_slider.set_block_signals(true)
 		_size_slider.value = float(size_v)
@@ -179,10 +206,6 @@ func _refresh_sliders_from_body() -> void:
 		_octaves_slider.set_block_signals(true)
 		_octaves_slider.value = float(oct_v)
 		_octaves_slider.set_block_signals(false)
-	if _time_speed_slider != null and ts_v != null:
-		_time_speed_slider.set_block_signals(true)
-		_time_speed_slider.value = float(ts_v)
-		_time_speed_slider.set_block_signals(false)
 
 
 func _load_sidecar_if_any() -> void:
@@ -212,10 +235,17 @@ func _load_sidecar_if_any() -> void:
 			_octaves_slider.set_block_signals(false)
 			_preview.apply_shader_param("OCTAVES", int(params["OCTAVES"]))
 		if params.has("time_speed") and _time_speed_slider != null:
+			# Saved as the panel's anim_speed multiplier (post-fix); old
+			# sidecars stored the cancelled-out shader uniform value (0..1)
+			# which is still inside the new slider range, so clamping is
+			# enough — no migration shim needed.
+			var saved_speed: float = clampf(float(params["time_speed"]),
+				_time_speed_slider.min_value,
+				_time_speed_slider.max_value)
 			_time_speed_slider.set_block_signals(true)
-			_time_speed_slider.value = float(params["time_speed"])
+			_time_speed_slider.value = saved_speed
 			_time_speed_slider.set_block_signals(false)
-			_preview.apply_shader_param("time_speed", float(params["time_speed"]))
+			_preview.set_anim_speed(saved_speed)
 		if params.has("light_angle") and _light_angle_slider != null:
 			_light_angle_slider.set_block_signals(true)
 			_light_angle_slider.value = float(params["light_angle"])
@@ -240,7 +270,7 @@ func _on_octaves_changed(v: float) -> void:
 
 func _on_time_speed_changed(v: float) -> void:
 	if _preview != null:
-		_preview.apply_shader_param("time_speed", v)
+		_preview.set_anim_speed(v)
 
 
 func _on_light_angle_changed(v: float) -> void:
@@ -278,6 +308,12 @@ func _gui_input(event: InputEvent) -> void:
 				_do_bake()
 				accept_event()
 				return
+			for swatch in _palette_rects:
+				if (swatch["rect"] as Rect2).has_point(mb.position):
+					_open_color_picker_for(int(swatch["index"]),
+						(swatch["rect"] as Rect2))
+					accept_event()
+					return
 			for row in _row_rects:
 				if (row["rect"] as Rect2).has_point(mb.position):
 					_select_type(str(row["type_id"]))
@@ -304,6 +340,10 @@ func _select_type(type_id: String) -> void:
 		return
 	if type_id == _selected_type:
 		return
+	# The color-picker is editing an index in the OLD body's palette;
+	# new bodies have different palette sizes (e.g. Rivers=10, Asteroid=3)
+	# so reusing the open picker would splice into the wrong slot.
+	_hide_color_picker()
 	_selected_type = type_id
 	_apply_selection_to_preview()
 	_refresh_sliders_from_body()
@@ -318,6 +358,71 @@ func _reroll_seed() -> void:
 func _randomize_colors() -> void:
 	if _preview != null and _preview.has_method("randomize_colors"):
 		_preview.randomize_colors()
+
+
+func _open_color_picker_for(index: int, swatch_rect: Rect2) -> void:
+	if _preview == null or not _preview.has_method("get_colors"):
+		return
+	if _color_picker_popup == null or _color_picker == null:
+		return
+	var colors: Array = _preview.get_colors()
+	if index < 0 or index >= colors.size():
+		return
+	var current_v: Variant = colors[index]
+	var current: Color = current_v if current_v is Color else Color.MAGENTA
+
+	_editing_color_index = index
+	_color_picker.set_block_signals(true)
+	_color_picker.color = current
+	_color_picker.set_block_signals(false)
+
+	# Anchor the popup directly under the clicked swatch in screen
+	# coordinates. get_screen_position() bakes in any window-chrome
+	# offset so the popup lines up correctly when the game runs windowed.
+	# Sized for ColorPicker's full layout (hue ring + sliders + hex).
+	var pop_size := Vector2i(320, 420)
+	var screen_origin: Vector2 = get_screen_position()
+	var anchor: Vector2 = screen_origin + swatch_rect.position \
+		+ Vector2(0, swatch_rect.size.y + 4.0)
+	# Keep the popup on-screen if the swatch is near a right/bottom edge.
+	var screen_size: Vector2 = get_viewport_rect().size
+	var clamped_x: float = clampf(anchor.x,
+		screen_origin.x,
+		screen_origin.x + max(0.0, screen_size.x - float(pop_size.x)))
+	var clamped_y: float = clampf(anchor.y,
+		screen_origin.y,
+		screen_origin.y + max(0.0, screen_size.y - float(pop_size.y)))
+	_color_picker_popup.popup(Rect2i(
+		Vector2i(int(clamped_x), int(clamped_y)),
+		pop_size))
+
+
+func _on_color_picker_changed(c: Color) -> void:
+	if _preview == null or not _preview.has_method("get_colors"):
+		return
+	if _editing_color_index < 0:
+		return
+	var colors: Array = _preview.get_colors()
+	if _editing_color_index >= colors.size():
+		return
+	var updated := PackedColorArray()
+	for i in colors.size():
+		var col_v: Variant = colors[i]
+		var col: Color = col_v if col_v is Color else Color.MAGENTA
+		if i == _editing_color_index:
+			# Preserve the body's authored alpha — the picker has
+			# edit_alpha disabled, so `c.a` is always 1.0 even when the
+			# original swatch was partially transparent.
+			updated.append(Color(c.r, c.g, c.b, col.a))
+		else:
+			updated.append(col)
+	if _preview.has_method("set_colors"):
+		_preview.set_colors(updated)
+	queue_redraw()
+
+
+func _on_color_picker_closed() -> void:
+	_editing_color_index = -1
 
 
 func _do_bake() -> void:
@@ -356,6 +461,7 @@ func _do_bake() -> void:
 
 	_baking = false
 	_bake_status = ""
+	_hide_color_picker()
 	visible = false
 	applied.emit(sprite_path, FRAME_COUNT, FPS, sidecar_path)
 
@@ -381,8 +487,15 @@ func _serialize_state() -> Dictionary:
 
 
 func _do_cancel() -> void:
+	_hide_color_picker()
 	visible = false
 	cancelled.emit()
+
+
+func _hide_color_picker() -> void:
+	if _color_picker_popup != null and _color_picker_popup.visible:
+		_color_picker_popup.hide()
+	_editing_color_index = -1
 
 
 func _box_rect() -> Rect2:
@@ -499,7 +612,8 @@ func _draw_slider_labels(box: Rect2, font: Font) -> void:
 		label_y += SLIDER_ROW_H + 10.0
 
 
-func _draw_palette(box: Rect2, _font: Font, _mouse_pos: Vector2) -> void:
+func _draw_palette(box: Rect2, _font: Font, mouse_pos: Vector2) -> void:
+	_palette_rects.clear()
 	if _preview == null or not _preview.has_method("get_colors"):
 		return
 	var palette_x: float = box.position.x + LIST_W + PAD * 2.0
@@ -515,7 +629,10 @@ func _draw_palette(box: Rect2, _font: Font, _mouse_pos: Vector2) -> void:
 		var rect := Rect2(palette_x + float(i) * (swatch_w + SWATCH_GAP),
 			palette_y, swatch_w, SWATCH_H)
 		draw_rect(rect, col)
-		draw_rect(rect, Color(0, 0, 0, 0.6), false, 1.0)
+		var border_col: Color = Color(1, 1, 1, 0.9) if rect.has_point(mouse_pos) \
+			else Color(0, 0, 0, 0.6)
+		draw_rect(rect, border_col, false, 1.0)
+		_palette_rects.append({ "index": i, "rect": rect })
 
 
 func _draw_footer(box: Rect2, font: Font, mouse_pos: Vector2) -> void:

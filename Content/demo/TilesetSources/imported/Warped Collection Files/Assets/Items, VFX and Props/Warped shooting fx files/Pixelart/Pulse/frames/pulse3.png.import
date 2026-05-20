@@ -3,15 +3,11 @@
 importer="texture"
 type="CompressedTexture2D"
 uid="uid://6j3fbip6is36"
-path="res://.godot/imported/pulse3.png-366ed33f15e72ca16efc6de57fd14c35.ctex"
-metadata={
-"vram_texture": false
-}
+valid=false
 
 [deps]
 
 source_file="res://Content/demo/TilesetSources/imported/Warped Collection Files/Assets/Items, VFX and Props/Warped shooting fx files/Pixelart/Pulse/frames/pulse3.png"
-dest_files=["res://.godot/imported/pulse3.png-366ed33f15e72ca16efc6de57fd14c35.ctex"]
 
 [params]
 

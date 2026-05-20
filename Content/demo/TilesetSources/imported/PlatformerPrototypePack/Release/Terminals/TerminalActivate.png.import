@@ -2,16 +2,12 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://cwvn1t0g032ht"
-path="res://.godot/imported/TerminalActivate.png-3ec8c4abb76c3a8b1561209dba269116.ctex"
-metadata={
-"vram_texture": false
-}
+uid="uid://b8ft2rwuno6nr"
+valid=false
 
 [deps]
 
 source_file="res://Content/demo/TilesetSources/imported/PlatformerPrototypePack/Release/Terminals/TerminalActivate.png"
-dest_files=["res://.godot/imported/TerminalActivate.png-3ec8c4abb76c3a8b1561209dba269116.ctex"]
 
 [params]
 

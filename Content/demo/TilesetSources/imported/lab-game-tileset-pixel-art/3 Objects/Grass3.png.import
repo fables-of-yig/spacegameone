@@ -2,16 +2,12 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://b0rqlkc1pv8us"
-path="res://.godot/imported/Grass3.png-3a1a21341e8770e5a29e251e29019209.ctex"
-metadata={
-"vram_texture": false
-}
+uid="uid://dkkb46q7ghi7c"
+valid=false
 
 [deps]
 
 source_file="res://Content/demo/TilesetSources/imported/lab-game-tileset-pixel-art/3 Objects/Grass3.png"
-dest_files=["res://.godot/imported/Grass3.png-3a1a21341e8770e5a29e251e29019209.ctex"]
 
 [params]
 

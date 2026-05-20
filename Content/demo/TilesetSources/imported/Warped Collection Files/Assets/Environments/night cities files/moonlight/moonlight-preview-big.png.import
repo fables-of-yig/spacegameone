@@ -2,16 +2,12 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://dyjv5a3thwgo3"
-path="res://.godot/imported/moonlight-preview-big.png-f768baec13a3a0426a5c2f07e9ada618.ctex"
-metadata={
-"vram_texture": false
-}
+uid="uid://codjjit36p3c2"
+valid=false
 
 [deps]
 
 source_file="res://Content/demo/TilesetSources/imported/Warped Collection Files/Assets/Environments/night cities files/moonlight/moonlight-preview-big.png"
-dest_files=["res://.godot/imported/moonlight-preview-big.png-f768baec13a3a0426a5c2f07e9ada618.ctex"]
 
 [params]
 

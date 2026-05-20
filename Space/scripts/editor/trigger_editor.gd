@@ -1,15 +1,15 @@
 extends Control
 
 const UIPanels := preload("res://Space/scripts/ui/ui_panels.gd")
-const PedIO := preload("res://Space/scripts/editor/ped/ped_io.gd")
-const EcaSchema := preload("res://Space/scripts/editor/dlg/eca_schema.gd")
+const PedIO := preload("res://Space/scripts/shared/ped/ped_io.gd")
+# EditorTooltipWrap is globally available via class_name; preloading would
+# shadow the global.
 const TriggerRecipes := preload("res://Space/scripts/editor/dlg/trigger_recipes.gd")
 const EditorUndoLib = preload("res://Space/scripts/editor/editor_undo.gd")
 const DlgConditionsListFormLib := preload("res://Space/scripts/editor/dlg/conditions_list_form.gd")
 const DlgActionsFormLib := preload("res://Space/scripts/editor/dlg/actions_form.gd")
 const TriggerLocalsFormLib := preload("res://Space/scripts/editor/dlg/trigger_locals_form.gd")
 const TriggerDebuggerWindowLib := preload("res://Space/scripts/editor/dlg/trigger_debugger_window.gd")
-const TriggerRoot := preload("res://Space/scripts/shared/trigger_root.gd")
 
 signal status_changed(text: String)
 signal closed
@@ -34,10 +34,22 @@ var _library_name_edit: LineEdit = null
 var _folder_option: OptionButton = null
 var _folder_name_edit: LineEdit = null
 var _list: ItemList = null
-var _detail: VBoxContainer = null
+var _detail_tabs: TabContainer = null
+var _trigger_tab: VBoxContainer = null
+var _conditions_tab: VBoxContainer = null
+var _actions_tab: VBoxContainer = null
+var _summary_tab: VBoxContainer = null
 var _id_edit: LineEdit = null
 var _event_edit: OptionButton = null
 var _event_custom_edit: LineEdit = null
+# Event-source parameter inputs (rendered inline below the event picker when
+# the chosen event has an EVENT_PARAMS schema entry). Read/written to and
+# from rule.event_params. _event_param_widgets maps each schema key to the
+# Control that holds its value, so _collect_event_params can serialise back
+# in a kind-aware way.
+var _event_params_container: VBoxContainer = null
+var _event_params_help_label: Label = null
+var _event_param_widgets: Dictionary = {}
 var _enabled_check: CheckBox = null
 var _once_check: CheckBox = null
 var _breakpoint_check: CheckBox = null
@@ -306,45 +318,63 @@ func _build_ui() -> void:
     copy_btn.pressed.connect(_on_copy_rule_to_scope)
     list_tools.add_child(copy_btn)
 
-    var right := ScrollContainer.new()
-    right.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-    split.add_child(right)
+    _detail_tabs = TabContainer.new()
+    _detail_tabs.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+    _detail_tabs.size_flags_vertical = Control.SIZE_EXPAND_FILL
+    split.add_child(_detail_tabs)
 
-    _detail = VBoxContainer.new()
-    _detail.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-    _detail.add_theme_constant_override("separation", 8)
-    right.add_child(_detail)
+    # Tab 1 — Trigger: the WHEN (event source, rule meta, per-rule memory).
+    var trigger_scroll := ScrollContainer.new()
+    trigger_scroll.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+    trigger_scroll.size_flags_vertical = Control.SIZE_EXPAND_FILL
+    _detail_tabs.add_child(trigger_scroll)
+    _detail_tabs.set_tab_title(0, "Trigger")
+    _trigger_tab = VBoxContainer.new()
+    _trigger_tab.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+    _trigger_tab.add_theme_constant_override("separation", 8)
+    trigger_scroll.add_child(_trigger_tab)
 
     _workflow_label = Label.new()
     _workflow_label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
     _workflow_label.add_theme_font_size_override("font_size", 10)
     _workflow_label.add_theme_color_override("font_color", Color(0.65, 0.78, 0.9))
-    _detail.add_child(_workflow_label)
+    _trigger_tab.add_child(_workflow_label)
     _refresh_workflow_help()
 
-    _add_label("Rule name")
+    _add_label_to(_trigger_tab, "Rule name")
     _id_edit = LineEdit.new()
     _id_edit.placeholder_text = "intro_bootstrap"
     _id_edit.tooltip_text = "Stable name for this rule. Use something descriptive because breakpoints and debug history reference it."
     _id_edit.text_changed.connect(_on_rule_field_changed)
-    _detail.add_child(_id_edit)
+    _trigger_tab.add_child(_id_edit)
 
-    _add_label("When should this rule start?")
+    _add_label_to(_trigger_tab, "When should this rule start?")
     _event_edit = OptionButton.new()
     for ev in EcaSchema.event_type_names():
         _event_edit.add_item(EcaSchema.event_label(str(ev)))
     _event_edit.tooltip_text = "Choose what has to happen before this rule is considered."
     _event_edit.item_selected.connect(_on_event_field_changed)
-    _detail.add_child(_event_edit)
+    _trigger_tab.add_child(_event_edit)
 
     _event_custom_edit = LineEdit.new()
     _event_custom_edit.placeholder_text = "Advanced: custom event name"
     _event_custom_edit.tooltip_text = "Advanced custom event name. Leave blank to use the selected built-in event."
     _event_custom_edit.text_changed.connect(_on_event_field_changed)
-    _detail.add_child(_event_custom_edit)
+    _trigger_tab.add_child(_event_custom_edit)
+
+    _event_params_help_label = Label.new()
+    _event_params_help_label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+    _event_params_help_label.add_theme_font_size_override("font_size", 10)
+    _event_params_help_label.add_theme_color_override("font_color", Color(0.6, 0.7, 0.8))
+    _event_params_help_label.visible = false
+    _trigger_tab.add_child(_event_params_help_label)
+
+    _event_params_container = VBoxContainer.new()
+    _event_params_container.add_theme_constant_override("separation", 4)
+    _trigger_tab.add_child(_event_params_container)
 
     var state_row := HBoxContainer.new()
-    _detail.add_child(state_row)
+    _trigger_tab.add_child(state_row)
     _enabled_check = CheckBox.new()
     _enabled_check.text = "Enabled"
     _enabled_check.button_pressed = true
@@ -362,69 +392,80 @@ func _build_ui() -> void:
     _breakpoint_check.toggled.connect(_on_breakpoint_toggled)
     state_row.add_child(_breakpoint_check)
 
-    _summary_label = Label.new()
-    _summary_label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
-    _summary_label.add_theme_font_size_override("font_size", 10)
-    _summary_label.add_theme_color_override("font_color", Color(0.65, 0.78, 0.9))
-    _summary_label.tooltip_text = "Readable summary of what starts this rule and what it does."
-    _detail.add_child(_summary_label)
-
-    _add_label("Temporary memory")
+    _add_label_to(_trigger_tab, "Temporary memory")
     var locals_hint := Label.new()
-    locals_hint.text = "Optional values this rule can remember while it is running. They reset each time the rule starts."
+    locals_hint.text = "Optional named values this rule can read and write while it runs. Each value resets to its default every time the rule fires — unless you check Persist on that row, in which case the last value carries over to the next firing of this same rule."
     locals_hint.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
     locals_hint.add_theme_font_size_override("font_size", 10)
     locals_hint.add_theme_color_override("font_color", Color(0.6, 0.7, 0.8))
-    _detail.add_child(locals_hint)
+    _trigger_tab.add_child(locals_hint)
     _locals_form = TriggerLocalsFormLib.new()
     _locals_form.changed.connect(_on_rule_field_changed)
-    _detail.add_child(_locals_form)
+    _trigger_tab.add_child(_locals_form)
 
-    _add_label("Only run if")
+    # Tab 2 — Conditions: the IF (only run when these checks pass).
+    var conditions_scroll := ScrollContainer.new()
+    conditions_scroll.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+    conditions_scroll.size_flags_vertical = Control.SIZE_EXPAND_FILL
+    _detail_tabs.add_child(conditions_scroll)
+    _detail_tabs.set_tab_title(1, "Conditions")
+    _conditions_tab = VBoxContainer.new()
+    _conditions_tab.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+    _conditions_tab.add_theme_constant_override("separation", 8)
+    conditions_scroll.add_child(_conditions_tab)
+
     var cond_hint := Label.new()
-    cond_hint.text = "Add checks here when the event should only matter in certain cases."
+    cond_hint.text = "Add checks here when the event should only matter in certain cases. With no checks, the rule fires every time its event happens."
     cond_hint.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
     cond_hint.add_theme_font_size_override("font_size", 10)
     cond_hint.add_theme_color_override("font_color", Color(0.6, 0.7, 0.8))
-    _detail.add_child(cond_hint)
+    _conditions_tab.add_child(cond_hint)
     _cond_form = DlgConditionsListFormLib.new()
     if _cond_form.has_method("set_pack_id"):
         _cond_form.set_pack_id(_pack_id)
     _cond_form.changed.connect(_on_rule_field_changed)
-    _detail.add_child(_cond_form)
+    _conditions_tab.add_child(_cond_form)
 
-    _add_label("Do these actions")
+    # Tab 3 — Actions: the THEN (effects, top-to-bottom).
+    var actions_scroll := ScrollContainer.new()
+    actions_scroll.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+    actions_scroll.size_flags_vertical = Control.SIZE_EXPAND_FILL
+    _detail_tabs.add_child(actions_scroll)
+    _detail_tabs.set_tab_title(2, "Actions")
+    _actions_tab = VBoxContainer.new()
+    _actions_tab.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+    _actions_tab.add_theme_constant_override("separation", 8)
+    actions_scroll.add_child(_actions_tab)
+
     var act_hint := Label.new()
     act_hint.text = "Actions run from top to bottom. Wait actions pause this rule before continuing."
     act_hint.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
     act_hint.add_theme_font_size_override("font_size", 10)
     act_hint.add_theme_color_override("font_color", Color(0.6, 0.7, 0.8))
-    _detail.add_child(act_hint)
+    _actions_tab.add_child(act_hint)
     _action_form = DlgActionsFormLib.new()
     if _action_form.has_method("set_pack_id"):
         _action_form.set_pack_id(_pack_id)
     _action_form.changed.connect(_on_rule_field_changed)
-    _detail.add_child(_action_form)
+    _actions_tab.add_child(_action_form)
 
-    _add_label("Runtime Debug")
-    var debug_row := HBoxContainer.new()
-    _detail.add_child(debug_row)
-    var refresh_btn := Button.new()
-    refresh_btn.text = "Refresh Debug"
-    refresh_btn.tooltip_text = "Refresh the inline runtime debug summary from the live trigger engine."
-    refresh_btn.pressed.connect(_refresh_debug_view)
-    debug_row.add_child(refresh_btn)
-    var clear_btn := Button.new()
-    clear_btn.text = "Clear Debug"
-    clear_btn.tooltip_text = "Clear inline trigger debug history."
-    clear_btn.pressed.connect(_clear_debug_view)
-    debug_row.add_child(clear_btn)
-    _debug_view = RichTextLabel.new()
-    _debug_view.custom_minimum_size = Vector2(0, 180)
-    _debug_view.scroll_active = true
-    _debug_view.tooltip_text = "Recent runtime trigger history and pause state for quick inline inspection."
-    _detail.add_child(_debug_view)
-    _refresh_debug_view()
+    # Tab 4 — Summary: readable "When X, if Y, then Z" + live runtime debug.
+    var summary_scroll := ScrollContainer.new()
+    summary_scroll.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+    summary_scroll.size_flags_vertical = Control.SIZE_EXPAND_FILL
+    _detail_tabs.add_child(summary_scroll)
+    _detail_tabs.set_tab_title(3, "Summary")
+    _summary_tab = VBoxContainer.new()
+    _summary_tab.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+    _summary_tab.add_theme_constant_override("separation", 8)
+    summary_scroll.add_child(_summary_tab)
+
+    _summary_label = Label.new()
+    _summary_label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+    _summary_label.add_theme_font_size_override("font_size", 13)
+    _summary_label.add_theme_color_override("font_color", Color(0.92, 0.96, 1.0))
+    _summary_label.tooltip_text = "Plain-English read of this rule: when it fires, what has to be true, and what it does. Open the Debugger button up top for live runtime history."
+    _summary_tab.add_child(_summary_label)
 
     _scope_transfer_dialog = ConfirmationDialog.new()
     _scope_transfer_dialog.title = "Move Trigger Rule"
@@ -444,6 +485,10 @@ func _build_ui() -> void:
     transfer_box.add_child(_scope_transfer_option)
 
     _layout_ui()
+    # Godot's built-in tooltip Label doesn't autowrap; pre-bake \n breaks
+    # into every tooltip_text in this tree so long help strings stay
+    # inside a sensible width instead of spilling across the screen.
+    EditorTooltipWrap.wrap_tree(self)
 
 
 func _layout_ui() -> void:
@@ -542,11 +587,11 @@ func _build_scope_row(label_text: String, is_library: bool) -> Control:
     return box
 
 
-func _add_label(text: String) -> void:
+func _add_label_to(parent: Node, text: String) -> void:
     var lbl := Label.new()
     lbl.text = text
     lbl.add_theme_font_size_override("font_size", 11)
-    _detail.add_child(lbl)
+    parent.add_child(lbl)
 
 
 func _set_root_value(value: Variant) -> void:
@@ -766,11 +811,17 @@ func _show_detail(idx: int) -> void:
     var rule: Dictionary = rules[idx]
     _id_edit.text = str(rule.get("id", ""))
     _set_event_option(str(rule.get("event", "")))
+    var ev_params_v: Variant = rule.get("event_params", {})
+    _rebuild_event_params(ev_params_v if ev_params_v is Dictionary else {})
     _enabled_check.button_pressed = bool(rule.get("enabled", true))
     _once_check.button_pressed = bool(rule.get("once", false))
     if _breakpoint_check != null:
         _breakpoint_check.button_pressed = _rule_has_breakpoint(rule)
     _locals_form.open(_safe_array(rule.get("locals", [])))
+    if _cond_form.has_method("set_rule_event"):
+        _cond_form.set_rule_event(_selected_event_name())
+    if _action_form.has_method("set_rule_event"):
+        _action_form.set_rule_event(_selected_event_name())
     _cond_form.open(_safe_array(rule.get("conditions", [])))
     _action_form.open(_safe_array(rule.get("actions", [])))
     _refresh_workflow_help(rule)
@@ -787,6 +838,7 @@ func _clear_detail() -> void:
         _event_edit.select(0)
     if _event_custom_edit != null:
         _event_custom_edit.text = ""
+    _rebuild_event_params({})
     if _enabled_check != null:
         _enabled_check.button_pressed = true
     if _once_check != null:
@@ -820,7 +872,121 @@ func _set_event_option(event_name: String) -> void:
 
 func _on_event_field_changed(_arg: Variant = null) -> void:
     _update_event_control_tooltips()
+    # Event identity changed → tear down old per-event inputs and rebuild
+    # for the new event. event_params are event-specific (band sizes have
+    # no meaning for a pickup event, etc.) so we don't try to preserve
+    # values across the swap; user re-fills them for the new event.
+    if not _suppress:
+        _rebuild_event_params({})
+    # payload_eq's key dropdown is also event-aware; nudge the conditions
+    # form so any open payload_eq rows refresh their known-key lists.
+    # The action form gets the same nudge so nested conditions_block
+    # forms (inside if-actions) and branch nested action forms see the
+    # new event too.
+    if _cond_form != null and _cond_form.has_method("set_rule_event"):
+        _cond_form.set_rule_event(_selected_event_name())
+    if _action_form != null and _action_form.has_method("set_rule_event"):
+        _action_form.set_rule_event(_selected_event_name())
     _on_rule_field_changed()
+
+
+# Rebuilds the inline event-params form for the currently selected event.
+# Pass `values` to pre-populate the inputs (e.g. when loading an existing
+# rule); pass {} to start blank. Safe to call repeatedly — clears children
+# and the widget map before rebuilding.
+func _rebuild_event_params(values: Dictionary) -> void:
+    if _event_params_container == null:
+        return
+    for child in _event_params_container.get_children():
+        child.queue_free()
+    _event_param_widgets.clear()
+    var event_name: String = _selected_event_name()
+    var specs: Array = EcaSchema.event_params(event_name)
+    var has_specs: bool = specs.size() > 0
+    if _event_params_help_label != null:
+        if has_specs:
+            _event_params_help_label.text = EcaSchema.event_params_help(event_name)
+            _event_params_help_label.visible = not _event_params_help_label.text.is_empty()
+        else:
+            _event_params_help_label.text = ""
+            _event_params_help_label.visible = false
+    if not has_specs:
+        return
+    for spec_v in specs:
+        var spec: Array = spec_v
+        if spec.size() < 3:
+            continue
+        var key: String = str(spec[0])
+        var label_text: String = str(spec[1])
+        var kind: String = str(spec[2])
+        var row := HBoxContainer.new()
+        var lbl := Label.new()
+        lbl.text = label_text
+        lbl.custom_minimum_size = Vector2(140, 0)
+        row.add_child(lbl)
+        var widget: Control = _make_event_param_widget(kind, values.get(key, null))
+        if widget == null:
+            continue
+        widget.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+        row.add_child(widget)
+        _event_params_container.add_child(row)
+        _event_param_widgets[key] = widget
+    # Bake tooltip wraps on the freshly built widgets; these are added
+    # after _build_ui's initial wrap_tree sweep, so they'd otherwise have
+    # un-wrapped tooltips inherited from any future per-widget setters.
+    EditorTooltipWrap.wrap_tree(_event_params_container)
+
+
+func _make_event_param_widget(kind: String, initial: Variant) -> Control:
+    match kind:
+        "bool":
+            var cb := CheckBox.new()
+            cb.button_pressed = bool(initial) if initial != null else false
+            cb.toggled.connect(_on_rule_field_changed)
+            return cb
+        _:
+            # "int", "float", "string", and anything unknown all fall
+            # through to a LineEdit; _collect_event_params parses the
+            # string back into the right kind at serialise time.
+            var le := LineEdit.new()
+            if initial != null:
+                le.text = str(initial)
+            le.text_changed.connect(_on_rule_field_changed)
+            return le
+
+
+# Reads the current widget values back into a Dictionary keyed by the
+# schema's `key` field. Numeric kinds are parsed (blank → omitted) so
+# event_params on disk stays clean of empty strings.
+func _collect_event_params() -> Dictionary:
+    var out: Dictionary = {}
+    var event_name: String = _selected_event_name()
+    var specs: Array = EcaSchema.event_params(event_name)
+    for spec_v in specs:
+        var spec: Array = spec_v
+        if spec.size() < 3:
+            continue
+        var key: String = str(spec[0])
+        var kind: String = str(spec[2])
+        var widget_v: Variant = _event_param_widgets.get(key, null)
+        if widget_v == null:
+            continue
+        match kind:
+            "bool":
+                out[key] = bool((widget_v as CheckBox).button_pressed)
+            "int":
+                var text_i: String = (widget_v as LineEdit).text.strip_edges()
+                if not text_i.is_empty():
+                    out[key] = int(text_i)
+            "float":
+                var text_f: String = (widget_v as LineEdit).text.strip_edges()
+                if not text_f.is_empty():
+                    out[key] = float(text_f)
+            _:
+                var text_s: String = (widget_v as LineEdit).text.strip_edges()
+                if not text_s.is_empty():
+                    out[key] = text_s
+    return out
 
 
 func _update_event_control_tooltips() -> void:
@@ -857,6 +1023,13 @@ func _flush_detail() -> bool:
     var rule: Dictionary = rules[_selected]
     rule["id"] = _id_edit.text.strip_edges()
     rule["event"] = _selected_event_name()
+    var collected_params: Dictionary = _collect_event_params()
+    # Omit the key entirely when empty so on-disk JSON stays clean of
+    # bare {} stubs on events that don't use event_params.
+    if collected_params.is_empty():
+        rule.erase("event_params")
+    else:
+        rule["event_params"] = collected_params
     rule["enabled"] = _enabled_check.button_pressed
     rule["once"] = _once_check.button_pressed
     rule["locals"] = _locals_form.get_value()
@@ -1099,9 +1272,11 @@ func _on_scope_tree_selected() -> void:
     if _suppress:
         return
     if not _flush_detail():
-        _suppress = true
-        _populate_scope_tree()
-        _suppress = false
+        # _populate_scope_tree calls tree.clear(), which Godot blocks
+        # while we're inside the tree's own item_selected callback
+        # ("Condition blocked > 0 is true"). Defer the revert so the
+        # selection signal can return first.
+        _populate_scope_tree.call_deferred()
         return
     var item: TreeItem = _scope_tree.get_selected()
     if item == null:
@@ -1114,7 +1289,9 @@ func _on_scope_tree_selected() -> void:
     _current_folder_path = _safe_array(meta.get("folder_path", []))
     _current_folder_idx = -1 if _current_folder_path.is_empty() else int(_current_folder_path[_current_folder_path.size() - 1])
     _selected = -1
-    _rebuild_all()
+    # Same re-entrance: _rebuild_all → _populate_scope_tree → tree.clear()
+    # would crash if invoked synchronously here.
+    _rebuild_all.call_deferred()
 
 
 func _on_library_name_changed(text: String) -> void:
@@ -1297,55 +1474,61 @@ func _refresh_summary(rule: Dictionary) -> void:
         scope_name = str(_current_library().get("name", "library"))
         if _current_folder_idx >= 0:
             scope_name += " / " + str(_current_folder().get("name", "folder"))
-    var locals_count := _safe_array(rule.get("locals", [])).size()
     var conditions := _safe_array(rule.get("conditions", []))
     var actions := _safe_array(rule.get("actions", []))
     var state_bits: Array = []
     state_bits.append("enabled" if bool(rule.get("enabled", true)) else "disabled")
     if bool(rule.get("once", false)):
-        state_bits.append("once")
-    var condition_preview := _preview_conditions(conditions)
-    var action_preview := _preview_actions(actions)
-    _summary_label.text = "In %s, %s starts on: %s. It has %d temporary value%s, %d check%s, and %d action%s. %s%s State: %s." % [
-        scope_name,
-        rule_id if not rule_id.is_empty() else "(unnamed)",
-        EcaSchema.event_label(event_name),
-        locals_count,
-        "" if locals_count == 1 else "s",
-        conditions.size(),
-        "" if conditions.size() == 1 else "s",
-        actions.size(),
-        "" if actions.size() == 1 else "s",
-        condition_preview,
-        action_preview,
-        ", ".join(state_bits),
-    ]
+        state_bits.append("runs once")
 
+    var lines: Array = []
+    var header_id := rule_id if not rule_id.is_empty() else "(unnamed)"
+    lines.append("%s   (in %s, %s)" % [header_id, scope_name, ", ".join(state_bits)])
+    lines.append("")
+    # Event labels are already phrased "When the player picks something up",
+    # etc., so we just capitalize the leading word for emphasis instead of
+    # prepending a second "WHEN".
+    lines.append(_format_when(EcaSchema.event_label(event_name)))
+    lines.append("")
 
-func _preview_conditions(conditions: Array) -> String:
     if conditions.is_empty():
-        return "No checks are required. "
-    var lines: Array = []
-    for i in range(mini(conditions.size(), 2)):
-        var cond_v: Variant = conditions[i]
-        if typeof(cond_v) == TYPE_DICTIONARY:
-            lines.append(EcaSchema.condition_summary(cond_v))
-    if conditions.size() > 2:
-        lines.append("and %d more" % (conditions.size() - 2))
-    return "Checks: %s. " % "; ".join(lines)
+        lines.append("(no conditions — fires every time)")
+    else:
+        for i in range(conditions.size()):
+            var cond_v: Variant = conditions[i]
+            var prefix := "IF" if i == 0 else "AND"
+            if typeof(cond_v) == TYPE_DICTIONARY:
+                lines.append("%s %s." % [prefix, EcaSchema.condition_summary(cond_v)])
+            else:
+                lines.append("%s (invalid condition)" % prefix)
+    lines.append("")
 
-
-func _preview_actions(actions: Array) -> String:
     if actions.is_empty():
-        return "No actions yet. "
-    var lines: Array = []
-    for i in range(mini(actions.size(), 2)):
-        var action_v: Variant = actions[i]
-        if typeof(action_v) == TYPE_DICTIONARY:
-            lines.append(EcaSchema.action_summary(action_v))
-    if actions.size() > 2:
-        lines.append("and %d more" % (actions.size() - 2))
-    return "Actions: %s. " % "; ".join(lines)
+        lines.append("THEN (no actions yet)")
+    else:
+        lines.append("THEN")
+        for action_v in actions:
+            if typeof(action_v) == TYPE_DICTIONARY:
+                lines.append("  • %s" % EcaSchema.action_summary(action_v))
+            else:
+                lines.append("  • (invalid action)")
+
+    _summary_label.text = "\n".join(lines)
+
+
+func _format_when(label: String) -> String:
+    # Uppercase only the leading word so "When the player picks up..."
+    # reads as "WHEN the player picks up..." without bbcode.
+    var trimmed := label.strip_edges()
+    if trimmed.is_empty():
+        return "WHEN (no event)."
+    var space_idx := trimmed.find(" ")
+    if space_idx < 0:
+        return trimmed.to_upper() + "."
+    var first := trimmed.substr(0, space_idx).to_upper()
+    var rest := trimmed.substr(space_idx)
+    var trailing := "" if trimmed.ends_with(".") else "."
+    return "%s%s%s" % [first, rest, trailing]
 
 
 func _refresh_debug_view() -> void:

@@ -2,16 +2,12 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://cdkdnck1u88jy"
-path="res://.godot/imported/Chair4.png-411ce6c86edde1c942cb6bab03d8663b.ctex"
-metadata={
-"vram_texture": false
-}
+uid="uid://qvvkqpas2r1g"
+valid=false
 
 [deps]
 
 source_file="res://Content/demo/TilesetSources/imported/lab-game-tileset-pixel-art/3 Objects/Chair4.png"
-dest_files=["res://.godot/imported/Chair4.png-411ce6c86edde1c942cb6bab03d8663b.ctex"]
 
 [params]
 

@@ -3,15 +3,11 @@
 importer="texture"
 type="CompressedTexture2D"
 uid="uid://jl1j1at4fuag"
-path="res://.godot/imported/Overlay_illumination.png-0fc98f0e5b72f84f29f37b4b4a809866.ctex"
-metadata={
-"vram_texture": false
-}
+valid=false
 
 [deps]
 
 source_file="res://Content/demo/TilesetSources/imported/ghetto-tileset-pixel-art/2 Background/Overlay_illumination.png"
-dest_files=["res://.godot/imported/Overlay_illumination.png-0fc98f0e5b72f84f29f37b4b4a809866.ctex"]
 
 [params]
 

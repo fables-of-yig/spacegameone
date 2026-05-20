@@ -386,10 +386,10 @@ func _refresh_sprite_select(current_sprite: String) -> void:
     _sprite_select.add_item("(none)")
     var selected_idx := 0
     for name_v in _sprite_names:
-        var name := str(name_v)
-        _sprite_select.add_item(name)
+        var sprite_name := str(name_v)
+        _sprite_select.add_item(sprite_name)
         var idx: int = _sprite_select.item_count - 1
-        if name == current_sprite:
+        if sprite_name == current_sprite:
             selected_idx = idx
     _sprite_select.select(selected_idx)
 
@@ -738,10 +738,10 @@ func _draw_visual_canvas(canvas: Control) -> void:
 
 
 func _closed_poly(points: PackedVector2Array) -> PackedVector2Array:
-    var closed := PackedVector2Array(points)
-    if closed.size() > 0:
-        closed.append(closed[0])
-    return closed
+    var closed_pts := PackedVector2Array(points)
+    if closed_pts.size() > 0:
+        closed_pts.append(closed_pts[0])
+    return closed_pts
 
 
 func _draw_preview_sprite(canvas: Control, entry: Dictionary, origin: Vector2) -> void:

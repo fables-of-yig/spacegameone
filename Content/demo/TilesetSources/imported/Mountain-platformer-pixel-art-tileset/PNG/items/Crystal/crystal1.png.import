@@ -2,16 +2,12 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://iu0e6hymmdap"
-path="res://.godot/imported/crystal1.png-25b59be15d39cea46279b38e4c1df735.ctex"
-metadata={
-"vram_texture": false
-}
+uid="uid://btupxwi6a47ga"
+valid=false
 
 [deps]
 
 source_file="res://Content/demo/TilesetSources/imported/Mountain-platformer-pixel-art-tileset/PNG/items/Crystal/crystal1.png"
-dest_files=["res://.godot/imported/crystal1.png-25b59be15d39cea46279b38e4c1df735.ctex"]
 
 [params]
 

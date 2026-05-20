@@ -3,15 +3,11 @@
 importer="texture"
 type="CompressedTexture2D"
 uid="uid://33le61vk7j6x"
-path="res://.godot/imported/Ship_1.png-b8b942f2911511217331709083a7ec12.ctex"
-metadata={
-"vram_texture": false
-}
+valid=false
 
 [deps]
 
 source_file="res://Content/demo/TilesetSources/imported/Legacy Vania Assets - Ship/Ship/Social/Ship_1.png"
-dest_files=["res://.godot/imported/Ship_1.png-b8b942f2911511217331709083a7ec12.ctex"]
 
 [params]
 

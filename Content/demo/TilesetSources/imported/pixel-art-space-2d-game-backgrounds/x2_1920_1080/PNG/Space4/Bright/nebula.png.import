@@ -2,16 +2,12 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://cmom84kh0157b"
-path="res://.godot/imported/nebula.png-459ed28da9678e8495a49c04dd419940.ctex"
-metadata={
-"vram_texture": false
-}
+uid="uid://bsstnpp8oykpj"
+valid=false
 
 [deps]
 
 source_file="res://Content/demo/TilesetSources/imported/pixel-art-space-2d-game-backgrounds/x2_1920_1080/PNG/Space4/Bright/nebula.png"
-dest_files=["res://.godot/imported/nebula.png-459ed28da9678e8495a49c04dd419940.ctex"]
 
 [params]
 

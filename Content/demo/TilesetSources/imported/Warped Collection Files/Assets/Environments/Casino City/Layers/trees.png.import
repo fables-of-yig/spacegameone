@@ -2,16 +2,12 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://5da7j24qmahj"
-path="res://.godot/imported/trees.png-f9252d58cffb36e8bb7c6f356bc0eb14.ctex"
-metadata={
-"vram_texture": false
-}
+uid="uid://crulw8quddstq"
+valid=false
 
 [deps]
 
 source_file="res://Content/demo/TilesetSources/imported/Warped Collection Files/Assets/Environments/Casino City/Layers/trees.png"
-dest_files=["res://.godot/imported/trees.png-f9252d58cffb36e8bb7c6f356bc0eb14.ctex"]
 
 [params]
 

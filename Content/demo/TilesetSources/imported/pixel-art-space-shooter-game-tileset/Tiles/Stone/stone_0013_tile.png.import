@@ -2,16 +2,12 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://crm8ncn05igms"
-path="res://.godot/imported/stone_0013_tile.png-29c284121ffb6e9ff34850d613b69945.ctex"
-metadata={
-"vram_texture": false
-}
+uid="uid://bo7vktdd4cud0"
+valid=false
 
 [deps]
 
 source_file="res://Content/demo/TilesetSources/imported/pixel-art-space-shooter-game-tileset/Tiles/Stone/stone_0013_tile.png"
-dest_files=["res://.godot/imported/stone_0013_tile.png-29c284121ffb6e9ff34850d613b69945.ctex"]
 
 [params]
 

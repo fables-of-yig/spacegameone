@@ -3,15 +3,11 @@
 importer="texture"
 type="CompressedTexture2D"
 uid="uid://b084fu81pydls"
-path="res://.godot/imported/ice_bomb4.png-600c0a427467cf749291f967bab7a23b.ctex"
-metadata={
-"vram_texture": false
-}
+valid=false
 
 [deps]
 
 source_file="res://Content/demo/TilesetSources/imported/pixel-art-space-shooter-2d-tileset/Icons_PNG&Spriter_Animation/ice_bomb/ice_bomb4.png"
-dest_files=["res://.godot/imported/ice_bomb4.png-600c0a427467cf749291f967bab7a23b.ctex"]
 
 [params]
 

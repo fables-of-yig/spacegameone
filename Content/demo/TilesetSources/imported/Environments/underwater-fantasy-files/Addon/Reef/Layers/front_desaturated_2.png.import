@@ -2,16 +2,12 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://qmle0doo8y1x"
-path="res://.godot/imported/front_desaturated_2.png-303bb090422a005a8885c4f99edf53b3.ctex"
-metadata={
-"vram_texture": false
-}
+uid="uid://bbljf3cuacott"
+valid=false
 
 [deps]
 
 source_file="res://Content/demo/TilesetSources/imported/Environments/underwater-fantasy-files/Addon/Reef/Layers/front_desaturated_2.png"
-dest_files=["res://.godot/imported/front_desaturated_2.png-303bb090422a005a8885c4f99edf53b3.ctex"]
 
 [params]
 

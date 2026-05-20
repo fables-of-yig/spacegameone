@@ -1,7 +1,7 @@
 extends Control
 
 const UIPanels = preload("res://Space/scripts/ui/ui_panels.gd")
-const UIIo     = preload("res://Space/scripts/editor/ui/ui_io.gd")
+const UIIo     = preload("res://Space/scripts/shared/ui/ui_io.gd")
 
 # Full-screen 9-slice texture picker for the theme editor. Lists every
 # PNG found under the active pack's Assets/UI folder + the global

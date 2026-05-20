@@ -2,16 +2,12 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://2jcn4v48vond"
-path="res://.godot/imported/frame1.png-bcff2745bcfbd101e5173e853bd6a967.ctex"
-metadata={
-"vram_texture": false
-}
+uid="uid://bvauv6bdg0h4v"
+valid=false
 
 [deps]
 
 source_file="res://Content/demo/TilesetSources/imported/Warped Collection Files/Assets/Enemies/Megabot Dragon/Ball/Sprites/frame1.png"
-dest_files=["res://.godot/imported/frame1.png-bcff2745bcfbd101e5173e853bd6a967.ctex"]
 
 [params]
 

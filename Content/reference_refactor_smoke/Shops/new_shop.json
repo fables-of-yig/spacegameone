@@ -1,0 +1,11 @@
+{
+  "id": "new_shop",
+  "items": [
+    {
+      "count": 1.0,
+      "id": "key_renamed",
+      "price": 1.0,
+      "stock_id": "key_stock"
+    }
+  ]
+}

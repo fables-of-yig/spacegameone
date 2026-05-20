@@ -8,7 +8,7 @@ extends VBoxContainer
 signal changed
 
 const EcaSchemaLib := preload("res://Space/scripts/editor/dlg/eca_schema.gd")
-const QuestIO := preload("res://Space/scripts/editor/quest_io.gd")
+const DlgConditionsListFormLib := preload("res://Space/scripts/editor/dlg/conditions_list_form.gd")
 
 var _rows_box: VBoxContainer = null
 var _add_option: OptionButton = null
@@ -16,6 +16,7 @@ var _suppress_emit: bool = false
 var _rows: Array = []  # each: {"box": VBoxContainer, "type": String, "fields": {key -> Control}}
 var _last_errors: Array = []
 var _pack_id: String = ""
+var _rule_event: String = ""
 
 
 func _ready() -> void:
@@ -47,6 +48,40 @@ func _build_ui() -> void:
 
 func set_pack_id(pack_id: String) -> void:
     _pack_id = pack_id.strip_edges()
+
+
+# Push the parent rule's event name into any nested forms so their
+# event-aware widgets (e.g. payload_eq inside an if-action's conditions
+# block) can populate their known-key dropdowns. Re-runs whenever the
+# trigger editor's event picker changes value, so existing rows update
+# in place.
+func set_rule_event(event_name: String) -> void:
+    _rule_event = event_name.strip_edges()
+    for row_v in _rows:
+        var row: Dictionary = row_v
+        var fields: Dictionary = row.get("fields", {})
+        for key in fields.keys():
+            _propagate_rule_event_to_control(fields[key])
+
+
+func _propagate_rule_event_to_control(control: Control) -> void:
+    if control == null:
+        return
+    if control.has_meta("nested_wrapper") and control.get_child_count() > 0:
+        var nested := control.get_child(0)
+        if nested != null and nested.has_method("set_rule_event"):
+            nested.call("set_rule_event", _rule_event)
+        return
+    if control.has_meta("branches_root"):
+        var entries_box: Node = control.get_node_or_null("Entries")
+        if entries_box == null:
+            return
+        for entry in entries_box.get_children():
+            if not entry.has_meta("branch_entry"):
+                continue
+            for descendant in _all_descendants(entry):
+                if descendant.has_meta("branch_actions") and descendant.has_method("set_rule_event"):
+                    descendant.call("set_rule_event", _rule_event)
 
 
 func open(actions: Array) -> void:
@@ -133,9 +168,20 @@ func _append_row(seed_data: Dictionary) -> void:
     type_lbl.add_theme_color_override("font_color", Color(0.8, 0.9, 1.0))
     type_lbl.tooltip_text = action_help
     type_lbl.mouse_filter = Control.MOUSE_FILTER_STOP
+    # Pin the action label and delete button to the top of the row so they
+    # stay aligned with the first wrapped line of fields instead of
+    # vertically-centering against a multi-line field block.
+    type_lbl.size_flags_vertical = Control.SIZE_SHRINK_BEGIN
     box.add_child(type_lbl)
 
-    var fields_box := HBoxContainer.new()
+    # Use HFlowContainer so actions with many fields (camera_focus has 6,
+    # spawn_player has 7) wrap onto extra lines instead of overflowing
+    # past the panel's right edge and hiding both the trailing fields and
+    # the X delete button. Each (label, control) pair is grouped in its
+    # own HBoxContainer so a label never gets separated from its input
+    # when wrapping breaks the row.
+    var fields_box := HFlowContainer.new()
+    fields_box.size_flags_horizontal = Control.SIZE_EXPAND_FILL
     box.add_child(fields_box)
     var field_controls: Dictionary = {}
     var field_specs: Array = schema.get("fields", [])
@@ -143,20 +189,24 @@ func _append_row(seed_data: Dictionary) -> void:
         var key: String = spec[0]
         var label: String = spec[1]
         var kind: String = spec[2]
+        var pair := HBoxContainer.new()
+        pair.add_theme_constant_override("separation", 4)
         var sub_lbl := Label.new()
         sub_lbl.text = label + ":"
         var field_tip := _field_tooltip(action_label, action_help, label, kind)
         sub_lbl.tooltip_text = field_tip
-        fields_box.add_child(sub_lbl)
+        pair.add_child(sub_lbl)
         var control := _make_field(kind, seed_data.get(key, null), type_name, key)
         control.tooltip_text = field_tip
-        fields_box.add_child(control)
+        pair.add_child(control)
+        fields_box.add_child(pair)
         field_controls[key] = control
 
     var del_btn := Button.new()
     del_btn.text = "X"
     del_btn.tooltip_text = "Delete this action row."
     del_btn.pressed.connect(_on_delete_row.bind(row_box))
+    del_btn.size_flags_vertical = Control.SIZE_SHRINK_BEGIN
     box.add_child(del_btn)
 
     var help_lbl := Label.new()
@@ -170,6 +220,9 @@ func _append_row(seed_data: Dictionary) -> void:
     row_box.add_child(sep)
 
     _rows.append({"box": row_box, "type": type_name, "fields": field_controls})
+    # Pre-wrap any built-in tooltips on this row's controls so long help
+    # strings don't stretch the tooltip across the screen.
+    EditorTooltipWrap.wrap_tree(row_box)
 
 
 func _on_delete_row(row_box: VBoxContainer) -> void:
@@ -190,6 +243,45 @@ func _make_field(kind: String, initial: Variant, action_type: String = "", field
             cb.button_pressed = bool(initial) if initial != null else false
             cb.toggled.connect(_emit_changed_arg)
             return cb
+        "json_block":
+            var te := TextEdit.new()
+            te.custom_minimum_size = Vector2(320, 90)
+            te.placeholder_text = _field_placeholder(action_type, field_key, kind)
+            if initial != null:
+                te.text = JSON.stringify(initial, "  ") if (initial is Array or initial is Dictionary) else str(initial)
+            te.set_meta("json_block", true)
+            te.text_changed.connect(func(): _emit_changed())
+            return te
+        "actions_block":
+            var nested_form := DlgActionsForm.new()
+            nested_form.set_meta("actions_block", true)
+            if not _pack_id.is_empty() and nested_form.has_method("set_pack_id"):
+                nested_form.set_pack_id(_pack_id)
+            if nested_form.has_method("set_rule_event"):
+                nested_form.set_rule_event(_rule_event)
+            nested_form.changed.connect(_emit_changed_arg)
+            var seed_arr: Array = []
+            if initial != null and typeof(initial) == TYPE_ARRAY:
+                seed_arr = initial
+            nested_form.call_deferred("open", seed_arr)
+            return _wrap_nested(nested_form, _branch_color_for_field(field_key))
+        "conditions_block":
+            var nested_cond := DlgConditionsListFormLib.new()
+            nested_cond.set_meta("conditions_block", true)
+            if not _pack_id.is_empty() and nested_cond.has_method("set_pack_id"):
+                nested_cond.set_pack_id(_pack_id)
+            if nested_cond.has_method("set_rule_event"):
+                nested_cond.set_rule_event(_rule_event)
+            nested_cond.changed.connect(_emit_changed)
+            var seed_conds: Array = []
+            if initial != null and typeof(initial) == TYPE_ARRAY:
+                seed_conds = initial
+            nested_cond.call_deferred("open", seed_conds)
+            return _wrap_nested(nested_cond, Color(0.55, 0.78, 0.95))
+        "branches_block":
+            var branches := _make_branches_block(initial)
+            branches.set_meta("branches_block", true)
+            return branches
         _:
             var le := LineEdit.new()
             le.custom_minimum_size = Vector2(120, 0)
@@ -209,6 +301,28 @@ func _read_field(control: Control, kind: String) -> Dictionary:
     match kind:
         "bool":
             return {"ok": true, "value": (control as CheckBox).button_pressed if control is CheckBox else false}
+        "json_block":
+            if not (control is TextEdit):
+                return {"ok": true, "value": []}
+            var raw_text := (control as TextEdit).text.strip_edges()
+            if raw_text.is_empty():
+                return {"ok": true, "value": []}
+            var parsed: Variant = JSON.parse_string(raw_text)
+            if parsed == null:
+                return {"ok": false, "value": []}
+            return {"ok": true, "value": parsed}
+        "actions_block":
+            var nested_form := _unwrap_nested(control)
+            if nested_form is DlgActionsForm:
+                return {"ok": true, "value": (nested_form as DlgActionsForm).get_value()}
+            return {"ok": true, "value": []}
+        "conditions_block":
+            var nested_cond := _unwrap_nested(control)
+            if nested_cond is DlgConditionsListFormLib:
+                return {"ok": true, "value": nested_cond.call("get_value")}
+            return {"ok": true, "value": []}
+        "branches_block":
+            return {"ok": true, "value": _read_branches_block(control)}
         "int":
             if control is LineEdit:
                 var text := (control as LineEdit).text.strip_edges()
@@ -269,6 +383,14 @@ func _kind_label(kind: String) -> String:
             return "a number or blank"
         "opt_string":
             return "text"
+        "json_block":
+            return "valid JSON"
+        "actions_block":
+            return "a list of actions"
+        "conditions_block":
+            return "a list of conditions"
+        "branches_block":
+            return "weighted branches"
         _:
             return kind
 
@@ -403,6 +525,8 @@ func _action_example(action_type: String) -> String:
             return "quest_id = first_steps, stage_id = start"
         "quest_complete":
             return "quest_id = first_steps"
+        "unlock_poi":
+            return "system_id = start, poi_id = hidden_outpost"
         _:
             return ""
 
@@ -416,6 +540,10 @@ func _field_placeholder(action_type: String, field_key: String, kind: String) ->
                 return "choose a quest stage"
             "objective_id":
                 return "choose a quest objective"
+    if action_type == "spawn_player" and (field_key == "x" or field_key == "y"):
+        return "0 — only used when toggle is on"
+    if action_type == "random_pick" and field_key == "options":
+        return "[{\"weight\":1,\"actions\":[{\"type\":\"log\",\"message\":\"branch A\"}]}, ...]"
     if kind == "opt_string":
         match field_key:
             "key":
@@ -436,10 +564,6 @@ func _field_placeholder(action_type: String, field_key: String, kind: String) ->
                 return "left / right / up / down"
             "region_id":
                 return "capital"
-            "x":
-                return "leave blank to reuse current"
-            "y":
-                return "leave blank to reuse current"
             _:
                 return ""
     match field_key:
@@ -617,4 +741,187 @@ func _quest_picker_options(field_key: String) -> Array:
                     continue
                 var objective_title := str(objective.get("title", objective_id)).strip_edges()
                 out.append({"value": objective_id, "label": "%s / %s / %s (%s)" % [quest_title, stage_title, objective_title, objective_id]})
+    return out
+
+
+# ── Nested editor helpers (Phase E: if/else + random_pick branches) ─────
+
+# Wraps a nested DlgActionsForm or DlgConditionsListForm inside a thin
+# bordered Panel so the visual nesting is obvious at a glance. The form
+# itself is the wrapper's only child and is reachable via _unwrap_nested.
+func _wrap_nested(form: Control, accent: Color) -> Control:
+    var wrapper := PanelContainer.new()
+    wrapper.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+    wrapper.set_meta("nested_wrapper", true)
+    var sb := StyleBoxFlat.new()
+    sb.bg_color = Color(0.08, 0.10, 0.16, 0.55)
+    sb.border_color = accent
+    sb.border_width_left = 3
+    sb.corner_radius_top_left = 2
+    sb.corner_radius_top_right = 2
+    sb.corner_radius_bottom_left = 2
+    sb.corner_radius_bottom_right = 2
+    sb.content_margin_left = 8
+    sb.content_margin_right = 6
+    sb.content_margin_top = 6
+    sb.content_margin_bottom = 6
+    wrapper.add_theme_stylebox_override("panel", sb)
+    wrapper.add_child(form)
+    return wrapper
+
+
+func _unwrap_nested(control: Control) -> Node:
+    if control == null:
+        return null
+    if control.has_meta("nested_wrapper") and control.get_child_count() > 0:
+        return control.get_child(0)
+    return control
+
+
+# Color hint for actions_block fields. THEN branches get a calm green
+# accent; ELSE gets a muted red; other names default to neutral blue.
+func _branch_color_for_field(field_key: String) -> Color:
+    match field_key:
+        "then":
+            return Color(0.40, 0.85, 0.45)
+        "else":
+            return Color(0.92, 0.45, 0.45)
+        _:
+            return Color(0.55, 0.78, 0.95)
+
+
+# Custom widget for random_pick's `options` field. Renders a vertical list
+# of branches; each branch is a small Panel with a weight LineEdit and a
+# nested DlgActionsForm holding the branch's action sequence. A footer
+# "+ Add Branch" button appends new branches. Round-trips through
+# _read_branches_block to a list of {weight, actions} dicts.
+func _make_branches_block(initial: Variant) -> Control:
+    var root := VBoxContainer.new()
+    root.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+    root.add_theme_constant_override("separation", 4)
+    root.set_meta("branches_root", true)
+    var entries_box := VBoxContainer.new()
+    entries_box.add_theme_constant_override("separation", 4)
+    entries_box.name = "Entries"
+    root.add_child(entries_box)
+
+    var footer := HBoxContainer.new()
+    root.add_child(footer)
+    var add_btn := Button.new()
+    add_btn.text = "+ Add Branch"
+    add_btn.tooltip_text = "Append a new weighted branch to this random pick."
+    add_btn.pressed.connect(func(): _branches_append_entry(entries_box, {"weight": 1.0, "actions": []}))
+    footer.add_child(add_btn)
+
+    var seed_entries: Array = []
+    if initial != null and typeof(initial) == TYPE_ARRAY:
+        seed_entries = initial
+    for entry_v in seed_entries:
+        if typeof(entry_v) == TYPE_DICTIONARY:
+            _branches_append_entry(entries_box, entry_v)
+
+    return root
+
+
+func _branches_append_entry(entries_box: VBoxContainer, branch_seed: Dictionary) -> void:
+    var entry := PanelContainer.new()
+    entry.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+    var sb := StyleBoxFlat.new()
+    sb.bg_color = Color(0.08, 0.10, 0.16, 0.55)
+    sb.border_color = Color(0.85, 0.65, 0.40)
+    sb.border_width_left = 3
+    sb.corner_radius_top_left = 2
+    sb.corner_radius_top_right = 2
+    sb.corner_radius_bottom_left = 2
+    sb.corner_radius_bottom_right = 2
+    sb.content_margin_left = 8
+    sb.content_margin_right = 6
+    sb.content_margin_top = 6
+    sb.content_margin_bottom = 6
+    entry.add_theme_stylebox_override("panel", sb)
+    entry.set_meta("branch_entry", true)
+
+    var box := VBoxContainer.new()
+    box.add_theme_constant_override("separation", 4)
+    entry.add_child(box)
+
+    var header := HBoxContainer.new()
+    box.add_child(header)
+    var w_lbl := Label.new()
+    w_lbl.text = "Weight:"
+    header.add_child(w_lbl)
+    var weight_edit := LineEdit.new()
+    weight_edit.custom_minimum_size = Vector2(80, 0)
+    weight_edit.text = str(float(branch_seed.get("weight", 1.0)))
+    weight_edit.placeholder_text = "1.0"
+    weight_edit.text_changed.connect(func(_t): _emit_changed())
+    weight_edit.set_meta("branch_weight_edit", true)
+    header.add_child(weight_edit)
+    var spacer := Control.new()
+    spacer.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+    header.add_child(spacer)
+    var del_btn := Button.new()
+    del_btn.text = "X"
+    del_btn.tooltip_text = "Remove this branch."
+    del_btn.pressed.connect(func(): _branches_delete_entry(entry))
+    header.add_child(del_btn)
+
+    var nested := DlgActionsForm.new()
+    if not _pack_id.is_empty() and nested.has_method("set_pack_id"):
+        nested.set_pack_id(_pack_id)
+    if nested.has_method("set_rule_event"):
+        nested.set_rule_event(_rule_event)
+    nested.changed.connect(_emit_changed_arg)
+    nested.set_meta("branch_actions", true)
+    var nested_actions: Array = []
+    var seed_actions_v: Variant = branch_seed.get("actions", [])
+    if typeof(seed_actions_v) == TYPE_ARRAY:
+        nested_actions = seed_actions_v
+    nested.call_deferred("open", nested_actions)
+    box.add_child(nested)
+
+    entries_box.add_child(entry)
+    _emit_changed()
+
+
+func _branches_delete_entry(entry: PanelContainer) -> void:
+    if entry == null or not is_instance_valid(entry):
+        return
+    entry.queue_free()
+    _emit_changed()
+
+
+func _read_branches_block(control: Control) -> Array:
+    var out: Array = []
+    if control == null or not control.has_meta("branches_root"):
+        return out
+    var entries_box: VBoxContainer = control.get_node_or_null("Entries")
+    if entries_box == null:
+        return out
+    for entry in entries_box.get_children():
+        if not entry.has_meta("branch_entry"):
+            continue
+        var weight: float = 1.0
+        var actions: Array = []
+        # Walk the entry to find the weight LineEdit and the nested form.
+        for descendant in _all_descendants(entry):
+            if descendant.has_meta("branch_weight_edit") and descendant is LineEdit:
+                var txt: String = (descendant as LineEdit).text.strip_edges()
+                if not txt.is_empty():
+                    var parsed: float = float(txt)
+                    weight = parsed if parsed > 0.0 else 1.0
+            elif descendant.has_meta("branch_actions") and descendant is DlgActionsForm:
+                actions = (descendant as DlgActionsForm).get_value()
+        out.append({"weight": weight, "actions": actions})
+    return out
+
+
+func _all_descendants(node: Node) -> Array:
+    var stack: Array = [node]
+    var out: Array = []
+    while not stack.is_empty():
+        var n: Node = stack.pop_back()
+        for child in n.get_children():
+            out.append(child)
+            stack.append(child)
     return out

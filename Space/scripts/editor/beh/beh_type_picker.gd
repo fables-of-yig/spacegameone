@@ -1,7 +1,7 @@
 extends Control
 
 const UIPanels = preload("res://Space/scripts/ui/ui_panels.gd")
-const BehTypes = preload("res://Space/scripts/editor/beh/beh_types.gd")
+const BehTypes = preload("res://Space/scripts/shared/beh/beh_types.gd")
 
 # Full-screen modal that lists every supported behavior node type,
 # grouped by category (composites / decorators / leaves), and lets the

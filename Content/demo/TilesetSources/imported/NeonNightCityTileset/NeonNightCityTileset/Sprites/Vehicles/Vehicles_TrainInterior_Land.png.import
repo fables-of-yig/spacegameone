@@ -2,16 +2,12 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://ctj1hr6pvlyx3"
-path="res://.godot/imported/Vehicles_TrainInterior_Land.png-765737ab574780ea50628cd4f7419810.ctex"
-metadata={
-"vram_texture": false
-}
+uid="uid://cdt6x8x6bgxjv"
+valid=false
 
 [deps]
 
 source_file="res://Content/demo/TilesetSources/imported/NeonNightCityTileset/NeonNightCityTileset/Sprites/Vehicles/Vehicles_TrainInterior_Land.png"
-dest_files=["res://.godot/imported/Vehicles_TrainInterior_Land.png-765737ab574780ea50628cd4f7419810.ctex"]
 
 [params]
 

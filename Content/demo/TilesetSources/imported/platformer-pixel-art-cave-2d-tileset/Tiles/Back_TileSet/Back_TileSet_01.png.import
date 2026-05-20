@@ -3,15 +3,11 @@
 importer="texture"
 type="CompressedTexture2D"
 uid="uid://dr4ygl0yqqfg2"
-path="res://.godot/imported/Back_TileSet_01.png-29f795bda7fb31ace40048cf6e188ffd.ctex"
-metadata={
-"vram_texture": false
-}
+valid=false
 
 [deps]
 
 source_file="res://Content/demo/TilesetSources/imported/platformer-pixel-art-cave-2d-tileset/Tiles/Back_TileSet/Back_TileSet_01.png"
-dest_files=["res://.godot/imported/Back_TileSet_01.png-29f795bda7fb31ace40048cf6e188ffd.ctex"]
 
 [params]
 

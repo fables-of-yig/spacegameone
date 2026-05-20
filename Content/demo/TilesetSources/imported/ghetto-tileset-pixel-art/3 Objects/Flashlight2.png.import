@@ -2,16 +2,12 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://b5n63je73emor"
-path="res://.godot/imported/Flashlight2.png-42fad75962934a0cc33a9f3066edf75a.ctex"
-metadata={
-"vram_texture": false
-}
+uid="uid://bwh564dmvbth5"
+valid=false
 
 [deps]
 
 source_file="res://Content/demo/TilesetSources/imported/ghetto-tileset-pixel-art/3 Objects/Flashlight2.png"
-dest_files=["res://.godot/imported/Flashlight2.png-42fad75962934a0cc33a9f3066edf75a.ctex"]
 
 [params]
 

@@ -2,16 +2,12 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://wo7u6mb7vmo5"
-path="res://.godot/imported/crab1.png-c630bbbde4031c4105f6a40a509f6c8d.ctex"
-metadata={
-"vram_texture": false
-}
+uid="uid://cr3dhmxnwtq84"
+valid=false
 
 [deps]
 
 source_file="res://Content/demo/TilesetSources/imported/Warped Collection Files/Assets/Enemies/Enemies Pack 3/Sprites/Crab/crab1.png"
-dest_files=["res://.godot/imported/crab1.png-c630bbbde4031c4105f6a40a509f6c8d.ctex"]
 
 [params]
 

@@ -1,7 +1,7 @@
 extends Control
 
 const LegacyShipBuilder = preload("res://Space/scripts/ship_builder/ship_builder.gd")
-const PackPaths = preload("res://Space/scripts/editor/pack_paths.gd")
+const PackPaths = preload("res://Space/scripts/shared/pack_paths.gd")
 
 signal closed
 signal test_fly_requested(placed: Array, core_id: String)

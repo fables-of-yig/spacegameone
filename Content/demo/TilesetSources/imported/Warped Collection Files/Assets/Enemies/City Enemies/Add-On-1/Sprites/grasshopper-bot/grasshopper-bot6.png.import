@@ -2,16 +2,12 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://dxob7pjnu73vb"
-path="res://.godot/imported/grasshopper-bot6.png-473b1bfe1beefa11ba7e2ad1eb6485fb.ctex"
-metadata={
-"vram_texture": false
-}
+uid="uid://d2qyqevq2l7sn"
+valid=false
 
 [deps]
 
 source_file="res://Content/demo/TilesetSources/imported/Warped Collection Files/Assets/Enemies/City Enemies/Add-On-1/Sprites/grasshopper-bot/grasshopper-bot6.png"
-dest_files=["res://.godot/imported/grasshopper-bot6.png-473b1bfe1beefa11ba7e2ad1eb6485fb.ctex"]
 
 [params]
 

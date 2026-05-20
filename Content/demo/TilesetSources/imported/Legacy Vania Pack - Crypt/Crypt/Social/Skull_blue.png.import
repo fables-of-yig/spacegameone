@@ -2,16 +2,12 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://fafttdj6q30l"
-path="res://.godot/imported/Skull_blue.png-a21cc5266c8652b43e35a6a43c2c016e.ctex"
-metadata={
-"vram_texture": false
-}
+uid="uid://btkvvyynl4qbd"
+valid=false
 
 [deps]
 
 source_file="res://Content/demo/TilesetSources/imported/Legacy Vania Pack - Crypt/Crypt/Social/Skull_blue.png"
-dest_files=["res://.godot/imported/Skull_blue.png-a21cc5266c8652b43e35a6a43c2c016e.ctex"]
 
 [params]
 

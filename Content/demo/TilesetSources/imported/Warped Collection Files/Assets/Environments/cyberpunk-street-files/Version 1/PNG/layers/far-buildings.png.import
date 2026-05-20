@@ -3,15 +3,11 @@
 importer="texture"
 type="CompressedTexture2D"
 uid="uid://djbssjq6pt3a1"
-path="res://.godot/imported/far-buildings.png-2f3cc12aac2bc75c3571e3fde51fe9c3.ctex"
-metadata={
-"vram_texture": false
-}
+valid=false
 
 [deps]
 
 source_file="res://Content/demo/TilesetSources/imported/Warped Collection Files/Assets/Environments/cyberpunk-street-files/Version 1/PNG/layers/far-buildings.png"
-dest_files=["res://.godot/imported/far-buildings.png-2f3cc12aac2bc75c3571e3fde51fe9c3.ctex"]
 
 [params]
 

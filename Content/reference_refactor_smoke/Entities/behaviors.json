@@ -1,0 +1,17 @@
+{
+  "behaviors": [
+    {
+      "description": "Reference refactor smoke behavior.",
+      "id": "new_behavior",
+      "name": "Old Behavior",
+      "root": {
+        "action": "idle",
+        "name": "Idle",
+        "params": {
+
+        },
+        "type": "action"
+      }
+    }
+  ]
+}

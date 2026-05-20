@@ -2,16 +2,12 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://bp1b3bj41whfu"
-path="res://.godot/imported/front.png-8bf98f5babd8fd218847eda8ae55f654.ctex"
-metadata={
-"vram_texture": false
-}
+uid="uid://c62kilps3yhgh"
+valid=false
 
 [deps]
 
 source_file="res://Content/demo/TilesetSources/imported/Warped Collection Files/Assets/Environments/Quiet Hill Abandoned/front.png"
-dest_files=["res://.godot/imported/front.png-8bf98f5babd8fd218847eda8ae55f654.ctex"]
 
 [params]
 

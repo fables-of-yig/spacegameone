@@ -2,16 +2,12 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://dsiti74rt3lbf"
-path="res://.godot/imported/Ground_edge1.png-c42eb3f7b6bc8b2d3196e2cf4a3cd9ac.ctex"
-metadata={
-"vram_texture": false
-}
+uid="uid://2oxsxikp2t5a"
+valid=false
 
 [deps]
 
 source_file="res://Content/demo/TilesetSources/imported/Parallax Backgrounds/01. Parallax BG_Sprites/Ground_edge1.png"
-dest_files=["res://.godot/imported/Ground_edge1.png-c42eb3f7b6bc8b2d3196e2cf4a3cd9ac.ctex"]
 
 [params]
 

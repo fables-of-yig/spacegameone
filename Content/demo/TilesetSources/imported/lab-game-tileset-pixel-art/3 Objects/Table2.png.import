@@ -3,15 +3,11 @@
 importer="texture"
 type="CompressedTexture2D"
 uid="uid://doy76a4tij3a6"
-path="res://.godot/imported/Table2.png-5e8ea38b53db804e1f89b44319f4db5d.ctex"
-metadata={
-"vram_texture": false
-}
+valid=false
 
 [deps]
 
 source_file="res://Content/demo/TilesetSources/imported/lab-game-tileset-pixel-art/3 Objects/Table2.png"
-dest_files=["res://.godot/imported/Table2.png-5e8ea38b53db804e1f89b44319f4db5d.ctex"]
 
 [params]
 

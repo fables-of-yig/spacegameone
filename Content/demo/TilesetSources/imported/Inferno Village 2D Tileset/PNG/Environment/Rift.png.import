@@ -2,16 +2,12 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://qfd2ps5f638e"
-path="res://.godot/imported/Rift.png-d399991dc33c7eec821b32655bd1ce0b.ctex"
-metadata={
-"vram_texture": false
-}
+uid="uid://b7nl04dpn662h"
+valid=false
 
 [deps]
 
 source_file="res://Content/demo/TilesetSources/imported/Inferno Village 2D Tileset/PNG/Environment/Rift.png"
-dest_files=["res://.godot/imported/Rift.png-d399991dc33c7eec821b32655bd1ce0b.ctex"]
 
 [params]
 

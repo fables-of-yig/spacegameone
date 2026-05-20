@@ -2,16 +2,12 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://c2ybec1iefnof"
-path="res://.godot/imported/player-Idle-stand.png-b82101f574b2acefa37a236923db72d0.ctex"
-metadata={
-"vram_texture": false
-}
+uid="uid://bei1gvbr47lxc"
+valid=false
 
 [deps]
 
 source_file="res://Content/demo/TilesetSources/imported/Warped Collection Files/Assets/Playable Characters/Caves Hunter/Spritesheets/player-Idle-stand.png"
-dest_files=["res://.godot/imported/player-Idle-stand.png-b82101f574b2acefa37a236923db72d0.ctex"]
 
 [params]
 

@@ -1,9 +1,0 @@
-﻿{
-    "poses":  {
-                  "jump.png":  {
-                                   "fps":  10,
-                                   "loop_from":  0,
-                                   "frames":  5
-                               }
-              }
-}

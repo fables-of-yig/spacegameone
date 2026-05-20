@@ -3,15 +3,11 @@
 importer="texture"
 type="CompressedTexture2D"
 uid="uid://c6t66rs7qfnjc"
-path="res://.godot/imported/preview_stage.png-c341900c999f107be0270d0060236d70.ctex"
-metadata={
-"vram_texture": false
-}
+valid=false
 
 [deps]
 
 source_file="res://Content/demo/TilesetSources/imported/Warped Collection Files/Assets/Packs/Streets of Fight/Streets of Fight Base/Previews/Stage/preview_stage.png"
-dest_files=["res://.godot/imported/preview_stage.png-c341900c999f107be0270d0060236d70.ctex"]
 
 [params]
 

@@ -2,16 +2,12 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://bd2dy7p27s5ou"
-path="res://.godot/imported/tall-skyline.png-a5669033e89aeba101352335ed9fba12.ctex"
-metadata={
-"vram_texture": false
-}
+uid="uid://ddn7ihwngwk7v"
+valid=false
 
 [deps]
 
 source_file="res://Content/demo/TilesetSources/imported/Warped Collection Files/Assets/Environments/Synth Cites/Previews/tall-skyline.png"
-dest_files=["res://.godot/imported/tall-skyline.png-a5669033e89aeba101352335ed9fba12.ctex"]
 
 [params]
 

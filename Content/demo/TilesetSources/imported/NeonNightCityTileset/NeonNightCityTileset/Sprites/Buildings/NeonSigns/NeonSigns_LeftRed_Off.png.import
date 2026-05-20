@@ -2,16 +2,12 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://b2dt7nta2h2q2"
-path="res://.godot/imported/NeonSigns_LeftRed_Off.png-5041272813cfdc188e185c1c879ab166.ctex"
-metadata={
-"vram_texture": false
-}
+uid="uid://cnet25dci2bml"
+valid=false
 
 [deps]
 
 source_file="res://Content/demo/TilesetSources/imported/NeonNightCityTileset/NeonNightCityTileset/Sprites/Buildings/NeonSigns/NeonSigns_LeftRed_Off.png"
-dest_files=["res://.godot/imported/NeonSigns_LeftRed_Off.png-5041272813cfdc188e185c1c879ab166.ctex"]
 
 [params]
 

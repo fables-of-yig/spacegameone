@@ -2,16 +2,12 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://ngacsmt6oixw"
-path="res://.godot/imported/energy.png-bb2a62c0bd97ca6c1450c1348fd462bc.ctex"
-metadata={
-"vram_texture": false
-}
+uid="uid://dytxvydi5exx0"
+valid=false
 
 [deps]
 
 source_file="res://Content/demo/TilesetSources/imported/pixel-art-space-shooter-game-tileset/Icons_PNG&Spriter_Animation/Energy/energy.png"
-dest_files=["res://.godot/imported/energy.png-bb2a62c0bd97ca6c1450c1348fd462bc.ctex"]
 
 [params]
 

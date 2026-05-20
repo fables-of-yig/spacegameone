@@ -2,16 +2,12 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://bym3l3tfn30uj"
-path="res://.godot/imported/clouds1.png-d803d4607f4b95d67af855cf68ad2234.ctex"
-metadata={
-"vram_texture": false
-}
+uid="uid://l5lyp3h386me"
+valid=false
 
 [deps]
 
 source_file="res://Content/demo/TilesetSources/imported/Mountain-platformer-pixel-art-tileset/PNG/Background/pale/clouds1.png"
-dest_files=["res://.godot/imported/clouds1.png-d803d4607f4b95d67af855cf68ad2234.ctex"]
 
 [params]
 

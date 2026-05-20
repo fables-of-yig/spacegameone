@@ -2,16 +2,12 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://bsqqn4mqbsd4g"
-path="res://.godot/imported/SpringDownTrigger.png-b635f7febf2da0bf19c8b49588498f1a.ctex"
-metadata={
-"vram_texture": false
-}
+uid="uid://d1o02jld7724g"
+valid=false
 
 [deps]
 
 source_file="res://Content/demo/TilesetSources/imported/PlatformerPrototypePack/Release/Springs/SpringDownTrigger.png"
-dest_files=["res://.godot/imported/SpringDownTrigger.png-b635f7febf2da0bf19c8b49588498f1a.ctex"]
 
 [params]
 

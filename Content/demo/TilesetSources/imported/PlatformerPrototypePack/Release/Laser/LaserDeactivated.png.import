@@ -2,16 +2,12 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://4nlj16glop2u"
-path="res://.godot/imported/LaserDeactivated.png-96ca4ad06c013b72242cb319a0428e7d.ctex"
-metadata={
-"vram_texture": false
-}
+uid="uid://yc3fbfw4o8l8"
+valid=false
 
 [deps]
 
 source_file="res://Content/demo/TilesetSources/imported/PlatformerPrototypePack/Release/Laser/LaserDeactivated.png"
-dest_files=["res://.godot/imported/LaserDeactivated.png-96ca4ad06c013b72242cb319a0428e7d.ctex"]
 
 [params]
 

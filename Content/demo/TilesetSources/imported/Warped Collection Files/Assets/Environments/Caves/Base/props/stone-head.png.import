@@ -2,16 +2,12 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://jkdm8usiairg"
-path="res://.godot/imported/stone-head.png-04b9477a91cebdad90529d8e524caddc.ctex"
-metadata={
-"vram_texture": false
-}
+uid="uid://l6vhromq4q3"
+valid=false
 
 [deps]
 
 source_file="res://Content/demo/TilesetSources/imported/Warped Collection Files/Assets/Environments/Caves/Base/props/stone-head.png"
-dest_files=["res://.godot/imported/stone-head.png-04b9477a91cebdad90529d8e524caddc.ctex"]
 
 [params]
 

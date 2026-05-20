@@ -2,16 +2,12 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://bdyfyelvbje35"
-path="res://.godot/imported/Decor_Rune_Rock.png-062ad45697dfb8a6ff8be497abb5c85c.ctex"
-metadata={
-"vram_texture": false
-}
+uid="uid://b7vxre53ie77h"
+valid=false
 
 [deps]
 
 source_file="res://Content/demo/TilesetSources/imported/Inferno Village 2D Tileset/PNG/Environment/Decor_Rune_Rock.png"
-dest_files=["res://.godot/imported/Decor_Rune_Rock.png-062ad45697dfb8a6ff8be497abb5c85c.ctex"]
 
 [params]
 

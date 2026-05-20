@@ -2,16 +2,12 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://c2u2x0v786s8o"
-path="res://.godot/imported/enemy-death-2.png-fe69ed440ffebf50a2a60db1328dca38.ctex"
-metadata={
-"vram_texture": false
-}
+uid="uid://dygy14pyn25sd"
+valid=false
 
 [deps]
 
 source_file="res://Content/demo/TilesetSources/imported/Warped Collection Files/Assets/Items, VFX and Props/Caves Fx/Sprites/enemy-death/enemy-death-2.png"
-dest_files=["res://.godot/imported/enemy-death-2.png-fe69ed440ffebf50a2a60db1328dca38.ctex"]
 
 [params]
 

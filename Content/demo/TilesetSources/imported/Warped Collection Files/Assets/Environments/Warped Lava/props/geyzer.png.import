@@ -3,15 +3,11 @@
 importer="texture"
 type="CompressedTexture2D"
 uid="uid://ckxc6gwdbedfx"
-path="res://.godot/imported/geyzer.png-7e8c19b79b9118dfffbadb146de10bfa.ctex"
-metadata={
-"vram_texture": false
-}
+valid=false
 
 [deps]
 
 source_file="res://Content/demo/TilesetSources/imported/Warped Collection Files/Assets/Environments/Warped Lava/props/geyzer.png"
-dest_files=["res://.godot/imported/geyzer.png-7e8c19b79b9118dfffbadb146de10bfa.ctex"]
 
 [params]
 

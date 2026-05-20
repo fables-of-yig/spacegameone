@@ -2,16 +2,12 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://ci1etd2mp1t4f"
-path="res://.godot/imported/small-ball-2.png-c599913e082be07d0b26e8a4d2557f02.ctex"
-metadata={
-"vram_texture": false
-}
+uid="uid://cbsxmny231iq2"
+valid=false
 
 [deps]
 
 source_file="res://Content/demo/TilesetSources/imported/Warped Collection Files/Assets/Items, VFX and Props/Props Pack 2/sprites/small-ball-2.png"
-dest_files=["res://.godot/imported/small-ball-2.png-c599913e082be07d0b26e8a4d2557f02.ctex"]
 
 [params]
 

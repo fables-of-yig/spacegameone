@@ -2,16 +2,12 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://dynu7c6xfr8s8"
-path="res://.godot/imported/Fence_01.png-dcb663ac1abfa2a4f9549d93d7f919e0.ctex"
-metadata={
-"vram_texture": false
-}
+uid="uid://b5giryj3xc2fi"
+valid=false
 
 [deps]
 
 source_file="res://Content/demo/TilesetSources/imported/Inferno Village 2D Tileset/PNG/Environment/Fence_01.png"
-dest_files=["res://.godot/imported/Fence_01.png-dcb663ac1abfa2a4f9549d93d7f919e0.ctex"]
 
 [params]
 

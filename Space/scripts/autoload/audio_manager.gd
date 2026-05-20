@@ -24,7 +24,7 @@ var _beam_player: AudioStreamPlayer = null
 var _beam_state: int = 0  # 0=off, 1=starting, 2=looping, 3=ending
 
 
-const PedIO := preload("res://Space/scripts/editor/ped/ped_io.gd")
+const PedIO := preload("res://Space/scripts/shared/ped/ped_io.gd")
 
 const SFX_DIR: String = "res://Space/audio/sfx/"
 const AMBIENCE_DIR: String = "res://Space/audio/ambience/"
@@ -215,9 +215,9 @@ func set_ambient_varied(category: String):
         return
     var available: Array = []
     for name_v in pool:
-        var name := str(name_v)
-        if _ambient_exists(name):
-            available.append(name)
+        var ambient_name := str(name_v)
+        if _ambient_exists(ambient_name):
+            available.append(ambient_name)
     if available.is_empty():
         set_ambient("")
         return

@@ -2,16 +2,12 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://ctld7auh0d0o0"
-path="res://.godot/imported/birdman-idle.png-f9c5d427a6ceaf7ab6d9605d356c6512.ctex"
-metadata={
-"vram_texture": false
-}
+uid="uid://buwbhhb6x4aqk"
+valid=false
 
 [deps]
 
 source_file="res://Content/demo/TilesetSources/imported/Warped Collection Files/Assets/Enemies/Quiet Hill Enemies/Spritesheets/birdman-idle.png"
-dest_files=["res://.godot/imported/birdman-idle.png-f9c5d427a6ceaf7ab6d9605d356c6512.ctex"]
 
 [params]
 

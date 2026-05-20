@@ -2,16 +2,12 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://c38esehwnvhvx"
-path="res://.godot/imported/speed16.png-9c77341bf28085477d78b3a8521ed876.ctex"
-metadata={
-"vram_texture": false
-}
+uid="uid://ckawn6o85246f"
+valid=false
 
 [deps]
 
 source_file="res://Content/demo/TilesetSources/imported/Mountain-platformer-pixel-art-tileset/PNG/items/Speed/speed16.png"
-dest_files=["res://.godot/imported/speed16.png-9c77341bf28085477d78b3a8521ed876.ctex"]
 
 [params]
 

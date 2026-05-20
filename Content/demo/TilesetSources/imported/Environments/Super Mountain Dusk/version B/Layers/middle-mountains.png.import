@@ -2,16 +2,12 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://bqoih428o20t7"
-path="res://.godot/imported/middle-mountains.png-87e7690b1337e065b2b44c7f91ec3c5f.ctex"
-metadata={
-"vram_texture": false
-}
+uid="uid://cg8yxx4xy0og"
+valid=false
 
 [deps]
 
 source_file="res://Content/demo/TilesetSources/imported/Environments/Super Mountain Dusk/version B/Layers/middle-mountains.png"
-dest_files=["res://.godot/imported/middle-mountains.png-87e7690b1337e065b2b44c7f91ec3c5f.ctex"]
 
 [params]
 

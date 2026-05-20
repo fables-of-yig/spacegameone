@@ -2,16 +2,12 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://boebkg72ct16i"
-path="res://.godot/imported/Demonic_Banner.png-2fd346a7291329f450af914a2d30a774.ctex"
-metadata={
-"vram_texture": false
-}
+uid="uid://bwdp3ibpdh10j"
+valid=false
 
 [deps]
 
 source_file="res://Content/demo/TilesetSources/imported/Inferno Village 2D Tileset/PNG/Environment/Demonic_Banner.png"
-dest_files=["res://.godot/imported/Demonic_Banner.png-2fd346a7291329f450af914a2d30a774.ctex"]
 
 [params]
 

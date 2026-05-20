@@ -2,16 +2,12 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://jmmqja1ebrf6"
-path="res://.godot/imported/hurt.png-888f9fc3bc959baa110eee018fc870e0.ctex"
-metadata={
-"vram_texture": false
-}
+uid="uid://vln4wfo0eqee"
+valid=false
 
 [deps]
 
 source_file="res://Content/demo/TilesetSources/imported/Warped Collection Files/Assets/Enemies/Sewers Soldier Enemy/Sprites/Soldier/hurt.png"
-dest_files=["res://.godot/imported/hurt.png-888f9fc3bc959baa110eee018fc870e0.ctex"]
 
 [params]
 

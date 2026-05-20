@@ -20,8 +20,8 @@ extends CharacterBody2D
 # otherwise BeehaveTree._physics_process would race ours and you'd get
 # stale velocity one frame per tick.
 
-const EntIO := preload("res://Space/scripts/editor/ent/ent_io.gd")
-const BehIO := preload("res://Space/scripts/editor/beh/beh_io.gd")
+const EntIO := preload("res://Space/scripts/shared/ent/ent_io.gd")
+const BehIO := preload("res://Space/scripts/shared/beh/beh_io.gd")
 const BehLoader := preload("res://Space/scripts/runtime/beh/beh_loader.gd")
 const MvPickupScene := preload("res://MV/scripts/pickup.gd")
 

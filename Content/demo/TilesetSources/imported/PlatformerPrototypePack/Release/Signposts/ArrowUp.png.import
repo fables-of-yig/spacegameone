@@ -2,16 +2,12 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://l4qyr7jtm6n"
-path="res://.godot/imported/ArrowUp.png-85e55214239d1b694f59f33f687b6dca.ctex"
-metadata={
-"vram_texture": false
-}
+uid="uid://y74fqlwtbtx"
+valid=false
 
 [deps]
 
 source_file="res://Content/demo/TilesetSources/imported/PlatformerPrototypePack/Release/Signposts/ArrowUp.png"
-dest_files=["res://.godot/imported/ArrowUp.png-85e55214239d1b694f59f33f687b6dca.ctex"]
 
 [params]
 

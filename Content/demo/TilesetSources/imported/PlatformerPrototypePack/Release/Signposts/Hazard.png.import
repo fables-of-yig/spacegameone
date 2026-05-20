@@ -2,16 +2,12 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://dstitp3ec5by1"
-path="res://.godot/imported/Hazard.png-d699af454c26bca17bf4f074df35ffbe.ctex"
-metadata={
-"vram_texture": false
-}
+uid="uid://co8evcc3xykpi"
+valid=false
 
 [deps]
 
 source_file="res://Content/demo/TilesetSources/imported/PlatformerPrototypePack/Release/Signposts/Hazard.png"
-dest_files=["res://.godot/imported/Hazard.png-d699af454c26bca17bf4f074df35ffbe.ctex"]
 
 [params]
 

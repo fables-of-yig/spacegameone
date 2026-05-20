@@ -2,16 +2,12 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://cgnav5ukcym4y"
-path="res://.godot/imported/bomb-2.png-f7bf15a205afae8776fb11ac5fe243b2.ctex"
-metadata={
-"vram_texture": false
-}
+uid="uid://rh0x2qen1s3v"
+valid=false
 
 [deps]
 
 source_file="res://Content/demo/TilesetSources/imported/Warped Collection Files/Assets/Items, VFX and Props/Warped Lava Items/Sprites/bomb/bomb-2.png"
-dest_files=["res://.godot/imported/bomb-2.png-f7bf15a205afae8776fb11ac5fe243b2.ctex"]
 
 [params]
 

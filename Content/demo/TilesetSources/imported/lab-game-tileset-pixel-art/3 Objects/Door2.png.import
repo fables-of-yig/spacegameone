@@ -2,16 +2,12 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://cqewinrg0nc6"
-path="res://.godot/imported/Door2.png-1c69cadbda39c723c9cede53ba2cdf02.ctex"
-metadata={
-"vram_texture": false
-}
+uid="uid://doedmiuklsy3d"
+valid=false
 
 [deps]
 
 source_file="res://Content/demo/TilesetSources/imported/lab-game-tileset-pixel-art/3 Objects/Door2.png"
-dest_files=["res://.godot/imported/Door2.png-1c69cadbda39c723c9cede53ba2cdf02.ctex"]
 
 [params]
 

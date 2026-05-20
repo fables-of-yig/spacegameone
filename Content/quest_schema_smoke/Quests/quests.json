@@ -1,0 +1,75 @@
+{
+	"quests": [
+		{
+			"description": "A full cross-reference quest schema smoke test.",
+			"id": "boss_gate",
+			"repeatable": false,
+			"stages": [
+				{
+					"id": "prepare",
+					"objectives": [
+						{
+							"count": 1.0,
+							"id": "get_key",
+							"item_id": "key_quest_renamed",
+							"type": "collect_item"
+						},
+						{
+							"id": "visit_landing",
+							"room": "region_default/landing",
+							"type": "visit_room"
+						},
+						{
+							"dialogue_id": "quest_giver",
+							"id": "talk_guide",
+							"type": "talk_dialogue"
+						},
+						{
+							"id": "open_supply",
+							"shop_id": "supply_shop",
+							"type": "open_shop"
+						}
+					],
+					"rewards": {
+						"abilities": [],
+						"events": [],
+						"items": []
+					},
+					"title": "Prepare"
+				},
+				{
+					"id": "clear_boss",
+					"objectives": [
+						{
+							"count": 1.0,
+							"entity_id": "golden_boss",
+							"id": "defeat_boss",
+							"type": "kill_entity"
+						},
+						{
+							"event": "boss_defeated",
+							"id": "boss_event",
+							"type": "trigger_event"
+						}
+					],
+					"rewards": {
+						"abilities": [
+							"phase_dash"
+						],
+						"events": [
+							"quest_boss_gate_complete"
+						],
+						"items": [
+							{
+								"count": 1.0,
+								"id": "boss_core"
+							}
+						]
+					},
+					"title": "Clear Boss"
+				}
+			],
+			"title": "Open the Boss Gate"
+		}
+	]
+}

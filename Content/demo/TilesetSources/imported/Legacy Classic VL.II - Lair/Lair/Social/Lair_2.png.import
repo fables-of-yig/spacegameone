@@ -2,16 +2,12 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://cr3d6yj2pc4ia"
-path="res://.godot/imported/Lair_2.png-8da0fc0755b4b2f1cd5799a192cb8180.ctex"
-metadata={
-"vram_texture": false
-}
+uid="uid://hx8j7m1k7i2u"
+valid=false
 
 [deps]
 
 source_file="res://Content/demo/TilesetSources/imported/Legacy Classic VL.II - Lair/Lair/Social/Lair_2.png"
-dest_files=["res://.godot/imported/Lair_2.png-8da0fc0755b4b2f1cd5799a192cb8180.ctex"]
 
 [params]
 

@@ -4,7 +4,7 @@ extends Area2D
 # Touch-collectable item. Fires a "pickup" event through MvTriggerEngine
 # and marks itself as collected in MvRoomState so it stays gone on revisit.
 
-const EntIO := preload("res://Space/scripts/editor/ent/ent_io.gd")
+const EntIO := preload("res://Space/scripts/shared/ent/ent_io.gd")
 
 const PLACEHOLDER_SIZE: Vector2 = Vector2(12, 12)
 

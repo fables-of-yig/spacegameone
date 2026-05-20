@@ -2,16 +2,12 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://bekv04b6jyd8j"
-path="res://.godot/imported/Ground_10.png-58b4288796986752131d3cec31b0dba0.ctex"
-metadata={
-"vram_texture": false
-}
+uid="uid://dc2d2qwb2rqd2"
+valid=false
 
 [deps]
 
 source_file="res://Content/demo/TilesetSources/imported/Inferno Village 2D Tileset/PNG/Platformer/Ground_10.png"
-dest_files=["res://.godot/imported/Ground_10.png-58b4288796986752131d3cec31b0dba0.ctex"]
 
 [params]
 

@@ -2,16 +2,12 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://cm35xheccexph"
-path="res://.godot/imported/oven.png-978fc153c8fb9a46318d62ec5e77f186.ctex"
-metadata={
-"vram_texture": false
-}
+uid="uid://dls8pakklbw2q"
+valid=false
 
 [deps]
 
 source_file="res://Content/demo/TilesetSources/imported/Warped Collection Files/Assets/Environments/Megabot Environments/Lava Area/Animated/oven.png"
-dest_files=["res://.godot/imported/oven.png-978fc153c8fb9a46318d62ec5e77f186.ctex"]
 
 [params]
 

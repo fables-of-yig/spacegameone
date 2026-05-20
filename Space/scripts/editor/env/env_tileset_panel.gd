@@ -1,7 +1,7 @@
 extends Control
 
 const UIPanels = preload("res://Space/scripts/ui/ui_panels.gd")
-const EnvIO = preload("res://Space/scripts/editor/env/env_io.gd")
+const EnvIO = preload("res://Space/scripts/shared/env/env_io.gd")
 const EnvTypes = preload("res://Space/scripts/editor/env/env_types.gd")
 const BLOCK_SIZE: int = 16
 const BG_SHADER_PRESETS := [
@@ -55,10 +55,6 @@ var _bg_sx_edit: LineEdit = null
 var _bg_sy_edit: LineEdit = null
 var _bg_frames_edit: LineEdit = null
 var _bg_fps_edit: LineEdit = null
-var _bg_shader_picker: OptionButton = null
-var _bg_tint_btn: ColorPickerButton = null
-var _bg_shader_strength_edit: LineEdit = null
-var _bg_shader_speed_edit: LineEdit = null
 var _bg_apply_btn: Button = null
 var _bg_delete_btn: Button = null
 var _bg_forward_btn: Button = null

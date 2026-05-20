@@ -2,16 +2,12 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://bq0e4u68511oi"
-path="res://.godot/imported/bolt-sheet.png-b4ae9fb15ffa6ea1dfa95cdbbb956a1d.ctex"
-metadata={
-"vram_texture": false
-}
+uid="uid://cqhei8f8dncp8"
+valid=false
 
 [deps]
 
 source_file="res://Content/demo/TilesetSources/imported/Warped Collection Files/Assets/Enemies/Megabot Boss Smashing/Sprites/bolt-sheet.png"
-dest_files=["res://.godot/imported/bolt-sheet.png-b4ae9fb15ffa6ea1dfa95cdbbb956a1d.ctex"]
 
 [params]
 

@@ -2,16 +2,12 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://dwcldj4uixtm5"
-path="res://.godot/imported/Fence_A_02.png-7fbf54be1d117bed4c958eafc415d9c7.ctex"
-metadata={
-"vram_texture": false
-}
+uid="uid://b7uk53mie1gb2"
+valid=false
 
 [deps]
 
 source_file="res://Content/demo/TilesetSources/imported/night-city-street-game-background-tiles/PNG/Wall_Decor/Fence_A_02.png"
-dest_files=["res://.godot/imported/Fence_A_02.png-7fbf54be1d117bed4c958eafc415d9c7.ctex"]
 
 [params]
 

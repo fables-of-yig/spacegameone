@@ -1,8 +1,8 @@
 extends Control
 
 const UIPanels = preload("res://Space/scripts/ui/ui_panels.gd")
-const BehIO = preload("res://Space/scripts/editor/beh/beh_io.gd")
-const BehTypes = preload("res://Space/scripts/editor/beh/beh_types.gd")
+const BehIO = preload("res://Space/scripts/shared/beh/beh_io.gd")
+const BehTypes = preload("res://Space/scripts/shared/beh/beh_types.gd")
 
 # Middle pane that shows the selected behavior's tree as an indented
 # flat list. Each row is one node; depth drives the x-offset and a

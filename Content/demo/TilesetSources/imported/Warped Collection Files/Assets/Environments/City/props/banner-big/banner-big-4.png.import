@@ -2,16 +2,12 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://btek5kson08st"
-path="res://.godot/imported/banner-big-4.png-ceedec08620350b22175acfe0220c0a4.ctex"
-metadata={
-"vram_texture": false
-}
+uid="uid://ddacm2q28tsyu"
+valid=false
 
 [deps]
 
 source_file="res://Content/demo/TilesetSources/imported/Warped Collection Files/Assets/Environments/City/props/banner-big/banner-big-4.png"
-dest_files=["res://.godot/imported/banner-big-4.png-ceedec08620350b22175acfe0220c0a4.ctex"]
 
 [params]
 

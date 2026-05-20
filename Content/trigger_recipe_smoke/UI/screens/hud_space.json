@@ -1,0 +1,200 @@
+{
+	"anchor": "top_left",
+	"anchor_offset": {
+		"x": 0,
+		"y": 0
+	},
+	"children": [
+		{
+			"anchor": "top_left",
+			"anchor_offset": {
+				"x": 0,
+				"y": 0
+			},
+			"children": [],
+			"id": "hud_space_hull_label",
+			"properties": {
+				"alignment": "left",
+				"bind_var": "",
+				"decimal_places": 0,
+				"format": "{value}",
+				"opacity": 1.0,
+				"static_text": "HULL",
+				"tab_group": "default",
+				"tab_id": "",
+				"text_role": "body",
+				"wrap": false
+			},
+			"rect": {
+				"h": 16,
+				"w": 80,
+				"x": 12,
+				"y": 10
+			},
+			"type": "label"
+		},
+		{
+			"anchor": "top_left",
+			"anchor_offset": {
+				"x": 0,
+				"y": 0
+			},
+			"children": [],
+			"id": "hud_space_hull_bar",
+			"properties": {
+				"animate_fill": true,
+				"bg_color": "#1f2228",
+				"bind_current": "player.health",
+				"bind_max": "player.max_health",
+				"direction": "left_to_right",
+				"fill_color": "#5cd96a",
+				"pulse_on_low": true,
+				"pulse_threshold": 0.25,
+				"show_label": true,
+				"tab_group": "default",
+				"tab_id": ""
+			},
+			"rect": {
+				"h": 14,
+				"w": 136,
+				"x": 54,
+				"y": 10
+			},
+			"type": "progress_bar"
+		},
+		{
+			"anchor": "top_left",
+			"anchor_offset": {
+				"x": 0,
+				"y": 0
+			},
+			"children": [],
+			"id": "hud_space_shield_label",
+			"properties": {
+				"alignment": "left",
+				"bind_var": "",
+				"decimal_places": 0,
+				"format": "{value}",
+				"opacity": 1.0,
+				"static_text": "SHD",
+				"tab_group": "default",
+				"tab_id": "",
+				"text_role": "body",
+				"wrap": false
+			},
+			"rect": {
+				"h": 16,
+				"w": 80,
+				"x": 12,
+				"y": 30
+			},
+			"type": "label"
+		},
+		{
+			"anchor": "top_left",
+			"anchor_offset": {
+				"x": 0,
+				"y": 0
+			},
+			"children": [],
+			"id": "hud_space_shield_bar",
+			"properties": {
+				"animate_fill": true,
+				"bg_color": "#1f2228",
+				"bind_current": "player.shields",
+				"bind_max": "player.max_shields",
+				"direction": "left_to_right",
+				"fill_color": "#4f9cff",
+				"pulse_on_low": true,
+				"pulse_threshold": 0.25,
+				"show_label": true,
+				"tab_group": "default",
+				"tab_id": ""
+			},
+			"rect": {
+				"h": 14,
+				"w": 136,
+				"x": 54,
+				"y": 30
+			},
+			"type": "progress_bar"
+		},
+		{
+			"anchor": "top_left",
+			"anchor_offset": {
+				"x": 0,
+				"y": 0
+			},
+			"children": [],
+			"id": "hud_space_system",
+			"properties": {
+				"alignment": "left",
+				"bind_var": "gamemanager.current_system",
+				"decimal_places": 0,
+				"format": "{value}",
+				"opacity": 1.0,
+				"static_text": "",
+				"tab_group": "default",
+				"tab_id": "",
+				"text_role": "dim",
+				"wrap": false
+			},
+			"rect": {
+				"h": 16,
+				"w": 152,
+				"x": 314,
+				"y": 10
+			},
+			"type": "label"
+		},
+		{
+			"anchor": "top_left",
+			"anchor_offset": {
+				"x": 0,
+				"y": 0
+			},
+			"children": [],
+			"id": "hud_space_fuel",
+			"properties": {
+				"alignment": "left",
+				"bind_var": "gamemanager.fuel",
+				"decimal_places": 0,
+				"format": "{value}",
+				"opacity": 1.0,
+				"static_text": "Fuel {value}",
+				"tab_group": "default",
+				"tab_id": "",
+				"text_role": "body",
+				"wrap": false
+			},
+			"rect": {
+				"h": 16,
+				"w": 152,
+				"x": 314,
+				"y": 30
+			},
+			"type": "label"
+		}
+	],
+	"id": "hud_space_root",
+	"properties": {
+		"opacity": 1.0,
+		"padding": 8,
+		"scroll": "none",
+		"sprite_mode": "9slice",
+		"sprite_slice_x": 0,
+		"sprite_slice_y": 0,
+		"sprite_source": "",
+		"sprite_tint": "#ffffff",
+		"tab_group": "default",
+		"tab_id": "",
+		"variant": "dark"
+	},
+	"rect": {
+		"h": 71,
+		"w": 480,
+		"x": 0,
+		"y": 0
+	},
+	"type": "panel"
+}

@@ -3,15 +3,11 @@
 importer="texture"
 type="CompressedTexture2D"
 uid="uid://sij8i3n4euj7"
-path="res://.godot/imported/CombatDummyDamageHeavy.png-0e4d37152781ad75a542bcef3f96fabb.ctex"
-metadata={
-"vram_texture": false
-}
+valid=false
 
 [deps]
 
 source_file="res://Content/demo/TilesetSources/imported/PlatformerPrototypePack/Release/CombatDummy/CombatDummyDamageHeavy.png"
-dest_files=["res://.godot/imported/CombatDummyDamageHeavy.png-0e4d37152781ad75a542bcef3f96fabb.ctex"]
 
 [params]
 

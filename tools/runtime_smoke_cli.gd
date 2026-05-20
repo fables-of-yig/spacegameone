@@ -1,7 +1,6 @@
 extends SceneTree
 
-const ContentValidator := preload("res://Space/scripts/editor/content_validator.gd")
-const SystemIO := preload("res://Space/scripts/editor/system_io.gd")
+const SystemIO := preload("res://Space/scripts/shared/system_io.gd")
 
 
 func _init() -> void:

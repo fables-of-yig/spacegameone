@@ -3,15 +3,11 @@
 importer="texture"
 type="CompressedTexture2D"
 uid="uid://cigpjpg7jydva"
-path="res://.godot/imported/Flag.png-d74ce522de6a88cd1af98f75d9cbb806.ctex"
-metadata={
-"vram_texture": false
-}
+valid=false
 
 [deps]
 
 source_file="res://Content/demo/TilesetSources/imported/platformer-pixel-art-cave-2d-tileset/Objects_Animated/Flag.png"
-dest_files=["res://.godot/imported/Flag.png-d74ce522de6a88cd1af98f75d9cbb806.ctex"]
 
 [params]
 

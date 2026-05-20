@@ -3,15 +3,11 @@
 importer="texture"
 type="CompressedTexture2D"
 uid="uid://sga0r1a2rleg"
-path="res://.godot/imported/Crypt_1.png-eceb0295de577464bd3b881ef212f9bf.ctex"
-metadata={
-"vram_texture": false
-}
+valid=false
 
 [deps]
 
 source_file="res://Content/demo/TilesetSources/imported/Legacy Vania Pack - Crypt/Crypt/Social/Crypt_1.png"
-dest_files=["res://.godot/imported/Crypt_1.png-eceb0295de577464bd3b881ef212f9bf.ctex"]
 
 [params]
 

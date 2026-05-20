@@ -3,15 +3,11 @@
 importer="texture"
 type="CompressedTexture2D"
 uid="uid://dfdmstjmu3luf"
-path="res://.godot/imported/player-Aiming.png-daad7b54acd13cea03ab95f1b4116b53.ctex"
-metadata={
-"vram_texture": false
-}
+valid=false
 
 [deps]
 
 source_file="res://Content/demo/TilesetSources/imported/Warped Collection Files/Assets/Playable Characters/Caves Hunter/Spritesheets/player-Aiming.png"
-dest_files=["res://.godot/imported/player-Aiming.png-daad7b54acd13cea03ab95f1b4116b53.ctex"]
 
 [params]
 

@@ -2,16 +2,12 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://dsmuriltva8sm"
-path="res://.godot/imported/tileset.png-4483a61ee0b57439e9b2a74d24fdc88e.ctex"
-metadata={
-"vram_texture": false
-}
+uid="uid://oeooi1du268"
+valid=false
 
 [deps]
 
 source_file="res://Content/demo/TilesetSources/imported/Warped Collection Files/Assets/Packs/Streets of Fight/Streets of Fight Base/Stage Layers/tileset.png"
-dest_files=["res://.godot/imported/tileset.png-4483a61ee0b57439e9b2a74d24fdc88e.ctex"]
 
 [params]
 

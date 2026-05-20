@@ -9,8 +9,8 @@ extends Control
 #     "rect": {"x": 10, "y": 10, "w": 100, "h": 20},
 #     "anchor": "top_left", "properties": {...}, "children": [...] }
 
-const UITypes = preload("res://Space/scripts/editor/ui/ui_types.gd")
-const UIIo = preload("res://Space/scripts/editor/ui/ui_io.gd")
+const UITypes = preload("res://Space/scripts/shared/ui/ui_types.gd")
+const UIIo = preload("res://Space/scripts/shared/ui/ui_io.gd")
 const UIPanels = preload("res://Space/scripts/ui/ui_panels.gd")
 
 signal element_selected(element_id: String)

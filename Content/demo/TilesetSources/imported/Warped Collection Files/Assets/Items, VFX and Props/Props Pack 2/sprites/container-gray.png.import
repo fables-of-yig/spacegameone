@@ -2,16 +2,12 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://c8haspns1j8by"
-path="res://.godot/imported/container-gray.png-d2fbf90ede4bdad3afcc7a14aea009c0.ctex"
-metadata={
-"vram_texture": false
-}
+uid="uid://bec8lfd24mo62"
+valid=false
 
 [deps]
 
 source_file="res://Content/demo/TilesetSources/imported/Warped Collection Files/Assets/Items, VFX and Props/Props Pack 2/sprites/container-gray.png"
-dest_files=["res://.godot/imported/container-gray.png-d2fbf90ede4bdad3afcc7a14aea009c0.ctex"]
 
 [params]
 

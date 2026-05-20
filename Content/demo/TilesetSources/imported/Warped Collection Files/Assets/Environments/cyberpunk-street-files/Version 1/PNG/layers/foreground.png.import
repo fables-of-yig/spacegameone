@@ -2,16 +2,12 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://nebp0m74ioei"
-path="res://.godot/imported/foreground.png-4db83870be79e85b3f3005626dc74e3d.ctex"
-metadata={
-"vram_texture": false
-}
+uid="uid://b0soep24v4a03"
+valid=false
 
 [deps]
 
 source_file="res://Content/demo/TilesetSources/imported/Warped Collection Files/Assets/Environments/cyberpunk-street-files/Version 1/PNG/layers/foreground.png"
-dest_files=["res://.godot/imported/foreground.png-4db83870be79e85b3f3005626dc74e3d.ctex"]
 
 [params]
 

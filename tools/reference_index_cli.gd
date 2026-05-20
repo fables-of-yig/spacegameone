@@ -1,7 +1,5 @@
 extends SceneTree
 
-const ContentReferenceIndex := preload("res://Space/scripts/editor/content_reference_index.gd")
-
 
 func _init() -> void:
 	_run_and_quit.call_deferred(OS.get_cmdline_user_args())

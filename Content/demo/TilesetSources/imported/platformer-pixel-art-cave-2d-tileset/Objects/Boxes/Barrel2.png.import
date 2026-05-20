@@ -2,16 +2,12 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://bcxvheipqkp6v"
-path="res://.godot/imported/Barrel2.png-567ef403750cd677e8de41a30589578e.ctex"
-metadata={
-"vram_texture": false
-}
+uid="uid://ciwymhbyrgube"
+valid=false
 
 [deps]
 
 source_file="res://Content/demo/TilesetSources/imported/platformer-pixel-art-cave-2d-tileset/Objects/Boxes/Barrel2.png"
-dest_files=["res://.godot/imported/Barrel2.png-567ef403750cd677e8de41a30589578e.ctex"]
 
 [params]
 

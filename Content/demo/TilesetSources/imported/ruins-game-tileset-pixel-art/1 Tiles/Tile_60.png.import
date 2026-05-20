@@ -2,16 +2,12 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://cam11k0rp0yqa"
-path="res://.godot/imported/Tile_60.png-0d2fc6dcfded28d3e66bfc8455a0bba0.ctex"
-metadata={
-"vram_texture": false
-}
+uid="uid://cfwnmg7eurcvt"
+valid=false
 
 [deps]
 
 source_file="res://Content/demo/TilesetSources/imported/ruins-game-tileset-pixel-art/1 Tiles/Tile_60.png"
-dest_files=["res://.godot/imported/Tile_60.png-0d2fc6dcfded28d3e66bfc8455a0bba0.ctex"]
 
 [params]
 

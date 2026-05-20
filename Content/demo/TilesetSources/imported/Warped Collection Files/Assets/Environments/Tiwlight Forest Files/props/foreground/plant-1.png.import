@@ -2,16 +2,12 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://bk2qkteli2f2e"
-path="res://.godot/imported/plant-1.png-982f833d80c2b4b90789e2e0e8f021a6.ctex"
-metadata={
-"vram_texture": false
-}
+uid="uid://ddau0m64tckgs"
+valid=false
 
 [deps]
 
 source_file="res://Content/demo/TilesetSources/imported/Warped Collection Files/Assets/Environments/Tiwlight Forest Files/props/foreground/plant-1.png"
-dest_files=["res://.godot/imported/plant-1.png-982f833d80c2b4b90789e2e0e8f021a6.ctex"]
 
 [params]
 

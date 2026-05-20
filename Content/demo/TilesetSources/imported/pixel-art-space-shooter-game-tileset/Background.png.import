@@ -2,16 +2,12 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://codg55emdue1p"
-path="res://.godot/imported/Background.png-e0c274601cb443e137c1eeca237c8111.ctex"
-metadata={
-"vram_texture": false
-}
+uid="uid://b578y02rqqrka"
+valid=false
 
 [deps]
 
 source_file="res://Content/demo/TilesetSources/imported/pixel-art-space-shooter-game-tileset/Background.png"
-dest_files=["res://.godot/imported/Background.png-e0c274601cb443e137c1eeca237c8111.ctex"]
 
 [params]
 

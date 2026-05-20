@@ -3,15 +3,11 @@
 importer="texture"
 type="CompressedTexture2D"
 uid="uid://com0yndlhog7p"
-path="res://.godot/imported/Card.png-73eba5d5f1861de8e143ce65bb172e2c.ctex"
-metadata={
-"vram_texture": false
-}
+valid=false
 
 [deps]
 
 source_file="res://Content/demo/TilesetSources/imported/snow-city-tileset-pixel-art/4 Animated objects/Card.png"
-dest_files=["res://.godot/imported/Card.png-73eba5d5f1861de8e143ce65bb172e2c.ctex"]
 
 [params]
 

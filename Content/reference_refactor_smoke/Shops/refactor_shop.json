@@ -1,0 +1,23 @@
+{
+	"id": "refactor_shop",
+	"items": [
+		{
+			"count": 1.0,
+			"id": "ability_ref_item",
+			"price": 1.0,
+			"stock_id": "ability_stock",
+			"use_amount": 1.0,
+			"use_arg": "new_ability",
+			"use_effect": "grant_ability"
+		},
+		{
+			"count": 1.0,
+			"id": "attack_ref_item",
+			"price": 1.0,
+			"stock_id": "attack_stock",
+			"use_amount": 1.0,
+			"use_arg": "new_attack",
+			"use_effect": "set_weapon"
+		}
+	]
+}

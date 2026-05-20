@@ -2,16 +2,12 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://dnf1by2175mem"
-path="res://.godot/imported/Spin-export8.png-8715ef23ea241e7d636006e2cafc682c.ctex"
-metadata={
-"vram_texture": false
-}
+uid="uid://clceunw6vdk1o"
+valid=false
 
 [deps]
 
 source_file="res://Content/demo/TilesetSources/imported/Warped Collection Files/Assets/Playable Characters/Caves Hunter/Sprites/Spin/Spin-export8.png"
-dest_files=["res://.godot/imported/Spin-export8.png-8715ef23ea241e7d636006e2cafc682c.ctex"]
 
 [params]
 

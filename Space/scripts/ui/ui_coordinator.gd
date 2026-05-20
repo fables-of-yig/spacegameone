@@ -1,6 +1,7 @@
 extends Node
 
-const PackAssetIndex = preload("res://Space/scripts/editor/pack_asset_index.gd")
+const PackAssetIndex = preload("res://Space/scripts/shared/pack_asset_index.gd")
+const FactionsIO = preload("res://Space/scripts/shared/factions_io.gd")
 
 # UI panel coordinator. Owns the CanvasLayer stack and all top-level UI
 # Control instances (HUD, builder, star map, event panel, pause/death/main
@@ -43,7 +44,7 @@ func setup_hud(player: Node2D, system_positions: Dictionary) -> Control:
 # HUD. Absent a saved screen, this is a no-op and the hardcoded HUD runs
 # exactly as before.
 func _mount_hud_screen_overlay(hud_root: Control, player: Node2D) -> void:
-    var UIIo = preload("res://Space/scripts/editor/ui/ui_io.gd")
+    var UIIo = preload("res://Space/scripts/shared/ui/ui_io.gd")
     var HudDataSource = preload("res://Space/scripts/ui/hud_data_source.gd")
     var AuthoredScreenRuntime = preload("res://Space/scripts/ui/authored_screen_runtime.gd")
 
@@ -129,6 +130,10 @@ func setup_event_panel(host: Node) -> Control:
     portrait_map.merge(PackAssetIndex.build_portrait_map(pack_id), true)
     event_panel.portrait_map = portrait_map
     event_panel.static_speakers = {"HARLEN": true}
+    # Faction symbol overlay map. Lives parallel to portrait_map; the
+    # dialogue node's speaker_faction field looks up here. Empty when
+    # the pack has no factions.json or no factions have authored symbols.
+    event_panel.faction_symbol_map = FactionsIO.build_faction_symbol_map(pack_id)
     return event_panel
 
 func setup_pause_menu(host: Node) -> Control:
@@ -177,7 +182,6 @@ func setup_main_menu(host: Node, gm: Node) -> Control:
         main_menu.visible = true
         host.menu_open = true
     menu_layer.add_child(main_menu)
-    main_menu.new_game_pressed.connect(host._on_new_game)
     main_menu.load_slot_pressed.connect(host._on_load_slot)
     main_menu.creative_pressed.connect(host._on_creative_mode)
     main_menu.test_fly_pressed.connect(host._on_test_fly)
@@ -190,26 +194,51 @@ func setup_main_menu(host: Node, gm: Node) -> Control:
         host._on_test_fly.call_deferred()
     return main_menu
 
+## Returns true when this build ships pointed at a specific pack — checked
+## by looking for res://shipped_pack.json at the project root. Present =
+## strip the editor entirely (no instantiation, no entry points); absent =
+## dev / authoring build with the full editor suite.
+static func is_shipped_build() -> bool:
+    return FileAccess.file_exists("res://shipped_pack.json")
+
+
+## Reads res://shipped_pack.json and returns its parsed Dictionary. Empty
+## dict when the file is missing or malformed; callers should treat empty
+## as "not a shipped build, behave like dev". Expected shape:
+##   { "pack_id": "<id>", "hide_editor": true }
+static func read_shipped_pack_config() -> Dictionary:
+    if not is_shipped_build():
+        return {}
+    var file := FileAccess.open("res://shipped_pack.json", FileAccess.READ)
+    if file == null:
+        push_warning("[ui_coordinator] shipped_pack.json present but unreadable.")
+        return {}
+    var text := file.get_as_text()
+    file.close()
+    var parsed: Variant = JSON.parse_string(text)
+    if typeof(parsed) != TYPE_DICTIONARY:
+        push_warning("[ui_coordinator] shipped_pack.json is not a JSON object; ignoring.")
+        return {}
+    return parsed
+
+
 # Creates all content/MV editor panels under a single layer. Returns a
 # dictionary keyed by editor name — caller spreads into its typed fields.
+# In a shipped build, returns an empty dict and prints a single log line
+# so the rest of the boot flow can no-op past missing editor handles.
 func setup_editors(host: Node) -> Dictionary:
+    if is_shipped_build():
+        print("[ui_coordinator] shipped_pack.json present — skipping editor panel instantiation.")
+        _editors = {}
+        return _editors
+
     var editor_layer = _make_layer(25)
 
     var result: Dictionary = {}
-    result["content_editor"] = _mk_editor(editor_layer, "res://Space/scripts/editor/content_editor.gd")
-    result["content_editor"].closed.connect(host._on_editor_closed)
-    result["content_editor"].editor_requested.connect(host._on_content_editor_editor_requested)
-    result["content_editor"].playtest_requested.connect(host._on_content_editor_playtest_requested)
-
-    result["region_editor"] = _mk_editor(editor_layer, "res://Space/scripts/editor/region_editor.gd")
-    result["region_editor"].closed.connect(host._on_region_closed)
-    result["region_editor"].back_to_pack.connect(host._on_region_back_to_pack)
-    result["region_editor"].room_chosen.connect(host._on_region_room_chosen)
-
-    result["environment_editor"] = _mk_editor(editor_layer, "res://Space/scripts/editor/environment_editor.gd")
-    result["environment_editor"].closed.connect(host._on_env_editor_closed)
-
     var mv_editors = [
+        ["content_editor", "res://Space/scripts/editor/content_editor.gd"],
+        ["region_editor", "res://Space/scripts/editor/region_editor.gd"],
+        ["environment_editor", "res://Space/scripts/editor/environment_editor.gd"],
         ["entity_editor", "res://Space/scripts/editor/entity_editor.gd"],
         ["behavior_editor", "res://Space/scripts/editor/behavior_editor.gd"],
         ["theme_editor", "res://Space/scripts/editor/theme_editor.gd"],
@@ -223,11 +252,31 @@ func setup_editors(host: Node) -> Dictionary:
         ["dialogue_editor", "res://Space/scripts/editor/dialogue_editor.gd"],
         ["shop_editor", "res://Space/scripts/editor/shop_editor.gd"],
         ["quest_editor", "res://Space/scripts/editor/quest_editor.gd"],
+        ["factions_editor", "res://Space/scripts/editor/factions_editor.gd"],
     ]
     for pair in mv_editors:
         var ed = _mk_editor(editor_layer, pair[1])
-        ed.closed.connect(host._on_mv_editor_closed)
+        if ed == null:
+            push_warning("[ui_coordinator] editor script missing or failed to load: %s" % pair[1])
+            continue
         result[pair[0]] = ed
+
+    if result.has("content_editor"):
+        result["content_editor"].closed.connect(host._on_editor_closed)
+        result["content_editor"].editor_requested.connect(host._on_content_editor_editor_requested)
+        result["content_editor"].playtest_requested.connect(host._on_content_editor_playtest_requested)
+    if result.has("region_editor"):
+        result["region_editor"].closed.connect(host._on_region_closed)
+        result["region_editor"].back_to_pack.connect(host._on_region_back_to_pack)
+        result["region_editor"].room_chosen.connect(host._on_region_room_chosen)
+    if result.has("environment_editor"):
+        result["environment_editor"].closed.connect(host._on_env_editor_closed)
+    for pair in mv_editors:
+        var key = pair[0]
+        if key in ["content_editor", "region_editor", "environment_editor"]:
+            continue
+        if result.has(key):
+            result[key].closed.connect(host._on_mv_editor_closed)
     if result.has("system_editor"):
         result["system_editor"].systems_saved.connect(host._on_system_editor_saved)
         result["system_editor"].region_edit_requested.connect(host._open_region_editor_from_system)
@@ -239,8 +288,13 @@ func setup_editors(host: Node) -> Dictionary:
     _editors = result
     return result
 
+# load() returns null when the script file isn't in the build (the export
+# preset stripped it). Returning null here lets setup_editors skip the
+# missing entry cleanly instead of crashing on set_script(null).
 func _mk_editor(layer: CanvasLayer, script_path: String) -> Control:
     var script = load(script_path)
+    if script == null:
+        return null
     var ed = Control.new()
     ed.set_script(script)
     ed.visible = false

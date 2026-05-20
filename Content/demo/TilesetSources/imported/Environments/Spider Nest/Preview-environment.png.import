@@ -2,16 +2,12 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://tp3qxe4dvwi3"
-path="res://.godot/imported/Preview-environment.png-fca787d59c9a0012e2c3c4e8d6c3b55b.ctex"
-metadata={
-"vram_texture": false
-}
+uid="uid://dw6nly28iillp"
+valid=false
 
 [deps]
 
 source_file="res://Content/demo/TilesetSources/imported/Environments/Spider Nest/Preview-environment.png"
-dest_files=["res://.godot/imported/Preview-environment.png-fca787d59c9a0012e2c3c4e8d6c3b55b.ctex"]
 
 [params]
 

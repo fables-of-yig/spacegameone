@@ -2,16 +2,12 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://b3minf00rttbj"
-path="res://.godot/imported/4.png-2761a8ff6a69388471b993cd3f4d7d6d.ctex"
-metadata={
-"vram_texture": false
-}
+uid="uid://b5gbxv2q1lj4u"
+valid=false
 
 [deps]
 
 source_file="res://Content/demo/TilesetSources/imported/residential-area-tileset-pixel-art/2 Background/Night/4.png"
-dest_files=["res://.godot/imported/4.png-2761a8ff6a69388471b993cd3f4d7d6d.ctex"]
 
 [params]
 

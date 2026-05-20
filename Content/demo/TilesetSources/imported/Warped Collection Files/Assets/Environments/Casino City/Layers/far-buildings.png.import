@@ -2,16 +2,12 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://ph7q24htcswl"
-path="res://.godot/imported/far-buildings.png-d2571c5eb0cb0426197eee8f388412db.ctex"
-metadata={
-"vram_texture": false
-}
+uid="uid://bpp4p0ork7lpd"
+valid=false
 
 [deps]
 
 source_file="res://Content/demo/TilesetSources/imported/Warped Collection Files/Assets/Environments/Casino City/Layers/far-buildings.png"
-dest_files=["res://.godot/imported/far-buildings.png-d2571c5eb0cb0426197eee8f388412db.ctex"]
 
 [params]
 

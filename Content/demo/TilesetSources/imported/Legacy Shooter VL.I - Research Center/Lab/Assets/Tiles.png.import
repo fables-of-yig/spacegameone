@@ -3,15 +3,11 @@
 importer="texture"
 type="CompressedTexture2D"
 uid="uid://bb7c6erqwg83i"
-path="res://.godot/imported/Tiles.png-084d702cbf99f8388f9b7d4913bc8eba.ctex"
-metadata={
-"vram_texture": false
-}
+valid=false
 
 [deps]
 
 source_file="res://Content/demo/TilesetSources/imported/Legacy Shooter VL.I - Research Center/Lab/Assets/Tiles.png"
-dest_files=["res://.godot/imported/Tiles.png-084d702cbf99f8388f9b7d4913bc8eba.ctex"]
 
 [params]
 

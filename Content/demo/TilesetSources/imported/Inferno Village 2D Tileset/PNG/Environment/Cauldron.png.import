@@ -2,16 +2,12 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://ehs0lbhhkh3d"
-path="res://.godot/imported/Cauldron.png-793bb96110d52468a9d64c583ebb126d.ctex"
-metadata={
-"vram_texture": false
-}
+uid="uid://bt1yfs5c6uf8i"
+valid=false
 
 [deps]
 
 source_file="res://Content/demo/TilesetSources/imported/Inferno Village 2D Tileset/PNG/Environment/Cauldron.png"
-dest_files=["res://.godot/imported/Cauldron.png-793bb96110d52468a9d64c583ebb126d.ctex"]
 
 [params]
 

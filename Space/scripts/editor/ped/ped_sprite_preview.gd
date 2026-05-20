@@ -7,8 +7,8 @@ extends Control
 # The host sets the properties, then this control draws the sheet with a
 # grid overlay, highlights the selected frame range, and animates a preview.
 
-const PspIO = preload("res://Space/scripts/editor/psp/psp_io.gd")
-const PackPaths = preload("res://Space/scripts/editor/pack_paths.gd")
+const PspIO = preload("res://Space/scripts/shared/psp/psp_io.gd")
+const PackPaths = preload("res://Space/scripts/shared/pack_paths.gd")
 
 signal frame_clicked(frame_idx: int)
 

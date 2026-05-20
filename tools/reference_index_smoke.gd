@@ -1,6 +1,5 @@
 extends SceneTree
 
-const ContentReferenceIndex := preload("res://Space/scripts/editor/content_reference_index.gd")
 const PlanetLandingBossRecipe := preload("res://Space/scripts/editor/recipes/planet_landing_boss_recipe.gd")
 
 const PACK_ID := "reference_index_smoke"

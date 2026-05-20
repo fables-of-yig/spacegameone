@@ -2,16 +2,12 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://kf6haa33jp5"
-path="res://.godot/imported/bg-wall.png-ba8c1b33ea12b21cf630ab57f2cb083d.ctex"
-metadata={
-"vram_texture": false
-}
+uid="uid://c77c2yddoq5tn"
+valid=false
 
 [deps]
 
 source_file="res://Content/demo/TilesetSources/imported/Warped Collection Files/Assets/Environments/bulkhead-walls/PNG/bg-wall.png"
-dest_files=["res://.godot/imported/bg-wall.png-ba8c1b33ea12b21cf630ab57f2cb083d.ctex"]
 
 [params]
 

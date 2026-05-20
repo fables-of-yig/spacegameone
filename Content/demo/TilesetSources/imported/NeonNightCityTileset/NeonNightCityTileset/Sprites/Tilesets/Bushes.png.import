@@ -3,15 +3,11 @@
 importer="texture"
 type="CompressedTexture2D"
 uid="uid://b1rax16k57y3c"
-path="res://.godot/imported/Bushes.png-2b88345664717f2f26a7c59c322f35c0.ctex"
-metadata={
-"vram_texture": false
-}
+valid=false
 
 [deps]
 
 source_file="res://Content/demo/TilesetSources/imported/NeonNightCityTileset/NeonNightCityTileset/Sprites/Tilesets/Bushes.png"
-dest_files=["res://.godot/imported/Bushes.png-2b88345664717f2f26a7c59c322f35c0.ctex"]
 
 [params]
 

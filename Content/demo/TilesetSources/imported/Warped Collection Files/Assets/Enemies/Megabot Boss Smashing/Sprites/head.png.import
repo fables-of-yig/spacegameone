@@ -2,16 +2,12 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://brmvf0ilj2tq0"
-path="res://.godot/imported/head.png-93ca25b08c60761e7027c2fbeede5849.ctex"
-metadata={
-"vram_texture": false
-}
+uid="uid://c32r0e2sduaam"
+valid=false
 
 [deps]
 
 source_file="res://Content/demo/TilesetSources/imported/Warped Collection Files/Assets/Enemies/Megabot Boss Smashing/Sprites/head.png"
-dest_files=["res://.godot/imported/head.png-93ca25b08c60761e7027c2fbeede5849.ctex"]
 
 [params]
 

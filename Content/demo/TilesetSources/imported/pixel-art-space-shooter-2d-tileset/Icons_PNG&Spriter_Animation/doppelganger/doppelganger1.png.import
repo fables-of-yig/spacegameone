@@ -2,16 +2,12 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://opuyjoc8vlda"
-path="res://.godot/imported/doppelganger1.png-bae2e076c90207dd150d6521f2829e16.ctex"
-metadata={
-"vram_texture": false
-}
+uid="uid://d26pisco221vf"
+valid=false
 
 [deps]
 
 source_file="res://Content/demo/TilesetSources/imported/pixel-art-space-shooter-2d-tileset/Icons_PNG&Spriter_Animation/doppelganger/doppelganger1.png"
-dest_files=["res://.godot/imported/doppelganger1.png-bae2e076c90207dd150d6521f2829e16.ctex"]
 
 [params]
 

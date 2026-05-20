@@ -3,15 +3,11 @@
 importer="texture"
 type="CompressedTexture2D"
 uid="uid://bfyjsx1ciks07"
-path="res://.godot/imported/SpringDownLeftIdle.png-a21e7ca86f8666a0ce41e2ba0d41fffe.ctex"
-metadata={
-"vram_texture": false
-}
+valid=false
 
 [deps]
 
 source_file="res://Content/demo/TilesetSources/imported/PlatformerPrototypePack/Release/Springs/SpringDownLeftIdle.png"
-dest_files=["res://.godot/imported/SpringDownLeftIdle.png-a21e7ca86f8666a0ce41e2ba0d41fffe.ctex"]
 
 [params]
 

@@ -2,16 +2,12 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://bpge3fstubqla"
-path="res://.godot/imported/29.png-442efa098863b03213f3a6e79bdc63b3.ctex"
-metadata={
-"vram_texture": false
-}
+uid="uid://fsmlxshxcr1m"
+valid=false
 
 [deps]
 
 source_file="res://Content/demo/TilesetSources/imported/prison-tileset-pixel-art-assets/3 Objects/3 Stuff/29.png"
-dest_files=["res://.godot/imported/29.png-442efa098863b03213f3a6e79bdc63b3.ctex"]
 
 [params]
 

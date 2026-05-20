@@ -1,7 +1,7 @@
 extends Control
 
 const UIPanels = preload("res://Space/scripts/ui/ui_panels.gd")
-const EntIO = preload("res://Space/scripts/editor/ent/ent_io.gd")
+const EntIO = preload("res://Space/scripts/shared/ent/ent_io.gd")
 
 # Full-screen modal that lists every sprite-set folder available in the
 # current pack (user layer + shipped layer, de-duped) and lets the user

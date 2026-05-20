@@ -2,16 +2,12 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://s40yuo5kmof1"
-path="res://.godot/imported/highway-builddings.png-30e2227199b4fe5666f748567e073b49.ctex"
-metadata={
-"vram_texture": false
-}
+uid="uid://crrslbvbu1r0c"
+valid=false
 
 [deps]
 
 source_file="res://Content/demo/TilesetSources/imported/Warped Collection Files/Assets/Environments/Highway Files/png files/highway-builddings.png"
-dest_files=["res://.godot/imported/highway-builddings.png-30e2227199b4fe5666f748567e073b49.ctex"]
 
 [params]
 

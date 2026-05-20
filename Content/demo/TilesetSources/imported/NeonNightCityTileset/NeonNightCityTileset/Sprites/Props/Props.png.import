@@ -2,16 +2,12 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://csaq3exg0g1e0"
-path="res://.godot/imported/Props.png-3cbf241349e0f893460a09ccf18671a2.ctex"
-metadata={
-"vram_texture": false
-}
+uid="uid://dfh40ga81e5o6"
+valid=false
 
 [deps]
 
 source_file="res://Content/demo/TilesetSources/imported/NeonNightCityTileset/NeonNightCityTileset/Sprites/Props/Props.png"
-dest_files=["res://.godot/imported/Props.png-3cbf241349e0f893460a09ccf18671a2.ctex"]
 
 [params]
 

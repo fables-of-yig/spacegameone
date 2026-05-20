@@ -2,16 +2,12 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://c7rt3tloakmhh"
-path="res://.godot/imported/skeleton-door.png-a134584c48a87888a86e6d68e86fd60c.ctex"
-metadata={
-"vram_texture": false
-}
+uid="uid://eionpp4e60ho"
+valid=false
 
 [deps]
 
 source_file="res://Content/demo/TilesetSources/imported/Warped Collection Files/Assets/Environments/Caves/Add-on-1/PNG/Props/skeleton-door.png"
-dest_files=["res://.godot/imported/skeleton-door.png-a134584c48a87888a86e6d68e86fd60c.ctex"]
 
 [params]
 

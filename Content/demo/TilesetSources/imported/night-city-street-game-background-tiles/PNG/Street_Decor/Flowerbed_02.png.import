@@ -2,16 +2,12 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://6ar0bumdscga"
-path="res://.godot/imported/Flowerbed_02.png-e3ccb601f1286fa92d3c9b71b8f3d1a8.ctex"
-metadata={
-"vram_texture": false
-}
+uid="uid://b8wy8pdhy7sqd"
+valid=false
 
 [deps]
 
 source_file="res://Content/demo/TilesetSources/imported/night-city-street-game-background-tiles/PNG/Street_Decor/Flowerbed_02.png"
-dest_files=["res://.godot/imported/Flowerbed_02.png-e3ccb601f1286fa92d3c9b71b8f3d1a8.ctex"]
 
 [params]
 

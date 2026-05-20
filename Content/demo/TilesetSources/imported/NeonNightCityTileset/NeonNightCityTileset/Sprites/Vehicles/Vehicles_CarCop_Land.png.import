@@ -2,16 +2,12 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://bvga256y7c8yo"
-path="res://.godot/imported/Vehicles_CarCop_Land.png-7ad41c0a2ba58488f32b60c40b436cbb.ctex"
-metadata={
-"vram_texture": false
-}
+uid="uid://b6vpcojpqwc1i"
+valid=false
 
 [deps]
 
 source_file="res://Content/demo/TilesetSources/imported/NeonNightCityTileset/NeonNightCityTileset/Sprites/Vehicles/Vehicles_CarCop_Land.png"
-dest_files=["res://.godot/imported/Vehicles_CarCop_Land.png-7ad41c0a2ba58488f32b60c40b436cbb.ctex"]
 
 [params]
 

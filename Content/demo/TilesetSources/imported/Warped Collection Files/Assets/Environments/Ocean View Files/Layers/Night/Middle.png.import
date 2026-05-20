@@ -2,16 +2,12 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://p3isahqtquub"
-path="res://.godot/imported/Middle.png-45c2670aeee5a7f3afde1b4a7618b90d.ctex"
-metadata={
-"vram_texture": false
-}
+uid="uid://dqmydnpw2xqvd"
+valid=false
 
 [deps]
 
 source_file="res://Content/demo/TilesetSources/imported/Warped Collection Files/Assets/Environments/Ocean View Files/Layers/Night/Middle.png"
-dest_files=["res://.godot/imported/Middle.png-45c2670aeee5a7f3afde1b4a7618b90d.ctex"]
 
 [params]
 

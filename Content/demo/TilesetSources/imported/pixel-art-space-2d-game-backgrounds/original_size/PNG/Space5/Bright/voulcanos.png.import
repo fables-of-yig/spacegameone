@@ -2,16 +2,12 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://bdwoda6nh80l8"
-path="res://.godot/imported/voulcanos.png-d1a8b8ee32e14d307220aff9945b9515.ctex"
-metadata={
-"vram_texture": false
-}
+uid="uid://crk7881bcjy0a"
+valid=false
 
 [deps]
 
 source_file="res://Content/demo/TilesetSources/imported/pixel-art-space-2d-game-backgrounds/original_size/PNG/Space5/Bright/voulcanos.png"
-dest_files=["res://.godot/imported/voulcanos.png-d1a8b8ee32e14d307220aff9945b9515.ctex"]
 
 [params]
 

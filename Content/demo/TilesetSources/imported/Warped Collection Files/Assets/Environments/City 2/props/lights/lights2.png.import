@@ -3,15 +3,11 @@
 importer="texture"
 type="CompressedTexture2D"
 uid="uid://cjvqylpdyagw2"
-path="res://.godot/imported/lights2.png-a55d929b877d09732be8a6a1fe96e6d6.ctex"
-metadata={
-"vram_texture": false
-}
+valid=false
 
 [deps]
 
 source_file="res://Content/demo/TilesetSources/imported/Warped Collection Files/Assets/Environments/City 2/props/lights/lights2.png"
-dest_files=["res://.godot/imported/lights2.png-a55d929b877d09732be8a6a1fe96e6d6.ctex"]
 
 [params]
 

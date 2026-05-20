@@ -2,16 +2,12 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://ygli82w8gx2y"
-path="res://.godot/imported/shot-sheet.png-e4de37292fa6f5052ef0d086747efe93.ctex"
-metadata={
-"vram_texture": false
-}
+uid="uid://bl3dqq1qrlojn"
+valid=false
 
 [deps]
 
 source_file="res://Content/demo/TilesetSources/imported/Warped Collection Files/Assets/Playable Characters/Chibi-Robot/Chibi-Robot Base/Sprites/Shot/shot-sheet.png"
-dest_files=["res://.godot/imported/shot-sheet.png-e4de37292fa6f5052ef0d086747efe93.ctex"]
 
 [params]
 

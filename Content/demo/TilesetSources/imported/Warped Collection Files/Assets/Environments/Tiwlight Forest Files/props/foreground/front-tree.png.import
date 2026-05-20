@@ -3,15 +3,11 @@
 importer="texture"
 type="CompressedTexture2D"
 uid="uid://d8sndduy63by"
-path="res://.godot/imported/front-tree.png-24664f902d69b99cfcec677b91602e34.ctex"
-metadata={
-"vram_texture": false
-}
+valid=false
 
 [deps]
 
 source_file="res://Content/demo/TilesetSources/imported/Warped Collection Files/Assets/Environments/Tiwlight Forest Files/props/foreground/front-tree.png"
-dest_files=["res://.godot/imported/front-tree.png-24664f902d69b99cfcec677b91602e34.ctex"]
 
 [params]
 

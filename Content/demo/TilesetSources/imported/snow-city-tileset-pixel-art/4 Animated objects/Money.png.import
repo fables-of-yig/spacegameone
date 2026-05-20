@@ -2,16 +2,12 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://cisqdd7hf0yug"
-path="res://.godot/imported/Money.png-8b761f028f8d7a0d212c3dca73feb64f.ctex"
-metadata={
-"vram_texture": false
-}
+uid="uid://d10ruhgvt17qn"
+valid=false
 
 [deps]
 
 source_file="res://Content/demo/TilesetSources/imported/snow-city-tileset-pixel-art/4 Animated objects/Money.png"
-dest_files=["res://.godot/imported/Money.png-8b761f028f8d7a0d212c3dca73feb64f.ctex"]
 
 [params]
 

@@ -2,16 +2,12 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://dxv2votjr2el1"
-path="res://.godot/imported/shooting_stars.png-abed02ed968d81877609a30d988f6e24.ctex"
-metadata={
-"vram_texture": false
-}
+uid="uid://c1qjy80q8fx5a"
+valid=false
 
 [deps]
 
 source_file="res://Content/demo/TilesetSources/imported/pixel-art-space-2d-game-backgrounds/x2_1920_1080/PNG/Space5/Pale/shooting_stars.png"
-dest_files=["res://.godot/imported/shooting_stars.png-abed02ed968d81877609a30d988f6e24.ctex"]
 
 [params]
 

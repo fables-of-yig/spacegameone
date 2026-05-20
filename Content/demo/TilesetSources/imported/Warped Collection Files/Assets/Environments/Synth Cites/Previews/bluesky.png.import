@@ -3,15 +3,11 @@
 importer="texture"
 type="CompressedTexture2D"
 uid="uid://dmopm6y4u8n8p"
-path="res://.godot/imported/bluesky.png-54da289530a3e3333fe2517ee709be5d.ctex"
-metadata={
-"vram_texture": false
-}
+valid=false
 
 [deps]
 
 source_file="res://Content/demo/TilesetSources/imported/Warped Collection Files/Assets/Environments/Synth Cites/Previews/bluesky.png"
-dest_files=["res://.godot/imported/bluesky.png-54da289530a3e3333fe2517ee709be5d.ctex"]
 
 [params]
 

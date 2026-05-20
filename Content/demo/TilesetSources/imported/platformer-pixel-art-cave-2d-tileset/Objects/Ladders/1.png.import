@@ -3,15 +3,11 @@
 importer="texture"
 type="CompressedTexture2D"
 uid="uid://bk3rrdy5whd3g"
-path="res://.godot/imported/1.png-0f71ccf94871f5f0b48d7d0700c66ba9.ctex"
-metadata={
-"vram_texture": false
-}
+valid=false
 
 [deps]
 
 source_file="res://Content/demo/TilesetSources/imported/platformer-pixel-art-cave-2d-tileset/Objects/Ladders/1.png"
-dest_files=["res://.godot/imported/1.png-0f71ccf94871f5f0b48d7d0700c66ba9.ctex"]
 
 [params]
 

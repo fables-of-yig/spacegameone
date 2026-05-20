@@ -2,16 +2,12 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://cqlfwk0c43i57"
-path="res://.godot/imported/cover2.png-c3cb76020de66a99cc2db457f3381930.ctex"
-metadata={
-"vram_texture": false
-}
+uid="uid://bdihl34v7m272"
+valid=false
 
 [deps]
 
 source_file="res://Content/demo/TilesetSources/imported/Warped Collection Files/Assets/Enemies/Enemies Pack 2/shell/cover-sprites/cover2.png"
-dest_files=["res://.godot/imported/cover2.png-c3cb76020de66a99cc2db457f3381930.ctex"]
 
 [params]
 

@@ -1,9 +1,0 @@
-﻿{
-    "poses":  {
-                  "fall.png":  {
-                                   "fps":  8,
-                                   "loop_from":  0,
-                                   "frames":  9
-                               }
-              }
-}

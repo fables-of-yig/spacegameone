@@ -2,16 +2,12 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://b3dqjkunj3vcv"
-path="res://.godot/imported/Bucket.png-3d9ce5adb52212705b8dc3dc6b981534.ctex"
-metadata={
-"vram_texture": false
-}
+uid="uid://uajex1hta83v"
+valid=false
 
 [deps]
 
 source_file="res://Content/demo/TilesetSources/imported/Inferno Village 2D Tileset/PNG/Environment/Bucket.png"
-dest_files=["res://.godot/imported/Bucket.png-3d9ce5adb52212705b8dc3dc6b981534.ctex"]
 
 [params]
 

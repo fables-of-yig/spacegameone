@@ -2,16 +2,12 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://bo6ndwcxswman"
-path="res://.godot/imported/ring-planet.png-d6b53f152fc26ea06164cb0bc50b5d8a.ctex"
-metadata={
-"vram_texture": false
-}
+uid="uid://bk5x07bx51uwh"
+valid=false
 
 [deps]
 
 source_file="res://Content/demo/TilesetSources/imported/Warped Collection Files/Assets/Environments/Space Backgrounds 1/Backgrounds/green/Layered/ring-planet.png"
-dest_files=["res://.godot/imported/ring-planet.png-d6b53f152fc26ea06164cb0bc50b5d8a.ctex"]
 
 [params]
 

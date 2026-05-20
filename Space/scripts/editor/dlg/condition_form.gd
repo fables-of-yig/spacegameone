@@ -11,7 +11,6 @@ extends VBoxContainer
 signal changed
 
 const EcaSchemaLib := preload("res://Space/scripts/editor/dlg/eca_schema.gd")
-const QuestIO := preload("res://Space/scripts/editor/quest_io.gd")
 
 var _type_option: OptionButton = null
 var _raw_toggle: CheckBox = null
@@ -24,6 +23,7 @@ var _current_type: String = ""
 var _suppress_emit: bool = false
 var _last_error: String = ""
 var _pack_id: String = ""
+var _rule_event: String = ""
 
 
 func _ready() -> void:
@@ -77,6 +77,18 @@ func _build_ui() -> void:
 
 func set_pack_id(pack_id: String) -> void:
     _pack_id = pack_id.strip_edges()
+
+
+func set_rule_event(event_name: String) -> void:
+    var trimmed := event_name.strip_edges()
+    if _rule_event == trimmed:
+        return
+    _rule_event = trimmed
+    # payload_eq's key picker is event-aware: when the rule's event changes,
+    # the dropdown contents must refresh. Other condition types are unaffected.
+    if _current_type == "payload_eq":
+        var snapshot := _build_simple_value()
+        _rebuild_fields(snapshot)
 
 
 func open(value: Dictionary) -> void:
@@ -221,6 +233,7 @@ func _rebuild_fields(rng_seed: Dictionary) -> void:
         row.add_child(control)
         _fields_box.add_child(row)
         _field_controls[key] = control
+        EditorTooltipWrap.wrap_tree(row)
 
 
 func _sync_mode_visibility() -> void:
@@ -236,6 +249,8 @@ func _sync_mode_visibility() -> void:
 func _make_field(kind: String, initial: Variant, condition_type: String = "", field_key: String = "") -> Control:
     if _should_use_quest_picker(condition_type, field_key, kind):
         return _make_quest_picker(field_key, initial)
+    if _should_use_payload_key_picker(condition_type, field_key, kind):
+        return _make_payload_key_picker(initial)
     match kind:
         "bool":
             var cb := CheckBox.new()
@@ -258,6 +273,8 @@ func _make_field(kind: String, initial: Variant, condition_type: String = "", fi
 
 
 func _read_field(control: Control, kind: String) -> Dictionary:
+    if control.has_meta("payload_key_picker"):
+        return _read_payload_key_picker(control)
     match kind:
         "bool":
             return {"ok": true, "value": (control as CheckBox).button_pressed if control is CheckBox else false}
@@ -422,7 +439,7 @@ func _condition_example(condition_type: String) -> String:
             return "id = medkit_small, min_count = 1"
         "has_ability":
             return "id = double_jump"
-        "has_tag", "entity_has_tag":
+        "has_tag":
             return "tag = boss_room"
         "has_global_tag":
             return "tag = met_shopkeep"
@@ -500,6 +517,87 @@ func _should_use_quest_picker(condition_type: String, field_key: String, kind: S
     if kind != "string":
         return false
     return ["quest_id", "stage_id", "objective_id"].has(field_key)
+
+
+func _should_use_payload_key_picker(condition_type: String, field_key: String, kind: String) -> bool:
+    return condition_type == "payload_eq" and field_key == "key" and kind == "string"
+
+
+# Composite control: OptionButton with documented payload keys for the
+# current rule's event, plus a "Custom…" sentinel that reveals an inline
+# LineEdit for typing a non-listed key. The HBoxContainer is tagged with
+# the "payload_key_picker" meta flag so _read_field knows to peel it apart
+# instead of treating it as a normal control.
+func _make_payload_key_picker(initial: Variant) -> Control:
+    var row := HBoxContainer.new()
+    row.add_theme_constant_override("separation", 4)
+    row.set_meta("payload_key_picker", true)
+
+    var picker := OptionButton.new()
+    picker.custom_minimum_size = Vector2(160, 0)
+    picker.tooltip_text = "Pick the payload key to compare. Use 'Custom…' if the rule's event publishes something outside the documented list."
+    var keys := EcaSchemaLib.event_payload_keys(_rule_event)
+    for key in keys:
+        var key_str := str(key)
+        var idx := picker.item_count
+        picker.add_item(key_str)
+        picker.set_item_metadata(idx, key_str)
+    var custom_idx := picker.item_count
+    picker.add_item("Custom…")
+    picker.set_item_metadata(custom_idx, "__custom__")
+    row.add_child(picker)
+
+    var edit := LineEdit.new()
+    edit.placeholder_text = "type custom key"
+    edit.custom_minimum_size = Vector2(140, 0)
+    edit.visible = false
+    edit.tooltip_text = "Custom payload key for events that publish data outside the documented schema (e.g. entity properties merged into pickup/interact payloads)."
+    row.add_child(edit)
+
+    var initial_value := str(initial).strip_edges() if initial != null else ""
+    var matched_idx := -1
+    for i in range(keys.size()):
+        if str(keys[i]) == initial_value:
+            matched_idx = i
+            break
+    if matched_idx >= 0:
+        picker.select(matched_idx)
+    elif not initial_value.is_empty():
+        picker.select(custom_idx)
+        edit.text = initial_value
+        edit.visible = true
+    elif keys.is_empty():
+        # Event has no documented payload keys yet — fall straight into
+        # custom-input mode so the author isn't stuck on a one-option dropdown.
+        picker.select(custom_idx)
+        edit.visible = true
+    else:
+        picker.select(0)
+
+    picker.item_selected.connect(func(idx: int):
+        var meta_v: Variant = picker.get_item_metadata(idx)
+        var is_custom: bool = str(meta_v) == "__custom__"
+        edit.visible = is_custom
+        if is_custom:
+            edit.grab_focus()
+        _emit_changed(null))
+    edit.text_changed.connect(func(_t: String): _emit_changed(null))
+    return row
+
+
+func _read_payload_key_picker(control: Control) -> Dictionary:
+    var picker: OptionButton = control.get_child(0)
+    var edit: LineEdit = control.get_child(1)
+    if picker == null:
+        return {"ok": true, "value": ""}
+    var selected_idx := picker.get_selected()
+    if selected_idx < 0:
+        return {"ok": true, "value": ""}
+    var meta_v: Variant = picker.get_item_metadata(selected_idx)
+    if str(meta_v) == "__custom__":
+        var custom_text: String = edit.text.strip_edges() if edit != null else ""
+        return {"ok": true, "value": custom_text}
+    return {"ok": true, "value": str(meta_v)}
 
 
 func _make_quest_picker(field_key: String, initial: Variant) -> Control:

@@ -1,11 +1,9 @@
 extends Control
 
-const EntIO = preload("res://Space/scripts/editor/ent/ent_io.gd")
+const EntIO = preload("res://Space/scripts/shared/ent/ent_io.gd")
 const EntTypes = preload("res://Space/scripts/editor/ent/ent_types.gd")
-const ContentReferenceIndex = preload("res://Space/scripts/editor/content_reference_index.gd")
-const ContentReferenceRefactor = preload("res://Space/scripts/editor/content_reference_refactor.gd")
 
-const BehIO = preload("res://Space/scripts/editor/beh/beh_io.gd")
+const BehIO = preload("res://Space/scripts/shared/beh/beh_io.gd")
 
 # Entity sprite editor main controller. Owns the entities.json tree for
 # the active pack, the currently-selected entity, and the cached sprite

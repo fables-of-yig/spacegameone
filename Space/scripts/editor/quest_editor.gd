@@ -1,8 +1,5 @@
 extends Control
 
-const QuestIO := preload("res://Space/scripts/editor/quest_io.gd")
-const ContentValidator := preload("res://Space/scripts/editor/content_validator.gd")
-
 const OBJECTIVE_TYPES := [
     "collect_item",
     "have_item",

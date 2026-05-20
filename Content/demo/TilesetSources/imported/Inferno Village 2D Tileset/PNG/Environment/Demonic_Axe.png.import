@@ -2,16 +2,12 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://cj1ms1gfeqec7"
-path="res://.godot/imported/Demonic_Axe.png-67f7bbfa734ba645c83c15a48c0f090b.ctex"
-metadata={
-"vram_texture": false
-}
+uid="uid://b6mqcb0noihy5"
+valid=false
 
 [deps]
 
 source_file="res://Content/demo/TilesetSources/imported/Inferno Village 2D Tileset/PNG/Environment/Demonic_Axe.png"
-dest_files=["res://.godot/imported/Demonic_Axe.png-67f7bbfa734ba645c83c15a48c0f090b.ctex"]
 
 [params]
 

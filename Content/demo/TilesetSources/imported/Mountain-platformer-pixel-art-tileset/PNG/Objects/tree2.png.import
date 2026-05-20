@@ -2,16 +2,12 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://ccbb0iijkv5kn"
-path="res://.godot/imported/tree2.png-03336d049992976d2496cad4ec811877.ctex"
-metadata={
-"vram_texture": false
-}
+uid="uid://cp1bnrr2iki6t"
+valid=false
 
 [deps]
 
 source_file="res://Content/demo/TilesetSources/imported/Mountain-platformer-pixel-art-tileset/PNG/Objects/tree2.png"
-dest_files=["res://.godot/imported/tree2.png-03336d049992976d2496cad4ec811877.ctex"]
 
 [params]
 

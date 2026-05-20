@@ -2,16 +2,12 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://07woor0bcjj8"
-path="res://.godot/imported/Chimney_04.png-49bfaf9e03eb6a6a8f2c85335b07a850.ctex"
-metadata={
-"vram_texture": false
-}
+uid="uid://bv813hdpgihux"
+valid=false
 
 [deps]
 
 source_file="res://Content/demo/TilesetSources/imported/Inferno Village 2D Tileset/PNG/Building/Chimney_04.png"
-dest_files=["res://.godot/imported/Chimney_04.png-49bfaf9e03eb6a6a8f2c85335b07a850.ctex"]
 
 [params]
 

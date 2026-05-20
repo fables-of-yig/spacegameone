@@ -3,15 +3,11 @@
 importer="texture"
 type="CompressedTexture2D"
 uid="uid://dlak1guvwh0v6"
-path="res://.godot/imported/BG.png-f179a5d47f5412e93ec4a37d8ce3916d.ctex"
-metadata={
-"vram_texture": false
-}
+valid=false
 
 [deps]
 
 source_file="res://Content/demo/TilesetSources/imported/space-vertical-game-backgrounds/PNG/Space_BG_03/Layers/BG.png"
-dest_files=["res://.godot/imported/BG.png-f179a5d47f5412e93ec4a37d8ce3916d.ctex"]
 
 [params]
 

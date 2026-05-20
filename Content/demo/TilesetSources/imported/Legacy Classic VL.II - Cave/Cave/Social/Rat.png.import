@@ -2,16 +2,12 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://b3bksm04iojds"
-path="res://.godot/imported/Rat.png-30a7581c689c22c766874694d7131c08.ctex"
-metadata={
-"vram_texture": false
-}
+uid="uid://88t8dk1rc7kv"
+valid=false
 
 [deps]
 
 source_file="res://Content/demo/TilesetSources/imported/Legacy Classic VL.II - Cave/Cave/Social/Rat.png"
-dest_files=["res://.godot/imported/Rat.png-30a7581c689c22c766874694d7131c08.ctex"]
 
 [params]
 

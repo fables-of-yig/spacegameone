@@ -8,9 +8,7 @@ extends Control
 # resolve against the pack's Items registry; that cross-reference is
 # validated by ContentValidator, not here.
 
-const PedIO := preload("res://Space/scripts/editor/ped/ped_io.gd")
-const ContentReferenceIndex := preload("res://Space/scripts/editor/content_reference_index.gd")
-const ContentReferenceRefactor := preload("res://Space/scripts/editor/content_reference_refactor.gd")
+const PedIO := preload("res://Space/scripts/shared/ped/ped_io.gd")
 
 const ITEM_EFFECTS := [
     "",

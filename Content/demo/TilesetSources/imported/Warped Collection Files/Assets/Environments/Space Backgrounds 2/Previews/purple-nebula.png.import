@@ -2,16 +2,12 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://bp3khl18d2hwv"
-path="res://.godot/imported/purple-nebula.png-093e64ebf92abf329293f7b448a03a6d.ctex"
-metadata={
-"vram_texture": false
-}
+uid="uid://q7gxesytglu6"
+valid=false
 
 [deps]
 
 source_file="res://Content/demo/TilesetSources/imported/Warped Collection Files/Assets/Environments/Space Backgrounds 2/Previews/purple-nebula.png"
-dest_files=["res://.godot/imported/purple-nebula.png-093e64ebf92abf329293f7b448a03a6d.ctex"]
 
 [params]
 

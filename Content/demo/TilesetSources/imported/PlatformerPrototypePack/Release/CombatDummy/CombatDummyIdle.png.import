@@ -2,16 +2,12 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://cvu3tj6y1h7pc"
-path="res://.godot/imported/CombatDummyIdle.png-e61b35bdab3433f635776127e06b7793.ctex"
-metadata={
-"vram_texture": false
-}
+uid="uid://bpm4us5eyii61"
+valid=false
 
 [deps]
 
 source_file="res://Content/demo/TilesetSources/imported/PlatformerPrototypePack/Release/CombatDummy/CombatDummyIdle.png"
-dest_files=["res://.godot/imported/CombatDummyIdle.png-e61b35bdab3433f635776127e06b7793.ctex"]
 
 [params]
 

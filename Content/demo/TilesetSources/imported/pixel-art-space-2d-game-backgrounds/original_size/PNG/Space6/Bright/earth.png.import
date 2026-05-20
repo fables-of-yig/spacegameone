@@ -3,15 +3,11 @@
 importer="texture"
 type="CompressedTexture2D"
 uid="uid://bq8ngwge7xq08"
-path="res://.godot/imported/earth.png-7d05a2d5e06555b7b595c9618e3d744f.ctex"
-metadata={
-"vram_texture": false
-}
+valid=false
 
 [deps]
 
 source_file="res://Content/demo/TilesetSources/imported/pixel-art-space-2d-game-backgrounds/original_size/PNG/Space6/Bright/earth.png"
-dest_files=["res://.godot/imported/earth.png-7d05a2d5e06555b7b595c9618e3d744f.ctex"]
 
 [params]
 

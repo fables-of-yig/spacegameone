@@ -55,6 +55,12 @@ signal flag_changed(scope: String, name: String, old_value: Variant, new_value: 
 var _planet_flags: Dictionary = {}
 var _global_flags: Dictionary = {}
 
+# Queued ship spawns for systems the player isn't currently in. MV triggers
+# push entries via queue_ship_spawn(); Space drains them on system_enter via
+# consume_ship_spawn_queue() and spawns each ship through the existing
+# spawn manager. Schema: { system_id: [class_id_string, ...] }.
+var _pending_ship_spawns: Dictionary = {}
+
 func has_planet_flag(flag_name: String) -> bool:
     return _planet_flags.has(flag_name)
 
@@ -91,6 +97,42 @@ func set_global_flag(flag_name: String, value):
 
 func clear_global_flags():
     _global_flags.clear()
+
+
+# Single-flag clear (the existing clear_global_flags wipes the whole bag).
+# Emits flag_changed("global", name, old, null) so listeners can react.
+func clear_global_flag(flag_name: String) -> void:
+    if not _global_flags.has(flag_name):
+        return
+    var old = _global_flags.get(flag_name, null)
+    _global_flags.erase(flag_name)
+    flag_changed.emit("global", flag_name, old, null)
+
+
+# Append a ship class to the pending-spawn list for `system_id`. The next
+# time the player jumps into that system, Space drains this queue and
+# spawns each entry. Queueing the same system again stacks — no dedup.
+func queue_ship_spawn(system_id: String, class_id: String) -> void:
+    var sid := system_id.strip_edges()
+    var cid := class_id.strip_edges()
+    if sid.is_empty() or cid.is_empty():
+        return
+    var bucket_v: Variant = _pending_ship_spawns.get(sid, [])
+    var bucket: Array = bucket_v if typeof(bucket_v) == TYPE_ARRAY else []
+    bucket.append(cid)
+    _pending_ship_spawns[sid] = bucket
+
+
+# Returns and removes the queued ship class ids for a system. Space calls
+# this on space_system_enter to spawn the ships at the system's center.
+func consume_ship_spawn_queue(system_id: String) -> Array:
+    var sid := system_id.strip_edges()
+    var bucket_v: Variant = _pending_ship_spawns.get(sid, [])
+    if typeof(bucket_v) != TYPE_ARRAY:
+        return []
+    var out: Array = (bucket_v as Array).duplicate()
+    _pending_ship_spawns.erase(sid)
+    return out
 
 # Convenience helpers for SSB-side iteration (the in-editor flag inspector
 # uses these to render the current state). Returns sorted key arrays so the

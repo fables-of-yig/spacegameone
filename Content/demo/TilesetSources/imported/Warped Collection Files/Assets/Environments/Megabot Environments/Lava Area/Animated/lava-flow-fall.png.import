@@ -2,16 +2,12 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://tlq8bxequapj"
-path="res://.godot/imported/lava-flow-fall.png-7dd0ef4b38815d7588170f1c805ec220.ctex"
-metadata={
-"vram_texture": false
-}
+uid="uid://ci1xs1ijc5lkr"
+valid=false
 
 [deps]
 
 source_file="res://Content/demo/TilesetSources/imported/Warped Collection Files/Assets/Environments/Megabot Environments/Lava Area/Animated/lava-flow-fall.png"
-dest_files=["res://.godot/imported/lava-flow-fall.png-7dd0ef4b38815d7588170f1c805ec220.ctex"]
 
 [params]
 

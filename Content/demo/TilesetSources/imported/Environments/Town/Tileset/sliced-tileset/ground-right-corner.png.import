@@ -2,16 +2,12 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://xtbe455llpr2"
-path="res://.godot/imported/ground-right-corner.png-a66bb2c45e7a3fd210497f80f9502ab8.ctex"
-metadata={
-"vram_texture": false
-}
+uid="uid://rp7agy6kh3xd"
+valid=false
 
 [deps]
 
 source_file="res://Content/demo/TilesetSources/imported/Environments/Town/Tileset/sliced-tileset/ground-right-corner.png"
-dest_files=["res://.godot/imported/ground-right-corner.png-a66bb2c45e7a3fd210497f80f9502ab8.ctex"]
 
 [params]
 

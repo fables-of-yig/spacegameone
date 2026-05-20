@@ -2,16 +2,12 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://dvbupiguidt4d"
-path="res://.godot/imported/far-trees.png-c711607c6dacffcf5fae25fc33d90abc.ctex"
-metadata={
-"vram_texture": false
-}
+uid="uid://bjcobiucjqwyp"
+valid=false
 
 [deps]
 
 source_file="res://Content/demo/TilesetSources/imported/Environments/WoodsCastle/Layers/far-trees.png"
-dest_files=["res://.godot/imported/far-trees.png-c711607c6dacffcf5fae25fc33d90abc.ctex"]
 
 [params]
 

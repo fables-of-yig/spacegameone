@@ -2,16 +2,12 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://dg6hwrvjybo0k"
-path="res://.godot/imported/Mushroom_Chest_Open.png-7f99813bfbba0613fae97bbd65109d0c.ctex"
-metadata={
-"vram_texture": false
-}
+uid="uid://cpx50s5y0cq7h"
+valid=false
 
 [deps]
 
 source_file="res://Content/demo/TilesetSources/imported/platformer-pixel-art-cave-2d-tileset/Objects_Animated/Mushroom_Chest_Open.png"
-dest_files=["res://.godot/imported/Mushroom_Chest_Open.png-7f99813bfbba0613fae97bbd65109d0c.ctex"]
 
 [params]
 

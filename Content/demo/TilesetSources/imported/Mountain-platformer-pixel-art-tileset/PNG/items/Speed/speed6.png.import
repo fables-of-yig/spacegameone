@@ -3,15 +3,11 @@
 importer="texture"
 type="CompressedTexture2D"
 uid="uid://yalqkwewi4hu"
-path="res://.godot/imported/speed6.png-f6506a3eaccb9f296da556efedd6244d.ctex"
-metadata={
-"vram_texture": false
-}
+valid=false
 
 [deps]
 
 source_file="res://Content/demo/TilesetSources/imported/Mountain-platformer-pixel-art-tileset/PNG/items/Speed/speed6.png"
-dest_files=["res://.godot/imported/speed6.png-f6506a3eaccb9f296da556efedd6244d.ctex"]
 
 [params]
 

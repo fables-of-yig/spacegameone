@@ -2,16 +2,12 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://dxxbfhddad3h2"
-path="res://.godot/imported/jump.png-4874617d4d0de6bdfa8b469bf478a771.ctex"
-metadata={
-"vram_texture": false
-}
+uid="uid://bogdf1033swga"
+valid=false
 
 [deps]
 
 source_file="res://Content/demo/TilesetSources/imported/Warped Collection Files/Assets/Enemies/Sewers Soldier Enemy/Sprites/Soldier/jump.png"
-dest_files=["res://.godot/imported/jump.png-4874617d4d0de6bdfa8b469bf478a771.ctex"]
 
 [params]
 

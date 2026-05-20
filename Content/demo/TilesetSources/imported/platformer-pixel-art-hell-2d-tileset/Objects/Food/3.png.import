@@ -2,16 +2,12 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://cw4pdbnd1qks4"
-path="res://.godot/imported/3.png-aa05f51b17f286931e0775fa43a0c90a.ctex"
-metadata={
-"vram_texture": false
-}
+uid="uid://b43p6lbfqe8tw"
+valid=false
 
 [deps]
 
 source_file="res://Content/demo/TilesetSources/imported/platformer-pixel-art-hell-2d-tileset/Objects/Food/3.png"
-dest_files=["res://.godot/imported/3.png-aa05f51b17f286931e0775fa43a0c90a.ctex"]
 
 [params]
 

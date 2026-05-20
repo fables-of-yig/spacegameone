@@ -2,16 +2,12 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://dlkmd3u8vl20h"
-path="res://.godot/imported/Tiles.png-e79a2c51fe7496ade6006622510dfa3e.ctex"
-metadata={
-"vram_texture": false
-}
+uid="uid://c7nss6b3c5fr3"
+valid=false
 
 [deps]
 
 source_file="res://Content/demo/TilesetSources/imported/Legacy Vania Pack - Crypt/Crypt/Social/Tiles.png"
-dest_files=["res://.godot/imported/Tiles.png-e79a2c51fe7496ade6006622510dfa3e.ctex"]
 
 [params]
 

@@ -2,16 +2,12 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://ch6userf0qe3p"
-path="res://.godot/imported/Rock_02.png-d8011b156c8cd9bb4d083013b1f9a2d4.ctex"
-metadata={
-"vram_texture": false
-}
+uid="uid://t1biy30wmafn"
+valid=false
 
 [deps]
 
 source_file="res://Content/demo/TilesetSources/imported/Inferno Village 2D Tileset/PNG/Environment/Rock_02.png"
-dest_files=["res://.godot/imported/Rock_02.png-d8011b156c8cd9bb4d083013b1f9a2d4.ctex"]
 
 [params]
 

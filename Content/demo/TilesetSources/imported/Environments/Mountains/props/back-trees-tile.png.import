@@ -2,16 +2,12 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://baca44ncx5cbm"
-path="res://.godot/imported/back-trees-tile.png-58fd7eceb63c4e4959b64f0ca20a63e3.ctex"
-metadata={
-"vram_texture": false
-}
+uid="uid://dfo5v8vjj4cp1"
+valid=false
 
 [deps]
 
 source_file="res://Content/demo/TilesetSources/imported/Environments/Mountains/props/back-trees-tile.png"
-dest_files=["res://.godot/imported/back-trees-tile.png-58fd7eceb63c4e4959b64f0ca20a63e3.ctex"]
 
 [params]
 

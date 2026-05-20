@@ -2,16 +2,12 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://d35eeo5ssbbdo"
-path="res://.godot/imported/octopus-1.png-88fa8a1a801056281f85272caa687072.ctex"
-metadata={
-"vram_texture": false
-}
+uid="uid://e62v1ocoh8yc"
+valid=false
 
 [deps]
 
 source_file="res://Content/demo/TilesetSources/imported/Warped Collection Files/Assets/Enemies/Caves Enemies/sprites/octopus/octopus-1.png"
-dest_files=["res://.godot/imported/octopus-1.png-88fa8a1a801056281f85272caa687072.ctex"]
 
 [params]
 

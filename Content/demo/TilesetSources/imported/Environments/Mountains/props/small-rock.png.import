@@ -2,16 +2,12 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://cl6acl3pb5o5k"
-path="res://.godot/imported/small-rock.png-11f94e63afe9243a6cdfbe4d91a07352.ctex"
-metadata={
-"vram_texture": false
-}
+uid="uid://dyqc5dqbt3feg"
+valid=false
 
 [deps]
 
 source_file="res://Content/demo/TilesetSources/imported/Environments/Mountains/props/small-rock.png"
-dest_files=["res://.godot/imported/small-rock.png-11f94e63afe9243a6cdfbe4d91a07352.ctex"]
 
 [params]
 

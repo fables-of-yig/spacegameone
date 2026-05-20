@@ -2,16 +2,12 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://cpjfoiburb14k"
-path="res://.godot/imported/Sign_03.png-772cd21dab300a57801385ba61bb8c11.ctex"
-metadata={
-"vram_texture": false
-}
+uid="uid://b31o43wda7tr3"
+valid=false
 
 [deps]
 
 source_file="res://Content/demo/TilesetSources/imported/Inferno Village 2D Tileset/PNG/Environment/Sign_03.png"
-dest_files=["res://.godot/imported/Sign_03.png-772cd21dab300a57801385ba61bb8c11.ctex"]
 
 [params]
 

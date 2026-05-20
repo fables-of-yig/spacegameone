@@ -1,7 +1,7 @@
 extends RefCounted
 
 const BehRegistry = preload("res://Space/scripts/runtime/beh/beh_registry.gd")
-const BehTypes = preload("res://Space/scripts/editor/beh/beh_types.gd")
+const BehTypes = preload("res://Space/scripts/shared/beh/beh_types.gd")
 
 # Turns a behavior dict (as authored by the in-editor behavior builder
 # and serialized to behaviors.json) into a live BeehaveTree Node with

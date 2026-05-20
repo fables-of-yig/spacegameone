@@ -2,16 +2,12 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://jkm07p50ery4"
-path="res://.godot/imported/metal_tile3.png-6c2dd1e882e29991383b3c27bea1e443.ctex"
-metadata={
-"vram_texture": false
-}
+uid="uid://oot7nav1grui"
+valid=false
 
 [deps]
 
 source_file="res://Content/demo/TilesetSources/imported/pixel-art-space-shooter-2d-tileset/PNG_Tiles/Details/metal_tile3.png"
-dest_files=["res://.godot/imported/metal_tile3.png-6c2dd1e882e29991383b3c27bea1e443.ctex"]
 
 [params]
 

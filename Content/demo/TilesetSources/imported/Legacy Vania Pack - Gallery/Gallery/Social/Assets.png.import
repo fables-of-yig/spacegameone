@@ -2,16 +2,12 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://behjrv718l47f"
-path="res://.godot/imported/Assets.png-0f23d72a9a6c32cc79edb4dae16ee6f8.ctex"
-metadata={
-"vram_texture": false
-}
+uid="uid://be8tb1gki3qab"
+valid=false
 
 [deps]
 
 source_file="res://Content/demo/TilesetSources/imported/Legacy Vania Pack - Gallery/Gallery/Social/Assets.png"
-dest_files=["res://.godot/imported/Assets.png-0f23d72a9a6c32cc79edb4dae16ee6f8.ctex"]
 
 [params]
 

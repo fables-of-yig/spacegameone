@@ -2,16 +2,12 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://cjwpxv88g4klm"
-path="res://.godot/imported/Laboratory_Test_1.png-8b938ee136e3f79a1ad3cdddba692afb.ctex"
-metadata={
-"vram_texture": false
-}
+uid="uid://3dd7s66bokys"
+valid=false
 
 [deps]
 
 source_file="res://Content/demo/TilesetSources/imported/Legacy Action Pack - LABORATORY/Legacy Action Pack - LABORATORY/Social/Laboratory_Test_1.png"
-dest_files=["res://.godot/imported/Laboratory_Test_1.png-8b938ee136e3f79a1ad3cdddba692afb.ctex"]
 
 [params]
 

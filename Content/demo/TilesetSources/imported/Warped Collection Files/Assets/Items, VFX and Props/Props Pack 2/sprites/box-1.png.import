@@ -2,16 +2,12 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://cq0np1k01v1tq"
-path="res://.godot/imported/box-1.png-e139ab59b10ac857b3d052bb08e5261b.ctex"
-metadata={
-"vram_texture": false
-}
+uid="uid://dnxe885xl8wc"
+valid=false
 
 [deps]
 
 source_file="res://Content/demo/TilesetSources/imported/Warped Collection Files/Assets/Items, VFX and Props/Props Pack 2/sprites/box-1.png"
-dest_files=["res://.godot/imported/box-1.png-e139ab59b10ac857b3d052bb08e5261b.ctex"]
 
 [params]
 

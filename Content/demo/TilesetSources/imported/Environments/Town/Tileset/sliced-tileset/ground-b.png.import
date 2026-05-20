@@ -2,16 +2,12 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://caau835u3s3kj"
-path="res://.godot/imported/ground-b.png-f72693812edf1c103fe854b5f4eccb69.ctex"
-metadata={
-"vram_texture": false
-}
+uid="uid://pxrptbf584v1"
+valid=false
 
 [deps]
 
 source_file="res://Content/demo/TilesetSources/imported/Environments/Town/Tileset/sliced-tileset/ground-b.png"
-dest_files=["res://.godot/imported/ground-b.png-f72693812edf1c103fe854b5f4eccb69.ctex"]
 
 [params]
 

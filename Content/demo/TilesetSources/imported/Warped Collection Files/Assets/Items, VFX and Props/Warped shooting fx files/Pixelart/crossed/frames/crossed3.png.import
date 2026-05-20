@@ -2,16 +2,12 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://yscgbe6hpt22"
-path="res://.godot/imported/crossed3.png-3e4b9147be6d5d68a8a56e9508776f58.ctex"
-metadata={
-"vram_texture": false
-}
+uid="uid://dvflssba8tklk"
+valid=false
 
 [deps]
 
 source_file="res://Content/demo/TilesetSources/imported/Warped Collection Files/Assets/Items, VFX and Props/Warped shooting fx files/Pixelart/crossed/frames/crossed3.png"
-dest_files=["res://.godot/imported/crossed3.png-3e4b9147be6d5d68a8a56e9508776f58.ctex"]
 
 [params]
 

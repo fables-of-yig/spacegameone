@@ -2,16 +2,12 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://ddyug05exthl2"
-path="res://.godot/imported/back.png-848a68a87aab87c2c04dde5e885de47f.ctex"
-metadata={
-"vram_texture": false
-}
+uid="uid://crvi1rjm0kn55"
+valid=false
 
 [deps]
 
 source_file="res://Content/demo/TilesetSources/imported/Warped Collection Files/Assets/Environments/Space Backgrounds 2/png/Planets/back.png"
-dest_files=["res://.godot/imported/back.png-848a68a87aab87c2c04dde5e885de47f.ctex"]
 
 [params]
 

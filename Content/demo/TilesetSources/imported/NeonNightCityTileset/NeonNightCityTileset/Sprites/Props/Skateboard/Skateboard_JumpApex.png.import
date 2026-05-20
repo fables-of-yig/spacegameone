@@ -2,16 +2,12 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://deklkaih1rw0r"
-path="res://.godot/imported/Skateboard_JumpApex.png-e2690248258fd8fedbbb87109170f5a6.ctex"
-metadata={
-"vram_texture": false
-}
+uid="uid://cmq8s7w3fk76a"
+valid=false
 
 [deps]
 
 source_file="res://Content/demo/TilesetSources/imported/NeonNightCityTileset/NeonNightCityTileset/Sprites/Props/Skateboard/Skateboard_JumpApex.png"
-dest_files=["res://.godot/imported/Skateboard_JumpApex.png-e2690248258fd8fedbbb87109170f5a6.ctex"]
 
 [params]
 

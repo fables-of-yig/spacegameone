@@ -2,16 +2,12 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://bvlhtof6bxe0q"
-path="res://.godot/imported/lake-pole.png-c1ba59999d60106e9111483dd3c5983e.ctex"
-metadata={
-"vram_texture": false
-}
+uid="uid://btdvsy36hhmwt"
+valid=false
 
 [deps]
 
 source_file="res://Content/demo/TilesetSources/imported/Environments/SunsetLake Files/Props/sprites/lake-pole.png"
-dest_files=["res://.godot/imported/lake-pole.png-c1ba59999d60106e9111483dd3c5983e.ctex"]
 
 [params]
 

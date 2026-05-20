@@ -3,15 +3,11 @@
 importer="texture"
 type="CompressedTexture2D"
 uid="uid://b1sxqr48hp4hd"
-path="res://.godot/imported/Forest_2.png-4a7f23d06e98d48ddbfb13a8d7bc49aa.ctex"
-metadata={
-"vram_texture": false
-}
+valid=false
 
 [deps]
 
 source_file="res://Content/demo/TilesetSources/imported/Legacy Vania Pack - Forest/Forest/Social/Forest_2.png"
-dest_files=["res://.godot/imported/Forest_2.png-4a7f23d06e98d48ddbfb13a8d7bc49aa.ctex"]
 
 [params]
 

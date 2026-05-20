@@ -2,16 +2,12 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://dh0pav10oyjks"
-path="res://.godot/imported/Background.png-359d67027f1805d801194770e1a74cd3.ctex"
-metadata={
-"vram_texture": false
-}
+uid="uid://nx8bsy7m8sgd"
+valid=false
 
 [deps]
 
 source_file="res://Content/demo/TilesetSources/imported/platformer-pixel-art-hell-2d-tileset/Background/Background.png"
-dest_files=["res://.godot/imported/Background.png-359d67027f1805d801194770e1a74cd3.ctex"]
 
 [params]
 

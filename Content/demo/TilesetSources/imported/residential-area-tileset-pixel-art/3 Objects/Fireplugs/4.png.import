@@ -2,16 +2,12 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://wugphb34agmm"
-path="res://.godot/imported/4.png-d2c8d19b87f112ffa9c0cd8d04a51445.ctex"
-metadata={
-"vram_texture": false
-}
+uid="uid://dp3urqatyplsu"
+valid=false
 
 [deps]
 
 source_file="res://Content/demo/TilesetSources/imported/residential-area-tileset-pixel-art/3 Objects/Fireplugs/4.png"
-dest_files=["res://.godot/imported/4.png-d2c8d19b87f112ffa9c0cd8d04a51445.ctex"]
 
 [params]
 

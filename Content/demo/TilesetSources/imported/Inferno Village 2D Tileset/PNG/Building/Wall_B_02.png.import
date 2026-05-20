@@ -2,16 +2,12 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://bm2cnodlok4hc"
-path="res://.godot/imported/Wall_B_02.png-b720b509b47c5551f8deb79ae8a7d8cc.ctex"
-metadata={
-"vram_texture": false
-}
+uid="uid://q3u126oocqbg"
+valid=false
 
 [deps]
 
 source_file="res://Content/demo/TilesetSources/imported/Inferno Village 2D Tileset/PNG/Building/Wall_B_02.png"
-dest_files=["res://.godot/imported/Wall_B_02.png-b720b509b47c5551f8deb79ae8a7d8cc.ctex"]
 
 [params]
 

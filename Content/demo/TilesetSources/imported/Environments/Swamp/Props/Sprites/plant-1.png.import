@@ -3,15 +3,11 @@
 importer="texture"
 type="CompressedTexture2D"
 uid="uid://bayxvb62ka77h"
-path="res://.godot/imported/plant-1.png-a3ec5698d4287b4ac8c038bd05d89e25.ctex"
-metadata={
-"vram_texture": false
-}
+valid=false
 
 [deps]
 
 source_file="res://Content/demo/TilesetSources/imported/Environments/Swamp/Props/Sprites/plant-1.png"
-dest_files=["res://.godot/imported/plant-1.png-a3ec5698d4287b4ac8c038bd05d89e25.ctex"]
 
 [params]
 

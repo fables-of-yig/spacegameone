@@ -1,0 +1,196 @@
+{
+  "center_x": 25,
+  "center_y": 22,
+  "frame_height": 44,
+  "frame_width": 50,
+  "frames": [
+    {
+      "layers": [
+        {
+          "index": 0,
+          "sheet": "base"
+        }
+      ],
+      "pose": 0
+    },
+    {
+      "layers": [
+        {
+          "index": 0,
+          "sheet": "base"
+        }
+      ],
+      "pose": 1
+    },
+    {
+      "layers": [
+        {
+          "index": 0,
+          "sheet": "base"
+        }
+      ],
+      "pose": 9
+    },
+    {
+      "layers": [
+        {
+          "index": 0,
+          "sheet": "base"
+        }
+      ],
+      "pose": 25
+    },
+    {
+      "layers": [
+        {
+          "index": 0,
+          "sheet": "base"
+        }
+      ],
+      "pose": 37
+    },
+    {
+      "layers": [
+        {
+          "index": 0,
+          "sheet": "base"
+        }
+      ],
+      "pose": 41
+    },
+    {
+      "layers": [
+        {
+          "index": 0,
+          "sheet": "base"
+        }
+      ],
+      "pose": 47
+    },
+    {
+      "layers": [
+        {
+          "index": 0,
+          "sheet": "base"
+        }
+      ],
+      "pose": 53
+    },
+    {
+      "layers": [
+        {
+          "index": 0,
+          "sheet": "base"
+        }
+      ],
+      "pose": 59
+    },
+    {
+      "layers": [
+        {
+          "index": 0,
+          "sheet": "base"
+        }
+      ],
+      "pose": 67
+    },
+    {
+      "layers": [
+        {
+          "index": 0,
+          "sheet": "base"
+        }
+      ],
+      "pose": 75
+    },
+    {
+      "layers": [
+        {
+          "index": 0,
+          "sheet": "base"
+        }
+      ],
+      "pose": 135
+    },
+    {
+      "layers": [
+        {
+          "index": 0,
+          "sheet": "base"
+        }
+      ],
+      "pose": 164
+    },
+    {
+      "layers": [
+        {
+          "index": 0,
+          "sheet": "base"
+        }
+      ],
+      "pose": 166
+    },
+    {
+      "layers": [
+        {
+          "index": 0,
+          "sheet": "base"
+        }
+      ],
+      "pose": 201
+    },
+    {
+      "layers": [
+        {
+          "index": 0,
+          "sheet": "base"
+        }
+      ],
+      "pose": 203
+    },
+    {
+      "layers": [
+        {
+          "index": 0,
+          "sheet": "base"
+        }
+      ],
+      "pose": 205
+    },
+    {
+      "layers": [
+        {
+          "index": 0,
+          "sheet": "base"
+        }
+      ],
+      "pose": 207
+    },
+    {
+      "layers": [
+        {
+          "index": 0,
+          "sheet": "base"
+        }
+      ],
+      "pose": 209
+    },
+    {
+      "layers": [
+        {
+          "index": 0,
+          "sheet": "base"
+        }
+      ],
+      "pose": 211
+    }
+  ],
+  "sheet_cols": 10,
+  "sheets": [
+    {
+      "file": "player_sheet.png",
+      "id": "base",
+      "z": 0
+    }
+  ]
+}

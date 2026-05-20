@@ -2,16 +2,12 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://bmodgaq18y52v"
-path="res://.godot/imported/Props-01.png-c5521935c85e3589c9a5ebc62dfc54a8.ctex"
-metadata={
-"vram_texture": false
-}
+uid="uid://bylqulnmds2r2"
+valid=false
 
 [deps]
 
 source_file="res://Content/demo/TilesetSources/imported/Sidescroller Shooter - Central City/Sidescroller Shooter - Central City/Social/Props-01.png"
-dest_files=["res://.godot/imported/Props-01.png-c5521935c85e3589c9a5ebc62dfc54a8.ctex"]
 
 [params]
 

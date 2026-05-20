@@ -2,16 +2,12 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://ddypiukg5wr2e"
-path="res://.godot/imported/Barriers.png-c9954c7534616672eace6600f6fc42d2.ctex"
-metadata={
-"vram_texture": false
-}
+uid="uid://c72uxo2ufmd6v"
+valid=false
 
 [deps]
 
 source_file="res://Content/demo/TilesetSources/imported/NeonNightCityTileset/NeonNightCityTileset/Sprites/Props/Barriers.png"
-dest_files=["res://.godot/imported/Barriers.png-c9954c7534616672eace6600f6fc42d2.ctex"]
 
 [params]
 

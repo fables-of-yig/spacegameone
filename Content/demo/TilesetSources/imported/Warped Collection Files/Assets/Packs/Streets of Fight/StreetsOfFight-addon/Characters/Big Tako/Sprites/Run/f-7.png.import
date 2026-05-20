@@ -2,16 +2,12 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://bmly5g1w1pcr6"
-path="res://.godot/imported/f-7.png-bc1cbbe6f4813b58a823e2494a6a66fc.ctex"
-metadata={
-"vram_texture": false
-}
+uid="uid://lg0xh3pqw4b"
+valid=false
 
 [deps]
 
 source_file="res://Content/demo/TilesetSources/imported/Warped Collection Files/Assets/Packs/Streets of Fight/StreetsOfFight-addon/Characters/Big Tako/Sprites/Run/f-7.png"
-dest_files=["res://.godot/imported/f-7.png-bc1cbbe6f4813b58a823e2494a6a66fc.ctex"]
 
 [params]
 

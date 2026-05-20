@@ -2,16 +2,12 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://dds4ymixj6cs5"
-path="res://.godot/imported/Bench.png-016beeff9fe013ddf23a4bf35031a059.ctex"
-metadata={
-"vram_texture": false
-}
+uid="uid://duqylxbv5xqvq"
+valid=false
 
 [deps]
 
 source_file="res://Content/demo/TilesetSources/imported/residential-area-tileset-pixel-art/3 Objects/Bench.png"
-dest_files=["res://.godot/imported/Bench.png-016beeff9fe013ddf23a4bf35031a059.ctex"]
 
 [params]
 

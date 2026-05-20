@@ -3,15 +3,11 @@
 importer="texture"
 type="CompressedTexture2D"
 uid="uid://drx7g0wgsdhwk"
-path="res://.godot/imported/background-light.png-5e047431302b89b9a0ad434d83e74c73.ctex"
-metadata={
-"vram_texture": false
-}
+valid=false
 
 [deps]
 
 source_file="res://Content/demo/TilesetSources/imported/Warped Collection Files/Assets/Environments/Highway Files/png files/background-light.png"
-dest_files=["res://.godot/imported/background-light.png-5e047431302b89b9a0ad434d83e74c73.ctex"]
 
 [params]
 

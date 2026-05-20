@@ -2,16 +2,12 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://dly01c7138nj2"
-path="res://.godot/imported/walk2.png-fdf32e7872b82eabcf8e66a0427f0bc2.ctex"
-metadata={
-"vram_texture": false
-}
+uid="uid://bf1iy7swira5l"
+valid=false
 
 [deps]
 
 source_file="res://Content/demo/TilesetSources/imported/Warped Collection Files/Assets/Packs/Streets of Fight/Streets of Fight Base/Sprites/Brawler-Girl/Walk/walk2.png"
-dest_files=["res://.godot/imported/walk2.png-fdf32e7872b82eabcf8e66a0427f0bc2.ctex"]
 
 [params]
 

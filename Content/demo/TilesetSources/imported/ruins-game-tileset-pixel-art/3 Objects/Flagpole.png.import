@@ -2,16 +2,12 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://d1fob47fq5tbi"
-path="res://.godot/imported/Flagpole.png-f9b125b514bdb2861bbab016fee01a7a.ctex"
-metadata={
-"vram_texture": false
-}
+uid="uid://ct16dcltlyc0p"
+valid=false
 
 [deps]
 
 source_file="res://Content/demo/TilesetSources/imported/ruins-game-tileset-pixel-art/3 Objects/Flagpole.png"
-dest_files=["res://.godot/imported/Flagpole.png-f9b125b514bdb2861bbab016fee01a7a.ctex"]
 
 [params]
 

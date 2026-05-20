@@ -2,16 +2,12 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://byvk88tvab5g6"
-path="res://.godot/imported/hydrant.png-277b60b40fda34a959fc5edfdcd21462.ctex"
-metadata={
-"vram_texture": false
-}
+uid="uid://cvmmyjecxabxh"
+valid=false
 
 [deps]
 
 source_file="res://Content/demo/TilesetSources/imported/Warped Collection Files/Assets/Packs/Streets of Fight/Streets of Fight Base/Stage Layers/props/hydrant.png"
-dest_files=["res://.godot/imported/hydrant.png-277b60b40fda34a959fc5edfdcd21462.ctex"]
 
 [params]
 

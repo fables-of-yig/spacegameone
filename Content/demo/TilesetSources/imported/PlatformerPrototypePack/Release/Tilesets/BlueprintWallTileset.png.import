@@ -2,16 +2,12 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://dptgj3qph50oy"
-path="res://.godot/imported/BlueprintWallTileset.png-75b78910bc5ec6f2ff82e561913cbe74.ctex"
-metadata={
-"vram_texture": false
-}
+uid="uid://eglrsa77gb7h"
+valid=false
 
 [deps]
 
 source_file="res://Content/demo/TilesetSources/imported/PlatformerPrototypePack/Release/Tilesets/BlueprintWallTileset.png"
-dest_files=["res://.godot/imported/BlueprintWallTileset.png-75b78910bc5ec6f2ff82e561913cbe74.ctex"]
 
 [params]
 

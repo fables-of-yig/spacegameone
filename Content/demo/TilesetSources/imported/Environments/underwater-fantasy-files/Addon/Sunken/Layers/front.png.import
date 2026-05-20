@@ -2,16 +2,12 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://c61a62ngelumv"
-path="res://.godot/imported/front.png-9a8a1971211ef481fc6d1536966e029f.ctex"
-metadata={
-"vram_texture": false
-}
+uid="uid://cjrt35ff0oqor"
+valid=false
 
 [deps]
 
 source_file="res://Content/demo/TilesetSources/imported/Environments/underwater-fantasy-files/Addon/Sunken/Layers/front.png"
-dest_files=["res://.godot/imported/front.png-9a8a1971211ef481fc6d1536966e029f.ctex"]
 
 [params]
 

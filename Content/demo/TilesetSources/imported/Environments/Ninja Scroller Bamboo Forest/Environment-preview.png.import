@@ -2,16 +2,12 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://dgeegk6fuu3cu"
-path="res://.godot/imported/Environment-preview.png-ec9ca1d7099331b7831a1af68cdb31b5.ctex"
-metadata={
-"vram_texture": false
-}
+uid="uid://bfacfgxu6iaof"
+valid=false
 
 [deps]
 
 source_file="res://Content/demo/TilesetSources/imported/Environments/Ninja Scroller Bamboo Forest/Environment-preview.png"
-dest_files=["res://.godot/imported/Environment-preview.png-ec9ca1d7099331b7831a1af68cdb31b5.ctex"]
 
 [params]
 

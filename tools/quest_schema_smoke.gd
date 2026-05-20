@@ -1,10 +1,6 @@
 extends SceneTree
 
-const ContentReferenceIndex := preload("res://Space/scripts/editor/content_reference_index.gd")
-const ContentReferenceRefactor := preload("res://Space/scripts/editor/content_reference_refactor.gd")
-const ContentValidator := preload("res://Space/scripts/editor/content_validator.gd")
-const PedIO := preload("res://Space/scripts/editor/ped/ped_io.gd")
-const QuestIO := preload("res://Space/scripts/editor/quest_io.gd")
+const PedIO := preload("res://Space/scripts/shared/ped/ped_io.gd")
 const PlanetLandingBossRecipe := preload("res://Space/scripts/editor/recipes/planet_landing_boss_recipe.gd")
 const UiBindingResolver := preload("res://MV/scripts/ui_binding_resolver.gd")
 
@@ -299,10 +295,10 @@ func _has_reference(index: Dictionary, kind: String, id: String, source_fragment
 
 
 func _clean_user_pack(pack_id: String) -> bool:
-	var root := "user://Packs/%s" % pack_id
-	if not DirAccess.dir_exists_absolute(root):
+	var pack_root := "user://Packs/%s" % pack_id
+	if not DirAccess.dir_exists_absolute(pack_root):
 		return true
-	return _remove_tree(root)
+	return _remove_tree(pack_root)
 
 
 func _remove_tree(path: String) -> bool:

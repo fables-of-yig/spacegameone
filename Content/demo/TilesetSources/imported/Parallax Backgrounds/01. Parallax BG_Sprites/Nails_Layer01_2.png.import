@@ -2,16 +2,12 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://60bte6bewfr1"
-path="res://.godot/imported/Nails_Layer01_2.png-59a3e04464a074fb702fd51613d46572.ctex"
-metadata={
-"vram_texture": false
-}
+uid="uid://cc5nqk12citcj"
+valid=false
 
 [deps]
 
 source_file="res://Content/demo/TilesetSources/imported/Parallax Backgrounds/01. Parallax BG_Sprites/Nails_Layer01_2.png"
-dest_files=["res://.godot/imported/Nails_Layer01_2.png-59a3e04464a074fb702fd51613d46572.ctex"]
 
 [params]
 

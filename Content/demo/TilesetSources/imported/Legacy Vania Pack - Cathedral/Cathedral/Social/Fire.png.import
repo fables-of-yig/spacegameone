@@ -2,16 +2,12 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://dwe1ot2i418nw"
-path="res://.godot/imported/Fire.png-f1b5ceaaf0565b3bdd2ff30f156c6b18.ctex"
-metadata={
-"vram_texture": false
-}
+uid="uid://v2uvsk3scdth"
+valid=false
 
 [deps]
 
 source_file="res://Content/demo/TilesetSources/imported/Legacy Vania Pack - Cathedral/Cathedral/Social/Fire.png"
-dest_files=["res://.godot/imported/Fire.png-f1b5ceaaf0565b3bdd2ff30f156c6b18.ctex"]
 
 [params]
 

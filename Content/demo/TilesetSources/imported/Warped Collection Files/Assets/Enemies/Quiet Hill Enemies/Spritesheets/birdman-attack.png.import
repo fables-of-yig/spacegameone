@@ -2,16 +2,12 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://b4jgtdl634d6"
-path="res://.godot/imported/birdman-attack.png-5f7c242fc33375ca80343ffe45c5a5e8.ctex"
-metadata={
-"vram_texture": false
-}
+uid="uid://dhs56gef42x2p"
+valid=false
 
 [deps]
 
 source_file="res://Content/demo/TilesetSources/imported/Warped Collection Files/Assets/Enemies/Quiet Hill Enemies/Spritesheets/birdman-attack.png"
-dest_files=["res://.godot/imported/birdman-attack.png-5f7c242fc33375ca80343ffe45c5a5e8.ctex"]
 
 [params]
 

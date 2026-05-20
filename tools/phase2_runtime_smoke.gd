@@ -1,7 +1,6 @@
 extends SceneTree
 
 const DEFAULT_PACK_ID := "phase2_runtime_smoke"
-const ContentValidator := preload("res://Space/scripts/editor/content_validator.gd")
 
 # Phase 6: the realm slot is gone. Room addresses are now <region>/<room>.
 # ROOM_ADDR must be a string literal: GDScript 2 doesn't fold + or % over

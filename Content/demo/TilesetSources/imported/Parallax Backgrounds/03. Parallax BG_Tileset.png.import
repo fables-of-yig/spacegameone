@@ -3,15 +3,11 @@
 importer="texture"
 type="CompressedTexture2D"
 uid="uid://llwrtnncv3gb"
-path="res://.godot/imported/03. Parallax BG_Tileset.png-862fee23da3f39e80957088838251bc9.ctex"
-metadata={
-"vram_texture": false
-}
+valid=false
 
 [deps]
 
 source_file="res://Content/demo/TilesetSources/imported/Parallax Backgrounds/03. Parallax BG_Tileset.png"
-dest_files=["res://.godot/imported/03. Parallax BG_Tileset.png-862fee23da3f39e80957088838251bc9.ctex"]
 
 [params]
 

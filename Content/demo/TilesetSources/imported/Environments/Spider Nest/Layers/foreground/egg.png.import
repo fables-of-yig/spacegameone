@@ -3,15 +3,11 @@
 importer="texture"
 type="CompressedTexture2D"
 uid="uid://caghwgblreare"
-path="res://.godot/imported/egg.png-b1ecf5803dad57ca1cfd94f96ce6ca8e.ctex"
-metadata={
-"vram_texture": false
-}
+valid=false
 
 [deps]
 
 source_file="res://Content/demo/TilesetSources/imported/Environments/Spider Nest/Layers/foreground/egg.png"
-dest_files=["res://.godot/imported/egg.png-b1ecf5803dad57ca1cfd94f96ce6ca8e.ctex"]
 
 [params]
 

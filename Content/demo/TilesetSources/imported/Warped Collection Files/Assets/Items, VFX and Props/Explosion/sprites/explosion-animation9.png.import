@@ -2,16 +2,12 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://pqw3e8s3j782"
-path="res://.godot/imported/explosion-animation9.png-149c102950f3b9bb15be9f3d66ca2dcd.ctex"
-metadata={
-"vram_texture": false
-}
+uid="uid://cpb8rxie3i73f"
+valid=false
 
 [deps]
 
 source_file="res://Content/demo/TilesetSources/imported/Warped Collection Files/Assets/Items, VFX and Props/Explosion/sprites/explosion-animation9.png"
-dest_files=["res://.godot/imported/explosion-animation9.png-149c102950f3b9bb15be9f3d66ca2dcd.ctex"]
 
 [params]
 

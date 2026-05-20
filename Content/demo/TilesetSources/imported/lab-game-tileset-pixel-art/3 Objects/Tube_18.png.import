@@ -2,16 +2,12 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://di23ci0lkawh3"
-path="res://.godot/imported/Tube_18.png-8c738c75684ab550d26d5f2debb832fd.ctex"
-metadata={
-"vram_texture": false
-}
+uid="uid://dndvp81jrbt2i"
+valid=false
 
 [deps]
 
 source_file="res://Content/demo/TilesetSources/imported/lab-game-tileset-pixel-art/3 Objects/Tube_18.png"
-dest_files=["res://.godot/imported/Tube_18.png-8c738c75684ab550d26d5f2debb832fd.ctex"]
 
 [params]
 

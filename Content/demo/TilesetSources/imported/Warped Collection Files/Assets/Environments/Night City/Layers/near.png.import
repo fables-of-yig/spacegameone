@@ -2,16 +2,12 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://c2yfq332kx5i3"
-path="res://.godot/imported/near.png-3f25bc102d7d7d1ed71c58d4bb6314d2.ctex"
-metadata={
-"vram_texture": false
-}
+uid="uid://bf1dji1c6jh27"
+valid=false
 
 [deps]
 
 source_file="res://Content/demo/TilesetSources/imported/Warped Collection Files/Assets/Environments/Night City/Layers/near.png"
-dest_files=["res://.godot/imported/near.png-3f25bc102d7d7d1ed71c58d4bb6314d2.ctex"]
 
 [params]
 

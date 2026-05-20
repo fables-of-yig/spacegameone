@@ -3,15 +3,11 @@
 importer="texture"
 type="CompressedTexture2D"
 uid="uid://do2xohqycume2"
-path="res://.godot/imported/chibi-robot-dash-2.png-681da57902a15a4dfc1196a4cfa10736.ctex"
-metadata={
-"vram_texture": false
-}
+valid=false
 
 [deps]
 
 source_file="res://Content/demo/TilesetSources/imported/Warped Collection Files/Assets/Playable Characters/Chibi-Robot/Chibi-Robot Add-on/Sprites/dash-2/chibi-robot-dash-2.png"
-dest_files=["res://.godot/imported/chibi-robot-dash-2.png-681da57902a15a4dfc1196a4cfa10736.ctex"]
 
 [params]
 

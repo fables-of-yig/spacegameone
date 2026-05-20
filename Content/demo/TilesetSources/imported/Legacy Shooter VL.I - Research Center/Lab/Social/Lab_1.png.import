@@ -3,15 +3,11 @@
 importer="texture"
 type="CompressedTexture2D"
 uid="uid://ccp6r1o3c6nkr"
-path="res://.godot/imported/Lab_1.png-20d7e02e2145d48a0cbb46d432c76a9b.ctex"
-metadata={
-"vram_texture": false
-}
+valid=false
 
 [deps]
 
 source_file="res://Content/demo/TilesetSources/imported/Legacy Shooter VL.I - Research Center/Lab/Social/Lab_1.png"
-dest_files=["res://.godot/imported/Lab_1.png-20d7e02e2145d48a0cbb46d432c76a9b.ctex"]
 
 [params]
 

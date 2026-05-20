@@ -2,16 +2,12 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://cyhgxwov24psb"
-path="res://.godot/imported/tileset.png-b5433515b05de311471ee61ae8e096e7.ctex"
-metadata={
-"vram_texture": false
-}
+uid="uid://bauauto6jth2f"
+valid=false
 
 [deps]
 
 source_file="res://Content/demo/TilesetSources/imported/Warped Collection Files/Assets/Environments/Storm-Night-files/png/tileset.png"
-dest_files=["res://.godot/imported/tileset.png-b5433515b05de311471ee61ae8e096e7.ctex"]
 
 [params]
 

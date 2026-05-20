@@ -2,16 +2,12 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://7qr0ftmpoa2l"
-path="res://.godot/imported/walk7.png-1b2761089ceedd5736990b1767b636ef.ctex"
-metadata={
-"vram_texture": false
-}
+uid="uid://c3nd1mdpeqii8"
+valid=false
 
 [deps]
 
 source_file="res://Content/demo/TilesetSources/imported/Warped Collection Files/Assets/Enemies/Enemies Pack 2/biceraptor/walk/walk7.png"
-dest_files=["res://.godot/imported/walk7.png-1b2761089ceedd5736990b1767b636ef.ctex"]
 
 [params]
 

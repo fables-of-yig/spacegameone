@@ -1,13 +1,10 @@
 extends SceneTree
 
-const ContentReferenceIndex := preload("res://Space/scripts/editor/content_reference_index.gd")
-const ContentReferenceRefactor := preload("res://Space/scripts/editor/content_reference_refactor.gd")
-const ContentValidator := preload("res://Space/scripts/editor/content_validator.gd")
-const BehIO := preload("res://Space/scripts/editor/beh/beh_io.gd")
-const EntIO := preload("res://Space/scripts/editor/ent/ent_io.gd")
-const PedIO := preload("res://Space/scripts/editor/ped/ped_io.gd")
-const RegIO := preload("res://Space/scripts/editor/reg/reg_io.gd")
-const SystemIO := preload("res://Space/scripts/editor/system_io.gd")
+const BehIO := preload("res://Space/scripts/shared/beh/beh_io.gd")
+const EntIO := preload("res://Space/scripts/shared/ent/ent_io.gd")
+const PedIO := preload("res://Space/scripts/shared/ped/ped_io.gd")
+const RegIO := preload("res://Space/scripts/shared/reg/reg_io.gd")
+const SystemIO := preload("res://Space/scripts/shared/system_io.gd")
 const PlanetLandingBossRecipe := preload("res://Space/scripts/editor/recipes/planet_landing_boss_recipe.gd")
 
 const PACK_ID := "reference_refactor_smoke"
@@ -296,7 +293,6 @@ func _seed_system_reference() -> bool:
 		"faction": "independent",
 		"connections": [OLD_SYSTEM_ID],
 		"pois": [],
-		"spawn_triggers": [],
 		"placed_npcs": [],
 	}
 	return SystemIO.save(PACK_ID, systems)

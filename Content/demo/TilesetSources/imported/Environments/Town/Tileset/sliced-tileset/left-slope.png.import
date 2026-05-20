@@ -2,16 +2,12 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://buerg13dfublb"
-path="res://.godot/imported/left-slope.png-75b5cada0f5a5963f768e37daf15f3bf.ctex"
-metadata={
-"vram_texture": false
-}
+uid="uid://cuoolmf1vqysj"
+valid=false
 
 [deps]
 
 source_file="res://Content/demo/TilesetSources/imported/Environments/Town/Tileset/sliced-tileset/left-slope.png"
-dest_files=["res://.godot/imported/left-slope.png-75b5cada0f5a5963f768e37daf15f3bf.ctex"]
 
 [params]
 

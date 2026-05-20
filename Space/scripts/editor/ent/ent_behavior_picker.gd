@@ -1,7 +1,7 @@
 extends Control
 
 const UIPanels = preload("res://Space/scripts/ui/ui_panels.gd")
-const BehIO = preload("res://Space/scripts/editor/beh/beh_io.gd")
+const BehIO = preload("res://Space/scripts/shared/beh/beh_io.gd")
 
 # Full-screen modal that lists every behavior defined in the active
 # pack's behaviors.json (user override layer, falling back to shipped)

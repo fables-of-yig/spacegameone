@@ -2,16 +2,12 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://daxipkytt1ehc"
-path="res://.godot/imported/preview.png-6fbcabdae14a06b9d7a174c46bedf4ec.ctex"
-metadata={
-"vram_texture": false
-}
+uid="uid://ch0lo3jst5d1j"
+valid=false
 
 [deps]
 
 source_file="res://Content/demo/TilesetSources/imported/Environments/Super Mountain Dusk/version B/preview.png"
-dest_files=["res://.godot/imported/preview.png-6fbcabdae14a06b9d7a174c46bedf4ec.ctex"]
 
 [params]
 

@@ -79,7 +79,7 @@
                      },
                      {
                          "id":  "starter_gold_one_shot",
-                         "event":  "player_spawn",
+                         "event":  "game_started",
                          "conditions":  [
                                             {
                                                 "type":  "var_eq",

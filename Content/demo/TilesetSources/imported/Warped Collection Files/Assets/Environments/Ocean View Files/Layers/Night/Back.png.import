@@ -2,16 +2,12 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://kxkcrt10naop"
-path="res://.godot/imported/Back.png-2fc6746cb3a864ef7aabf288a9bd0ce7.ctex"
-metadata={
-"vram_texture": false
-}
+uid="uid://dmjn27bnyxqcy"
+valid=false
 
 [deps]
 
 source_file="res://Content/demo/TilesetSources/imported/Warped Collection Files/Assets/Environments/Ocean View Files/Layers/Night/Back.png"
-dest_files=["res://.godot/imported/Back.png-2fc6746cb3a864ef7aabf288a9bd0ce7.ctex"]
 
 [params]
 

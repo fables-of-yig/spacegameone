@@ -2,16 +2,12 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://dynbxjpkxteob"
-path="res://.godot/imported/plant-c.png-2be75fba9e9f2f5de212188e2f4a87bd.ctex"
-metadata={
-"vram_texture": false
-}
+uid="uid://cbhv7yeb5d3ab"
+valid=false
 
 [deps]
 
 source_file="res://Content/demo/TilesetSources/imported/Warped Collection Files/Assets/Environments/Caves/Add-on-1/PNG/Props/plant-c.png"
-dest_files=["res://.godot/imported/plant-c.png-2be75fba9e9f2f5de212188e2f4a87bd.ctex"]
 
 [params]
 

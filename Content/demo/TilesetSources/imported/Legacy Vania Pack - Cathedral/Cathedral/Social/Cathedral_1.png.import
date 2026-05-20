@@ -3,15 +3,11 @@
 importer="texture"
 type="CompressedTexture2D"
 uid="uid://28t6ihmdogwg"
-path="res://.godot/imported/Cathedral_1.png-6576acc2158c53b06547b4285210f0c2.ctex"
-metadata={
-"vram_texture": false
-}
+valid=false
 
 [deps]
 
 source_file="res://Content/demo/TilesetSources/imported/Legacy Vania Pack - Cathedral/Cathedral/Social/Cathedral_1.png"
-dest_files=["res://.godot/imported/Cathedral_1.png-6576acc2158c53b06547b4285210f0c2.ctex"]
 
 [params]
 

@@ -2,16 +2,12 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://dapm2rcq8sxyl"
-path="res://.godot/imported/WarningLarge.png-b620daefd48649ec4298c02eef9d7cab.ctex"
-metadata={
-"vram_texture": false
-}
+uid="uid://bb0qa6sng61x"
+valid=false
 
 [deps]
 
 source_file="res://Content/demo/TilesetSources/imported/PlatformerPrototypePack/Release/Signposts/WarningLarge.png"
-dest_files=["res://.godot/imported/WarningLarge.png-b620daefd48649ec4298c02eef9d7cab.ctex"]
 
 [params]
 

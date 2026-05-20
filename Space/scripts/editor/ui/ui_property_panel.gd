@@ -5,7 +5,7 @@ extends Control
 # and type-specific properties (bindings, actions, colors, etc.).
 
 const UIPanels = preload("res://Space/scripts/ui/ui_panels.gd")
-const UITypes = preload("res://Space/scripts/editor/ui/ui_types.gd")
+const UITypes = preload("res://Space/scripts/shared/ui/ui_types.gd")
 
 signal property_changed(element_id: String, key: String, value: Variant)
 

@@ -2,16 +2,12 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://dyvn01mi7bhlc"
-path="res://.godot/imported/Base Color.png-8a55d81aeb11ef50297d5e2ee014e130.ctex"
-metadata={
-"vram_texture": false
-}
+uid="uid://dtgdax1lfnrgw"
+valid=false
 
 [deps]
 
 source_file="res://Content/demo/TilesetSources/imported/Sidescroller Shooter - Central City/Background/Base Color.png"
-dest_files=["res://.godot/imported/Base Color.png-8a55d81aeb11ef50297d5e2ee014e130.ctex"]
 
 [params]
 

@@ -2,16 +2,12 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://bktl4r7kuiofn"
-path="res://.godot/imported/back-trees.png-c0c05585133ef5c2f8dcfc773e991690.ctex"
-metadata={
-"vram_texture": false
-}
+uid="uid://b4nq8s867nh8j"
+valid=false
 
 [deps]
 
 source_file="res://Content/demo/TilesetSources/imported/Environments/Mountains/props/back-trees.png"
-dest_files=["res://.godot/imported/back-trees.png-c0c05585133ef5c2f8dcfc773e991690.ctex"]
 
 [params]
 

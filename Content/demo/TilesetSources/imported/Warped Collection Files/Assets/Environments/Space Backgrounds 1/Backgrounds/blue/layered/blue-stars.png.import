@@ -2,16 +2,12 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://bx30hvklfohc2"
-path="res://.godot/imported/blue-stars.png-5c12f156523c068ec26a0abacc05f38b.ctex"
-metadata={
-"vram_texture": false
-}
+uid="uid://dvu5ypqwpm2rv"
+valid=false
 
 [deps]
 
 source_file="res://Content/demo/TilesetSources/imported/Warped Collection Files/Assets/Environments/Space Backgrounds 1/Backgrounds/blue/layered/blue-stars.png"
-dest_files=["res://.godot/imported/blue-stars.png-5c12f156523c068ec26a0abacc05f38b.ctex"]
 
 [params]
 

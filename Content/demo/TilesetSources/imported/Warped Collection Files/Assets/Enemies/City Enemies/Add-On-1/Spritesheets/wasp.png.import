@@ -2,16 +2,12 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://dyblboev1eq2r"
-path="res://.godot/imported/wasp.png-71e3346ec301ad89dee963ec9900919b.ctex"
-metadata={
-"vram_texture": false
-}
+uid="uid://dqg48rn05c51g"
+valid=false
 
 [deps]
 
 source_file="res://Content/demo/TilesetSources/imported/Warped Collection Files/Assets/Enemies/City Enemies/Add-On-1/Spritesheets/wasp.png"
-dest_files=["res://.godot/imported/wasp.png-71e3346ec301ad89dee963ec9900919b.ctex"]
 
 [params]
 

@@ -4,8 +4,8 @@ signal submitted(data: Dictionary)
 signal cancelled
 
 const UIPanels = preload("res://Space/scripts/ui/ui_panels.gd")
-const EntIO = preload("res://Space/scripts/editor/ent/ent_io.gd")
-const BehIO = preload("res://Space/scripts/editor/beh/beh_io.gd")
+const EntIO = preload("res://Space/scripts/shared/ent/ent_io.gd")
+const BehIO = preload("res://Space/scripts/shared/beh/beh_io.gd")
 
 const BOX_W: float = 860.0
 const BOX_H: float = 468.0
@@ -395,16 +395,16 @@ func _pick_preview_png(pngs: Array) -> String:
     if pngs.is_empty():
         return ""
     for name_v in pngs:
-        var name := str(name_v).to_lower()
-        if name.contains("idle"):
+        var png_name := str(name_v).to_lower()
+        if png_name.contains("idle"):
             return str(name_v)
     for name_v in pngs:
-        var name := str(name_v).to_lower()
-        if name.contains("walk"):
+        var png_name := str(name_v).to_lower()
+        if png_name.contains("walk"):
             return str(name_v)
     for name_v in pngs:
-        var name := str(name_v).to_lower()
-        if name.contains("default"):
+        var png_name := str(name_v).to_lower()
+        if png_name.contains("default"):
             return str(name_v)
     return str(pngs[0])
 
@@ -676,10 +676,10 @@ func _draw() -> void:
         if _preview_texture != null:
             var tex_size := _preview_texture.get_size()
             if tex_size.x > 0.0 and tex_size.y > 0.0:
-                var scale := minf(inner.size.x / tex_size.x, inner.size.y / tex_size.y)
-                var draw_size := tex_size * maxf(scale, 0.01)
-                var draw_rect := Rect2(inner.position + (inner.size - draw_size) * 0.5, draw_size)
-                draw_texture_rect(_preview_texture, draw_rect, false)
+                var fit_scale := minf(inner.size.x / tex_size.x, inner.size.y / tex_size.y)
+                var draw_size := tex_size * maxf(fit_scale, 0.01)
+                var preview_draw_rect := Rect2(inner.position + (inner.size - draw_size) * 0.5, draw_size)
+                draw_texture_rect(_preview_texture, preview_draw_rect, false)
         else:
             draw_string(font, inner.position + Vector2(0.0, inner.size.y * 0.5),
                 "No sprite preview", HORIZONTAL_ALIGNMENT_LEFT, inner.size.x, 11, UIPanels.TEXT_PANEL_DIM)

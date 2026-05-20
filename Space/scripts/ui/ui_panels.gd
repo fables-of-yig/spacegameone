@@ -1,6 +1,6 @@
 extends RefCounted
 
-const PackPaths = preload("res://Space/scripts/editor/pack_paths.gd")
+const PackPaths = preload("res://Space/scripts/shared/pack_paths.gd")
 
 # Intentionally NO `class_name UIPanels` — consumers use a `const UIPanels =
 # preload(...)` so they work even before Godot's global script class cache

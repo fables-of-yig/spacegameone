@@ -2,16 +2,12 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://xnqce30rr45h"
-path="res://.godot/imported/Tile_39.png-f6f74f60c837bde7a9b31cffb7274a14.ctex"
-metadata={
-"vram_texture": false
-}
+uid="uid://bgeaifghcuhal"
+valid=false
 
 [deps]
 
 source_file="res://Content/demo/TilesetSources/imported/snow-city-tileset-pixel-art/1 Tiles/Tile_39.png"
-dest_files=["res://.godot/imported/Tile_39.png-f6f74f60c837bde7a9b31cffb7274a14.ctex"]
 
 [params]
 

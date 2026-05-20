@@ -3,15 +3,11 @@
 importer="texture"
 type="CompressedTexture2D"
 uid="uid://du0v0co8oy7in"
-path="res://.godot/imported/DashLoop-export1.png-ecf2287ff7ffb0e33f334bef2c9f0caa.ctex"
-metadata={
-"vram_texture": false
-}
+valid=false
 
 [deps]
 
 source_file="res://Content/demo/TilesetSources/imported/Warped Collection Files/Assets/Playable Characters/Caves Hunter/Sprites/DashLoop/DashLoop-export1.png"
-dest_files=["res://.godot/imported/DashLoop-export1.png-ecf2287ff7ffb0e33f334bef2c9f0caa.ctex"]
 
 [params]
 

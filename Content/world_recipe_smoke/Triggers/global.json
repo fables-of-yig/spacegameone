@@ -1,0 +1,109 @@
+{
+  "libraries": [],
+  "triggers": [
+    {
+      "actions": [
+        {
+          "id": "phase_dash",
+          "type": "give_ability"
+        },
+        {
+          "name": "has_key_silver",
+          "type": "set_var",
+          "value": 1
+        },
+        {
+          "id": "gate_to_boss",
+          "locked": false,
+          "type": "set_door_locked"
+        },
+        {
+          "tag": "gate_to_boss_unlocked",
+          "type": "add_tag"
+        }
+      ],
+      "conditions": [
+        {
+          "key": "item_id",
+          "type": "payload_eq",
+          "value": "key_silver"
+        }
+      ],
+      "enabled": true,
+      "event": "pickup",
+      "id": "pickup_unlocks_gate",
+      "locals": [],
+      "name": "Pickup unlocks a gate",
+      "once": true
+    },
+    {
+      "actions": [
+        {
+          "type": "lock_player"
+        },
+        {
+          "duration": 0.0,
+          "mode": "position",
+          "type": "camera_focus",
+          "x": 320.0,
+          "y": 176.0
+        },
+        {
+          "id": "golden_boss",
+          "type": "spawn_entity_at_zone",
+          "zone_id": "boss_intro"
+        },
+        {
+          "type": "camera_unlock"
+        },
+        {
+          "type": "unlock_player"
+        }
+      ],
+      "conditions": [
+        {
+          "key": "zone_id",
+          "type": "payload_eq",
+          "value": "boss_intro"
+        }
+      ],
+      "enabled": true,
+      "event": "zone_enter",
+      "id": "boss_intro",
+      "locals": [],
+      "name": "Boss intro zone",
+      "once": true
+    },
+    {
+      "actions": [
+        {
+          "count": 1,
+          "id": "boss_core",
+          "type": "give_item"
+        },
+        {
+          "id": "boss_exit",
+          "locked": false,
+          "type": "set_door_locked"
+        },
+        {
+          "tag": "boss_defeated",
+          "type": "add_tag"
+        }
+      ],
+      "conditions": [
+        {
+          "key": "entity_id",
+          "type": "payload_eq",
+          "value": "golden_boss"
+        }
+      ],
+      "enabled": true,
+      "event": "boss_defeated",
+      "id": "boss_defeated_reward",
+      "locals": [],
+      "name": "Boss defeated reward",
+      "once": true
+    }
+  ]
+}

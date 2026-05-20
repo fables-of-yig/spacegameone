@@ -2,16 +2,12 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://b6abn383oe2nk"
-path="res://.godot/imported/city.png-e8c547f652751db58077448f9b2e1c7a.ctex"
-metadata={
-"vram_texture": false
-}
+uid="uid://d1odo2r8ixwgp"
+valid=false
 
 [deps]
 
 source_file="res://Content/demo/TilesetSources/imported/Warped Collection Files/Assets/Environments/Storm-Night-files/png/city.png"
-dest_files=["res://.godot/imported/city.png-e8c547f652751db58077448f9b2e1c7a.ctex"]
 
 [params]
 

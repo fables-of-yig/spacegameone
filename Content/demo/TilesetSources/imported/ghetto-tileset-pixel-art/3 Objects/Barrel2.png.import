@@ -2,16 +2,12 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://b8g8cy5j1lueh"
-path="res://.godot/imported/Barrel2.png-2770e695c355cad0646b9e7a62fa820c.ctex"
-metadata={
-"vram_texture": false
-}
+uid="uid://dqt811tgl1xyv"
+valid=false
 
 [deps]
 
 source_file="res://Content/demo/TilesetSources/imported/ghetto-tileset-pixel-art/3 Objects/Barrel2.png"
-dest_files=["res://.godot/imported/Barrel2.png-2770e695c355cad0646b9e7a62fa820c.ctex"]
 
 [params]
 

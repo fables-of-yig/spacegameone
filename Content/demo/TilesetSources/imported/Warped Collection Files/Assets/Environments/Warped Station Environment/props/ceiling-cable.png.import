@@ -3,15 +3,11 @@
 importer="texture"
 type="CompressedTexture2D"
 uid="uid://ckikf8hgatjq0"
-path="res://.godot/imported/ceiling-cable.png-1a247323d1e13a6a35f8f6f95083341a.ctex"
-metadata={
-"vram_texture": false
-}
+valid=false
 
 [deps]
 
 source_file="res://Content/demo/TilesetSources/imported/Warped Collection Files/Assets/Environments/Warped Station Environment/props/ceiling-cable.png"
-dest_files=["res://.godot/imported/ceiling-cable.png-1a247323d1e13a6a35f8f6f95083341a.ctex"]
 
 [params]
 

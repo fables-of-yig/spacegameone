@@ -2,16 +2,12 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://dqla140yibyc7"
-path="res://.godot/imported/Stairs1.png-9e6583f4f0db94329ec738b7219070ea.ctex"
-metadata={
-"vram_texture": false
-}
+uid="uid://bpoovxj8efv1a"
+valid=false
 
 [deps]
 
 source_file="res://Content/demo/TilesetSources/imported/Parallax Backgrounds/01. Parallax BG_Sprites/Stairs1.png"
-dest_files=["res://.godot/imported/Stairs1.png-9e6583f4f0db94329ec738b7219070ea.ctex"]
 
 [params]
 

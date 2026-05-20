@@ -3,15 +3,11 @@
 importer="texture"
 type="CompressedTexture2D"
 uid="uid://cdha3t5ho812k"
-path="res://.godot/imported/NeonSigns_Closed_Off.png-54c60048d5ce8a387e8017319cf18f05.ctex"
-metadata={
-"vram_texture": false
-}
+valid=false
 
 [deps]
 
 source_file="res://Content/demo/TilesetSources/imported/NeonNightCityTileset/NeonNightCityTileset/Sprites/Buildings/NeonSigns/NeonSigns_Closed_Off.png"
-dest_files=["res://.godot/imported/NeonSigns_Closed_Off.png-54c60048d5ce8a387e8017319cf18f05.ctex"]
 
 [params]
 

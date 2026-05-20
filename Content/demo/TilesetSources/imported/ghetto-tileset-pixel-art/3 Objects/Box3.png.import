@@ -2,16 +2,12 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://c0pcfxvufu7tu"
-path="res://.godot/imported/Box3.png-bd197ed7fbc9e72afa3f009fa437297d.ctex"
-metadata={
-"vram_texture": false
-}
+uid="uid://dod26g7ah8uey"
+valid=false
 
 [deps]
 
 source_file="res://Content/demo/TilesetSources/imported/ghetto-tileset-pixel-art/3 Objects/Box3.png"
-dest_files=["res://.godot/imported/Box3.png-bd197ed7fbc9e72afa3f009fa437297d.ctex"]
 
 [params]
 

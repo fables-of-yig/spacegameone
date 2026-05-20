@@ -2,16 +2,12 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://g3pu758ymuqi"
-path="res://.godot/imported/15.png-a50f41400749462dd7e93c270c2f237a.ctex"
-metadata={
-"vram_texture": false
-}
+uid="uid://c756i14pai0np"
+valid=false
 
 [deps]
 
 source_file="res://Content/demo/TilesetSources/imported/platformer-pixel-art-cave-2d-tileset/Objects/Food/15.png"
-dest_files=["res://.godot/imported/15.png-a50f41400749462dd7e93c270c2f237a.ctex"]
 
 [params]
 

@@ -2,16 +2,12 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://ddhgokkipa114"
-path="res://.godot/imported/sky-lines-preview-big.png-cf9aeb5eb062cf2f1f20f236964b3848.ctex"
-metadata={
-"vram_texture": false
-}
+uid="uid://b6cu8xl75x3pu"
+valid=false
 
 [deps]
 
 source_file="res://Content/demo/TilesetSources/imported/Warped Collection Files/Assets/Environments/night cities files/sky-lines/sky-lines-preview-big.png"
-dest_files=["res://.godot/imported/sky-lines-preview-big.png-cf9aeb5eb062cf2f1f20f236964b3848.ctex"]
 
 [params]
 

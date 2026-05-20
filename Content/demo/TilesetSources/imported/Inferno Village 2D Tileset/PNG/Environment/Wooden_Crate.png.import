@@ -2,16 +2,12 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://dsq0o8ldjbw5t"
-path="res://.godot/imported/Wooden_Crate.png-203b5e0bc5b34b1e35fa4ab7be303dc6.ctex"
-metadata={
-"vram_texture": false
-}
+uid="uid://bucxpyvh1qasw"
+valid=false
 
 [deps]
 
 source_file="res://Content/demo/TilesetSources/imported/Inferno Village 2D Tileset/PNG/Environment/Wooden_Crate.png"
-dest_files=["res://.godot/imported/Wooden_Crate.png-203b5e0bc5b34b1e35fa4ab7be303dc6.ctex"]
 
 [params]
 

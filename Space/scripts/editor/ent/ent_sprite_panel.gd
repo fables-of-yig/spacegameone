@@ -1,7 +1,7 @@
 extends Control
 
 const UIPanels = preload("res://Space/scripts/ui/ui_panels.gd")
-const EntIO = preload("res://Space/scripts/editor/ent/ent_io.gd")
+const EntIO = preload("res://Space/scripts/shared/ent/ent_io.gd")
 
 # Center/right pane that browses the selected entity's sprite set.
 # Shows a large preview of the currently-selected PNG on top, with a
@@ -394,7 +394,7 @@ func _draw_combat_preview(font: Font, preview_rect: Rect2, entity: Dictionary) -
     draw_rect(box, Color(0.32, 0.48, 0.72, 0.7), false, 1.0)
 
     var label_col := Color(0.66, 0.78, 0.94, 1.0)
-    var text_col := Color(0.93, 0.97, 1.0, 1.0)
+    var _text_col := Color(0.93, 0.97, 1.0, 1.0)
     draw_string(font, box.position + Vector2(8, 14),
         "COMBAT PREVIEW", HORIZONTAL_ALIGNMENT_LEFT, -1, 10, label_col)
     draw_string(font, box.position + Vector2(8, 30),

@@ -2,16 +2,12 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://ph200wgvhbnd"
-path="res://.godot/imported/Ladder_01.png-a1877d394009233953df64fee1a9c795.ctex"
-metadata={
-"vram_texture": false
-}
+uid="uid://cc706urpa026f"
+valid=false
 
 [deps]
 
 source_file="res://Content/demo/TilesetSources/imported/Inferno Village 2D Tileset/PNG/Building/Ladder_01.png"
-dest_files=["res://.godot/imported/Ladder_01.png-a1877d394009233953df64fee1a9c795.ctex"]
 
 [params]
 

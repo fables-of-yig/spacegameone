@@ -3,15 +3,11 @@
 importer="texture"
 type="CompressedTexture2D"
 uid="uid://crohpbvusfpac"
-path="res://.godot/imported/Mummy.png-829b5d7ee076dfbe9266312a6445731d.ctex"
-metadata={
-"vram_texture": false
-}
+valid=false
 
 [deps]
 
 source_file="res://Content/demo/TilesetSources/imported/Legacy Classic VL II - Sarcophagus/Sarcophagus/Mobs/Mummy.png"
-dest_files=["res://.godot/imported/Mummy.png-829b5d7ee076dfbe9266312a6445731d.ctex"]
 
 [params]
 

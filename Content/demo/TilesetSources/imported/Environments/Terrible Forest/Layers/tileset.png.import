@@ -2,16 +2,12 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://doxt37p78pcc5"
-path="res://.godot/imported/tileset.png-c3bc813879d5835cd5937aac71c1a6e8.ctex"
-metadata={
-"vram_texture": false
-}
+uid="uid://bq17oxq1e6t8y"
+valid=false
 
 [deps]
 
 source_file="res://Content/demo/TilesetSources/imported/Environments/Terrible Forest/Layers/tileset.png"
-dest_files=["res://.godot/imported/tileset.png-c3bc813879d5835cd5937aac71c1a6e8.ctex"]
 
 [params]
 

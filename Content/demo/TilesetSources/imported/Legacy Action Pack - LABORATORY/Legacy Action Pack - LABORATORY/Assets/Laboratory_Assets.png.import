@@ -3,15 +3,11 @@
 importer="texture"
 type="CompressedTexture2D"
 uid="uid://co0qo8otwxx10"
-path="res://.godot/imported/Laboratory_Assets.png-de2eb41e386819b135fda52a85313902.ctex"
-metadata={
-"vram_texture": false
-}
+valid=false
 
 [deps]
 
 source_file="res://Content/demo/TilesetSources/imported/Legacy Action Pack - LABORATORY/Legacy Action Pack - LABORATORY/Assets/Laboratory_Assets.png"
-dest_files=["res://.godot/imported/Laboratory_Assets.png-de2eb41e386819b135fda52a85313902.ctex"]
 
 [params]
 

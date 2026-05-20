@@ -2,16 +2,12 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://betoteedofa26"
-path="res://.godot/imported/moon.png-36d8195ffbe8d00c67b22f115b03678d.ctex"
-metadata={
-"vram_texture": false
-}
+uid="uid://db1x31g27wcfh"
+valid=false
 
 [deps]
 
 source_file="res://Content/demo/TilesetSources/imported/Environments/Quiet Hill Forest/lake/layers/moon.png"
-dest_files=["res://.godot/imported/moon.png-36d8195ffbe8d00c67b22f115b03678d.ctex"]
 
 [params]
 

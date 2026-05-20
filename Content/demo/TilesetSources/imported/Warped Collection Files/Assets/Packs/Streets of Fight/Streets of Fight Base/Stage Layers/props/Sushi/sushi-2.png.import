@@ -2,16 +2,12 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://bujughip56acf"
-path="res://.godot/imported/sushi-2.png-286de482aecd102b75a2c09f427309c4.ctex"
-metadata={
-"vram_texture": false
-}
+uid="uid://cltd70ep0m6cm"
+valid=false
 
 [deps]
 
 source_file="res://Content/demo/TilesetSources/imported/Warped Collection Files/Assets/Packs/Streets of Fight/Streets of Fight Base/Stage Layers/props/Sushi/sushi-2.png"
-dest_files=["res://.godot/imported/sushi-2.png-286de482aecd102b75a2c09f427309c4.ctex"]
 
 [params]
 

@@ -2,16 +2,12 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://s8mfptmg0s18"
-path="res://.godot/imported/preview.png-b28df858231b182a59e81cfe6ffe6d48.ctex"
-metadata={
-"vram_texture": false
-}
+uid="uid://d1ideonjd5bio"
+valid=false
 
 [deps]
 
 source_file="res://Content/demo/TilesetSources/imported/Environments/WoodsCastle/preview.png"
-dest_files=["res://.godot/imported/preview.png-b28df858231b182a59e81cfe6ffe6d48.ctex"]
 
 [params]
 

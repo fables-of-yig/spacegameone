@@ -2,16 +2,12 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://clsaj0xa1c10m"
-path="res://.godot/imported/Shot-Sheet.png-184c968aa0936c7891ae28b33919c699.ctex"
-metadata={
-"vram_texture": false
-}
+uid="uid://kcfi38lqr0mt"
+valid=false
 
 [deps]
 
 source_file="res://Content/demo/TilesetSources/imported/Legacy Action Pack - LAIR/Legacy Action Pack - LAIR/Character/Sheets/Shot-Sheet.png"
-dest_files=["res://.godot/imported/Shot-Sheet.png-184c968aa0936c7891ae28b33919c699.ctex"]
 
 [params]
 

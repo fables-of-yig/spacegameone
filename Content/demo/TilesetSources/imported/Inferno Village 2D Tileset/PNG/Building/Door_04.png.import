@@ -2,16 +2,12 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://ucsdphf40t4p"
-path="res://.godot/imported/Door_04.png-f9783160acf83304dfd25617bd492347.ctex"
-metadata={
-"vram_texture": false
-}
+uid="uid://bbs4fh44fhaad"
+valid=false
 
 [deps]
 
 source_file="res://Content/demo/TilesetSources/imported/Inferno Village 2D Tileset/PNG/Building/Door_04.png"
-dest_files=["res://.godot/imported/Door_04.png-f9783160acf83304dfd25617bd492347.ctex"]
 
 [params]
 

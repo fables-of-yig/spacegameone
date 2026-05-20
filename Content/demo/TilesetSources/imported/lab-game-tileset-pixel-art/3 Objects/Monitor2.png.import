@@ -2,16 +2,12 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://dsp1bu3vydt5h"
-path="res://.godot/imported/Monitor2.png-c8d8f315c0abd712abf5378152db3848.ctex"
-metadata={
-"vram_texture": false
-}
+uid="uid://b8wkgfougbajw"
+valid=false
 
 [deps]
 
 source_file="res://Content/demo/TilesetSources/imported/lab-game-tileset-pixel-art/3 Objects/Monitor2.png"
-dest_files=["res://.godot/imported/Monitor2.png-c8d8f315c0abd712abf5378152db3848.ctex"]
 
 [params]
 

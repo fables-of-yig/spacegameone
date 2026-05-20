@@ -2,16 +2,12 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://nr24kx5021ly"
-path="res://.godot/imported/player-Ladder.png-bff7d61080cb7e0dfb876587e5ad49a9.ctex"
-metadata={
-"vram_texture": false
-}
+uid="uid://ce4pk6ukk0b6t"
+valid=false
 
 [deps]
 
 source_file="res://Content/demo/TilesetSources/imported/Warped Collection Files/Assets/Playable Characters/Caves Hunter/Spritesheets/player-Ladder.png"
-dest_files=["res://.godot/imported/player-Ladder.png-bff7d61080cb7e0dfb876587e5ad49a9.ctex"]
 
 [params]
 

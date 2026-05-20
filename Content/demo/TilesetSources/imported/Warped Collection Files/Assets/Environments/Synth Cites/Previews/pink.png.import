@@ -2,16 +2,12 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://cr8wjvw847gu4"
-path="res://.godot/imported/pink.png-475f48174d57709ca637ad12a9e18787.ctex"
-metadata={
-"vram_texture": false
-}
+uid="uid://drtlinq5ueyng"
+valid=false
 
 [deps]
 
 source_file="res://Content/demo/TilesetSources/imported/Warped Collection Files/Assets/Environments/Synth Cites/Previews/pink.png"
-dest_files=["res://.godot/imported/pink.png-475f48174d57709ca637ad12a9e18787.ctex"]
 
 [params]
 

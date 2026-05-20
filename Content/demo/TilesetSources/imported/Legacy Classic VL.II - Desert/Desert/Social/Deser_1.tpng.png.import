@@ -2,16 +2,12 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://c7ga0gajimwj5"
-path="res://.godot/imported/Deser_1.tpng.png-238a1ce4a8581d92257f039625bd3a62.ctex"
-metadata={
-"vram_texture": false
-}
+uid="uid://cttnwaceuaryp"
+valid=false
 
 [deps]
 
 source_file="res://Content/demo/TilesetSources/imported/Legacy Classic VL.II - Desert/Desert/Social/Deser_1.tpng.png"
-dest_files=["res://.godot/imported/Deser_1.tpng.png-238a1ce4a8581d92257f039625bd3a62.ctex"]
 
 [params]
 

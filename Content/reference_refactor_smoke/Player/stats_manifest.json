@@ -1,0 +1,77 @@
+{
+  "stats": [
+    {
+      "base_value": 5,
+      "category": "core",
+      "description": "Physical power. Scales melee damage.",
+      "effects": [
+        {
+          "level_threshold": 1,
+          "operation": "add",
+          "target": "melee_damage_mult",
+          "value": 0.02
+        }
+      ],
+      "growth_per_level": 1,
+      "id": "str",
+      "name": "Strength"
+    },
+    {
+      "base_value": 4,
+      "category": "core",
+      "description": "Toughness. Reduces damage taken.",
+      "effects": [
+        {
+          "level_threshold": 1,
+          "operation": "add",
+          "target": "damage_reduction",
+          "value": 0.5
+        }
+      ],
+      "growth_per_level": 1,
+      "id": "con",
+      "name": "Constitution"
+    },
+    {
+      "base_value": 3,
+      "category": "core",
+      "description": "Mental acuity. Scales beam/projectile damage.",
+      "effects": [
+        {
+          "level_threshold": 1,
+          "operation": "add",
+          "target": "projectile_damage_mult",
+          "value": 0.02
+        }
+      ],
+      "growth_per_level": 1,
+      "id": "int",
+      "name": "Intelligence"
+    },
+    {
+      "base_value": 4,
+      "category": "core",
+      "description": "Fortune. Affects criticals and drop rates.",
+      "effects": [],
+      "growth_per_level": 1,
+      "id": "lck",
+      "name": "Luck"
+    },
+    {
+      "base_value": 50,
+      "category": "vital",
+      "description": "Maximum hit points.",
+      "effects": [
+        {
+          "level_threshold": 1,
+          "operation": "set",
+          "target": "max_hp",
+          "value": 50
+        }
+      ],
+      "growth_per_level": 4,
+      "id": "hp_max",
+      "name": "Max HP"
+    }
+  ]
+}

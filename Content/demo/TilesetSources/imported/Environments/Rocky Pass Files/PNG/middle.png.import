@@ -2,16 +2,12 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://dfkmiqorask81"
-path="res://.godot/imported/middle.png-74695b6883db7f9690070ccb5dd71208.ctex"
-metadata={
-"vram_texture": false
-}
+uid="uid://dmqigyqn4sux5"
+valid=false
 
 [deps]
 
 source_file="res://Content/demo/TilesetSources/imported/Environments/Rocky Pass Files/PNG/middle.png"
-dest_files=["res://.godot/imported/middle.png-74695b6883db7f9690070ccb5dd71208.ctex"]
 
 [params]
 

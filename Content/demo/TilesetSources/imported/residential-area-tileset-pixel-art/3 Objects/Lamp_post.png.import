@@ -2,16 +2,12 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://btrcnxv5dmcfe"
-path="res://.godot/imported/Lamp_post.png-7982d465e6be6b1b19b28b5682d3742a.ctex"
-metadata={
-"vram_texture": false
-}
+uid="uid://b6plo3w5s2wsd"
+valid=false
 
 [deps]
 
 source_file="res://Content/demo/TilesetSources/imported/residential-area-tileset-pixel-art/3 Objects/Lamp_post.png"
-dest_files=["res://.godot/imported/Lamp_post.png-7982d465e6be6b1b19b28b5682d3742a.ctex"]
 
 [params]
 

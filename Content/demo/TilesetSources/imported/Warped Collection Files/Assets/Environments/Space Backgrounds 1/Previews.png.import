@@ -3,15 +3,11 @@
 importer="texture"
 type="CompressedTexture2D"
 uid="uid://canf4hiygc16m"
-path="res://.godot/imported/Previews.png-8eef9949e9d8f27396150e20f1ca4486.ctex"
-metadata={
-"vram_texture": false
-}
+valid=false
 
 [deps]
 
 source_file="res://Content/demo/TilesetSources/imported/Warped Collection Files/Assets/Environments/Space Backgrounds 1/Previews.png"
-dest_files=["res://.godot/imported/Previews.png-8eef9949e9d8f27396150e20f1ca4486.ctex"]
 
 [params]
 

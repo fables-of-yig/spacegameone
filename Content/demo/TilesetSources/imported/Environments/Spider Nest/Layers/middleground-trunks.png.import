@@ -2,16 +2,12 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://b6wfr5wxgm10l"
-path="res://.godot/imported/middleground-trunks.png-5a484ec37da9fc1518b612ce66900c5e.ctex"
-metadata={
-"vram_texture": false
-}
+uid="uid://gbla8onlfc2l"
+valid=false
 
 [deps]
 
 source_file="res://Content/demo/TilesetSources/imported/Environments/Spider Nest/Layers/middleground-trunks.png"
-dest_files=["res://.godot/imported/middleground-trunks.png-5a484ec37da9fc1518b612ce66900c5e.ctex"]
 
 [params]
 

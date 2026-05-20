@@ -1,0 +1,22 @@
+{
+	"abilities": [
+		{
+			"category": "movement",
+			"description": "Recipe-created gate ability.",
+			"id": "phase_dash",
+			"name": "Phase Dash",
+			"params": {
+
+			}
+		},
+		{
+			"category": "utility",
+			"description": "Ability reference smoke.",
+			"id": "new_ability",
+			"name": "Old Ability",
+			"params": {
+				"projectile_id": "new_projectile"
+			}
+		}
+	]
+}

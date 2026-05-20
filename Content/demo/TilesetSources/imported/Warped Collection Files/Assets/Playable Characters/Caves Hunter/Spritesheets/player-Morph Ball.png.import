@@ -2,16 +2,12 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://ds5g57dptmqe0"
-path="res://.godot/imported/player-Morph Ball.png-c32135a354b07550f183e5493f739833.ctex"
-metadata={
-"vram_texture": false
-}
+uid="uid://ccbp6e0ovh30g"
+valid=false
 
 [deps]
 
 source_file="res://Content/demo/TilesetSources/imported/Warped Collection Files/Assets/Playable Characters/Caves Hunter/Spritesheets/player-Morph Ball.png"
-dest_files=["res://.godot/imported/player-Morph Ball.png-c32135a354b07550f183e5493f739833.ctex"]
 
 [params]
 

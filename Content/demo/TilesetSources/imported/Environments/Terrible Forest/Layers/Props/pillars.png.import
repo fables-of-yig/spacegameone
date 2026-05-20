@@ -3,15 +3,11 @@
 importer="texture"
 type="CompressedTexture2D"
 uid="uid://lorxa2hxym"
-path="res://.godot/imported/pillars.png-d997272d1cc63b16cf87735a4814b96a.ctex"
-metadata={
-"vram_texture": false
-}
+valid=false
 
 [deps]
 
 source_file="res://Content/demo/TilesetSources/imported/Environments/Terrible Forest/Layers/Props/pillars.png"
-dest_files=["res://.godot/imported/pillars.png-d997272d1cc63b16cf87735a4814b96a.ctex"]
 
 [params]
 

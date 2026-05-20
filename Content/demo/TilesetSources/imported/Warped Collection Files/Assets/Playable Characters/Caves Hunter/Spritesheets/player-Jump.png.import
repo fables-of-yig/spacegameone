@@ -2,16 +2,12 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://difcklmifi1mg"
-path="res://.godot/imported/player-Jump.png-9f37ce77339399322df90cb23e063fb1.ctex"
-metadata={
-"vram_texture": false
-}
+uid="uid://cns1rmucc7bup"
+valid=false
 
 [deps]
 
 source_file="res://Content/demo/TilesetSources/imported/Warped Collection Files/Assets/Playable Characters/Caves Hunter/Spritesheets/player-Jump.png"
-dest_files=["res://.godot/imported/player-Jump.png-9f37ce77339399322df90cb23e063fb1.ctex"]
 
 [params]
 

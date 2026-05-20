@@ -2,16 +2,12 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://bp5mgfpka0gyu"
-path="res://.godot/imported/TerminalErrorIdle.png-6bb3f5f53ee20f15297e109408a2acbf.ctex"
-metadata={
-"vram_texture": false
-}
+uid="uid://dgxnc26whm0tq"
+valid=false
 
 [deps]
 
 source_file="res://Content/demo/TilesetSources/imported/PlatformerPrototypePack/Release/Terminals/TerminalErrorIdle.png"
-dest_files=["res://.godot/imported/TerminalErrorIdle.png-6bb3f5f53ee20f15297e109408a2acbf.ctex"]
 
 [params]
 

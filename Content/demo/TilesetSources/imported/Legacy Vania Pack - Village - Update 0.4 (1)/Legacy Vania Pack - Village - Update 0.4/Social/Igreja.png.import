@@ -2,16 +2,12 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://cs7ctoxqva0wl"
-path="res://.godot/imported/Igreja.png-35aa7c7e97cae1abc5ca208a78c06ec5.ctex"
-metadata={
-"vram_texture": false
-}
+uid="uid://1tbwy762kgl"
+valid=false
 
 [deps]
 
 source_file="res://Content/demo/TilesetSources/imported/Legacy Vania Pack - Village - Update 0.4 (1)/Legacy Vania Pack - Village - Update 0.4/Social/Igreja.png"
-dest_files=["res://.godot/imported/Igreja.png-35aa7c7e97cae1abc5ca208a78c06ec5.ctex"]
 
 [params]
 

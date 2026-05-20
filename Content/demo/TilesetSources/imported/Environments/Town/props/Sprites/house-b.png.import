@@ -2,16 +2,12 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://bfxxnghl5v27j"
-path="res://.godot/imported/house-b.png-ba03f8731fea134b659c698dd87e2548.ctex"
-metadata={
-"vram_texture": false
-}
+uid="uid://dhg48r8m0j7pd"
+valid=false
 
 [deps]
 
 source_file="res://Content/demo/TilesetSources/imported/Environments/Town/props/Sprites/house-b.png"
-dest_files=["res://.godot/imported/house-b.png-ba03f8731fea134b659c698dd87e2548.ctex"]
 
 [params]
 

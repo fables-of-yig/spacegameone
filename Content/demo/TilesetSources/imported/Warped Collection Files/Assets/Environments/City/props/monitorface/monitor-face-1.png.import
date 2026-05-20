@@ -2,16 +2,12 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://86se3s838tvs"
-path="res://.godot/imported/monitor-face-1.png-e5465da9d7ce87cc0286cc5b095b12ba.ctex"
-metadata={
-"vram_texture": false
-}
+uid="uid://bwpqaqrenxstm"
+valid=false
 
 [deps]
 
 source_file="res://Content/demo/TilesetSources/imported/Warped Collection Files/Assets/Environments/City/props/monitorface/monitor-face-1.png"
-dest_files=["res://.godot/imported/monitor-face-1.png-e5465da9d7ce87cc0286cc5b095b12ba.ctex"]
 
 [params]
 

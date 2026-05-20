@@ -2,16 +2,12 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://dcna3n0swacfk"
-path="res://.godot/imported/Tile_43.png-696abcb266733845d23dd3708f77b8d8.ctex"
-metadata={
-"vram_texture": false
-}
+uid="uid://b26c8gci5sjhd"
+valid=false
 
 [deps]
 
 source_file="res://Content/demo/TilesetSources/imported/ghetto-tileset-pixel-art/1 Tiles/Tile_43.png"
-dest_files=["res://.godot/imported/Tile_43.png-696abcb266733845d23dd3708f77b8d8.ctex"]
 
 [params]
 

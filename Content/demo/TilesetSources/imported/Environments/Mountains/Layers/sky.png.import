@@ -2,16 +2,12 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://tvt87axw6tl"
-path="res://.godot/imported/sky.png-d95d6e79fd27d431d2f1230dc829819a.ctex"
-metadata={
-"vram_texture": false
-}
+uid="uid://ca1hmjfvkrrwq"
+valid=false
 
 [deps]
 
 source_file="res://Content/demo/TilesetSources/imported/Environments/Mountains/Layers/sky.png"
-dest_files=["res://.godot/imported/sky.png-d95d6e79fd27d431d2f1230dc829819a.ctex"]
 
 [params]
 

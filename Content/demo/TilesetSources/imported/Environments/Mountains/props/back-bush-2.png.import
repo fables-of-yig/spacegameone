@@ -2,16 +2,12 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://d2m5045fmytme"
-path="res://.godot/imported/back-bush-2.png-6410b89585b697117d5c598a0c1caeae.ctex"
-metadata={
-"vram_texture": false
-}
+uid="uid://b6yiryh7i8xaf"
+valid=false
 
 [deps]
 
 source_file="res://Content/demo/TilesetSources/imported/Environments/Mountains/props/back-bush-2.png"
-dest_files=["res://.godot/imported/back-bush-2.png-6410b89585b697117d5c598a0c1caeae.ctex"]
 
 [params]
 

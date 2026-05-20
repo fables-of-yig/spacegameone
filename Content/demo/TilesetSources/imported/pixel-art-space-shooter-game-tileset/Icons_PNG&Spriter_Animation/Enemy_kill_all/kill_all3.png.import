@@ -2,16 +2,12 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://fpkn242rps45"
-path="res://.godot/imported/kill_all3.png-bfbcffbe3537be013d2eccddb3e7bf97.ctex"
-metadata={
-"vram_texture": false
-}
+uid="uid://j6rgmdkodap0"
+valid=false
 
 [deps]
 
 source_file="res://Content/demo/TilesetSources/imported/pixel-art-space-shooter-game-tileset/Icons_PNG&Spriter_Animation/Enemy_kill_all/kill_all3.png"
-dest_files=["res://.godot/imported/kill_all3.png-bfbcffbe3537be013d2eccddb3e7bf97.ctex"]
 
 [params]
 

@@ -2,16 +2,12 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://dj4q4cyky5q8q"
-path="res://.godot/imported/Bridge.png-d7880c0137010ff2033368a24fdf78de.ctex"
-metadata={
-"vram_texture": false
-}
+uid="uid://b6qcuc4hglrmq"
+valid=false
 
 [deps]
 
 source_file="res://Content/demo/TilesetSources/imported/NeonNightCityTileset/NeonNightCityTileset/Sprites/Tilesets/Bridge.png"
-dest_files=["res://.godot/imported/Bridge.png-d7880c0137010ff2033368a24fdf78de.ctex"]
 
 [params]
 

@@ -2,16 +2,12 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://5uyb53c48nv5"
-path="res://.godot/imported/tall-shroom.png-b91318ad61098ba96678e8a1c23c8928.ctex"
-metadata={
-"vram_texture": false
-}
+uid="uid://drb3f5xac7kbg"
+valid=false
 
 [deps]
 
 source_file="res://Content/demo/TilesetSources/imported/Warped Collection Files/Assets/Environments/Caves/Add-on-1/PNG/Props/tall-shroom.png"
-dest_files=["res://.godot/imported/tall-shroom.png-b91318ad61098ba96678e8a1c23c8928.ctex"]
 
 [params]
 

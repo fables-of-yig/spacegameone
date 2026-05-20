@@ -2,16 +2,12 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://d2d6rv106ph6f"
-path="res://.godot/imported/mine.png-ea5e65ec5d8bed658fcaf258b0d0f1bd.ctex"
-metadata={
-"vram_texture": false
-}
+uid="uid://u6pvqrk7d4pt"
+valid=false
 
 [deps]
 
 source_file="res://Content/demo/TilesetSources/imported/Warped Collection Files/Assets/Enemies/Underwater Diving Enemies/Sprites/mine.png"
-dest_files=["res://.godot/imported/mine.png-ea5e65ec5d8bed658fcaf258b0d0f1bd.ctex"]
 
 [params]
 

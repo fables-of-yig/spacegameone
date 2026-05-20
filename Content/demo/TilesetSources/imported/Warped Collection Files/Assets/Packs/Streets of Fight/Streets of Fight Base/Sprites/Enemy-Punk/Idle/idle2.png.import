@@ -3,15 +3,11 @@
 importer="texture"
 type="CompressedTexture2D"
 uid="uid://cl1heb0x42cpe"
-path="res://.godot/imported/idle2.png-58f09cb5e34200e05ee71b427f62170e.ctex"
-metadata={
-"vram_texture": false
-}
+valid=false
 
 [deps]
 
 source_file="res://Content/demo/TilesetSources/imported/Warped Collection Files/Assets/Packs/Streets of Fight/Streets of Fight Base/Sprites/Enemy-Punk/Idle/idle2.png"
-dest_files=["res://.godot/imported/idle2.png-58f09cb5e34200e05ee71b427f62170e.ctex"]
 
 [params]
 

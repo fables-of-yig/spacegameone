@@ -2,16 +2,12 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://dftyo0vqm616x"
-path="res://.godot/imported/Streetlights.png-42c8002e0fe4057b89993691836c3fbf.ctex"
-metadata={
-"vram_texture": false
-}
+uid="uid://bhptsxjk6qiek"
+valid=false
 
 [deps]
 
 source_file="res://Content/demo/TilesetSources/imported/NeonNightCityTileset/NeonNightCityTileset/Sprites/Props/Streetlights.png"
-dest_files=["res://.godot/imported/Streetlights.png-42c8002e0fe4057b89993691836c3fbf.ctex"]
 
 [params]
 

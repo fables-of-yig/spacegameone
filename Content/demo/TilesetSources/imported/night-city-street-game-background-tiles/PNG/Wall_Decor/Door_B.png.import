@@ -2,16 +2,12 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://ies8tip0aab3"
-path="res://.godot/imported/Door_B.png-d2f89cdeeec3b84e35b1c937b4c508c2.ctex"
-metadata={
-"vram_texture": false
-}
+uid="uid://cx87r5pkvhond"
+valid=false
 
 [deps]
 
 source_file="res://Content/demo/TilesetSources/imported/night-city-street-game-background-tiles/PNG/Wall_Decor/Door_B.png"
-dest_files=["res://.godot/imported/Door_B.png-d2f89cdeeec3b84e35b1c937b4c508c2.ctex"]
 
 [params]
 

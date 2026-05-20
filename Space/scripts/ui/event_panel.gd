@@ -28,6 +28,15 @@ var _portrait_tex: Texture2D = null
 ## Populate from outside:  event_panel.portrait_map["Captain"] = "res://Space/art/portraits/captain.png"
 var portrait_map: Dictionary = {}
 
+# Faction symbol overlay — drawn in a small square on top of the portrait's
+# top-right corner when the current dialogue node sets speaker_faction.
+# Same pattern as portrait_map: id → res:// path, populated externally by
+# ui_coordinator via FactionsIO.build_faction_symbol_map(pack_id).
+const FACTION_SYMBOL_SIZE: float = 48.0
+const FACTION_SYMBOL_INSET: float = 6.0
+var _faction_symbol_tex: Texture2D = null
+var faction_symbol_map: Dictionary = {}
+
 # Typewriter
 var _full_text: String = ""
 var _revealed_chars: int = 0
@@ -106,6 +115,16 @@ func _go_to_node(node_id: String):
 		var path = portrait_map[speaker]
 		if ResourceLoader.exists(path):
 			_portrait_tex = load(path)
+
+	# Load faction symbol overlay for this node (independent of speaker —
+	# narration lines can also carry a speaker_faction to show who's
+	# talking even when there's no portrait).
+	_faction_symbol_tex = null
+	var faction_id: String = str(current_node.get("speaker_faction", "")).strip_edges()
+	if not faction_id.is_empty() and faction_symbol_map.has(faction_id):
+		var sym_path: String = faction_symbol_map[faction_id]
+		if ResourceLoader.exists(sym_path):
+			_faction_symbol_tex = load(sym_path)
 
 	var effects: Array = current_node.get("effects", [])
 	for eff in effects:
@@ -293,6 +312,17 @@ func _draw():
 	else:
 		# No portrait, no static — just leave the green square
 		pass
+
+	# Faction symbol overlay: pinned to top-right of the portrait square so
+	# it visually identifies the speaker's affiliation without obscuring
+	# the face. Drawn after the portrait so it sits on top of the VHS
+	# pass; omits entirely when the node has no speaker_faction.
+	if _faction_symbol_tex != null:
+		var sym_rect := Rect2(
+			port_rect.end.x - FACTION_SYMBOL_SIZE - FACTION_SYMBOL_INSET,
+			port_rect.position.y + FACTION_SYMBOL_INSET,
+			FACTION_SYMBOL_SIZE, FACTION_SYMBOL_SIZE)
+		draw_texture_rect(_faction_symbol_tex, sym_rect, false)
 
 	# Speaker name
 	var speaker: String = current_node.get("speaker", "")

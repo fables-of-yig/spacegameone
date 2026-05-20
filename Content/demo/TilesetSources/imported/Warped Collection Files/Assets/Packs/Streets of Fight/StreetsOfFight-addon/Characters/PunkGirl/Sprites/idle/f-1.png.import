@@ -2,16 +2,12 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://cstx3f3yltaud"
-path="res://.godot/imported/f-1.png-809f4b3448125d65af24c4554acb9eaa.ctex"
-metadata={
-"vram_texture": false
-}
+uid="uid://brwcf00h6kxd6"
+valid=false
 
 [deps]
 
 source_file="res://Content/demo/TilesetSources/imported/Warped Collection Files/Assets/Packs/Streets of Fight/StreetsOfFight-addon/Characters/PunkGirl/Sprites/idle/f-1.png"
-dest_files=["res://.godot/imported/f-1.png-809f4b3448125d65af24c4554acb9eaa.ctex"]
 
 [params]
 

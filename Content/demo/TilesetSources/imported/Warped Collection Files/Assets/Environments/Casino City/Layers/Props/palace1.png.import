@@ -2,16 +2,12 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://byp4viu5y1krl"
-path="res://.godot/imported/palace1.png-4c8f7b7d3f3b1650880d490744b1d230.ctex"
-metadata={
-"vram_texture": false
-}
+uid="uid://b8t6fonwetjyy"
+valid=false
 
 [deps]
 
 source_file="res://Content/demo/TilesetSources/imported/Warped Collection Files/Assets/Environments/Casino City/Layers/Props/palace1.png"
-dest_files=["res://.godot/imported/palace1.png-4c8f7b7d3f3b1650880d490744b1d230.ctex"]
 
 [params]
 

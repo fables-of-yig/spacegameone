@@ -2,16 +2,12 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://v8g0iarmxbwo"
-path="res://.godot/imported/holes2.png-debd1699c5c0e50cee2b8e3c5275c739.ctex"
-metadata={
-"vram_texture": false
-}
+uid="uid://cmixnxx3p7kwh"
+valid=false
 
 [deps]
 
 source_file="res://Content/demo/TilesetSources/imported/pixel-art-space-shooter-2d-tileset/PNG_Tiles/Details/holes2.png"
-dest_files=["res://.godot/imported/holes2.png-debd1699c5c0e50cee2b8e3c5275c739.ctex"]
 
 [params]
 

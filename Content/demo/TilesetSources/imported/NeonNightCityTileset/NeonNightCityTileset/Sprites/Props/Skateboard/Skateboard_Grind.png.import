@@ -2,16 +2,12 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://h48i1p7bw3ho"
-path="res://.godot/imported/Skateboard_Grind.png-67e5433fa3880dd6c0278fef7504bf69.ctex"
-metadata={
-"vram_texture": false
-}
+uid="uid://bmvo7ehykwbfa"
+valid=false
 
 [deps]
 
 source_file="res://Content/demo/TilesetSources/imported/NeonNightCityTileset/NeonNightCityTileset/Sprites/Props/Skateboard/Skateboard_Grind.png"
-dest_files=["res://.godot/imported/Skateboard_Grind.png-67e5433fa3880dd6c0278fef7504bf69.ctex"]
 
 [params]
 

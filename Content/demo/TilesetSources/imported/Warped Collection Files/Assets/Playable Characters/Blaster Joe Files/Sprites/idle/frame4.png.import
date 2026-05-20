@@ -2,16 +2,12 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://cb01rc3eii410"
-path="res://.godot/imported/frame4.png-671bb5cc33f3b496a01c5064dc1a2b98.ctex"
-metadata={
-"vram_texture": false
-}
+uid="uid://dtcn0qxbaok7d"
+valid=false
 
 [deps]
 
 source_file="res://Content/demo/TilesetSources/imported/Warped Collection Files/Assets/Playable Characters/Blaster Joe Files/Sprites/idle/frame4.png"
-dest_files=["res://.godot/imported/frame4.png-671bb5cc33f3b496a01c5064dc1a2b98.ctex"]
 
 [params]
 

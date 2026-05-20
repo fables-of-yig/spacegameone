@@ -2,16 +2,12 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://ch4fgw278ycdw"
-path="res://.godot/imported/Cave3.png-8c9f78c572377f16ea8529a7b6f979b4.ctex"
-metadata={
-"vram_texture": false
-}
+uid="uid://daa1qnmtojvry"
+valid=false
 
 [deps]
 
 source_file="res://Content/demo/TilesetSources/imported/Parallax Backgrounds/01. Parallax BG_Sprites/Cave3.png"
-dest_files=["res://.godot/imported/Cave3.png-8c9f78c572377f16ea8529a7b6f979b4.ctex"]
 
 [params]
 

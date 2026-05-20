@@ -3,15 +3,11 @@
 importer="texture"
 type="CompressedTexture2D"
 uid="uid://yk0vjm80im01"
-path="res://.godot/imported/Madina_2.png-0e4ebbd8996f4f5f8f90002e93a440c5.ctex"
-metadata={
-"vram_texture": false
-}
+valid=false
 
 [deps]
 
 source_file="res://Content/demo/TilesetSources/imported/Legacy Classic VL.II - Medina/Madina/Social/Madina_2.png"
-dest_files=["res://.godot/imported/Madina_2.png-0e4ebbd8996f4f5f8f90002e93a440c5.ctex"]
 
 [params]
 

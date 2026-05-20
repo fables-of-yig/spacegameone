@@ -3,15 +3,11 @@
 importer="texture"
 type="CompressedTexture2D"
 uid="uid://dyt7ovlhlnjn2"
-path="res://.godot/imported/bug4.png-bd8d138e2f8a56b8f8351ca00158297f.ctex"
-metadata={
-"vram_texture": false
-}
+valid=false
 
 [deps]
 
 source_file="res://Content/demo/TilesetSources/imported/Warped Collection Files/Assets/Enemies/warped space station Enemies/Bug/sprites/bug4.png"
-dest_files=["res://.godot/imported/bug4.png-bd8d138e2f8a56b8f8351ca00158297f.ctex"]
 
 [params]
 

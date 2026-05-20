@@ -2,16 +2,12 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://danjotct6am8w"
-path="res://.godot/imported/player-Hurt.png-d45f68b5cad78c64a1d347039ab51fdc.ctex"
-metadata={
-"vram_texture": false
-}
+uid="uid://bv6x35i7yg3nu"
+valid=false
 
 [deps]
 
 source_file="res://Content/demo/TilesetSources/imported/Warped Collection Files/Assets/Playable Characters/Caves Hunter/Spritesheets/player-Hurt.png"
-dest_files=["res://.godot/imported/player-Hurt.png-d45f68b5cad78c64a1d347039ab51fdc.ctex"]
 
 [params]
 

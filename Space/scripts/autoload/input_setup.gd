@@ -402,8 +402,8 @@ static func deserialize_event(spec: Dictionary) -> InputEvent:
     match str(spec.get("kind", "")):
         "key":
             var key_event := InputEventKey.new()
-            key_event.physical_keycode = int(spec.get("physical_keycode", 0))
-            key_event.keycode = int(spec.get("keycode", 0))
+            key_event.physical_keycode = int(spec.get("physical_keycode", 0)) as Key
+            key_event.keycode = int(spec.get("keycode", 0)) as Key
             key_event.shift_pressed = bool(spec.get("shift", false))
             key_event.alt_pressed = bool(spec.get("alt", false))
             key_event.ctrl_pressed = bool(spec.get("ctrl", false))
@@ -411,15 +411,15 @@ static func deserialize_event(spec: Dictionary) -> InputEvent:
             return key_event
         "mouse_button":
             var mouse_event := InputEventMouseButton.new()
-            mouse_event.button_index = int(spec.get("button_index", 0))
+            mouse_event.button_index = int(spec.get("button_index", 0)) as MouseButton
             return mouse_event
         "joy_button":
             var joy_button := InputEventJoypadButton.new()
-            joy_button.button_index = int(spec.get("button_index", 0))
+            joy_button.button_index = int(spec.get("button_index", 0)) as JoyButton
             return joy_button
         "joy_axis":
             var joy_axis := InputEventJoypadMotion.new()
-            joy_axis.axis = int(spec.get("axis", 0))
+            joy_axis.axis = int(spec.get("axis", 0)) as JoyAxis
             joy_axis.axis_value = float(spec.get("axis_value", 0.0))
             return joy_axis
     return null

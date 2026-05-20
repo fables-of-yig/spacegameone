@@ -3,15 +3,11 @@
 importer="texture"
 type="CompressedTexture2D"
 uid="uid://b4xuvx152t62j"
-path="res://.godot/imported/magnet2.png-9bf3a02113212c854c1f735f292d55c7.ctex"
-metadata={
-"vram_texture": false
-}
+valid=false
 
 [deps]
 
 source_file="res://Content/demo/TilesetSources/imported/pixel-art-space-shooter-2d-tileset/Icons_PNG&Spriter_Animation/magnet/magnet2.png"
-dest_files=["res://.godot/imported/magnet2.png-9bf3a02113212c854c1f735f292d55c7.ctex"]
 
 [params]
 

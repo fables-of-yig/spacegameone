@@ -2,16 +2,12 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://1bg341uhl1gp"
-path="res://.godot/imported/Capsule1.png-204994a6cf4a6670d36f51642b654968.ctex"
-metadata={
-"vram_texture": false
-}
+uid="uid://b7bto04viuou5"
+valid=false
 
 [deps]
 
 source_file="res://Content/demo/TilesetSources/imported/lab-game-tileset-pixel-art/3 Objects/Capsule1.png"
-dest_files=["res://.godot/imported/Capsule1.png-204994a6cf4a6670d36f51642b654968.ctex"]
 
 [params]
 

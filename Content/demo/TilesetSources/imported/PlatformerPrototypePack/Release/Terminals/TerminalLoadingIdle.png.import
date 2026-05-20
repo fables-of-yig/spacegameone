@@ -3,15 +3,11 @@
 importer="texture"
 type="CompressedTexture2D"
 uid="uid://pxd3pbh24b80"
-path="res://.godot/imported/TerminalLoadingIdle.png-1f5926a5b20250de1d8e39c4ee360117.ctex"
-metadata={
-"vram_texture": false
-}
+valid=false
 
 [deps]
 
 source_file="res://Content/demo/TilesetSources/imported/PlatformerPrototypePack/Release/Terminals/TerminalLoadingIdle.png"
-dest_files=["res://.godot/imported/TerminalLoadingIdle.png-1f5926a5b20250de1d8e39c4ee360117.ctex"]
 
 [params]
 

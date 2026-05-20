@@ -2,16 +2,12 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://couycx7mdsx3n"
-path="res://.godot/imported/stairs-wall-right.png-84616bf1affa6c1bf46122989c2af856.ctex"
-metadata={
-"vram_texture": false
-}
+uid="uid://v2lveetmep6g"
+valid=false
 
 [deps]
 
 source_file="res://Content/demo/TilesetSources/imported/Environments/Town/Tileset/sliced-tileset/stairs-wall-right.png"
-dest_files=["res://.godot/imported/stairs-wall-right.png-84616bf1affa6c1bf46122989c2af856.ctex"]
 
 [params]
 

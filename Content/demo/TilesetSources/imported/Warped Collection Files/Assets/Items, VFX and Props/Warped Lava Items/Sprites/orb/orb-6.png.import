@@ -2,16 +2,12 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://dqg32qfgq5bnw"
-path="res://.godot/imported/orb-6.png-618d89a4ebd22cf9b7c8ba9d0d75c0f6.ctex"
-metadata={
-"vram_texture": false
-}
+uid="uid://pqp1uxwjtmou"
+valid=false
 
 [deps]
 
 source_file="res://Content/demo/TilesetSources/imported/Warped Collection Files/Assets/Items, VFX and Props/Warped Lava Items/Sprites/orb/orb-6.png"
-dest_files=["res://.godot/imported/orb-6.png-618d89a4ebd22cf9b7c8ba9d0d75c0f6.ctex"]
 
 [params]
 

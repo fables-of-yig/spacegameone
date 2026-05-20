@@ -2,16 +2,12 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://djfu3164vfeb0"
-path="res://.godot/imported/top-left-wood.png-df97d2c587b2d9787aae234aa55750c8.ctex"
-metadata={
-"vram_texture": false
-}
+uid="uid://bqyoief6sp8ki"
+valid=false
 
 [deps]
 
 source_file="res://Content/demo/TilesetSources/imported/Environments/Town/Tileset/sliced-tileset/top-left-wood.png"
-dest_files=["res://.godot/imported/top-left-wood.png-df97d2c587b2d9787aae234aa55750c8.ctex"]
 
 [params]
 

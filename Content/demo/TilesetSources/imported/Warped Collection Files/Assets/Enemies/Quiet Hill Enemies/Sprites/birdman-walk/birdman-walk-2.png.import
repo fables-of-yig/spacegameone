@@ -2,16 +2,12 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://c4yewyc5mh4w4"
-path="res://.godot/imported/birdman-walk-2.png-a5fd5473cc28c5d591923341ffbd51b9.ctex"
-metadata={
-"vram_texture": false
-}
+uid="uid://dnt5jdfsqb7an"
+valid=false
 
 [deps]
 
 source_file="res://Content/demo/TilesetSources/imported/Warped Collection Files/Assets/Enemies/Quiet Hill Enemies/Sprites/birdman-walk/birdman-walk-2.png"
-dest_files=["res://.godot/imported/birdman-walk-2.png-a5fd5473cc28c5d591923341ffbd51b9.ctex"]
 
 [params]
 

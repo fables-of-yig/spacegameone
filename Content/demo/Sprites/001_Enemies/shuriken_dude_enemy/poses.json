@@ -1,9 +1,0 @@
-﻿{
-    "poses":  {
-                  "special.png":  {
-                                      "fps":  10,
-                                      "loop_from":  0,
-                                      "frames":  11
-                                  }
-              }
-}

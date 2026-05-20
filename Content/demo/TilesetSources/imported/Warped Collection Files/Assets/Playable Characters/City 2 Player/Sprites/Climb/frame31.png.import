@@ -2,16 +2,12 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://degv24j1ip7hj"
-path="res://.godot/imported/frame31.png-9286111327129acd104565a8889006b1.ctex"
-metadata={
-"vram_texture": false
-}
+uid="uid://b1csoa0ecevon"
+valid=false
 
 [deps]
 
 source_file="res://Content/demo/TilesetSources/imported/Warped Collection Files/Assets/Playable Characters/City 2 Player/Sprites/Climb/frame31.png"
-dest_files=["res://.godot/imported/frame31.png-9286111327129acd104565a8889006b1.ctex"]
 
 [params]
 

@@ -2,16 +2,12 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://cmjkvyn3kubdf"
-path="res://.godot/imported/hanging-monitors.png-7cf840748155f46c95d47441cb8dc164.ctex"
-metadata={
-"vram_texture": false
-}
+uid="uid://blfo7f6ijciry"
+valid=false
 
 [deps]
 
 source_file="res://Content/demo/TilesetSources/imported/Warped Collection Files/Assets/Items, VFX and Props/Props Pack 2/sprites/hanging-monitors.png"
-dest_files=["res://.godot/imported/hanging-monitors.png-7cf840748155f46c95d47441cb8dc164.ctex"]
 
 [params]
 

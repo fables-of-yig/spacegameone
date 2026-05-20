@@ -2,16 +2,12 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://bu0i0213nv67b"
-path="res://.godot/imported/tileset.png-c50ad7c1f1aa262c449a33d788ced28b.ctex"
-metadata={
-"vram_texture": false
-}
+uid="uid://41y2mu4gghge"
+valid=false
 
 [deps]
 
 source_file="res://Content/demo/TilesetSources/imported/Environments/Volcanic Area Files/Environment/tileset.png"
-dest_files=["res://.godot/imported/tileset.png-c50ad7c1f1aa262c449a33d788ced28b.ctex"]
 
 [params]
 

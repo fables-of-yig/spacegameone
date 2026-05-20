@@ -1,7 +1,7 @@
 class_name ContentReferenceRefactor
 extends RefCounted
 
-const PackPaths := preload("res://Space/scripts/editor/pack_paths.gd")
+const PackPaths := preload("res://Space/scripts/shared/pack_paths.gd")
 
 
 static func rename_references(pack_id: String, kind: String, old_id: String, new_id: String) -> Dictionary:
@@ -27,6 +27,9 @@ static func rename_references(pack_id: String, kind: String, old_id: String, new
 	)
 	_rewrite_file(pid, "Systems/systems.json", result, func(root: Dictionary) -> int:
 		return _rewrite_systems(root, target_kind, from_id, to_id)
+	)
+	_rewrite_file(pid, "Factions/factions.json", result, func(root: Dictionary) -> int:
+		return _rewrite_factions(root, target_kind, from_id, to_id)
 	)
 	_rewrite_file(pid, "Rooms/rooms.json", result, func(root: Dictionary) -> int:
 		return _rewrite_rooms_root(root, target_kind, from_id, to_id)
@@ -164,8 +167,9 @@ static func _rewrite_systems(root: Dictionary, kind: String, old_id: String, new
 		var system: Dictionary = system_v
 		if kind == "system":
 			count += _replace_array_strings(_as_array(system.get("connections", [])), old_id, new_id)
+		if kind == "faction":
+			count += _replace_string(system, "faction", old_id, new_id)
 		count += _rewrite_system_pois(_as_array(system.get("pois", [])), kind, old_id, new_id)
-		count += _rewrite_system_spawn_triggers(_as_array(system.get("spawn_triggers", [])), kind, old_id, new_id)
 		count += _rewrite_system_npcs(_as_array(system.get("placed_npcs", [])), kind, old_id, new_id)
 	return count
 
@@ -202,19 +206,6 @@ static func _rewrite_system_pois(pois: Array, kind: String, old_id: String, new_
 	return count
 
 
-static func _rewrite_system_spawn_triggers(triggers: Array, kind: String, old_id: String, new_id: String) -> int:
-	if kind != "enemy_class":
-		return 0
-	var count := 0
-	for trigger_v in triggers:
-		if typeof(trigger_v) != TYPE_DICTIONARY:
-			continue
-		for spawn_v in _as_array((trigger_v as Dictionary).get("spawns", [])):
-			if typeof(spawn_v) == TYPE_DICTIONARY:
-				count += _replace_string(spawn_v as Dictionary, "class", old_id, new_id)
-	return count
-
-
 static func _rewrite_system_npcs(npcs: Array, kind: String, old_id: String, new_id: String) -> int:
 	var count := 0
 	for npc_v in npcs:
@@ -225,6 +216,8 @@ static func _rewrite_system_npcs(npcs: Array, kind: String, old_id: String, new_
 			count += _replace_string(npc, "template", old_id, new_id)
 		elif kind == "event":
 			count += _replace_string(npc, "hail_event_id", old_id, new_id)
+		elif kind == "faction":
+			count += _replace_string(npc, "faction", old_id, new_id)
 	return count
 
 
@@ -474,6 +467,38 @@ static func _rewrite_entities(root: Dictionary, kind: String, old_id: String, ne
 	return count
 
 
+# Renames the top-level faction key AND rewrites every other faction's
+# relations dict to follow the rename. Only kicks in for kind == "faction";
+# returns 0 otherwise so this file rewrite is a noop for unrelated renames.
+static func _rewrite_factions(root: Dictionary, kind: String, old_id: String, new_id: String) -> int:
+	if kind != "faction":
+		return 0
+	var factions_v: Variant = root.get("factions", {})
+	if typeof(factions_v) != TYPE_DICTIONARY:
+		return 0
+	var factions: Dictionary = factions_v
+	var count := 0
+	if factions.has(old_id) and not factions.has(new_id):
+		factions[new_id] = factions[old_id]
+		factions.erase(old_id)
+		count += 1
+	for fid_v in factions.keys():
+		var entry_v: Variant = factions[fid_v]
+		if typeof(entry_v) != TYPE_DICTIONARY:
+			continue
+		var rels_v: Variant = (entry_v as Dictionary).get("relations", {})
+		if typeof(rels_v) != TYPE_DICTIONARY:
+			continue
+		var rels: Dictionary = rels_v
+		if rels.has(old_id) and not rels.has(new_id):
+			rels[new_id] = rels[old_id]
+			rels.erase(old_id)
+			(entry_v as Dictionary)["relations"] = rels
+			count += 1
+	root["factions"] = factions
+	return count
+
+
 static func _rewrite_dialogue(root: Dictionary, kind: String, old_id: String, new_id: String) -> int:
 	var count := 0
 	for line_v in _as_array(root.get("lines", [])):
@@ -482,6 +507,8 @@ static func _rewrite_dialogue(root: Dictionary, kind: String, old_id: String, ne
 		var line: Dictionary = line_v
 		count += _rewrite_conditions(line.get("condition", {}), kind, old_id, new_id)
 		count += _rewrite_actions(_as_array(line.get("actions", [])), kind, old_id, new_id)
+		if kind == "faction":
+			count += _replace_string(line, "speaker_faction", old_id, new_id)
 		for choice_v in _as_array(line.get("choices", [])):
 			if typeof(choice_v) != TYPE_DICTIONARY:
 				continue

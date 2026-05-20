@@ -3,15 +3,11 @@
 importer="texture"
 type="CompressedTexture2D"
 uid="uid://7pha1keqn70g"
-path="res://.godot/imported/chibi-robot-climb-shot.png-b66639dbbe29ea3a667ba58a65c46d4a.ctex"
-metadata={
-"vram_texture": false
-}
+valid=false
 
 [deps]
 
 source_file="res://Content/demo/TilesetSources/imported/Warped Collection Files/Assets/Playable Characters/Chibi-Robot/Chibi-Robot Add-on/Sprites/climb-shot/chibi-robot-climb-shot.png"
-dest_files=["res://.godot/imported/chibi-robot-climb-shot.png-b66639dbbe29ea3a667ba58a65c46d4a.ctex"]
 
 [params]
 

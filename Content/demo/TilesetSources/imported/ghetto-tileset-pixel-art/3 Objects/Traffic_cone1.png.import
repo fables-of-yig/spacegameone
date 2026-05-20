@@ -2,16 +2,12 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://dp1uxe4y0y0jm"
-path="res://.godot/imported/Traffic_cone1.png-a4d6df7481e1cafc22d1630e108be633.ctex"
-metadata={
-"vram_texture": false
-}
+uid="uid://dv5qq8ii0ftxx"
+valid=false
 
 [deps]
 
 source_file="res://Content/demo/TilesetSources/imported/ghetto-tileset-pixel-art/3 Objects/Traffic_cone1.png"
-dest_files=["res://.godot/imported/Traffic_cone1.png-a4d6df7481e1cafc22d1630e108be633.ctex"]
 
 [params]
 

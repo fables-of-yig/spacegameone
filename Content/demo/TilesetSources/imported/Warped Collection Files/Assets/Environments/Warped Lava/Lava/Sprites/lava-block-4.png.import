@@ -2,16 +2,12 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://dcn11c3nuh476"
-path="res://.godot/imported/lava-block-4.png-b6a06a9741d023197b0fd4404c62ae6d.ctex"
-metadata={
-"vram_texture": false
-}
+uid="uid://dw8odhq8rq2xo"
+valid=false
 
 [deps]
 
 source_file="res://Content/demo/TilesetSources/imported/Warped Collection Files/Assets/Environments/Warped Lava/Lava/Sprites/lava-block-4.png"
-dest_files=["res://.godot/imported/lava-block-4.png-b6a06a9741d023197b0fd4404c62ae6d.ctex"]
 
 [params]
 

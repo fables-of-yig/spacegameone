@@ -2,16 +2,12 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://b6pypyss2htg1"
-path="res://.godot/imported/White_Key.png-6ceefdb4ddf90197feb3ccad6103bca5.ctex"
-metadata={
-"vram_texture": false
-}
+uid="uid://b2xd7cy2antgi"
+valid=false
 
 [deps]
 
 source_file="res://Content/demo/TilesetSources/imported/platformer-pixel-art-cave-2d-tileset/Objects_Animated/White_Key.png"
-dest_files=["res://.godot/imported/White_Key.png-6ceefdb4ddf90197feb3ccad6103bca5.ctex"]
 
 [params]
 

@@ -2,16 +2,12 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://b2a556juexive"
-path="res://.godot/imported/Crypt_2.png-c083dba408398fe412a65db48647ab0b.ctex"
-metadata={
-"vram_texture": false
-}
+uid="uid://bmi213u6xmnnc"
+valid=false
 
 [deps]
 
 source_file="res://Content/demo/TilesetSources/imported/Legacy Vania Pack - Crypt/Crypt/Social/Crypt_2.png"
-dest_files=["res://.godot/imported/Crypt_2.png-c083dba408398fe412a65db48647ab0b.ctex"]
 
 [params]
 

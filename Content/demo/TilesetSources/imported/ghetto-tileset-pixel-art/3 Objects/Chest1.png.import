@@ -2,16 +2,12 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://dq4em3310juol"
-path="res://.godot/imported/Chest1.png-6fce43ff843d3aeff0d30ab03d1cdbe4.ctex"
-metadata={
-"vram_texture": false
-}
+uid="uid://bngnl3w20to2"
+valid=false
 
 [deps]
 
 source_file="res://Content/demo/TilesetSources/imported/ghetto-tileset-pixel-art/3 Objects/Chest1.png"
-dest_files=["res://.godot/imported/Chest1.png-6fce43ff843d3aeff0d30ab03d1cdbe4.ctex"]
 
 [params]
 

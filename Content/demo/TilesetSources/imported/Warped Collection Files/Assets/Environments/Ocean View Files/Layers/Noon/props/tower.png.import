@@ -2,16 +2,12 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://bbjq74kf8hvcl"
-path="res://.godot/imported/tower.png-d9ec1d792758c86c1a9c3c51554ba68c.ctex"
-metadata={
-"vram_texture": false
-}
+uid="uid://idxclokqpsil"
+valid=false
 
 [deps]
 
 source_file="res://Content/demo/TilesetSources/imported/Warped Collection Files/Assets/Environments/Ocean View Files/Layers/Noon/props/tower.png"
-dest_files=["res://.godot/imported/tower.png-d9ec1d792758c86c1a9c3c51554ba68c.ctex"]
 
 [params]
 

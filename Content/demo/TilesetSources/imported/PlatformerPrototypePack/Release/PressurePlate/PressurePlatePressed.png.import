@@ -2,16 +2,12 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://cqmbi4thdl5bn"
-path="res://.godot/imported/PressurePlatePressed.png-5234ab4c2049c8591ddc208d130d9b3b.ctex"
-metadata={
-"vram_texture": false
-}
+uid="uid://6uy343b108m3"
+valid=false
 
 [deps]
 
 source_file="res://Content/demo/TilesetSources/imported/PlatformerPrototypePack/Release/PressurePlate/PressurePlatePressed.png"
-dest_files=["res://.godot/imported/PressurePlatePressed.png-5234ab4c2049c8591ddc208d130d9b3b.ctex"]
 
 [params]
 

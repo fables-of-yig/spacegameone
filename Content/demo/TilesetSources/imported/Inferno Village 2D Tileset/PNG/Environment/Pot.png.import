@@ -2,16 +2,12 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://c3vbfkpvwyt1"
-path="res://.godot/imported/Pot.png-e8107ac382e22ed738ee5cb51a805865.ctex"
-metadata={
-"vram_texture": false
-}
+uid="uid://cyq7g4iya636f"
+valid=false
 
 [deps]
 
 source_file="res://Content/demo/TilesetSources/imported/Inferno Village 2D Tileset/PNG/Environment/Pot.png"
-dest_files=["res://.godot/imported/Pot.png-e8107ac382e22ed738ee5cb51a805865.ctex"]
 
 [params]
 

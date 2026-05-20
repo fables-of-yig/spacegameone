@@ -4,7 +4,7 @@ extends Control
 # element types that can be dragged or clicked to add to the current screen.
 
 const UIPanels = preload("res://Space/scripts/ui/ui_panels.gd")
-const UITypes = preload("res://Space/scripts/editor/ui/ui_types.gd")
+const UITypes = preload("res://Space/scripts/shared/ui/ui_types.gd")
 
 signal element_add_requested(element_type: String)
 

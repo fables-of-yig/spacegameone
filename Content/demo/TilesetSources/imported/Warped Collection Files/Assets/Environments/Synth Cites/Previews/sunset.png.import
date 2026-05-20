@@ -2,16 +2,12 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://cpyethe5paig3"
-path="res://.godot/imported/sunset.png-1c4e7bada53d059ab3402380a869cdf7.ctex"
-metadata={
-"vram_texture": false
-}
+uid="uid://dgg8ptt54x0o6"
+valid=false
 
 [deps]
 
 source_file="res://Content/demo/TilesetSources/imported/Warped Collection Files/Assets/Environments/Synth Cites/Previews/sunset.png"
-dest_files=["res://.godot/imported/sunset.png-1c4e7bada53d059ab3402380a869cdf7.ctex"]
 
 [params]
 

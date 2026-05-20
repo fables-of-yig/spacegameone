@@ -3,15 +3,11 @@
 importer="texture"
 type="CompressedTexture2D"
 uid="uid://bk6g3m054v2u1"
-path="res://.godot/imported/Preview.png-405899118c5d50527b988ce8e63130c5.ctex"
-metadata={
-"vram_texture": false
-}
+valid=false
 
 [deps]
 
 source_file="res://Content/demo/TilesetSources/imported/Warped Collection Files/Assets/Environments/Nuclear Fields Files/Preview.png"
-dest_files=["res://.godot/imported/Preview.png-405899118c5d50527b988ce8e63130c5.ctex"]
 
 [params]
 

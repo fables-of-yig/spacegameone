@@ -2,16 +2,12 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://btgyxdkllqlc8"
-path="res://.godot/imported/Roof_A_04.png-f50be73ca64bdffbdc4c70f867412e8d.ctex"
-metadata={
-"vram_texture": false
-}
+uid="uid://dqmlntxqc7ul2"
+valid=false
 
 [deps]
 
 source_file="res://Content/demo/TilesetSources/imported/Inferno Village 2D Tileset/PNG/Building/Roof_A_04.png"
-dest_files=["res://.godot/imported/Roof_A_04.png-f50be73ca64bdffbdc4c70f867412e8d.ctex"]
 
 [params]
 

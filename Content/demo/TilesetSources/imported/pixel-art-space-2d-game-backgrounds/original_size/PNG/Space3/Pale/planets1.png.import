@@ -2,16 +2,12 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://dl2311rorf3yl"
-path="res://.godot/imported/planets1.png-64817b278b35e546d68171fe24e5366c.ctex"
-metadata={
-"vram_texture": false
-}
+uid="uid://d22b11eyxi2a6"
+valid=false
 
 [deps]
 
 source_file="res://Content/demo/TilesetSources/imported/pixel-art-space-2d-game-backgrounds/original_size/PNG/Space3/Pale/planets1.png"
-dest_files=["res://.godot/imported/planets1.png-64817b278b35e546d68171fe24e5366c.ctex"]
 
 [params]
 

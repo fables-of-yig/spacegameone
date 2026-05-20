@@ -1,10 +1,8 @@
 extends Control
 
 const UIPanels = preload("res://Space/scripts/ui/ui_panels.gd")
-const ContentValidator = preload("res://Space/scripts/editor/content_validator.gd")
-const ContentReferenceIndex = preload("res://Space/scripts/editor/content_reference_index.gd")
 const PlanetLandingBossRecipe = preload("res://Space/scripts/editor/recipes/planet_landing_boss_recipe.gd")
-const PackPaths = preload("res://Space/scripts/editor/pack_paths.gd")
+const PackPaths = preload("res://Space/scripts/shared/pack_paths.gd")
 
 
 signal closed
@@ -119,6 +117,12 @@ const MODE_TILES: Dictionary = {
             "label": "QUESTS",
             "subtitle": "Stages, objectives, rewards, and journal-facing structure.",
             "accent": Color(0.7, 0.86, 0.42),
+        },
+        {
+            "kind": "factions",
+            "label": "FACTIONS",
+            "subtitle": "Faction roster, symbols, player disposition, and inter-faction relations.",
+            "accent": Color(0.78, 0.5, 0.95),
         },
     ],
     "world": [

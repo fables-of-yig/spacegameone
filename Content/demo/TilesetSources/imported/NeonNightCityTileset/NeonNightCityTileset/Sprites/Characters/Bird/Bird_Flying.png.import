@@ -3,15 +3,11 @@
 importer="texture"
 type="CompressedTexture2D"
 uid="uid://bx2ufpdm78fhe"
-path="res://.godot/imported/Bird_Flying.png-9d71a44e95de46bcbffd383b4a68058a.ctex"
-metadata={
-"vram_texture": false
-}
+valid=false
 
 [deps]
 
 source_file="res://Content/demo/TilesetSources/imported/NeonNightCityTileset/NeonNightCityTileset/Sprites/Characters/Bird/Bird_Flying.png"
-dest_files=["res://.godot/imported/Bird_Flying.png-9d71a44e95de46bcbffd383b4a68058a.ctex"]
 
 [params]
 

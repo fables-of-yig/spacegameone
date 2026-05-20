@@ -5,7 +5,7 @@ extends Control
 # Clicking an entry selects that element; drag to reparent (deferred).
 
 const UIPanels = preload("res://Space/scripts/ui/ui_panels.gd")
-const UITypes = preload("res://Space/scripts/editor/ui/ui_types.gd")
+const UITypes = preload("res://Space/scripts/shared/ui/ui_types.gd")
 
 signal element_selected(element_id: String)
 signal element_delete_requested(element_id: String)

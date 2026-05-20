@@ -2,16 +2,12 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://t3ighfvsehjv"
-path="res://.godot/imported/crystal-2.png-7729838eac7b36fdf8b4c1d5c351d513.ctex"
-metadata={
-"vram_texture": false
-}
+uid="uid://dnbbjy77rh3jd"
+valid=false
 
 [deps]
 
 source_file="res://Content/demo/TilesetSources/imported/Environments/Rocky Pass Files/PNG/Props/crystal-2.png"
-dest_files=["res://.godot/imported/crystal-2.png-7729838eac7b36fdf8b4c1d5c351d513.ctex"]
 
 [params]
 

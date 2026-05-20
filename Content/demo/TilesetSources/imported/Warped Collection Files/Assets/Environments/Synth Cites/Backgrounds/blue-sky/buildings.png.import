@@ -2,16 +2,12 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://byhkj4st6oh2w"
-path="res://.godot/imported/buildings.png-803614f03cf913aaca59286fa4c05262.ctex"
-metadata={
-"vram_texture": false
-}
+uid="uid://bjdm13mojb13s"
+valid=false
 
 [deps]
 
 source_file="res://Content/demo/TilesetSources/imported/Warped Collection Files/Assets/Environments/Synth Cites/Backgrounds/blue-sky/buildings.png"
-dest_files=["res://.godot/imported/buildings.png-803614f03cf913aaca59286fa4c05262.ctex"]
 
 [params]
 

@@ -2,16 +2,12 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://b40x68sddmhtp"
-path="res://.godot/imported/Space_BG_03.png-70833664ae1013c58a9768005f252f0d.ctex"
-metadata={
-"vram_texture": false
-}
+uid="uid://dajj2ovtl778o"
+valid=false
 
 [deps]
 
 source_file="res://Content/demo/TilesetSources/imported/space-vertical-game-backgrounds/PNG/Space_BG_03/Space_BG_03.png"
-dest_files=["res://.godot/imported/Space_BG_03.png-70833664ae1013c58a9768005f252f0d.ctex"]
 
 [params]
 

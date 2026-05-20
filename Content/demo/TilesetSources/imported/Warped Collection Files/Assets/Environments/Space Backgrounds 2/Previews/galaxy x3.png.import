@@ -2,16 +2,12 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://crbarxf4t52t5"
-path="res://.godot/imported/galaxy x3.png-bed7634411592c69f6f9f46bc7109dbf.ctex"
-metadata={
-"vram_texture": false
-}
+uid="uid://bia02nnhowl3q"
+valid=false
 
 [deps]
 
 source_file="res://Content/demo/TilesetSources/imported/Warped Collection Files/Assets/Environments/Space Backgrounds 2/Previews/galaxy x3.png"
-dest_files=["res://.godot/imported/galaxy x3.png-bed7634411592c69f6f9f46bc7109dbf.ctex"]
 
 [params]
 

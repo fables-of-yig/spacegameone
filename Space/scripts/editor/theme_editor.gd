@@ -1,9 +1,8 @@
 extends Control
 
 const UIPanels = preload("res://Space/scripts/ui/ui_panels.gd")
-const UIIo     = preload("res://Space/scripts/editor/ui/ui_io.gd")
-const UITypes  = preload("res://Space/scripts/editor/ui/ui_types.gd")
-const EditorUndo = preload("res://Space/scripts/editor/editor_undo.gd")
+const UIIo     = preload("res://Space/scripts/shared/ui/ui_io.gd")
+const UITypes  = preload("res://Space/scripts/shared/ui/ui_types.gd")
 
 # In-game theme editor main controller. Owns the working theme dict for
 # the active pack and exposes mutator methods that every sub-panel/modal

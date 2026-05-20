@@ -2,16 +2,12 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://djd0jbjhp6ico"
-path="res://.godot/imported/slope.png-db852e62001af574aa490ba4ac63be95.ctex"
-metadata={
-"vram_texture": false
-}
+uid="uid://qu2e515s63xb"
+valid=false
 
 [deps]
 
 source_file="res://Content/demo/TilesetSources/imported/Environments/Town/Tileset/sliced-tileset/slope.png"
-dest_files=["res://.godot/imported/slope.png-db852e62001af574aa490ba4ac63be95.ctex"]
 
 [params]
 

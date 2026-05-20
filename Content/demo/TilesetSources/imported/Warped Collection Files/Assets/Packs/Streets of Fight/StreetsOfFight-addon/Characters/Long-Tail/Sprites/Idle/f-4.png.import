@@ -2,16 +2,12 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://dit88b3v6d35r"
-path="res://.godot/imported/f-4.png-67f6619276bf52a0d888a061cd91fe97.ctex"
-metadata={
-"vram_texture": false
-}
+uid="uid://dvnsvj08mow15"
+valid=false
 
 [deps]
 
 source_file="res://Content/demo/TilesetSources/imported/Warped Collection Files/Assets/Packs/Streets of Fight/StreetsOfFight-addon/Characters/Long-Tail/Sprites/Idle/f-4.png"
-dest_files=["res://.godot/imported/f-4.png-67f6619276bf52a0d888a061cd91fe97.ctex"]
 
 [params]
 

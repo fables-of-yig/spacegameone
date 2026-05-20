@@ -3,15 +3,11 @@
 importer="texture"
 type="CompressedTexture2D"
 uid="uid://clvam6lmn403b"
-path="res://.godot/imported/Tiles.png-6b65a604aefadc91505cbf595accb98c.ctex"
-metadata={
-"vram_texture": false
-}
+valid=false
 
 [deps]
 
 source_file="res://Content/demo/TilesetSources/imported/Legacy Classic VL.II - Ruins/Ruins/Assets/Tiles.png"
-dest_files=["res://.godot/imported/Tiles.png-6b65a604aefadc91505cbf595accb98c.ctex"]
 
 [params]
 

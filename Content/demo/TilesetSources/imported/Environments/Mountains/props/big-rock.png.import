@@ -2,16 +2,12 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://cq6p2nu0w1pq3"
-path="res://.godot/imported/big-rock.png-6d1e039c2eaea532051c3318b8ca38ba.ctex"
-metadata={
-"vram_texture": false
-}
+uid="uid://clx13s7pnr0xe"
+valid=false
 
 [deps]
 
 source_file="res://Content/demo/TilesetSources/imported/Environments/Mountains/props/big-rock.png"
-dest_files=["res://.godot/imported/big-rock.png-6d1e039c2eaea532051c3318b8ca38ba.ctex"]
 
 [params]
 

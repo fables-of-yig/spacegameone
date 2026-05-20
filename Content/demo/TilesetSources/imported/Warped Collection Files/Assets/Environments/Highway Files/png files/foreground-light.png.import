@@ -2,16 +2,12 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://cumoouh65njx"
-path="res://.godot/imported/foreground-light.png-531211f0b653096ad4128a8b52bf42ff.ctex"
-metadata={
-"vram_texture": false
-}
+uid="uid://bkp5lt43ykill"
+valid=false
 
 [deps]
 
 source_file="res://Content/demo/TilesetSources/imported/Warped Collection Files/Assets/Environments/Highway Files/png files/foreground-light.png"
-dest_files=["res://.godot/imported/foreground-light.png-531211f0b653096ad4128a8b52bf42ff.ctex"]
 
 [params]
 

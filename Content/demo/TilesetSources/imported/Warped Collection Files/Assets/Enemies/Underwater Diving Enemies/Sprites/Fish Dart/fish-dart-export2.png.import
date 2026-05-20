@@ -2,16 +2,12 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://fctfdcp0ma58"
-path="res://.godot/imported/fish-dart-export2.png-74001fe16c42ae94ba9aa3da243f7f75.ctex"
-metadata={
-"vram_texture": false
-}
+uid="uid://beic8t2mwgcgn"
+valid=false
 
 [deps]
 
 source_file="res://Content/demo/TilesetSources/imported/Warped Collection Files/Assets/Enemies/Underwater Diving Enemies/Sprites/Fish Dart/fish-dart-export2.png"
-dest_files=["res://.godot/imported/fish-dart-export2.png-74001fe16c42ae94ba9aa3da243f7f75.ctex"]
 
 [params]
 

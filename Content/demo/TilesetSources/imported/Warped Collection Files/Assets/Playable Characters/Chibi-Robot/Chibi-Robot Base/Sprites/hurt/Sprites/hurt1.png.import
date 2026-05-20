@@ -3,15 +3,11 @@
 importer="texture"
 type="CompressedTexture2D"
 uid="uid://dc8ebywd0beq2"
-path="res://.godot/imported/hurt1.png-9cd7ef1b2020e4860c83d0c105d41a06.ctex"
-metadata={
-"vram_texture": false
-}
+valid=false
 
 [deps]
 
 source_file="res://Content/demo/TilesetSources/imported/Warped Collection Files/Assets/Playable Characters/Chibi-Robot/Chibi-Robot Base/Sprites/hurt/Sprites/hurt1.png"
-dest_files=["res://.godot/imported/hurt1.png-9cd7ef1b2020e4860c83d0c105d41a06.ctex"]
 
 [params]
 

@@ -1060,9 +1060,9 @@ func _entity_preview_rect(center: Vector2, tex: Texture2D) -> Rect2:
     if tex_size.x <= 0.0 or tex_size.y <= 0.0:
         return Rect2(center - Vector2(8.0, 16.0), Vector2(16.0, 16.0))
     var max_draw := maxf(24.0, 48.0 * zoom)
-    var scale := minf(max_draw / tex_size.x, max_draw / tex_size.y)
-    scale = minf(scale, maxf(zoom, 1.0))
-    var draw_size := tex_size * maxf(scale, 0.01)
+    var preview_scale := minf(max_draw / tex_size.x, max_draw / tex_size.y)
+    preview_scale = minf(preview_scale, maxf(zoom, 1.0))
+    var draw_size := tex_size * maxf(preview_scale, 0.01)
     return Rect2(Vector2(center.x - draw_size.x * 0.5, center.y - draw_size.y), draw_size)
 
 

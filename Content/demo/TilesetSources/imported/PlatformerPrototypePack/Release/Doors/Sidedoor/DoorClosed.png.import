@@ -2,16 +2,12 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://caoen6r8iswtf"
-path="res://.godot/imported/DoorClosed.png-5be443e9af9f7eef537bd3167075656e.ctex"
-metadata={
-"vram_texture": false
-}
+uid="uid://bl22nkyhkxc7e"
+valid=false
 
 [deps]
 
 source_file="res://Content/demo/TilesetSources/imported/PlatformerPrototypePack/Release/Doors/Sidedoor/DoorClosed.png"
-dest_files=["res://.godot/imported/DoorClosed.png-5be443e9af9f7eef537bd3167075656e.ctex"]
 
 [params]
 

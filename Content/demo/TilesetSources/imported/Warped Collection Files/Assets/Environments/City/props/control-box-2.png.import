@@ -2,16 +2,12 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://cwefmoq05g0ou"
-path="res://.godot/imported/control-box-2.png-6ff4fb01450760bace38152af487738c.ctex"
-metadata={
-"vram_texture": false
-}
+uid="uid://d1ihxtb3d62yj"
+valid=false
 
 [deps]
 
 source_file="res://Content/demo/TilesetSources/imported/Warped Collection Files/Assets/Environments/City/props/control-box-2.png"
-dest_files=["res://.godot/imported/control-box-2.png-6ff4fb01450760bace38152af487738c.ctex"]
 
 [params]
 

@@ -2,16 +2,12 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://dxt21q34rayfp"
-path="res://.godot/imported/chest.png-5e998aafbcc5b731d1f8ac10da4d6c39.ctex"
-metadata={
-"vram_texture": false
-}
+uid="uid://bfs4icl2v5ic5"
+valid=false
 
 [deps]
 
 source_file="res://Content/demo/TilesetSources/imported/Mountain-platformer-pixel-art-tileset/PNG/Objects/chest.png"
-dest_files=["res://.godot/imported/chest.png-5e998aafbcc5b731d1f8ac10da4d6c39.ctex"]
 
 [params]
 

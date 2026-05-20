@@ -3,15 +3,11 @@
 importer="texture"
 type="CompressedTexture2D"
 uid="uid://nputofvxkgfg"
-path="res://.godot/imported/buildings.png-30fa016154d4e78f74e1d2ecb147e52c.ctex"
-metadata={
-"vram_texture": false
-}
+valid=false
 
 [deps]
 
 source_file="res://Content/demo/TilesetSources/imported/Warped Collection Files/Assets/Environments/Ocean View Files/Layers/Noon/props/buildings.png"
-dest_files=["res://.godot/imported/buildings.png-30fa016154d4e78f74e1d2ecb147e52c.ctex"]
 
 [params]
 

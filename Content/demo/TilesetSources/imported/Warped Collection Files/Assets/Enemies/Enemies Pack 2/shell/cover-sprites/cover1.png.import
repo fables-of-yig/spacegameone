@@ -3,15 +3,11 @@
 importer="texture"
 type="CompressedTexture2D"
 uid="uid://bqtq3uxx8sc70"
-path="res://.godot/imported/cover1.png-b02ff4081bd3437c5ea4cf81451885ec.ctex"
-metadata={
-"vram_texture": false
-}
+valid=false
 
 [deps]
 
 source_file="res://Content/demo/TilesetSources/imported/Warped Collection Files/Assets/Enemies/Enemies Pack 2/shell/cover-sprites/cover1.png"
-dest_files=["res://.godot/imported/cover1.png-b02ff4081bd3437c5ea4cf81451885ec.ctex"]
 
 [params]
 

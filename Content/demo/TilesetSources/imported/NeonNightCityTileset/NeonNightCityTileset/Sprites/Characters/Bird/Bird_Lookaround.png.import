@@ -2,16 +2,12 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://2kaviwllk2c2"
-path="res://.godot/imported/Bird_Lookaround.png-51b79342db87395e43cd2d314d5ce53f.ctex"
-metadata={
-"vram_texture": false
-}
+uid="uid://midy8dauu4cv"
+valid=false
 
 [deps]
 
 source_file="res://Content/demo/TilesetSources/imported/NeonNightCityTileset/NeonNightCityTileset/Sprites/Characters/Bird/Bird_Lookaround.png"
-dest_files=["res://.godot/imported/Bird_Lookaround.png-51b79342db87395e43cd2d314d5ce53f.ctex"]
 
 [params]
 

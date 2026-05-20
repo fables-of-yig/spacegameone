@@ -3,15 +3,11 @@
 importer="texture"
 type="CompressedTexture2D"
 uid="uid://bt2g26ueg70gq"
-path="res://.godot/imported/bootleg-idle.png-7a9042b88686e202f6063f58ca5c7005.ctex"
-metadata={
-"vram_texture": false
-}
+valid=false
 
 [deps]
 
 source_file="res://Content/demo/TilesetSources/imported/Warped Collection Files/Assets/Enemies/City Enemies/Add-On-1/Sprites/Bootleg/bootleg-idle.png"
-dest_files=["res://.godot/imported/bootleg-idle.png-7a9042b88686e202f6063f58ca5c7005.ctex"]
 
 [params]
 

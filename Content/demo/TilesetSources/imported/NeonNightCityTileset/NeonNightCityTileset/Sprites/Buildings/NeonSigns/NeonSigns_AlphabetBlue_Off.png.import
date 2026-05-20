@@ -3,15 +3,11 @@
 importer="texture"
 type="CompressedTexture2D"
 uid="uid://djubed6mx2n3w"
-path="res://.godot/imported/NeonSigns_AlphabetBlue_Off.png-554a43fc0aed3831ec22ffbb36c84bb0.ctex"
-metadata={
-"vram_texture": false
-}
+valid=false
 
 [deps]
 
 source_file="res://Content/demo/TilesetSources/imported/NeonNightCityTileset/NeonNightCityTileset/Sprites/Buildings/NeonSigns/NeonSigns_AlphabetBlue_Off.png"
-dest_files=["res://.godot/imported/NeonSigns_AlphabetBlue_Off.png-554a43fc0aed3831ec22ffbb36c84bb0.ctex"]
 
 [params]
 

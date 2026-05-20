@@ -1,0 +1,16 @@
+{
+  "id": "quest_giver",
+  "lines": [
+    {
+      "actions": [],
+      "choices": [],
+      "condition": {
+
+      },
+      "id": "start",
+      "speaker": "Guide",
+      "text": "Find the key and clear the gate."
+    }
+  ],
+  "name": "Quest Giver"
+}

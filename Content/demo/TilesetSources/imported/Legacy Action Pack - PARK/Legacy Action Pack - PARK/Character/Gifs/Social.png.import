@@ -3,15 +3,11 @@
 importer="texture"
 type="CompressedTexture2D"
 uid="uid://ylwhfvp6uc0n"
-path="res://.godot/imported/Social.png-195e998e12d7f2ab92334bad4169c3ff.ctex"
-metadata={
-"vram_texture": false
-}
+valid=false
 
 [deps]
 
 source_file="res://Content/demo/TilesetSources/imported/Legacy Action Pack - PARK/Legacy Action Pack - PARK/Character/Gifs/Social.png"
-dest_files=["res://.godot/imported/Social.png-195e998e12d7f2ab92334bad4169c3ff.ctex"]
 
 [params]
 

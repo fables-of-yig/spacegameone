@@ -2,16 +2,12 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://ctn4yg2vnvcf0"
-path="res://.godot/imported/Chest.png-af4a5c5716a3945f7f24c2ffada7c933.ctex"
-metadata={
-"vram_texture": false
-}
+uid="uid://ccwdrujqta0lx"
+valid=false
 
 [deps]
 
 source_file="res://Content/demo/TilesetSources/imported/snow-city-tileset-pixel-art/4 Animated objects/Chest.png"
-dest_files=["res://.godot/imported/Chest.png-af4a5c5716a3945f7f24c2ffada7c933.ctex"]
 
 [params]
 

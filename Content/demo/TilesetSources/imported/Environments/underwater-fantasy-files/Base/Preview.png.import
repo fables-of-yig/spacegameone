@@ -3,15 +3,11 @@
 importer="texture"
 type="CompressedTexture2D"
 uid="uid://csvggvrh58gyo"
-path="res://.godot/imported/Preview.png-18947d7af5d9b091e60b97f951f2b0ae.ctex"
-metadata={
-"vram_texture": false
-}
+valid=false
 
 [deps]
 
 source_file="res://Content/demo/TilesetSources/imported/Environments/underwater-fantasy-files/Base/Preview.png"
-dest_files=["res://.godot/imported/Preview.png-18947d7af5d9b091e60b97f951f2b0ae.ctex"]
 
 [params]
 

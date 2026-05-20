@@ -2,16 +2,12 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://dcg1amobbsyso"
-path="res://.godot/imported/7.png-f6f04c231ae20abd80b7b2e1c0b451d7.ctex"
-metadata={
-"vram_texture": false
-}
+uid="uid://bsiseo10r4cmr"
+valid=false
 
 [deps]
 
 source_file="res://Content/demo/TilesetSources/imported/space-shooter-game-level-map-pack/PNG/Level_Elements/7.png"
-dest_files=["res://.godot/imported/7.png-f6f04c231ae20abd80b7b2e1c0b451d7.ctex"]
 
 [params]
 

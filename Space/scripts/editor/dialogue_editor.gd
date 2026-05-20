@@ -3,10 +3,10 @@ extends Control
 # Dialogue editor tab. Left panel: dialogue file list. Right panel:
 # line list + line detail (speaker, text, choices, conditions, actions).
 
-const PedIO := preload("res://Space/scripts/editor/ped/ped_io.gd")
-const EditorUndo = preload("res://Space/scripts/editor/editor_undo.gd")
+const PedIO := preload("res://Space/scripts/shared/ped/ped_io.gd")
 
-const PackAssetIndex = preload("res://Space/scripts/editor/pack_asset_index.gd")
+const PackAssetIndex = preload("res://Space/scripts/shared/pack_asset_index.gd")
+const FactionsIO = preload("res://Space/scripts/shared/factions_io.gd")
 signal status_changed(text: String)
 
 var _pack_id: String = ""
@@ -28,6 +28,8 @@ var _line_list: ItemList = null
 var _empty_warning: Label = null
 var _speaker_edit: LineEdit = null
 var _speaker_pick: OptionButton = null
+var _faction_pick: OptionButton = null
+var _faction_pick_ids: Array = []
 var _text_edit: TextEdit = null
 var _link_help: Label = null
 var _cond_form: DlgConditionForm = null
@@ -47,6 +49,7 @@ func request_close() -> void:
 func open(pack_id: String) -> void:
     _pack_id = pack_id
     _refresh_speaker_picker()
+    _refresh_faction_picker()
     _load_file_list()
 
 
@@ -237,6 +240,13 @@ func _build_ui() -> void:
     _speaker_pick.item_selected.connect(_on_speaker_pick_selected)
     speaker_row.add_child(_speaker_pick)
 
+    _add_label(detail, "Speaker faction (optional)", "Pick the faction this line speaks for. The event panel draws that faction's symbol in the top-right of the portrait so the player sees the affiliation.")
+    _faction_pick = OptionButton.new()
+    _faction_pick.tooltip_text = "Choose the speaker's faction. Symbols are authored in Game Pieces > Factions."
+    _faction_pick.item_selected.connect(_on_faction_pick_selected)
+    detail.add_child(_faction_pick)
+    _refresh_faction_picker()
+
     _add_label(detail, "What does this line say?", "The actual dialogue text shown to the player for this line.")
     _text_edit = TextEdit.new()
     _text_edit.custom_minimum_size = Vector2(0, 60)
@@ -344,6 +354,7 @@ func _show_line_detail(idx: int) -> void:
     var line: Dictionary = _lines[idx]
     _speaker_edit.text = str(line.get("speaker", ""))
     _sync_speaker_pick(_speaker_edit.text)
+    _sync_faction_pick(str(line.get("speaker_faction", "")))
     _text_edit.text = str(line.get("text", ""))
 
     var cond_v: Variant = line.get("condition", {})
@@ -362,6 +373,11 @@ func _flush_line() -> bool:
         return true
     var line: Dictionary = _lines[_selected_line]
     line["speaker"] = _speaker_edit.text.strip_edges()
+    var selected_faction_id: String = _selected_faction_id()
+    if selected_faction_id.is_empty():
+        line.erase("speaker_faction")
+    else:
+        line["speaker_faction"] = selected_faction_id
     line["text"] = _text_edit.text
 
     if _cond_form != null and _cond_form.has_error():
@@ -443,6 +459,56 @@ func _on_speaker_pick_selected(idx: int) -> void:
         return
     if _speaker_edit != null:
         _speaker_edit.text = _speaker_pick.get_item_text(idx)
+    _mark_dirty()
+
+
+# Rebuilt whenever the active pack changes. Item 0 is the "(none)" sentinel
+# so authors can clear a faction on a line; index `i+1` corresponds to
+# _faction_pick_ids[i], so _selected_faction_id can map back to the raw id.
+func _refresh_faction_picker() -> void:
+    if _faction_pick == null:
+        return
+    _faction_pick.clear()
+    _faction_pick_ids.clear()
+    _faction_pick.add_item("(no faction)")
+    var factions := FactionsIO.load_or_empty(_pack_id)
+    var ids: Array = factions.keys()
+    ids.sort()
+    for fid_v in ids:
+        var fid: String = str(fid_v)
+        var faction_name: String = str((factions[fid_v] as Dictionary).get("name", fid))
+        _faction_pick.add_item("%s (%s)" % [faction_name, fid])
+        _faction_pick_ids.append(fid)
+    _faction_pick.select(0)
+
+
+func _sync_faction_pick(current_id: String) -> void:
+    if _faction_pick == null:
+        return
+    var clean: String = current_id.strip_edges()
+    if clean.is_empty():
+        _faction_pick.select(0)
+        return
+    var idx := _faction_pick_ids.find(clean)
+    if idx < 0:
+        # Stale id (faction was deleted or renamed). Keep the field empty
+        # in the picker; _selected_faction_id returns "" so the next flush
+        # will erase the stale value from the line.
+        _faction_pick.select(0)
+        return
+    _faction_pick.select(idx + 1)
+
+
+func _selected_faction_id() -> String:
+    if _faction_pick == null:
+        return ""
+    var idx: int = _faction_pick.selected
+    if idx <= 0 or idx > _faction_pick_ids.size():
+        return ""
+    return str(_faction_pick_ids[idx - 1])
+
+
+func _on_faction_pick_selected(_idx: int) -> void:
     _mark_dirty()
 
 
@@ -625,11 +691,11 @@ func _import_dialogue_payload(payload: Dictionary) -> Array:
             if typeof(entry_v) != TYPE_DICTIONARY:
                 continue
             var entry: Dictionary = entry_v.duplicate(true)
-            var dialogue_id := str(entry.get("id", "")).strip_edges()
-            if dialogue_id.is_empty():
+            var entry_dialogue_id := str(entry.get("id", "")).strip_edges()
+            if entry_dialogue_id.is_empty():
                 continue
-            if PedIO.save_dialogue(_pack_id, dialogue_id, entry):
-                imported_ids.append(dialogue_id)
+            if PedIO.save_dialogue(_pack_id, entry_dialogue_id, entry):
+                imported_ids.append(entry_dialogue_id)
         if imported_ids.is_empty():
             status_changed.emit("No valid dialogue files were imported from the bundle")
         return imported_ids

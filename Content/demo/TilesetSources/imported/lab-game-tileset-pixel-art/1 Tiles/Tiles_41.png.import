@@ -2,16 +2,12 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://4y1rs7tf2iec"
-path="res://.godot/imported/Tiles_41.png-413d969c2b8845707f23ace9027f6c2a.ctex"
-metadata={
-"vram_texture": false
-}
+uid="uid://ckuwhe0f8pmxn"
+valid=false
 
 [deps]
 
 source_file="res://Content/demo/TilesetSources/imported/lab-game-tileset-pixel-art/1 Tiles/Tiles_41.png"
-dest_files=["res://.godot/imported/Tiles_41.png-413d969c2b8845707f23ace9027f6c2a.ctex"]
 
 [params]
 

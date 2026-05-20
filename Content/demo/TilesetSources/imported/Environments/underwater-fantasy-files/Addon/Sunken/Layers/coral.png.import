@@ -2,16 +2,12 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://cxw0ycof6xwl8"
-path="res://.godot/imported/coral.png-1e0331622aa8aa209fc39ed8ca764d28.ctex"
-metadata={
-"vram_texture": false
-}
+uid="uid://b58fceig0wl5w"
+valid=false
 
 [deps]
 
 source_file="res://Content/demo/TilesetSources/imported/Environments/underwater-fantasy-files/Addon/Sunken/Layers/coral.png"
-dest_files=["res://.godot/imported/coral.png-1e0331622aa8aa209fc39ed8ca764d28.ctex"]
 
 [params]
 

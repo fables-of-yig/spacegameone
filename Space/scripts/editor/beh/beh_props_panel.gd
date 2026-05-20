@@ -1,7 +1,7 @@
 extends Control
 
 const UIPanels = preload("res://Space/scripts/ui/ui_panels.gd")
-const BehTypes = preload("res://Space/scripts/editor/beh/beh_types.gd")
+const BehTypes = preload("res://Space/scripts/shared/beh/beh_types.gd")
 
 # Right pane for the behavior editor. Shows the fields of the currently
 # selected tree node: type (clickable → type picker), name, optional

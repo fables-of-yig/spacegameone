@@ -3,15 +3,11 @@
 importer="texture"
 type="CompressedTexture2D"
 uid="uid://cwrnt8j6507k"
-path="res://.godot/imported/beam-impact-3.png-f1417cc5b11c4016890cad3dd5a3e296.ctex"
-metadata={
-"vram_texture": false
-}
+valid=false
 
 [deps]
 
 source_file="res://Content/demo/TilesetSources/imported/Warped Collection Files/Assets/Items, VFX and Props/Warped Lava FX/sprites/beam-impact/beam-impact-3.png"
-dest_files=["res://.godot/imported/beam-impact-3.png-f1417cc5b11c4016890cad3dd5a3e296.ctex"]
 
 [params]
 

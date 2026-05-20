@@ -3,15 +3,11 @@
 importer="texture"
 type="CompressedTexture2D"
 uid="uid://br0krvisq1kq3"
-path="res://.godot/imported/Tiles.png-4e2a9c089e28efafc6a0eb779a60b0f1.ctex"
-metadata={
-"vram_texture": false
-}
+valid=false
 
 [deps]
 
 source_file="res://Content/demo/TilesetSources/imported/Legacy Classic VL.II - Lair/Lair/Social/Tiles.png"
-dest_files=["res://.godot/imported/Tiles.png-4e2a9c089e28efafc6a0eb779a60b0f1.ctex"]
 
 [params]
 

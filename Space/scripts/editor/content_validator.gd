@@ -1,11 +1,12 @@
 class_name ContentValidator
 extends RefCounted
 
-const PedIO := preload("res://Space/scripts/editor/ped/ped_io.gd")
-const RegIO := preload("res://Space/scripts/editor/reg/reg_io.gd")
-const UIIo := preload("res://Space/scripts/editor/ui/ui_io.gd")
+const PedIO := preload("res://Space/scripts/shared/ped/ped_io.gd")
+const RegIO := preload("res://Space/scripts/shared/reg/reg_io.gd")
+const UIIo := preload("res://Space/scripts/shared/ui/ui_io.gd")
 const BehLoader := preload("res://Space/scripts/runtime/beh/beh_loader.gd")
-const PackPaths := preload("res://Space/scripts/editor/pack_paths.gd")
+const PackPaths := preload("res://Space/scripts/shared/pack_paths.gd")
+const FactionsIO := preload("res://Space/scripts/shared/factions_io.gd")
 
 const BOOTSTRAP_SCHEMA_VERSION: String = "1.0"
 const BOOTSTRAP_REQUIRED_PACK_FIELDS: Array = [
@@ -152,6 +153,7 @@ static func validate(pack_id: String) -> Array:
 	_validate_pack_manifest(pack_id, issues)
 	_validate_required_bootstrap_files(pack_id, issues)
 	_validate_ui_screens(pack_id, issues)
+	_validate_factions(pack_id, issues)
 	_validate_systems(pack_id, systems, room_addrs, issues)
 	_validate_world_hierarchy(pack_id, flat_rooms_root, room_addrs, issues)
 	_validate_rooms(rooms, entity_ids, room_addrs, dialogue_ids, shop_ids, ability_ids, item_ids, quest_ids, quests, issues)
@@ -173,6 +175,8 @@ static func validate(pack_id: String) -> Array:
 static func _validate_ui_screens(pack_id: String, issues: Array) -> void:
 	for required_screen_v in UiContract.screen_ids():
 		var required_screen := str(required_screen_v)
+		if not UiContract.screen_is_required(required_screen):
+			continue
 		if not _pack_file_exists(pack_id, "UI/screens/%s.json" % required_screen):
 			issues.append(Issue.new("error", "UI screen '%s'" % required_screen,
 				"required stock screen file is missing"))
@@ -246,6 +250,57 @@ static func _validate_required_bootstrap_files(pack_id: String, issues: Array) -
 			issues.append(Issue.new("error", rel_path, "required bootstrap file is missing"))
 
 
+static func _validate_factions(pack_id: String, issues: Array) -> void:
+	var src := "Factions/factions.json"
+	var factions := FactionsIO.load_existing(pack_id)
+	if not factions.has("independent"):
+		issues.append(Issue.new("error", src,
+			"reserved faction id 'independent' is missing — required as runtime fallback"))
+	var slug_re := RegEx.new()
+	slug_re.compile("^[a-z0-9_]+$")
+	for fid_v in factions.keys():
+		var fid: String = str(fid_v)
+		var entry: Dictionary = factions[fid_v]
+		var entry_src: String = "%s [%s]" % [src, fid]
+		if slug_re.search(fid) == null:
+			issues.append(Issue.new("error", entry_src,
+				"id must be a slug (lowercase letters, digits, underscore)"))
+		if str(entry.get("name", "")).strip_edges().is_empty():
+			issues.append(Issue.new("error", entry_src, "name is required"))
+		var disp: String = str(entry.get("disposition_to_player", "neutral"))
+		if not FactionsIO.ALLOWED_DISPOSITIONS.has(disp):
+			issues.append(Issue.new("error", entry_src,
+				"disposition_to_player '%s' is not one of %s" % [disp, FactionsIO.ALLOWED_DISPOSITIONS]))
+		var rep: int = int(entry.get("player_rep_start", 0))
+		if rep < -100 or rep > 100:
+			issues.append(Issue.new("error", entry_src,
+				"player_rep_start %d outside allowed range [-100, 100]" % rep))
+		var sym: String = str(entry.get("symbol_path", "")).strip_edges()
+		if not sym.is_empty():
+			var user_abs := PackPaths.writable_pack_file(pack_id, sym)
+			var shipped_abs := "res://Content/%s/%s" % [pack_id, sym]
+			if not FileAccess.file_exists(user_abs) and not FileAccess.file_exists(shipped_abs):
+				issues.append(Issue.new("error", entry_src,
+					"symbol_path '%s' does not exist in this pack" % sym))
+		var rels_v: Variant = entry.get("relations", {})
+		if typeof(rels_v) != TYPE_DICTIONARY:
+			issues.append(Issue.new("error", entry_src, "relations must be a dictionary"))
+			continue
+		for other_v in (rels_v as Dictionary).keys():
+			var other_fid: String = str(other_v)
+			if other_fid == fid:
+				issues.append(Issue.new("error", entry_src,
+					"relations cannot reference this faction's own id"))
+				continue
+			if not factions.has(other_fid):
+				issues.append(Issue.new("error", entry_src,
+					"relations references unknown faction '%s'" % other_fid))
+			var rel_val: String = str((rels_v as Dictionary)[other_v])
+			if not FactionsIO.ALLOWED_RELATIONS.has(rel_val):
+				issues.append(Issue.new("error", entry_src,
+					"relation to '%s' is '%s', not one of %s" % [other_fid, rel_val, FactionsIO.ALLOWED_RELATIONS]))
+
+
 static func _validate_systems(pack_id: String, systems: Dictionary,
 		current_pack_room_addrs: Dictionary, issues: Array) -> void:
 	var manifest := _load_pack_manifest(pack_id)
@@ -288,7 +343,9 @@ static func _validate_systems(pack_id: String, systems: Dictionary,
 				if not conn_id.is_empty() and not systems.has(conn_id):
 					issues.append(Issue.new("error", src,
 						"connection references unknown system '%s'" % conn_id))
-		_validate_spawn_triggers(sys.get("spawn_triggers", []), src, issues)
+		# spawn_triggers used to be validated here; spawning waves is now
+		# an ECA action (spawn_space_enemies) gated by ordinary trigger
+		# rules in Triggers/global.json, so per-system validation is dead.
 		_validate_placed_npcs(pack_id, sys.get("placed_npcs", []), src, issues)
 		var pois_v: Variant = sys.get("pois", [])
 		if typeof(pois_v) != TYPE_ARRAY:
@@ -318,6 +375,11 @@ static func _validate_systems(pack_id: String, systems: Dictionary,
 			if not event_id.is_empty() and not _space_event_exists(event_id):
 				issues.append(Issue.new("error", poi_src,
 					"event_id '%s' does not exist" % event_id))
+			if bool(poi.get("hidden", false)):
+				var hidden_id := str(poi.get("id", "")).strip_edges()
+				if hidden_id.is_empty():
+					issues.append(Issue.new("error", poi_src,
+						"hidden POI requires a stable 'id' so unlock_poi trigger actions can reference it"))
 			if poi_type != "planet":
 				continue
 			poi_src = "%s planet POI #%d" % [src, i]
@@ -420,47 +482,6 @@ static func _validate_systems(pack_id: String, systems: Dictionary,
 				issues.append(Issue.new("error", poi_src,
 					"duplicate planet snapshot key '%s' in this system" % planet_key))
 			seen_planet_keys[planet_key] = true
-
-
-static func _validate_spawn_triggers(triggers_v: Variant, system_src: String, issues: Array) -> void:
-	if typeof(triggers_v) != TYPE_ARRAY:
-		issues.append(Issue.new("error", system_src, "spawn_triggers must be an array"))
-		return
-	var allowed_events := {
-		"enter": true,
-		"proximity": true,
-		"station_destroyed": true,
-	}
-	for i in range((triggers_v as Array).size()):
-		var trigger_v: Variant = (triggers_v as Array)[i]
-		var src := "%s spawn_trigger #%d" % [system_src, i]
-		if typeof(trigger_v) != TYPE_DICTIONARY:
-			issues.append(Issue.new("error", src, "entry is not a dictionary"))
-			continue
-		var trigger: Dictionary = trigger_v
-		var on_event := str(trigger.get("on", "enter")).strip_edges().to_lower()
-		if not allowed_events.has(on_event):
-			issues.append(Issue.new("error", src, "unknown on event '%s'" % on_event))
-		if not _numeric_pair_is_valid(trigger.get("dist", [400, 800])):
-			issues.append(Issue.new("error", src, "dist must be [min, max] with max >= min"))
-		var spawns_v: Variant = trigger.get("spawns", [])
-		if typeof(spawns_v) != TYPE_ARRAY or (spawns_v as Array).is_empty():
-			issues.append(Issue.new("error", src, "spawns must be a non-empty array"))
-			continue
-		for spawn_i in range((spawns_v as Array).size()):
-			var spawn_v: Variant = (spawns_v as Array)[spawn_i]
-			if typeof(spawn_v) != TYPE_DICTIONARY:
-				issues.append(Issue.new("error", src, "spawn #%d is not a dictionary" % spawn_i))
-				continue
-			var spawn: Dictionary = spawn_v
-			var class_id := str(spawn.get("class", "")).strip_edges()
-			if class_id.is_empty():
-				issues.append(Issue.new("error", src, "spawn #%d missing class" % spawn_i))
-			elif not _enemy_class_exists(class_id):
-				issues.append(Issue.new("error", src,
-					"spawn #%d references unknown enemy class '%s'" % [spawn_i, class_id]))
-			if int(spawn.get("count", 1)) < 1:
-				issues.append(Issue.new("error", src, "spawn #%d count must be >= 1" % spawn_i))
 
 
 static func _validate_placed_npcs(pack_id: String, placed_v: Variant, system_src: String,
@@ -660,7 +681,7 @@ static func _validate_conditions_recursive(conditions: Variant, src: String,
 		elif ctype == "payload_eq":
 			if str(cond_dict.get("key", "")).strip_edges().is_empty():
 				issues.append(Issue.new("error", src, "payload_eq condition is missing key"))
-		elif ctype == "has_tag" or ctype == "entity_has_tag" or ctype == "has_global_tag":
+		elif ctype == "has_tag" or ctype == "has_global_tag":
 			if str(cond_dict.get("tag", "")).strip_edges().is_empty():
 				issues.append(Issue.new("error", src, "%s condition is missing tag" % ctype))
 		elif ctype == "has_flag" or ctype == "var_eq" or ctype == "var_gte":

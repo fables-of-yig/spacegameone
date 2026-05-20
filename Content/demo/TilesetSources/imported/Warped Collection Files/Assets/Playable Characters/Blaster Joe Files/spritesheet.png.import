@@ -2,16 +2,12 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://c6e3kfsd06nub"
-path="res://.godot/imported/spritesheet.png-5f9a4a2e7bdc86992941f72d1aadc2a9.ctex"
-metadata={
-"vram_texture": false
-}
+uid="uid://dtlq1rli8ssya"
+valid=false
 
 [deps]
 
 source_file="res://Content/demo/TilesetSources/imported/Warped Collection Files/Assets/Playable Characters/Blaster Joe Files/spritesheet.png"
-dest_files=["res://.godot/imported/spritesheet.png-5f9a4a2e7bdc86992941f72d1aadc2a9.ctex"]
 
 [params]
 

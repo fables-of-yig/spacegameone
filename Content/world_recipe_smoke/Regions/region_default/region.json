@@ -1,0 +1,14 @@
+{
+  "cell_blocks_x": 30,
+  "cell_blocks_y": 17,
+  "encounter_id": "",
+  "gravity_mult": 1.0,
+  "grid_cells_x": 6,
+  "grid_cells_y": 2,
+  "hazard_type": "",
+  "id": "region_default",
+  "music_id": "",
+  "name": "Recipe Region",
+  "version": "2.0",
+  "visual_theme": ""
+}

@@ -2,16 +2,12 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://wdhyiiir2ie4"
-path="res://.godot/imported/pipe-02.png-132c813a77cd4f6e7a4090cc6e9dd88f.ctex"
-metadata={
-"vram_texture": false
-}
+uid="uid://b1ibh58gpxrym"
+valid=false
 
 [deps]
 
 source_file="res://Content/demo/TilesetSources/imported/Warped Collection Files/Assets/Environments/Storm-Night-files/png/props/pipe-02.png"
-dest_files=["res://.godot/imported/pipe-02.png-132c813a77cd4f6e7a4090cc6e9dd88f.ctex"]
 
 [params]
 

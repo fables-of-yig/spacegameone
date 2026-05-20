@@ -2,16 +2,12 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://cu4r2v1w0gp86"
-path="res://.godot/imported/LandscapeHills.png-a13e0da614ebec5f9724cf1c68f1c868.ctex"
-metadata={
-"vram_texture": false
-}
+uid="uid://bakc418ncahfx"
+valid=false
 
 [deps]
 
 source_file="res://Content/demo/TilesetSources/imported/Parallax Backgrounds/01. Parallax BG_Sprites/LandscapeHills.png"
-dest_files=["res://.godot/imported/LandscapeHills.png-a13e0da614ebec5f9724cf1c68f1c868.ctex"]
 
 [params]
 

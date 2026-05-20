@@ -2,16 +2,12 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://dxuckviavfww"
-path="res://.godot/imported/banner-hor2.png-dd7d271198ec65f12a7a2ee47a56e0f5.ctex"
-metadata={
-"vram_texture": false
-}
+uid="uid://b3yp00kr5gxry"
+valid=false
 
 [deps]
 
 source_file="res://Content/demo/TilesetSources/imported/Warped Collection Files/Assets/Packs/Streets of Fight/Streets of Fight Base/Stage Layers/props/banner-hor/banner-hor2.png"
-dest_files=["res://.godot/imported/banner-hor2.png-dd7d271198ec65f12a7a2ee47a56e0f5.ctex"]
 
 [params]
 

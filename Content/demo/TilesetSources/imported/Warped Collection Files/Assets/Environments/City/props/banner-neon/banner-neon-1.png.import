@@ -3,15 +3,11 @@
 importer="texture"
 type="CompressedTexture2D"
 uid="uid://dty5d6gjjff1l"
-path="res://.godot/imported/banner-neon-1.png-368bcb58d5f700d869f492d26bee91cc.ctex"
-metadata={
-"vram_texture": false
-}
+valid=false
 
 [deps]
 
 source_file="res://Content/demo/TilesetSources/imported/Warped Collection Files/Assets/Environments/City/props/banner-neon/banner-neon-1.png"
-dest_files=["res://.godot/imported/banner-neon-1.png-368bcb58d5f700d869f492d26bee91cc.ctex"]
 
 [params]
 

@@ -3,15 +3,11 @@
 importer="texture"
 type="CompressedTexture2D"
 uid="uid://d1c6cam7hdx8i"
-path="res://.godot/imported/Tile_33.png-85b4b125f2ad2cbec9544d426f91c834.ctex"
-metadata={
-"vram_texture": false
-}
+valid=false
 
 [deps]
 
 source_file="res://Content/demo/TilesetSources/imported/prison-tileset-pixel-art-assets/1 Tiles/Tile_33.png"
-dest_files=["res://.godot/imported/Tile_33.png-85b4b125f2ad2cbec9544d426f91c834.ctex"]
 
 [params]
 

@@ -2,16 +2,12 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://0leo1llly8i1"
-path="res://.godot/imported/trap6.png-cbd3218dd1a7d85e8dc345185f9d36b5.ctex"
-metadata={
-"vram_texture": false
-}
+uid="uid://cc774lyr8qf5i"
+valid=false
 
 [deps]
 
 source_file="res://Content/demo/TilesetSources/imported/Mountain-platformer-pixel-art-tileset/PNG/Objects/trap6.png"
-dest_files=["res://.godot/imported/trap6.png-cbd3218dd1a7d85e8dc345185f9d36b5.ctex"]
 
 [params]
 

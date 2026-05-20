@@ -2,16 +2,12 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://bavk7k2xfyrn0"
-path="res://.godot/imported/LaserActivate.png-c961711566e71ffcb66716d382dc21d7.ctex"
-metadata={
-"vram_texture": false
-}
+uid="uid://cjc7dgorhf5pm"
+valid=false
 
 [deps]
 
 source_file="res://Content/demo/TilesetSources/imported/PlatformerPrototypePack/Release/Laser/LaserActivate.png"
-dest_files=["res://.godot/imported/LaserActivate.png-c961711566e71ffcb66716d382dc21d7.ctex"]
 
 [params]
 

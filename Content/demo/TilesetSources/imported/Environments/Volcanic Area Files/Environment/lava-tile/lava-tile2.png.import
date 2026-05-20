@@ -2,16 +2,12 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://vh7o15j0ynnc"
-path="res://.godot/imported/lava-tile2.png-01a0a858e613a0ecae234974f109f38f.ctex"
-metadata={
-"vram_texture": false
-}
+uid="uid://ceffoirxrc1ll"
+valid=false
 
 [deps]
 
 source_file="res://Content/demo/TilesetSources/imported/Environments/Volcanic Area Files/Environment/lava-tile/lava-tile2.png"
-dest_files=["res://.godot/imported/lava-tile2.png-01a0a858e613a0ecae234974f109f38f.ctex"]
 
 [params]
 

@@ -2,16 +2,12 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://dhq7xsefg3q44"
-path="res://.godot/imported/lizzard6.png-ca0462079f060f505e091383bc744337.ctex"
-metadata={
-"vram_texture": false
-}
+uid="uid://34fjjl1d8ark"
+valid=false
 
 [deps]
 
 source_file="res://Content/demo/TilesetSources/imported/Warped Collection Files/Assets/Enemies/Enemies Pack 3/Sprites/Lizzard/lizzard6.png"
-dest_files=["res://.godot/imported/lizzard6.png-ca0462079f060f505e091383bc744337.ctex"]
 
 [params]
 

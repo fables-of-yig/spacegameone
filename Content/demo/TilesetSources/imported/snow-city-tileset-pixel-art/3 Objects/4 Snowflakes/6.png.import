@@ -2,16 +2,12 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://dqajqam7xhlqm"
-path="res://.godot/imported/6.png-9fcecc6d725294cca572b9709c97cbd3.ctex"
-metadata={
-"vram_texture": false
-}
+uid="uid://c2ls4a6pql77r"
+valid=false
 
 [deps]
 
 source_file="res://Content/demo/TilesetSources/imported/snow-city-tileset-pixel-art/3 Objects/4 Snowflakes/6.png"
-dest_files=["res://.godot/imported/6.png-9fcecc6d725294cca572b9709c97cbd3.ctex"]
 
 [params]
 

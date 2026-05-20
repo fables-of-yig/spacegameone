@@ -2,16 +2,12 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://b1usyyiml4ldw"
-path="res://.godot/imported/idle.png-4ffda76b74c250d3cec405b8e73a5a2a.ctex"
-metadata={
-"vram_texture": false
-}
+uid="uid://bxnoittp2gdv3"
+valid=false
 
 [deps]
 
 source_file="res://Content/demo/TilesetSources/imported/Warped Collection Files/Assets/Enemies/Sewers Soldier Enemy/Sprites/Soldier/idle.png"
-dest_files=["res://.godot/imported/idle.png-4ffda76b74c250d3cec405b8e73a5a2a.ctex"]
 
 [params]
 

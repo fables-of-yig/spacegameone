@@ -2,16 +2,12 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://cia5imriomwpt"
-path="res://.godot/imported/Decor_B_1080x3000.png-63c033fac331d4bf907446d2f74ebe52.ctex"
-metadata={
-"vram_texture": false
-}
+uid="uid://bgrxo04iy2hcw"
+valid=false
 
 [deps]
 
 source_file="res://Content/demo/TilesetSources/imported/space-shooter-game-level-map-pack/PNG/Maps/Map_02/Layers/Decor_B_1080x3000.png"
-dest_files=["res://.godot/imported/Decor_B_1080x3000.png-63c033fac331d4bf907446d2f74ebe52.ctex"]
 
 [params]
 

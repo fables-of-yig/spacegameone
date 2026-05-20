@@ -2,16 +2,12 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://c2rt8wn6nevoj"
-path="res://.godot/imported/Mushroom_Key.png-ada3cc432b4e53b4681fa7b2f95bef03.ctex"
-metadata={
-"vram_texture": false
-}
+uid="uid://qm53g2jgncie"
+valid=false
 
 [deps]
 
 source_file="res://Content/demo/TilesetSources/imported/platformer-pixel-art-cave-2d-tileset/Objects_Animated/Mushroom_Key.png"
-dest_files=["res://.godot/imported/Mushroom_Key.png-ada3cc432b4e53b4681fa7b2f95bef03.ctex"]
 
 [params]
 

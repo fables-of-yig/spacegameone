@@ -1,0 +1,75 @@
+{
+	"libraries": [],
+	"triggers": [
+		{
+			"actions": [
+				{
+					"quest_id": "boss_gate",
+					"stage_id": "prepare",
+					"type": "quest_start"
+				}
+			],
+			"conditions": [
+				{
+					"key": "zone_id",
+					"type": "payload_eq",
+					"value": "quest_start_zone"
+				}
+			],
+			"event": "zone_enter",
+			"id": "quest_start"
+		},
+		{
+			"actions": [
+				{
+					"objective_id": "get_key",
+					"quest_id": "boss_gate",
+					"stage_id": "prepare",
+					"type": "quest_complete_objective"
+				}
+			],
+			"conditions": [
+				{
+					"key": "item_id",
+					"type": "payload_eq",
+					"value": "key_quest_renamed"
+				}
+			],
+			"event": "pickup",
+			"id": "quest_key_pickup"
+		},
+		{
+			"actions": [
+				{
+					"quest_id": "boss_gate",
+					"stage_id": "clear_boss",
+					"type": "quest_set_stage"
+				},
+				{
+					"objective_id": "defeat_boss",
+					"quest_id": "boss_gate",
+					"stage_id": "clear_boss",
+					"type": "quest_complete_objective"
+				},
+				{
+					"quest_id": "boss_gate",
+					"stage_id": "clear_boss",
+					"type": "quest_complete_stage"
+				},
+				{
+					"quest_id": "boss_gate",
+					"type": "quest_complete"
+				}
+			],
+			"conditions": [
+				{
+					"key": "entity_id",
+					"type": "payload_eq",
+					"value": "golden_boss"
+				}
+			],
+			"event": "enemy_defeated",
+			"id": "quest_boss_defeated"
+		}
+	]
+}

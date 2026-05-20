@@ -1,0 +1,234 @@
+{
+  "libraries": [],
+  "triggers": [
+    {
+      "actions": [
+        {
+          "id": "phase_dash",
+          "type": "give_ability"
+        },
+        {
+          "name": "has_key_silver",
+          "type": "set_var",
+          "value": 1
+        },
+        {
+          "id": "gate_to_boss",
+          "locked": false,
+          "type": "set_door_locked"
+        },
+        {
+          "tag": "gate_to_boss_unlocked",
+          "type": "add_tag"
+        }
+      ],
+      "conditions": [
+        {
+          "key": "item_id",
+          "type": "payload_eq",
+          "value": "key_silver"
+        }
+      ],
+      "enabled": true,
+      "event": "pickup",
+      "id": "pickup_unlocks_gate",
+      "locals": [],
+      "name": "Pickup unlocks a gate",
+      "once": true
+    },
+    {
+      "actions": [
+        {
+          "id": "golden_shopkeep",
+          "type": "start_dialogue"
+        }
+      ],
+      "conditions": [
+        {
+          "key": "entity_id",
+          "type": "payload_eq",
+          "value": "golden_shopkeeper"
+        }
+      ],
+      "enabled": true,
+      "event": "interact",
+      "id": "npc_starts_dialogue",
+      "locals": [],
+      "name": "NPC starts a conversation",
+      "once": false
+    },
+    {
+      "actions": [
+        {
+          "type": "lock_player"
+        },
+        {
+          "duration": 0.0,
+          "mode": "position",
+          "type": "camera_focus",
+          "x": 320.0,
+          "y": 176.0
+        },
+        {
+          "id": "golden_boss",
+          "type": "spawn_entity_at_zone",
+          "zone_id": "boss_intro"
+        },
+        {
+          "type": "camera_unlock"
+        },
+        {
+          "type": "unlock_player"
+        }
+      ],
+      "conditions": [
+        {
+          "key": "zone_id",
+          "type": "payload_eq",
+          "value": "boss_intro"
+        }
+      ],
+      "enabled": true,
+      "event": "zone_enter",
+      "id": "boss_intro",
+      "locals": [],
+      "name": "Boss intro zone",
+      "once": true
+    },
+    {
+      "actions": [
+        {
+          "count": 1,
+          "id": "boss_core",
+          "type": "give_item"
+        },
+        {
+          "id": "boss_exit",
+          "locked": false,
+          "type": "set_door_locked"
+        },
+        {
+          "tag": "boss_defeated",
+          "type": "add_tag"
+        }
+      ],
+      "conditions": [
+        {
+          "key": "entity_id",
+          "type": "payload_eq",
+          "value": "golden_boss"
+        }
+      ],
+      "enabled": true,
+      "event": "boss_defeated",
+      "id": "boss_defeated_reward",
+      "locals": [],
+      "name": "Boss defeated reward",
+      "once": true
+    },
+    {
+      "actions": [
+        {
+          "event": "story_button_pressed",
+          "inherit_payload": true,
+          "type": "fire_event"
+        }
+      ],
+      "conditions": [
+        {
+          "key": "action",
+          "type": "payload_eq",
+          "value": "start"
+        }
+      ],
+      "enabled": true,
+      "event": "ui_button",
+      "id": "ui_button_fires_event",
+      "locals": [],
+      "name": "UI button fires a story event",
+      "once": false
+    },
+    {
+      "actions": [
+        {
+          "quest_id": "boss_gate",
+          "stage_id": "prepare",
+          "type": "quest_start"
+        }
+      ],
+      "conditions": [
+        {
+          "key": "zone_id",
+          "type": "payload_eq",
+          "value": "quest_start_zone"
+        }
+      ],
+      "enabled": true,
+      "event": "zone_enter",
+      "id": "quest_starts_on_zone",
+      "locals": [],
+      "name": "Quest starts when entering a zone",
+      "once": true
+    },
+    {
+      "actions": [
+        {
+          "objective_id": "get_key",
+          "quest_id": "boss_gate",
+          "stage_id": "prepare",
+          "type": "quest_complete_objective"
+        }
+      ],
+      "conditions": [
+        {
+          "key": "item_id",
+          "type": "payload_eq",
+          "value": "key_silver"
+        }
+      ],
+      "enabled": true,
+      "event": "pickup",
+      "id": "quest_pickup_completes_objective",
+      "locals": [],
+      "name": "Pickup completes a quest objective",
+      "once": true
+    },
+    {
+      "actions": [
+        {
+          "quest_id": "boss_gate",
+          "stage_id": "clear_boss",
+          "type": "quest_set_stage"
+        },
+        {
+          "objective_id": "defeat_boss",
+          "quest_id": "boss_gate",
+          "stage_id": "clear_boss",
+          "type": "quest_complete_objective"
+        },
+        {
+          "quest_id": "boss_gate",
+          "stage_id": "clear_boss",
+          "type": "quest_complete_stage"
+        },
+        {
+          "quest_id": "boss_gate",
+          "type": "quest_complete"
+        }
+      ],
+      "conditions": [
+        {
+          "key": "entity_id",
+          "type": "payload_eq",
+          "value": "golden_boss"
+        }
+      ],
+      "enabled": true,
+      "event": "enemy_defeated",
+      "id": "quest_boss_completion",
+      "locals": [],
+      "name": "Boss defeated completes a quest",
+      "once": true
+    }
+  ]
+}

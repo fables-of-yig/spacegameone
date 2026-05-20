@@ -3,15 +3,11 @@
 importer="texture"
 type="CompressedTexture2D"
 uid="uid://c08pmr1vjsnbw"
-path="res://.godot/imported/ArcadeMachine_A_Idle.png-0c8faf3facf3e016ba5713bfee4235b5.ctex"
-metadata={
-"vram_texture": false
-}
+valid=false
 
 [deps]
 
 source_file="res://Content/demo/TilesetSources/imported/NeonNightCityTileset/NeonNightCityTileset/Sprites/Props/ArcadeMachines/ArcadeMachine_A_Idle.png"
-dest_files=["res://.godot/imported/ArcadeMachine_A_Idle.png-0c8faf3facf3e016ba5713bfee4235b5.ctex"]
 
 [params]
 

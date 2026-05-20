@@ -3,15 +3,11 @@
 importer="texture"
 type="CompressedTexture2D"
 uid="uid://dprry3m2my1dq"
-path="res://.godot/imported/Preview.png-c50b671c433e66599639dc7995719db1.ctex"
-metadata={
-"vram_texture": false
-}
+valid=false
 
 [deps]
 
 source_file="res://Content/demo/TilesetSources/imported/Warped Collection Files/Assets/Environments/another-world/Preview.png"
-dest_files=["res://.godot/imported/Preview.png-c50b671c433e66599639dc7995719db1.ctex"]
 
 [params]
 

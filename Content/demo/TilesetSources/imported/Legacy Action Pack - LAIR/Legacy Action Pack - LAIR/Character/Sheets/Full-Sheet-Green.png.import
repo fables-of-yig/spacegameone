@@ -2,16 +2,12 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://dxgdps0lwxq5e"
-path="res://.godot/imported/Full-Sheet-Green.png-7650b6c1aace95795557164a162d6ab3.ctex"
-metadata={
-"vram_texture": false
-}
+uid="uid://bb543ekbttlbr"
+valid=false
 
 [deps]
 
 source_file="res://Content/demo/TilesetSources/imported/Legacy Action Pack - LAIR/Legacy Action Pack - LAIR/Character/Sheets/Full-Sheet-Green.png"
-dest_files=["res://.godot/imported/Full-Sheet-Green.png-7650b6c1aace95795557164a162d6ab3.ctex"]
 
 [params]
 

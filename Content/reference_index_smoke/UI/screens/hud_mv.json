@@ -1,0 +1,311 @@
+{
+	"anchor": "top_left",
+	"anchor_offset": {
+		"x": 0,
+		"y": 0
+	},
+	"children": [
+		{
+			"anchor": "top_left",
+			"anchor_offset": {
+				"x": 0,
+				"y": 0
+			},
+			"children": [],
+			"id": "hud_mv_hp_label",
+			"properties": {
+				"alignment": "left",
+				"bind_var": "player.hp",
+				"decimal_places": 0,
+				"format": "E {value}/",
+				"opacity": 1.0,
+				"static_text": "",
+				"tab_group": "default",
+				"tab_id": "",
+				"text_role": "body",
+				"wrap": false
+			},
+			"rect": {
+				"h": 16,
+				"w": 52,
+				"x": 12,
+				"y": 10
+			},
+			"type": "label"
+		},
+		{
+			"anchor": "top_left",
+			"anchor_offset": {
+				"x": 0,
+				"y": 0
+			},
+			"children": [],
+			"id": "hud_mv_hp_max",
+			"properties": {
+				"alignment": "left",
+				"bind_var": "player.max_hp",
+				"decimal_places": 0,
+				"format": "{value}",
+				"opacity": 1.0,
+				"static_text": "",
+				"tab_group": "default",
+				"tab_id": "",
+				"text_role": "body",
+				"wrap": false
+			},
+			"rect": {
+				"h": 16,
+				"w": 42,
+				"x": 62,
+				"y": 10
+			},
+			"type": "label"
+		},
+		{
+			"anchor": "top_left",
+			"anchor_offset": {
+				"x": 0,
+				"y": 0
+			},
+			"children": [],
+			"id": "hud_mv_hp_bar",
+			"properties": {
+				"animate_fill": true,
+				"bg_color": "#1f2228",
+				"bind_current": "player.hp",
+				"bind_max": "player.max_hp",
+				"direction": "left_to_right",
+				"fill_color": "#d85353",
+				"pulse_on_low": true,
+				"pulse_threshold": 0.25,
+				"show_label": true,
+				"tab_group": "default",
+				"tab_id": ""
+			},
+			"rect": {
+				"h": 14,
+				"w": 86,
+				"x": 108,
+				"y": 10
+			},
+			"type": "progress_bar"
+		},
+		{
+			"anchor": "top_left",
+			"anchor_offset": {
+				"x": 0,
+				"y": 0
+			},
+			"children": [],
+			"id": "hud_mv_weapon_label",
+			"properties": {
+				"alignment": "left",
+				"bind_var": "current_weapon.name",
+				"decimal_places": 0,
+				"format": "{value}",
+				"opacity": 1.0,
+				"static_text": "",
+				"tab_group": "default",
+				"tab_id": "",
+				"text_role": "body",
+				"wrap": false
+			},
+			"rect": {
+				"h": 16,
+				"w": 100,
+				"x": 214,
+				"y": 10
+			},
+			"type": "label"
+		},
+		{
+			"anchor": "top_left",
+			"anchor_offset": {
+				"x": 0,
+				"y": 0
+			},
+			"children": [],
+			"id": "hud_mv_room_label",
+			"properties": {
+				"alignment": "left",
+				"bind_var": "room.name",
+				"decimal_places": 0,
+				"format": "{value}",
+				"opacity": 1.0,
+				"static_text": "",
+				"tab_group": "default",
+				"tab_id": "",
+				"text_role": "dim",
+				"wrap": false
+			},
+			"rect": {
+				"h": 16,
+				"w": 140,
+				"x": 326,
+				"y": 10
+			},
+			"type": "label"
+		},
+		{
+			"anchor": "top_left",
+			"anchor_offset": {
+				"x": 0,
+				"y": 0
+			},
+			"children": [],
+			"id": "hud_mv_gold",
+			"properties": {
+				"alignment": "left",
+				"bind_var": "game_var.gold",
+				"decimal_places": 0,
+				"format": "Gold: {value}",
+				"opacity": 1.0,
+				"static_text": "",
+				"tab_group": "default",
+				"tab_id": "",
+				"text_role": "success",
+				"wrap": false
+			},
+			"rect": {
+				"h": 16,
+				"w": 100,
+				"x": 214,
+				"y": 30
+			},
+			"type": "label"
+		},
+		{
+			"anchor": "top_left",
+			"anchor_offset": {
+				"x": 0,
+				"y": 0
+			},
+			"children": [],
+			"id": "hud_mv_missiles",
+			"properties": {
+				"alignment": "left",
+				"bind_var": "game_var.ammo_missile",
+				"decimal_places": 0,
+				"format": "Missiles: {value}/",
+				"opacity": 1.0,
+				"static_text": "",
+				"tab_group": "default",
+				"tab_id": "",
+				"text_role": "body",
+				"wrap": false
+			},
+			"rect": {
+				"h": 16,
+				"w": 88,
+				"x": 326,
+				"y": 30
+			},
+			"type": "label"
+		},
+		{
+			"anchor": "top_left",
+			"anchor_offset": {
+				"x": 0,
+				"y": 0
+			},
+			"children": [],
+			"id": "hud_mv_missile_max",
+			"properties": {
+				"alignment": "left",
+				"bind_var": "game_var.max_ammo_missile",
+				"decimal_places": 0,
+				"format": "{value}",
+				"opacity": 1.0,
+				"static_text": "",
+				"tab_group": "default",
+				"tab_id": "",
+				"text_role": "body",
+				"wrap": false
+			},
+			"rect": {
+				"h": 16,
+				"w": 54,
+				"x": 412,
+				"y": 30
+			},
+			"type": "label"
+		},
+		{
+			"anchor": "top_left",
+			"anchor_offset": {
+				"x": 0,
+				"y": 0
+			},
+			"children": [],
+			"id": "hud_mv_quest_title",
+			"properties": {
+				"alignment": "left",
+				"bind_var": "quest.current.title",
+				"decimal_places": 0,
+				"format": "{value}",
+				"opacity": 1.0,
+				"static_text": "",
+				"tab_group": "default",
+				"tab_id": "",
+				"text_role": "body",
+				"wrap": false
+			},
+			"rect": {
+				"h": 16,
+				"w": 190,
+				"x": 12,
+				"y": 30
+			},
+			"type": "label"
+		},
+		{
+			"anchor": "top_left",
+			"anchor_offset": {
+				"x": 0,
+				"y": 0
+			},
+			"children": [],
+			"id": "hud_mv_quest_stage",
+			"properties": {
+				"alignment": "left",
+				"bind_var": "quest.current.stage_title",
+				"decimal_places": 0,
+				"format": "{value}",
+				"opacity": 1.0,
+				"static_text": "",
+				"tab_group": "default",
+				"tab_id": "",
+				"text_role": "dim",
+				"wrap": false
+			},
+			"rect": {
+				"h": 16,
+				"w": 210,
+				"x": 12,
+				"y": 48
+			},
+			"type": "label"
+		}
+	],
+	"id": "hud_mv_root",
+	"properties": {
+		"opacity": 1.0,
+		"padding": 8,
+		"scroll": "none",
+		"sprite_mode": "9slice",
+		"sprite_slice_x": 0,
+		"sprite_slice_y": 0,
+		"sprite_source": "",
+		"sprite_tint": "#ffffff",
+		"tab_group": "default",
+		"tab_id": "",
+		"variant": "dark"
+	},
+	"rect": {
+		"h": 71,
+		"w": 480,
+		"x": 0,
+		"y": 0
+	},
+	"type": "panel"
+}

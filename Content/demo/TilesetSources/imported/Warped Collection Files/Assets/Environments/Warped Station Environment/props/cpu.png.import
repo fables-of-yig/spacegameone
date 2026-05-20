@@ -2,16 +2,12 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://b5ngd0iyy83rv"
-path="res://.godot/imported/cpu.png-8e21cee6c434bb091fa7bb2059144d94.ctex"
-metadata={
-"vram_texture": false
-}
+uid="uid://duov1r0ulgljw"
+valid=false
 
 [deps]
 
 source_file="res://Content/demo/TilesetSources/imported/Warped Collection Files/Assets/Environments/Warped Station Environment/props/cpu.png"
-dest_files=["res://.godot/imported/cpu.png-8e21cee6c434bb091fa7bb2059144d94.ctex"]
 
 [params]
 

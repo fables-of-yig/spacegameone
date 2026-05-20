@@ -1,0 +1,37 @@
+{
+  "items": [
+    {
+      "category": "currency",
+      "description": "Currency.",
+      "id": "coin",
+      "max_stack": 9999.0,
+      "name": "Coin",
+      "price": 1.0,
+      "use_amount": 0.0,
+      "use_arg": "",
+      "use_effect": ""
+    },
+    {
+      "category": "key",
+      "description": "Recipe-created gate key.",
+      "id": "key_quest_renamed",
+      "max_stack": 1.0,
+      "name": "Renamed Quest Key",
+      "price": 25.0,
+      "use_amount": 0.0,
+      "use_arg": "",
+      "use_effect": ""
+    },
+    {
+      "category": "quest",
+      "description": "Recipe-created boss reward.",
+      "id": "boss_core",
+      "max_stack": 9.0,
+      "name": "Boss Core",
+      "price": 100.0,
+      "use_amount": 0.0,
+      "use_arg": "",
+      "use_effect": ""
+    }
+  ]
+}

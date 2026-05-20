@@ -2,16 +2,12 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://bk7pvi010wtgc"
-path="res://.godot/imported/NeonSigns_TitlePizza_Off.png-788206ca7ab75732a6d8a389adfe67b2.ctex"
-metadata={
-"vram_texture": false
-}
+uid="uid://cl1gq6vgt8288"
+valid=false
 
 [deps]
 
 source_file="res://Content/demo/TilesetSources/imported/NeonNightCityTileset/NeonNightCityTileset/Sprites/Buildings/NeonSigns/NeonSigns_TitlePizza_Off.png"
-dest_files=["res://.godot/imported/NeonSigns_TitlePizza_Off.png-788206ca7ab75732a6d8a389adfe67b2.ctex"]
 
 [params]
 

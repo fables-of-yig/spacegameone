@@ -1,6 +1,8 @@
 extends Node
 
 
+const FactionsIO := preload("res://Space/scripts/shared/factions_io.gd")
+
 
 var modules: Dictionary = {}
 var crew: Dictionary = {}
@@ -45,18 +47,15 @@ func _load_sector_atlas():
             GameManager.current_system = first_key
             GameManager.visited_systems = [first_key]
 
-func generate_new_galaxy(seed_val: int, size: int):
-
-    galaxy_seed = seed_val
-    galaxy_size = size
-    var result = GalaxyGenerator.generate(seed_val, size)
-    galaxy_data = result
-    systems = result.get("systems", {})
-
-    var start_sys = result.get("start_system", "")
-    if start_sys != "":
-        GameManager.current_system = start_sys
-        GameManager.visited_systems = [start_sys]
+# Reads the active pack's Factions/factions.json into galaxy_data["factions"].
+# Called by MvPackLoader.load_pack right after current_pack is assigned, so
+# every consumer of DataManager.galaxy_data.get("factions", {}) sees the
+# pack's authored faction table before runtime code (npc_ship, station_entity,
+# star_map, etc.) starts dereferencing it. Empty result is fine — runtime
+# lookups already fall back to per-call defaults for unknown ids.
+func load_pack_factions(pack_id: String) -> void:
+    var factions := FactionsIO.load_or_empty(pack_id)
+    galaxy_data["factions"] = factions
 
 func get_loot_table(threat: int) -> Array:
     var tables = loot_data.get("tables", {})
@@ -165,73 +164,11 @@ func get_available_missions(system_id: String) -> Array:
 
 
 
-const STAR_PREFIXES: Array = [
-    "Vel", "Keth", "Myr", "Zor", "Ash", "Drak", "Thal", "Vor", "Nex", "Pyr", 
-    "Gol", "Fen", "Lux", "Cor", "Ber", "Tal", "Zel", "Kro", "Mor", "Sel", 
-    "Ryn", "Val", "Hex", "Sil", "Bor", "Nar", "Wex", "Tyr", "Kov", "Jem", 
-    "Ald", "Isk", "Orl", "Sar", "Fal", "Cyr", "Nol", "Dun", "Eth", "Rix", 
-]
-const STAR_SUFFIXES: Array = [
-    "ara", "ion", "usk", "ith", "enn", "oth", "arn", "ell", "ura", "yx", 
-    "oss", "ane", "ira", "old", "ven", "ast", "orn", "esh", "ull", "iga", 
-    "ax", "um", "is", "on", "al", "ex", "or", "an", "us", "em", 
-]
-const STAR_TAGS: Array = [
-    " Reach", " Drift", " Expanse", " Void", " Crossing", " Deeps", 
-    " Nexus", " Gate", " Basin", " Rift", " Ring", " Hollow", 
-    " Run", " Edge", " Wastes", " Haven", " Point", " Corridor", 
-    "", "", "", "", "", "", 
-]
-
-const STAR_CLASSES: Array = [
-    {"class": "M", "color": [1.0, 0.4, 0.3], "size_range": [30, 50], "weight": 35}, 
-    {"class": "K", "color": [1.0, 0.7, 0.3], "size_range": [40, 60], "weight": 25}, 
-    {"class": "G", "color": [1.0, 0.95, 0.6], "size_range": [50, 70], "weight": 15}, 
-    {"class": "F", "color": [1.0, 1.0, 0.85], "size_range": [55, 75], "weight": 10}, 
-    {"class": "A", "color": [0.8, 0.85, 1.0], "size_range": [60, 80], "weight": 8}, 
-    {"class": "B", "color": [0.5, 0.6, 1.0], "size_range": [65, 90], "weight": 5}, 
-    {"class": "O", "color": [0.4, 0.5, 1.0], "size_range": [70, 100], "weight": 2}, 
-]
-
-const FACTION_NAMES: Array = [
-    "terran_union", "independent", "korrath", "syndicate", "nomads", 
-    "uncharted", "free_traders", "void_church", "iron_pact", 
-]
-
-const POI_TEMPLATES: Array = [
-    {"type": "station", "names": ["Trade Post", "Waystation", "Refueling Depot", "Mining Hub", "Freeport", "Orbital Platform", "Colony Hub", "Scrapyard Station"], "desc": "A station where ships dock for trade and resupply."}, 
-    {"type": "hostile_station", "names": ["Pirate Base", "Raider Den", "Smuggler's Cove", "Black Market", "Corsair Post", "Warlord's Fort"], "desc": "A dangerous outpost. Approach with caution."}, 
-    {"type": "salvage", "names": ["Derelict Hulk", "Wreck Field", "Ghost Ship", "Abandoned Freighter", "Crash Site", "Debris Cloud", "Shattered Convoy"], "desc": "Wrecked ships. Might hold useful salvage."}, 
-    {"type": "anomaly", "names": ["Energy Signature", "Gravitational Anomaly", "Radiation Pocket", "Sensor Ghost", "Unstable Rift", "Dark Spot", "Phase Fluctuation"], "desc": "Strange readings. Worth investigating."}, 
-    {"type": "ruin", "names": ["Ancient Structure", "Alien Monolith", "Precursor Relay", "Dead Beacon", "Xeno Shrine", "Old World Vault", "Fossilized Ship"], "desc": "Pre-human remnants. Mysteries preserved in the void."}, 
-    {"type": "resource", "names": ["Asteroid Cluster", "Gas Cloud", "Ice Field", "Crystal Formation", "Mineral Belt", "Cometary Debris"], "desc": "Natural resources ripe for extraction."}, 
-]
-
-const PLANET_THEMES: Array = [
-    {"name_adj": ["Barren", "Desert", "Frozen", "Rocky", "Dusty"], "sky": [0.3, 0.25, 0.2], "horizon": [0.6, 0.4, 0.2], "terrain": [[0.25, 0.2, 0.15], [0.2, 0.15, 0.1], [0.15, 0.12, 0.08]], "roughness": 0.7}, 
-    {"name_adj": ["Jungle", "Verdant", "Lush", "Overgrown", "Green"], "sky": [0.35, 0.5, 0.8], "horizon": [0.5, 0.6, 0.3], "terrain": [[0.15, 0.3, 0.15], [0.1, 0.22, 0.1], [0.08, 0.18, 0.06]], "roughness": 0.6}, 
-    {"name_adj": ["Volcanic", "Molten", "Sulfurous", "Burning", "Pyroclastic"], "sky": [0.35, 0.15, 0.1], "horizon": [0.8, 0.3, 0.1], "terrain": [[0.25, 0.1, 0.06], [0.18, 0.06, 0.03], [0.12, 0.04, 0.02]], "roughness": 0.85}, 
-    {"name_adj": ["Oceanic", "Tidal", "Storm-Wracked", "Flooded", "Aquatic"], "sky": [0.2, 0.35, 0.6], "horizon": [0.15, 0.25, 0.45], "terrain": [[0.1, 0.18, 0.3], [0.08, 0.14, 0.25], [0.06, 0.1, 0.2]], "roughness": 0.4}, 
-    {"name_adj": ["Frozen", "Glacial", "Cryo", "Boreal", "Icebound"], "sky": [0.5, 0.55, 0.7], "horizon": [0.65, 0.7, 0.8], "terrain": [[0.5, 0.55, 0.6], [0.45, 0.5, 0.55], [0.4, 0.45, 0.5]], "roughness": 0.5}, 
-]
-
-const DESCRIPTIONS: Array = [
-    "A remote system far from any trade route. What brought you here?", 
-    "Scanners show recent combat debris. Someone was here before you.", 
-    "Quiet. Almost too quiet. The void feels heavy here.", 
-    "Energy signatures suggest active mining operations nearby.", 
-    "Old nav beacons mark this as contested space.", 
-    "Electromagnetic interference makes long-range comms unreliable.", 
-    "A crossroads system — multiple jump routes converge here.", 
-    "Remnants of an ancient civilization dot the orbital plane.", 
-    "Rich mineral deposits attract prospectors and pirates alike.", 
-    "A lonely system on the frontier. The last stop before the unknown.", 
-    "Thick dust clouds reduce visibility. Perfect ambush territory.", 
-    "Signals from deep space relay stations echo through the system.", 
-    "Something is jamming your sensors intermittently.", 
-    "Trade convoys pass through regularly, attracting opportunists.", 
-    "The star here is dying. A solemn, beautiful place.", 
-]
+# The STAR_PREFIXES / STAR_SUFFIXES / STAR_TAGS / STAR_CLASSES /
+# FACTION_NAMES / POI_TEMPLATES / PLANET_THEMES / DESCRIPTIONS constants
+# used to live here as procedural galaxy-generation data. Deleted with
+# the procedural new-game flow; system content is now per-pack authored
+# via systems.json + the System Editor.
 
 
 const GENERIC_EVENTS: Dictionary = {
@@ -952,264 +889,3 @@ func _build_radiant_mission(_mid: String, origin_id: String, connections: Array,
                 "reward_credits": reward_credits, "reward_text": "%d credits" % reward_credits, 
                 "min_threat": 0, "reward_modules": {}, "available_at": origin_id}
     return mission
-
-func generate_galaxy(_seed_val: int):
-
-    pass
-
-func expand_frontier(_center_id: String, _depth: int = 2):
-
-    pass
-
-func _expand_system(sys_id: String):
-
-    if not systems.has(sys_id):
-        return
-    var sys = systems[sys_id]
-    if sys.get("_expanded", false):
-        return
-    sys["_expanded"] = true
-
-
-    var rng = RandomNumberGenerator.new()
-    rng.seed = (sys_id.hash() ^ galaxy_seed) + 7919
-
-    var num_new = rng.randi_range(1, 2)
-    var connections: Array = sys.get("connections", [])
-
-    for i in num_new:
-        var new_id = _frontier_id(sys_id, i)
-        if systems.has(new_id):
-
-            if new_id not in connections:
-                connections.append(new_id)
-            var other_conns: Array = systems[new_id].get("connections", [])
-            if sys_id not in other_conns:
-                other_conns.append(sys_id)
-            continue
-        if new_id in connections:
-            continue
-        connections.append(new_id)
-        _generate_frontier_system(new_id, sys_id)
-
-    sys["connections"] = connections
-
-func _frontier_id(parent_id: String, index: int) -> String:
-
-    var hash_val = ((parent_id.hash() * 31 + index * 7919) ^ galaxy_seed) & 2147483647
-    return "sys_%x" % hash_val
-
-func _generate_frontier_system(sys_id: String, parent_id: String):
-
-
-
-    var rng = RandomNumberGenerator.new()
-    rng.seed = sys_id.hash() ^ galaxy_seed
-
-    var parent = systems[parent_id]
-    var parent_pos = Vector2(parent["position"][0], parent["position"][1])
-
-
-
-    var angle = rng.randf() * TAU
-    var dist = rng.randf_range(400, 700)
-    var new_pos = parent_pos + Vector2.from_angle(angle) * dist
-
-
-    for _attempt in 10:
-        var overlap = false
-        for oid in systems:
-            if not systems.has(oid):
-                continue
-            var opos = Vector2(systems[oid]["position"][0], systems[oid]["position"][1])
-            if new_pos.distance_to(opos) < 300:
-                overlap = true
-                angle = rng.randf() * TAU
-                dist = rng.randf_range(400, 700)
-                new_pos = parent_pos + Vector2.from_angle(angle) * dist
-                break
-        if not overlap:
-            break
-
-
-    var sol_dist = new_pos.distance_to(Vector2(400, 400))
-    var base_threat = clampi(int(sol_dist / 250.0) + 1, 1, 6)
-    var threat = clampi(base_threat + rng.randi_range(-1, 1), 1, 7)
-
-    var faction = FACTION_NAMES[rng.randi() % FACTION_NAMES.size()]
-    if threat <= 2:
-        faction = ["terran_union", "independent", "free_traders"][rng.randi() % 3]
-
-    var sys_name = _gen_system_name(rng)
-    var star_data = _pick_star_class(rng)
-
-
-    var connections: Array = [parent_id]
-    var nearest_id: String = ""
-    var nearest_dist: float = INF
-    for oid in parent.get("connections", []):
-        if oid == parent_id or not systems.has(oid):
-            continue
-        var opos = Vector2(systems[oid]["position"][0], systems[oid]["position"][1])
-        var d = new_pos.distance_to(opos)
-        if d < nearest_dist and d < 350:
-            nearest_dist = d
-            nearest_id = oid
-    if nearest_id != "":
-        connections.append(nearest_id)
-        var other_conns: Array = systems[nearest_id].get("connections", [])
-        if sys_id not in other_conns:
-            other_conns.append(sys_id)
-
-    var pois = _gen_pois(rng, threat, sys_name)
-    var spawns = _gen_spawn_triggers(rng, sys_id, threat)
-
-    systems[sys_id] = {
-        "name": sys_name, 
-        "position": [new_pos.x, new_pos.y], 
-        "star_class": star_data.get("class", "G"), 
-        "star_color": star_data.get("color", [1.0, 1.0, 0.8]), 
-        "star_size": rng.randi_range(star_data.get("size_range", [40, 60])[0], star_data.get("size_range", [40, 60])[1]), 
-        "description": DESCRIPTIONS[rng.randi() % DESCRIPTIONS.size()], 
-        "threat_level": threat, 
-        "faction": faction, 
-        "connections": connections, 
-        "pois": pois, 
-        "spawn_triggers": spawns, 
-        "procedural": true, 
-    }
-
-
-    var parent_conns: Array = parent.get("connections", [])
-    if sys_id not in parent_conns:
-        parent_conns.append(sys_id)
-
-func _gen_system_name(rng: RandomNumberGenerator) -> String:
-    var prefix = STAR_PREFIXES[rng.randi() % STAR_PREFIXES.size()]
-    var suffix = STAR_SUFFIXES[rng.randi() % STAR_SUFFIXES.size()]
-    var tag = STAR_TAGS[rng.randi() % STAR_TAGS.size()]
-    return prefix + suffix + tag
-
-func _pick_star_class(rng: RandomNumberGenerator) -> Dictionary:
-    var total_w: float = 0
-    for sc in STAR_CLASSES:
-        total_w += sc.get("weight", 1)
-    var roll = rng.randf() * total_w
-    var acc: float = 0
-    for sc in STAR_CLASSES:
-        acc += sc.get("weight", 1)
-        if roll <= acc:
-            return sc
-    return STAR_CLASSES[0]
-
-func _gen_pois(rng: RandomNumberGenerator, threat: int, sys_name: String) -> Array:
-    var pois: Array = []
-    var num_pois = rng.randi_range(2, 4 + mini(threat, 3))
-    var _used_types: Array = []
-
-    for i in num_pois:
-
-        var template: Dictionary
-        if i == 0 and threat <= 3 and rng.randf() < 0.6:
-
-            template = POI_TEMPLATES[0]
-        elif i == 0 and threat > 3 and rng.randf() < 0.4:
-            template = POI_TEMPLATES[1]
-        else:
-            var idx = rng.randi_range(2, POI_TEMPLATES.size() - 1)
-            template = POI_TEMPLATES[idx]
-
-        var poi_type: String = template.get("type", "anomaly")
-        var names_pool: Array = template.get("names", ["Unknown"])
-        var poi_name = names_pool[rng.randi() % names_pool.size()]
-
-
-        var event_id = "proc_%s_%x" % [poi_type, (sys_name + poi_type + str(i) + poi_name).hash() & 2147483647]
-
-        var poi: Dictionary = {
-            "name": poi_name, 
-            "type": poi_type, 
-            "description": template.get("desc", ""), 
-            "orbit_dist": rng.randf_range(500, 800 + float(i) * 400), 
-            "orbit_angle": rng.randf_range(0, 360), 
-        }
-        if event_id != "":
-            poi["event_id"] = event_id
-
-
-        if i == num_pois - 1 and rng.randf() < 0.35:
-            var planet_theme = PLANET_THEMES[rng.randi() % PLANET_THEMES.size()]
-            var adj_pool: Array = planet_theme.get("name_adj", ["Unknown"])
-            var adj = adj_pool[rng.randi() % adj_pool.size()]
-            var planet_name = adj + " " + sys_name.split(" ")[0]
-            poi["name"] = planet_name
-            poi["type"] = "planet"
-            poi["description"] = "A %s world orbiting %s." % [adj.to_lower(), sys_name]
-            poi["orbit_dist"] = rng.randf_range(1500, 2200)
-            poi["planet_data"] = {
-                "name": planet_name, 
-                "sky_color": planet_theme.get("sky", [0.3, 0.3, 0.5]), 
-                "horizon_color": planet_theme.get("horizon", [0.5, 0.4, 0.3]), 
-                "terrain_colors": planet_theme.get("terrain", [[0.2, 0.2, 0.2], [0.15, 0.15, 0.15], [0.1, 0.1, 0.1]]), 
-                "roughness": planet_theme.get("roughness", 0.6), 
-                "turret_count": [threat, threat + 2], 
-                "patrol_count": [maxi(threat - 1, 1), threat], 
-                "surface_pois": _gen_surface_pois(rng, threat, name), 
-            }
-
-        pois.append(poi)
-
-    return pois
-
-func _gen_surface_pois(rng: RandomNumberGenerator, _threat: int, sys_name: String = "") -> Array:
-    var spois: Array = []
-    var count = rng.randi_range(1, 3)
-    for i in count:
-        var stype = ["station", "salvage", "ruin", "anomaly"][rng.randi() % 4]
-        var names_pool = POI_TEMPLATES[0].get("names", ["Outpost"]) if stype == "station" else POI_TEMPLATES[2].get("names", ["Wreckage"])
-        var poi_name = names_pool[rng.randi() % names_pool.size()]
-        var event_id = "proc_s_%s_%x" % [stype, (sys_name + poi_name + str(i)).hash() & 2147483647]
-        spois.append({
-            "name": poi_name, 
-            "type": stype, 
-            "description": "Surface point of interest.", 
-            "x_pos": rng.randi_range(-2000, 2000), 
-            "event_id": event_id, 
-        })
-    return spois
-
-func _gen_spawn_triggers(rng: RandomNumberGenerator, sys_id: String, threat: int) -> Array:
-    var triggers: Array = []
-
-    var patrol_classes: Array = []
-    if threat <= 2:
-        patrol_classes = [{"class": "scout", "count": rng.randi_range(1, 3)}]
-        if rng.randf() < 0.3:
-            patrol_classes.append({"class": "fighter", "count": 1})
-    elif threat <= 4:
-        patrol_classes = [
-            {"class": "fighter", "count": rng.randi_range(1, 3)}, 
-            {"class": "interceptor", "count": rng.randi_range(1, 2)}, 
-        ]
-        if rng.randf() < 0.4:
-            patrol_classes.append({"class": "gunship", "count": 1})
-    else:
-        patrol_classes = [
-            {"class": "interceptor", "count": rng.randi_range(2, 3)}, 
-            {"class": "gunship", "count": rng.randi_range(1, 3)}, 
-        ]
-        if rng.randf() < 0.5:
-            patrol_classes.append({"class": "elite", "count": 1})
-        if rng.randf() < 0.3:
-            patrol_classes.append({"class": "bomber", "count": rng.randi_range(1, 2)})
-
-    triggers.append({
-        "id": sys_id + "_patrol", 
-        "on": "enter", 
-        "conditions": {}, 
-        "spawns": patrol_classes, 
-        "dist": [300 + rng.randi_range(0, 300), 600 + rng.randi_range(0, 400)], 
-        "once": true, 
-    })
-
-    return triggers

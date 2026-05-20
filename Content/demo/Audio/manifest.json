@@ -1,6 +1,0 @@
-{
-  "_comment": "Audio manifest. Maps logical sound names to file paths relative to the pack root. If a name is not listed here, AudioManager falls back to its built-in res://Space/audio/ paths. Packs can override any sound by listing it here with a pack-relative path.",
-  "sfx": {},
-  "ambience": {},
-  "music": {}
-}

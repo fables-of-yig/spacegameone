@@ -2,16 +2,12 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://0ccpp2qgroj2"
-path="res://.godot/imported/Arrows.png-7dea15d46ab86203cc8de0919a586e05.ctex"
-metadata={
-"vram_texture": false
-}
+uid="uid://boiql1olo5lc7"
+valid=false
 
 [deps]
 
 source_file="res://Content/demo/TilesetSources/imported/space-shooter-game-level-map-pack/PNG/Level_Elements/Arrows.png"
-dest_files=["res://.godot/imported/Arrows.png-7dea15d46ab86203cc8de0919a586e05.ctex"]
 
 [params]
 

@@ -2,16 +2,12 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://crtagmco521we"
-path="res://.godot/imported/Meteors.png-8b4ccbc03c9062fcb8ce3a8ddaf03190.ctex"
-metadata={
-"vram_texture": false
-}
+uid="uid://bkvotativ52l4"
+valid=false
 
 [deps]
 
 source_file="res://Content/demo/TilesetSources/imported/space-vertical-game-backgrounds/PNG/Space_BG_03/Layers/Meteors.png"
-dest_files=["res://.godot/imported/Meteors.png-8b4ccbc03c9062fcb8ce3a8ddaf03190.ctex"]
 
 [params]
 

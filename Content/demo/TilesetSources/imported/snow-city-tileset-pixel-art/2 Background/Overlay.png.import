@@ -2,16 +2,12 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://b431hdb7d0j0m"
-path="res://.godot/imported/Overlay.png-f670d7fd9cf4ad520deda4e25be84d79.ctex"
-metadata={
-"vram_texture": false
-}
+uid="uid://b80anxqphkbic"
+valid=false
 
 [deps]
 
 source_file="res://Content/demo/TilesetSources/imported/snow-city-tileset-pixel-art/2 Background/Overlay.png"
-dest_files=["res://.godot/imported/Overlay.png-f670d7fd9cf4ad520deda4e25be84d79.ctex"]
 
 [params]
 

@@ -21,7 +21,7 @@ extends Control
 
 const UIPanels = preload("res://Space/scripts/ui/ui_panels.gd")
 const HudDataSource = preload("res://Space/scripts/ui/hud_data_source.gd")
-const UIIo = preload("res://Space/scripts/editor/ui/ui_io.gd")
+const UIIo = preload("res://Space/scripts/shared/ui/ui_io.gd")
 
 var data_source: RefCounted = null
 var screen_data: Dictionary = {}

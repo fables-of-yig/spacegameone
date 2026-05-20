@@ -3,15 +3,11 @@
 importer="texture"
 type="CompressedTexture2D"
 uid="uid://dw6fybjc62y0s"
-path="res://.godot/imported/mystic-forest-preview.png-42c5a716174fa463bed59cac925ca7d8.ctex"
-metadata={
-"vram_texture": false
-}
+valid=false
 
 [deps]
 
 source_file="res://Content/demo/TilesetSources/imported/Environments/Mystic Forest files/mystic-forest-preview.png"
-dest_files=["res://.godot/imported/mystic-forest-preview.png-42c5a716174fa463bed59cac925ca7d8.ctex"]
 
 [params]
 

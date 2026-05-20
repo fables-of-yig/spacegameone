@@ -2,16 +2,12 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://c4euxrj5qksj6"
-path="res://.godot/imported/Arch_B.png-8c037099dcd99837c8ed5515675dc79e.ctex"
-metadata={
-"vram_texture": false
-}
+uid="uid://dqwnyy37wimyk"
+valid=false
 
 [deps]
 
 source_file="res://Content/demo/TilesetSources/imported/night-city-street-game-background-tiles/PNG/Wall_B/Arch_B.png"
-dest_files=["res://.godot/imported/Arch_B.png-8c037099dcd99837c8ed5515675dc79e.ctex"]
 
 [params]
 

@@ -3,15 +3,11 @@
 importer="texture"
 type="CompressedTexture2D"
 uid="uid://bevwka4sphl3m"
-path="res://.godot/imported/back.png-b255922819101e9b9f13f05954736820.ctex"
-metadata={
-"vram_texture": false
-}
+valid=false
 
 [deps]
 
 source_file="res://Content/demo/TilesetSources/imported/Environments/Old Forest/v2/layers/back.png"
-dest_files=["res://.godot/imported/back.png-b255922819101e9b9f13f05954736820.ctex"]
 
 [params]
 

@@ -3,15 +3,11 @@
 importer="texture"
 type="CompressedTexture2D"
 uid="uid://chat81to8iwpw"
-path="res://.godot/imported/1.png-f8567ec84bc046fc1357111dc0e19afb.ctex"
-metadata={
-"vram_texture": false
-}
+valid=false
 
 [deps]
 
 source_file="res://Content/demo/TilesetSources/imported/residential-area-tileset-pixel-art/3 Objects/Symbols/1.png"
-dest_files=["res://.godot/imported/1.png-f8567ec84bc046fc1357111dc0e19afb.ctex"]
 
 [params]
 

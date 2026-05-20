@@ -2,16 +2,12 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://dcxrcl3mtoqx1"
-path="res://.godot/imported/Space6.png-d77d2763fa989c34521aba2adc0f876c.ctex"
-metadata={
-"vram_texture": false
-}
+uid="uid://bbwbc2pai84dp"
+valid=false
 
 [deps]
 
 source_file="res://Content/demo/TilesetSources/imported/pixel-art-space-2d-game-backgrounds/x2_1920_1080/PNG/Space6/Pale/Space6.png"
-dest_files=["res://.godot/imported/Space6.png-d77d2763fa989c34521aba2adc0f876c.ctex"]
 
 [params]
 

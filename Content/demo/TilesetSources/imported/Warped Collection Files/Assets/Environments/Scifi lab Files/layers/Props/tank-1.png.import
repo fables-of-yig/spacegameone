@@ -2,16 +2,12 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://cxge65bbtxcvj"
-path="res://.godot/imported/tank-1.png-cc58ef8ecd09433e2a38000eb860ba2f.ctex"
-metadata={
-"vram_texture": false
-}
+uid="uid://bbtau4xpfldpr"
+valid=false
 
 [deps]
 
 source_file="res://Content/demo/TilesetSources/imported/Warped Collection Files/Assets/Environments/Scifi lab Files/layers/Props/tank-1.png"
-dest_files=["res://.godot/imported/tank-1.png-cc58ef8ecd09433e2a38000eb860ba2f.ctex"]
 
 [params]
 

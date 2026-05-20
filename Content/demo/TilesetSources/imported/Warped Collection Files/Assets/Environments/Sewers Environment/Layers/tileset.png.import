@@ -2,16 +2,12 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://cp74jjkpy4q10"
-path="res://.godot/imported/tileset.png-45fe27df106b0f8f88eba3968a702755.ctex"
-metadata={
-"vram_texture": false
-}
+uid="uid://b8i7747k46fk"
+valid=false
 
 [deps]
 
 source_file="res://Content/demo/TilesetSources/imported/Warped Collection Files/Assets/Environments/Sewers Environment/Layers/tileset.png"
-dest_files=["res://.godot/imported/tileset.png-45fe27df106b0f8f88eba3968a702755.ctex"]
 
 [params]
 

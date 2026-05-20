@@ -2,16 +2,12 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://57mbf6awll45"
-path="res://.godot/imported/Wooden_Barrel.png-770a34c197831bda995a550b4f07f74a.ctex"
-metadata={
-"vram_texture": false
-}
+uid="uid://7q8q1ir2nkao"
+valid=false
 
 [deps]
 
 source_file="res://Content/demo/TilesetSources/imported/Inferno Village 2D Tileset/PNG/Environment/Wooden_Barrel.png"
-dest_files=["res://.godot/imported/Wooden_Barrel.png-770a34c197831bda995a550b4f07f74a.ctex"]
 
 [params]
 

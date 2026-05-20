@@ -2,16 +2,12 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://b7x4lb32hjo3n"
-path="res://.godot/imported/wall.png-c1eb5da0665c1fb8a242341f1a74fd8c.ctex"
-metadata={
-"vram_texture": false
-}
+uid="uid://b6liqk2j7kygc"
+valid=false
 
 [deps]
 
 source_file="res://Content/demo/TilesetSources/imported/Warped Collection Files/Assets/Environments/Warped Station Environment/props/wall.png"
-dest_files=["res://.godot/imported/wall.png-c1eb5da0665c1fb8a242341f1a74fd8c.ctex"]
 
 [params]
 

@@ -2,16 +2,12 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://d4lly3dpe2j3u"
-path="res://.godot/imported/bridge6.png-abf50c03225d86922c14ed99258895a0.ctex"
-metadata={
-"vram_texture": false
-}
+uid="uid://cjmyn8qs6pt3n"
+valid=false
 
 [deps]
 
 source_file="res://Content/demo/TilesetSources/imported/Mountain-platformer-pixel-art-tileset/PNG/Objects/bridge6.png"
-dest_files=["res://.godot/imported/bridge6.png-abf50c03225d86922c14ed99258895a0.ctex"]
 
 [params]
 

@@ -2,16 +2,12 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://wn6nxadudkyq"
-path="res://.godot/imported/Preview.png-d28e70f30fc3b11dd4cc84bc668aee6f.ctex"
-metadata={
-"vram_texture": false
-}
+uid="uid://bd85pmfy21vwr"
+valid=false
 
 [deps]
 
 source_file="res://Content/demo/TilesetSources/imported/Warped Collection Files/Assets/Environments/cyberpunk-corridor-files/Props/Preview.png"
-dest_files=["res://.godot/imported/Preview.png-d28e70f30fc3b11dd4cc84bc668aee6f.ctex"]
 
 [params]
 

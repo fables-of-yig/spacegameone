@@ -2,16 +2,12 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://qsmom1aalcma"
-path="res://.godot/imported/9.png-9446a795d1fa99198ecbebebe003e368.ctex"
-metadata={
-"vram_texture": false
-}
+uid="uid://cyvjo8p882yad"
+valid=false
 
 [deps]
 
 source_file="res://Content/demo/TilesetSources/imported/platformer-pixel-art-cave-2d-tileset/Objects/Rocks/9.png"
-dest_files=["res://.godot/imported/9.png-9446a795d1fa99198ecbebebe003e368.ctex"]
 
 [params]
 

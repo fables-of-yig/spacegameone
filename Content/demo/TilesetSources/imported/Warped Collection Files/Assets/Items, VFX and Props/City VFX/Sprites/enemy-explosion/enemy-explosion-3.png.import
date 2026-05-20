@@ -2,16 +2,12 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://j702xhv1euwl"
-path="res://.godot/imported/enemy-explosion-3.png-7a4453d89ffe6d853aaa3132546139a2.ctex"
-metadata={
-"vram_texture": false
-}
+uid="uid://ydtdbnkho44d"
+valid=false
 
 [deps]
 
 source_file="res://Content/demo/TilesetSources/imported/Warped Collection Files/Assets/Items, VFX and Props/City VFX/Sprites/enemy-explosion/enemy-explosion-3.png"
-dest_files=["res://.godot/imported/enemy-explosion-3.png-7a4453d89ffe6d853aaa3132546139a2.ctex"]
 
 [params]
 

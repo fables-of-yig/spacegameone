@@ -2,16 +2,12 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://bggktjp17gp37"
-path="res://.godot/imported/stones2.png-9d6c0e9f77cd7b927be6d27ed1fc3777.ctex"
-metadata={
-"vram_texture": false
-}
+uid="uid://mq430dn018wf"
+valid=false
 
 [deps]
 
 source_file="res://Content/demo/TilesetSources/imported/pixel-art-space-2d-game-backgrounds/original_size/PNG/Space2/Pale/stones2.png"
-dest_files=["res://.godot/imported/stones2.png-9d6c0e9f77cd7b927be6d27ed1fc3777.ctex"]
 
 [params]
 

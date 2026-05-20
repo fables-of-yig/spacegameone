@@ -3,15 +3,11 @@
 importer="texture"
 type="CompressedTexture2D"
 uid="uid://bn0go1kj4ea8l"
-path="res://.godot/imported/trees.png-59fea656b9f70a35250905db0b42decb.ctex"
-metadata={
-"vram_texture": false
-}
+valid=false
 
 [deps]
 
 source_file="res://Content/demo/TilesetSources/imported/Warped Collection Files/Assets/Environments/Synth Cites/Backgrounds/blue-sky/trees.png"
-dest_files=["res://.godot/imported/trees.png-59fea656b9f70a35250905db0b42decb.ctex"]
 
 [params]
 

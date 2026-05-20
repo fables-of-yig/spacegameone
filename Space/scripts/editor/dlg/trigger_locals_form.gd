@@ -15,26 +15,17 @@ func _ready() -> void:
 
 
 func _build_ui() -> void:
-	_rows_box = VBoxContainer.new()
-	add_child(_rows_box)
-
-	var footer := HBoxContainer.new()
-	add_child(footer)
-	var lbl := Label.new()
-	lbl.text = "Locals:"
-	lbl.tooltip_text = "Per-trigger local variables for scratch state inside this rule."
-	footer.add_child(lbl)
-	var hint := Label.new()
-	hint.text = "Persistent locals keep their value between separate trigger firings."
-	hint.tooltip_text = "Persistent locals survive across separate executions of the same rule. Non-persistent locals reset every time the rule fires."
-	hint.add_theme_font_size_override("font_size", 10)
-	hint.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	footer.add_child(hint)
+	var header := HBoxContainer.new()
+	add_child(header)
 	var add_btn := Button.new()
-	add_btn.text = "+ Add"
-	add_btn.tooltip_text = "Add a new local variable row."
+	add_btn.text = "+ Add value"
+	add_btn.tooltip_text = "Add a new named value this rule can read and write."
 	add_btn.pressed.connect(_on_add_pressed)
-	footer.add_child(add_btn)
+	header.add_child(add_btn)
+
+	_rows_box = VBoxContainer.new()
+	_rows_box.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	add_child(_rows_box)
 
 
 func open(entries: Array) -> void:
@@ -137,7 +128,7 @@ func _append_row(rng_seed: Dictionary) -> void:
 
 	var persistent_check := CheckBox.new()
 	persistent_check.text = "Persist"
-	persistent_check.tooltip_text = "Keep this local's value between separate firings of the same rule."
+	persistent_check.tooltip_text = "Off: this value resets to its default every time the rule fires. On: the last value carries over to the next firing of this same rule."
 	persistent_check.button_pressed = bool(rng_seed.get("persistent", false))
 	persistent_check.toggled.connect(func(_on): _emit_changed())
 	row_box.add_child(persistent_check)

@@ -2,16 +2,12 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://w8m8fsncry40"
-path="res://.godot/imported/water_tile07.png-5a1f7e61ec9361bacdf9e3b91aba127f.ctex"
-metadata={
-"vram_texture": false
-}
+uid="uid://bwaykkqw7ggjv"
+valid=false
 
 [deps]
 
 source_file="res://Content/demo/TilesetSources/imported/Mountain-platformer-pixel-art-tileset/PNG/Tiles_water/water_tile07.png"
-dest_files=["res://.godot/imported/water_tile07.png-5a1f7e61ec9361bacdf9e3b91aba127f.ctex"]
 
 [params]
 

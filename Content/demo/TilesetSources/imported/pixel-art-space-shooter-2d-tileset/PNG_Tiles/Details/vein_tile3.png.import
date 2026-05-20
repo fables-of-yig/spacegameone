@@ -2,16 +2,12 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://0cduspceajeb"
-path="res://.godot/imported/vein_tile3.png-d3c9ef665173a74358ec594e5bc7b807.ctex"
-metadata={
-"vram_texture": false
-}
+uid="uid://b3tllvohnb76k"
+valid=false
 
 [deps]
 
 source_file="res://Content/demo/TilesetSources/imported/pixel-art-space-shooter-2d-tileset/PNG_Tiles/Details/vein_tile3.png"
-dest_files=["res://.godot/imported/vein_tile3.png-d3c9ef665173a74358ec594e5bc7b807.ctex"]
 
 [params]
 

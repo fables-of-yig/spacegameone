@@ -2,16 +2,12 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://dljsptrk04xmx"
-path="res://.godot/imported/climb4.png-561ec2e1f95b54ec7a393db141a5608a.ctex"
-metadata={
-"vram_texture": false
-}
+uid="uid://b6tjtll8loir2"
+valid=false
 
 [deps]
 
 source_file="res://Content/demo/TilesetSources/imported/Warped Collection Files/Assets/Playable Characters/Chibi-Robot/Chibi-Robot Base/Sprites/climb/Sprites/climb4.png"
-dest_files=["res://.godot/imported/climb4.png-561ec2e1f95b54ec7a393db141a5608a.ctex"]
 
 [params]
 

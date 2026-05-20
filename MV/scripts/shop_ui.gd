@@ -6,7 +6,7 @@ extends CanvasLayer
 
 
 const UIPanels := preload("res://Space/scripts/ui/ui_panels.gd")
-const UIIo := preload("res://Space/scripts/editor/ui/ui_io.gd")
+const UIIo := preload("res://Space/scripts/shared/ui/ui_io.gd")
 const AuthoredScreenRuntime := preload("res://Space/scripts/ui/authored_screen_runtime.gd")
 const HudDataSource := preload("res://Space/scripts/ui/hud_data_source.gd")
 
@@ -53,15 +53,19 @@ func open_shop(shop_id: String) -> void:
 	MvGame.simulation_paused = true
 	_refresh_authored_screen()
 	_refresh()
+	MvTriggerEngine.fire_event("shop_opened", {"shop_id": shop_id})
 
 
 func close_shop() -> void:
+	var closed_id := _shop_id
 	_active = false
 	visible = false
 	MvGame.simulation_paused = false
 	_shop_id = ""
 	_last_message = ""
 	_clear_items()
+	if not closed_id.is_empty():
+		MvTriggerEngine.fire_event("shop_closed", {"shop_id": closed_id})
 
 
 func _refresh() -> void:

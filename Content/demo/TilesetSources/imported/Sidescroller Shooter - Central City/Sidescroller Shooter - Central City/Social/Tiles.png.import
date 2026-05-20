@@ -2,16 +2,12 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://c420euwnyejjw"
-path="res://.godot/imported/Tiles.png-2e02dddc0e96aa13aaff3a6722517b16.ctex"
-metadata={
-"vram_texture": false
-}
+uid="uid://bbhiy8gr5gp7q"
+valid=false
 
 [deps]
 
 source_file="res://Content/demo/TilesetSources/imported/Sidescroller Shooter - Central City/Sidescroller Shooter - Central City/Social/Tiles.png"
-dest_files=["res://.godot/imported/Tiles.png-2e02dddc0e96aa13aaff3a6722517b16.ctex"]
 
 [params]
 

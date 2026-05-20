@@ -2,16 +2,12 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://c1kwjqlo4agbg"
-path="res://.godot/imported/Construction.png-546842e54955f38640d03cb79582d203.ctex"
-metadata={
-"vram_texture": false
-}
+uid="uid://d13g56vv33blq"
+valid=false
 
 [deps]
 
 source_file="res://Content/demo/TilesetSources/imported/NeonNightCityTileset/NeonNightCityTileset/Sprites/Tilesets/Construction.png"
-dest_files=["res://.godot/imported/Construction.png-546842e54955f38640d03cb79582d203.ctex"]
 
 [params]
 

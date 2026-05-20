@@ -13,7 +13,7 @@ signal submitted(bts_value: int)
 signal cancelled
 
 const UIPanels = preload("res://Space/scripts/ui/ui_panels.gd")
-const EnvIO = preload("res://Space/scripts/editor/env/env_io.gd")
+const EnvIO = preload("res://Space/scripts/shared/env/env_io.gd")
 
 const BOX_W: float = 560.0
 const BOX_H: float = 480.0

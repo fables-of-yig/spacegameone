@@ -2,16 +2,12 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://bvsxsu6vx2kwd"
-path="res://.godot/imported/Window_B_BG_D_04.png-f4d0c1b804bd8fb5d8cec90056398f83.ctex"
-metadata={
-"vram_texture": false
-}
+uid="uid://ccat24flrc41p"
+valid=false
 
 [deps]
 
 source_file="res://Content/demo/TilesetSources/imported/night-city-street-game-background-tiles/PNG/Window_B/Window_B_BG_D_04.png"
-dest_files=["res://.godot/imported/Window_B_BG_D_04.png-f4d0c1b804bd8fb5d8cec90056398f83.ctex"]
 
 [params]
 

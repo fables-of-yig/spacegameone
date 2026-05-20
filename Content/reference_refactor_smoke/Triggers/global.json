@@ -1,0 +1,159 @@
+{
+	"libraries": [],
+	"triggers": [
+		{
+			"actions": [
+				{
+					"id": "phase_dash",
+					"type": "give_ability"
+				},
+				{
+					"name": "has_key_silver",
+					"type": "set_var",
+					"value": 1.0
+				},
+				{
+					"id": "gate_to_boss",
+					"locked": false,
+					"type": "set_door_locked"
+				},
+				{
+					"tag": "gate_to_boss_unlocked",
+					"type": "add_tag"
+				}
+			],
+			"conditions": [
+				{
+					"key": "item_id",
+					"type": "payload_eq",
+					"value": "key_renamed"
+				}
+			],
+			"enabled": true,
+			"event": "pickup",
+			"id": "pickup_unlocks_gate",
+			"locals": [],
+			"name": "Pickup unlocks a gate",
+			"once": true
+		},
+		{
+			"actions": [
+				{
+					"type": "lock_player"
+				},
+				{
+					"duration": 0.0,
+					"mode": "position",
+					"type": "camera_focus",
+					"x": 320.0,
+					"y": 176.0
+				},
+				{
+					"id": "renamed_boss",
+					"type": "spawn_entity_at_zone",
+					"zone_id": "boss_intro"
+				},
+				{
+					"type": "camera_unlock"
+				},
+				{
+					"type": "unlock_player"
+				}
+			],
+			"conditions": [
+				{
+					"key": "zone_id",
+					"type": "payload_eq",
+					"value": "boss_intro"
+				}
+			],
+			"enabled": true,
+			"event": "zone_enter",
+			"id": "boss_intro",
+			"locals": [],
+			"name": "Boss intro zone",
+			"once": true
+		},
+		{
+			"actions": [
+				{
+					"count": 1.0,
+					"id": "boss_core",
+					"type": "give_item"
+				},
+				{
+					"id": "boss_exit",
+					"locked": false,
+					"type": "set_door_locked"
+				},
+				{
+					"tag": "boss_defeated",
+					"type": "add_tag"
+				}
+			],
+			"conditions": [
+				{
+					"key": "entity_id",
+					"type": "payload_eq",
+					"value": "renamed_boss"
+				}
+			],
+			"enabled": true,
+			"event": "boss_defeated",
+			"id": "boss_defeated_reward",
+			"locals": [],
+			"name": "Boss defeated reward",
+			"once": true
+		},
+		{
+			"actions": [
+				{
+					"room": "region_default/arrival",
+					"type": "teleport_player",
+					"x": 80.0,
+					"y": 208.0
+				}
+			],
+			"conditions": [],
+			"enabled": true,
+			"event": "refactor_room_event",
+			"id": "refactor_room_global",
+			"name": "Refactor Room Global"
+		},
+		{
+			"actions": [
+				{
+					"id": "new_ability",
+					"type": "give_ability"
+				}
+			],
+			"conditions": [
+				{
+					"id": "new_ability",
+					"type": "has_ability"
+				}
+			],
+			"enabled": true,
+			"event": "refactor_player_refs",
+			"id": "refactor_player_refs",
+			"name": "Refactor Player Refs"
+		},
+		{
+			"actions": [
+				{
+					"id": "new_dialogue",
+					"type": "start_dialogue"
+				},
+				{
+					"id": "new_shop",
+					"type": "start_shop"
+				}
+			],
+			"conditions": [],
+			"enabled": true,
+			"event": "refactor_dialogue_shop_refs",
+			"id": "refactor_dialogue_shop_refs",
+			"name": "Refactor Dialogue Shop Refs"
+		}
+	]
+}

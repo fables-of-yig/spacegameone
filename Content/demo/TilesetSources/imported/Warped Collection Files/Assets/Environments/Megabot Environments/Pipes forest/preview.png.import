@@ -3,15 +3,11 @@
 importer="texture"
 type="CompressedTexture2D"
 uid="uid://m4plsdc8cauu"
-path="res://.godot/imported/preview.png-63a736f03117e12b476f8535b48b4eed.ctex"
-metadata={
-"vram_texture": false
-}
+valid=false
 
 [deps]
 
 source_file="res://Content/demo/TilesetSources/imported/Warped Collection Files/Assets/Environments/Megabot Environments/Pipes forest/preview.png"
-dest_files=["res://.godot/imported/preview.png-63a736f03117e12b476f8535b48b4eed.ctex"]
 
 [params]
 

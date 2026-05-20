@@ -2,16 +2,12 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://drgqeu2ok31c"
-path="res://.godot/imported/sentinel5.png-9c3422db4fcefd907bfa7d25c6a6c123.ctex"
-metadata={
-"vram_texture": false
-}
+uid="uid://bsalf3isyacyr"
+valid=false
 
 [deps]
 
 source_file="res://Content/demo/TilesetSources/imported/Warped Collection Files/Assets/Enemies/Enemies Pack 1/sentinel/sprites/sentinel5.png"
-dest_files=["res://.godot/imported/sentinel5.png-9c3422db4fcefd907bfa7d25c6a6c123.ctex"]
 
 [params]
 

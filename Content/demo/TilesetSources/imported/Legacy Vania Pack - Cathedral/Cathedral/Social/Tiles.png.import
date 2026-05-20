@@ -2,16 +2,12 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://crslgct23mpvi"
-path="res://.godot/imported/Tiles.png-f2ac944f6e56338cd545822c6ad0940e.ctex"
-metadata={
-"vram_texture": false
-}
+uid="uid://bd8wwsafawdu"
+valid=false
 
 [deps]
 
 source_file="res://Content/demo/TilesetSources/imported/Legacy Vania Pack - Cathedral/Cathedral/Social/Tiles.png"
-dest_files=["res://.godot/imported/Tiles.png-f2ac944f6e56338cd545822c6ad0940e.ctex"]
 
 [params]
 

@@ -2,16 +2,12 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://c4tstak5w6iwu"
-path="res://.godot/imported/far-trees.png-833d186c689123dcc3f1acaabf8e9a70.ctex"
-metadata={
-"vram_texture": false
-}
+uid="uid://dralnr1y0yl4u"
+valid=false
 
 [deps]
 
 source_file="res://Content/demo/TilesetSources/imported/Environments/Super Mountain Dusk/version B/Layers/far-trees.png"
-dest_files=["res://.godot/imported/far-trees.png-833d186c689123dcc3f1acaabf8e9a70.ctex"]
 
 [params]
 

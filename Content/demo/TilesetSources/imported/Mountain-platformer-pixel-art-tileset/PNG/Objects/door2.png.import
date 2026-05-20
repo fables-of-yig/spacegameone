@@ -2,16 +2,12 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://ue5rb2xjcbjx"
-path="res://.godot/imported/door2.png-12f347c040cc7de7613f91768cca02af.ctex"
-metadata={
-"vram_texture": false
-}
+uid="uid://dtg1b78ew02ie"
+valid=false
 
 [deps]
 
 source_file="res://Content/demo/TilesetSources/imported/Mountain-platformer-pixel-art-tileset/PNG/Objects/door2.png"
-dest_files=["res://.godot/imported/door2.png-12f347c040cc7de7613f91768cca02af.ctex"]
 
 [params]
 

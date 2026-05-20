@@ -2,16 +2,12 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://d4lpbbkaul35h"
-path="res://.godot/imported/9.png-bca2ddfed57654cba2267e9fcbb1c92c.ctex"
-metadata={
-"vram_texture": false
-}
+uid="uid://dcpwxby3m12kr"
+valid=false
 
 [deps]
 
 source_file="res://Content/demo/TilesetSources/imported/prison-tileset-pixel-art-assets/3 Objects/1 Fence/9.png"
-dest_files=["res://.godot/imported/9.png-bca2ddfed57654cba2267e9fcbb1c92c.ctex"]
 
 [params]
 

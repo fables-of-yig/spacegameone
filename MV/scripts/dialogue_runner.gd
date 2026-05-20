@@ -10,10 +10,9 @@ extends CanvasLayer
 
 
 const UIPanels := preload("res://Space/scripts/ui/ui_panels.gd")
-const UIIo := preload("res://Space/scripts/editor/ui/ui_io.gd")
+const UIIo := preload("res://Space/scripts/shared/ui/ui_io.gd")
 const AuthoredScreenRuntime := preload("res://Space/scripts/ui/authored_screen_runtime.gd")
 const HudDataSource := preload("res://Space/scripts/ui/hud_data_source.gd")
-const UiHostActions := preload("res://Space/scripts/ui/ui_host_actions.gd")
 const CHAR_DELAY: float = 0.03
 const BOX_HEIGHT: int = 180
 const BOX_MARGIN: int = 16
@@ -96,9 +95,11 @@ func start(dialogue_id: String) -> void:
 	MvGame.simulation_paused = true
 	_refresh_authored_screen()
 	_show_line()
+	MvTriggerEngine.fire_event("dialogue_started", {"dialogue_id": dialogue_id})
 
 
 func stop() -> void:
+	var ended_id := _current_id
 	_active = false
 	_waiting_choice = false
 	_line_has_choices = false
@@ -109,6 +110,8 @@ func stop() -> void:
 	_clear_choices()
 	MvGame.simulation_paused = false
 	dialogue_finished.emit()
+	if not ended_id.is_empty():
+		MvTriggerEngine.fire_event("dialogue_ended", {"dialogue_id": ended_id})
 
 
 signal dialogue_finished
@@ -434,9 +437,9 @@ func _emit_ui_button_event(action_id: String, action_args: String, element_id: S
 
 
 func _collect_visible_choices(choices_v: Variant) -> Array:
-	var visible: Array = []
+	var visible_choices: Array = []
 	if typeof(choices_v) != TYPE_ARRAY:
-		return visible
+		return visible_choices
 	var choices: Array = choices_v
 	for i in range(choices.size()):
 		var choice_v: Variant = choices[i]
@@ -445,11 +448,11 @@ func _collect_visible_choices(choices_v: Variant) -> Array:
 		var choice: Dictionary = choice_v
 		if choice.has("condition") and not MvTriggerEngine.evaluate_condition(choice["condition"], {}):
 			continue
-		visible.append({
+		visible_choices.append({
 			"choice_index": i,
 			"text": str(choice.get("text", "...")),
 		})
-	return visible
+	return visible_choices
 
 
 func _finish_line_reveal() -> void:

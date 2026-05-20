@@ -2,16 +2,12 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://cu3objl1bva2b"
-path="res://.godot/imported/highway-far-buildings.png-6e72e78e0b92baed1f9693702594c15b.ctex"
-metadata={
-"vram_texture": false
-}
+uid="uid://dig2p57nkbjja"
+valid=false
 
 [deps]
 
 source_file="res://Content/demo/TilesetSources/imported/Warped Collection Files/Assets/Environments/Highway Files/png files/highway-far-buildings.png"
-dest_files=["res://.godot/imported/highway-far-buildings.png-6e72e78e0b92baed1f9693702594c15b.ctex"]
 
 [params]
 

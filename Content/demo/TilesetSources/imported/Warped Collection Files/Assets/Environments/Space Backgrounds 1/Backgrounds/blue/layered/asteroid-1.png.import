@@ -3,15 +3,11 @@
 importer="texture"
 type="CompressedTexture2D"
 uid="uid://8j2t844afnx5"
-path="res://.godot/imported/asteroid-1.png-6fb873b20ff684192f39a0cbcb012511.ctex"
-metadata={
-"vram_texture": false
-}
+valid=false
 
 [deps]
 
 source_file="res://Content/demo/TilesetSources/imported/Warped Collection Files/Assets/Environments/Space Backgrounds 1/Backgrounds/blue/layered/asteroid-1.png"
-dest_files=["res://.godot/imported/asteroid-1.png-6fb873b20ff684192f39a0cbcb012511.ctex"]
 
 [params]
 

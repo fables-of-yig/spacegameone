@@ -3,15 +3,11 @@
 importer="texture"
 type="CompressedTexture2D"
 uid="uid://d2x8bqs0pqv1d"
-path="res://.godot/imported/environment-preview.png-f30a388be73d7ff395581318d73da392.ctex"
-metadata={
-"vram_texture": false
-}
+valid=false
 
 [deps]
 
 source_file="res://Content/demo/TilesetSources/imported/Warped Collection Files/Assets/Environments/Storm-Night-files/Previews/environment-preview.png"
-dest_files=["res://.godot/imported/environment-preview.png-f30a388be73d7ff395581318d73da392.ctex"]
 
 [params]
 

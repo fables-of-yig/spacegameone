@@ -3,15 +3,11 @@
 importer="texture"
 type="CompressedTexture2D"
 uid="uid://k5m3w6mks7ce"
-path="res://.godot/imported/CheckpointDeactivated.png-7e4fe0a322f9238a0de3b0b6364f1646.ctex"
-metadata={
-"vram_texture": false
-}
+valid=false
 
 [deps]
 
 source_file="res://Content/demo/TilesetSources/imported/PlatformerPrototypePack/Release/Checkpoint/CheckpointDeactivated.png"
-dest_files=["res://.godot/imported/CheckpointDeactivated.png-7e4fe0a322f9238a0de3b0b6364f1646.ctex"]
 
 [params]
 

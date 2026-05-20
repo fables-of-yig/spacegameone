@@ -2,16 +2,12 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://da6dlka71nxie"
-path="res://.godot/imported/player-Walk.png-5882ce1d72e5647eb81c627648c51bd8.ctex"
-metadata={
-"vram_texture": false
-}
+uid="uid://cvighkgtaw5wl"
+valid=false
 
 [deps]
 
 source_file="res://Content/demo/TilesetSources/imported/Warped Collection Files/Assets/Playable Characters/Caves Hunter/Spritesheets/player-Walk.png"
-dest_files=["res://.godot/imported/player-Walk.png-5882ce1d72e5647eb81c627648c51bd8.ctex"]
 
 [params]
 

@@ -2,16 +2,12 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://dpn0rhhax4miw"
-path="res://.godot/imported/back-water-3.png-ab86e4a7aba0af0403e1d3f37664181f.ctex"
-metadata={
-"vram_texture": false
-}
+uid="uid://lnx6gd2iakrd"
+valid=false
 
 [deps]
 
 source_file="res://Content/demo/TilesetSources/imported/Warped Collection Files/Assets/Environments/Sewers Environment/Layers/back-water-3.png"
-dest_files=["res://.godot/imported/back-water-3.png-ab86e4a7aba0af0403e1d3f37664181f.ctex"]
 
 [params]
 

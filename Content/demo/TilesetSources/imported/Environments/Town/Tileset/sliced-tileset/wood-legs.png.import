@@ -2,16 +2,12 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://b4g6edl7n3460"
-path="res://.godot/imported/wood-legs.png-f3b0d275c9f63992f1a74cdecbed7013.ctex"
-metadata={
-"vram_texture": false
-}
+uid="uid://b2wlo8oart6a1"
+valid=false
 
 [deps]
 
 source_file="res://Content/demo/TilesetSources/imported/Environments/Town/Tileset/sliced-tileset/wood-legs.png"
-dest_files=["res://.godot/imported/wood-legs.png-f3b0d275c9f63992f1a74cdecbed7013.ctex"]
 
 [params]
 

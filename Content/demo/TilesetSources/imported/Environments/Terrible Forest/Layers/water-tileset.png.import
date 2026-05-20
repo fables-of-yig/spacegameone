@@ -2,16 +2,12 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://bp223cyesu7g4"
-path="res://.godot/imported/water-tileset.png-407f082a2abf5106eae13bb48d433e85.ctex"
-metadata={
-"vram_texture": false
-}
+uid="uid://butf2fqprdnoh"
+valid=false
 
 [deps]
 
 source_file="res://Content/demo/TilesetSources/imported/Environments/Terrible Forest/Layers/water-tileset.png"
-dest_files=["res://.godot/imported/water-tileset.png-407f082a2abf5106eae13bb48d433e85.ctex"]
 
 [params]
 

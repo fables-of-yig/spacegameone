@@ -2,16 +2,12 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://fh6q4cuo3lhq"
-path="res://.godot/imported/NeonSigns_TitleMusic_On.png-781be0eb42b15e8ea1b70a9fae9750b1.ctex"
-metadata={
-"vram_texture": false
-}
+uid="uid://bmkr406800fba"
+valid=false
 
 [deps]
 
 source_file="res://Content/demo/TilesetSources/imported/NeonNightCityTileset/NeonNightCityTileset/Sprites/Buildings/NeonSigns/NeonSigns_TitleMusic_On.png"
-dest_files=["res://.godot/imported/NeonSigns_TitleMusic_On.png-781be0eb42b15e8ea1b70a9fae9750b1.ctex"]
 
 [params]
 

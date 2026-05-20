@@ -3,15 +3,11 @@
 importer="texture"
 type="CompressedTexture2D"
 uid="uid://dwefplpsixxal"
-path="res://.godot/imported/Conditioner_01.png-f7140117e57da1acd0a626f14241e27b.ctex"
-metadata={
-"vram_texture": false
-}
+valid=false
 
 [deps]
 
 source_file="res://Content/demo/TilesetSources/imported/night-city-street-game-background-tiles/PNG/Wall_Decor/Conditioner_01.png"
-dest_files=["res://.godot/imported/Conditioner_01.png-f7140117e57da1acd0a626f14241e27b.ctex"]
 
 [params]
 

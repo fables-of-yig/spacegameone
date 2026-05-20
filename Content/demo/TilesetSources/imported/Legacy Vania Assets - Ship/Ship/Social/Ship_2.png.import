@@ -2,16 +2,12 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://bqfftspv2gu8d"
-path="res://.godot/imported/Ship_2.png-22eb9c8d8afb611060b3c5bcc03b1836.ctex"
-metadata={
-"vram_texture": false
-}
+uid="uid://tvgmjc3gajcj"
+valid=false
 
 [deps]
 
 source_file="res://Content/demo/TilesetSources/imported/Legacy Vania Assets - Ship/Ship/Social/Ship_2.png"
-dest_files=["res://.godot/imported/Ship_2.png-22eb9c8d8afb611060b3c5bcc03b1836.ctex"]
 
 [params]
 

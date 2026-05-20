@@ -3,15 +3,11 @@
 importer="texture"
 type="CompressedTexture2D"
 uid="uid://dh61cgkdj4kme"
-path="res://.godot/imported/Social.png-ae4317d1c9bd0fc675673de98c7b27bd.ctex"
-metadata={
-"vram_texture": false
-}
+valid=false
 
 [deps]
 
 source_file="res://Content/demo/TilesetSources/imported/Legacy Action Pack - STARSHIP/Legacy Action Pack - STARSHIP/Character/Gifs/Social.png"
-dest_files=["res://.godot/imported/Social.png-ae4317d1c9bd0fc675673de98c7b27bd.ctex"]
 
 [params]
 

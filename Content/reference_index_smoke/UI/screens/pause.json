@@ -1,0 +1,231 @@
+{
+	"anchor": "top_left",
+	"anchor_offset": {
+		"x": 0,
+		"y": 0
+	},
+	"children": [
+		{
+			"anchor": "top_left",
+			"anchor_offset": {
+				"x": 0,
+				"y": 0
+			},
+			"children": [],
+			"id": "pause_title",
+			"properties": {
+				"alignment": "left",
+				"bind_var": "",
+				"decimal_places": 0,
+				"format": "{value}",
+				"opacity": 1.0,
+				"static_text": "PAUSED",
+				"tab_group": "default",
+				"tab_id": "",
+				"text_role": "title",
+				"wrap": false
+			},
+			"rect": {
+				"h": 24,
+				"w": 200,
+				"x": 18,
+				"y": 16
+			},
+			"type": "label"
+		},
+		{
+			"anchor": "top_left",
+			"anchor_offset": {
+				"x": 0,
+				"y": 0
+			},
+			"children": [],
+			"id": "pause_resume",
+			"properties": {
+				"action_args": "",
+				"action_id": "resume",
+				"enabled_condition": "",
+				"label": "RESUME",
+				"show_label": true,
+				"sprite_hover": "",
+				"sprite_normal": "",
+				"sprite_pressed": "",
+				"sprite_tint": "#ffffff",
+				"tab_group": "default",
+				"tab_id": ""
+			},
+			"rect": {
+				"h": 28,
+				"w": 120,
+				"x": 18,
+				"y": 50
+			},
+			"type": "button"
+		},
+		{
+			"anchor": "top_left",
+			"anchor_offset": {
+				"x": 0,
+				"y": 0
+			},
+			"children": [],
+			"id": "pause_save",
+			"properties": {
+				"action_args": "",
+				"action_id": "save_game",
+				"enabled_condition": "",
+				"label": "SAVE GAME",
+				"show_label": true,
+				"sprite_hover": "",
+				"sprite_normal": "",
+				"sprite_pressed": "",
+				"sprite_tint": "#ffffff",
+				"tab_group": "default",
+				"tab_id": ""
+			},
+			"rect": {
+				"h": 28,
+				"w": 140,
+				"x": 150,
+				"y": 50
+			},
+			"type": "button"
+		},
+		{
+			"anchor": "top_left",
+			"anchor_offset": {
+				"x": 0,
+				"y": 0
+			},
+			"children": [],
+			"id": "pause_load",
+			"properties": {
+				"action_args": "",
+				"action_id": "load_game",
+				"enabled_condition": "",
+				"label": "LOAD",
+				"show_label": true,
+				"sprite_hover": "",
+				"sprite_normal": "",
+				"sprite_pressed": "",
+				"sprite_tint": "#ffffff",
+				"tab_group": "default",
+				"tab_id": ""
+			},
+			"rect": {
+				"h": 28,
+				"w": 100,
+				"x": 302,
+				"y": 50
+			},
+			"type": "button"
+		},
+		{
+			"anchor": "top_left",
+			"anchor_offset": {
+				"x": 0,
+				"y": 0
+			},
+			"children": [],
+			"id": "pause_settings",
+			"properties": {
+				"action_args": "",
+				"action_id": "open_settings",
+				"enabled_condition": "",
+				"label": "SETTINGS",
+				"show_label": true,
+				"sprite_hover": "",
+				"sprite_normal": "",
+				"sprite_pressed": "",
+				"sprite_tint": "#ffffff",
+				"tab_group": "default",
+				"tab_id": ""
+			},
+			"rect": {
+				"h": 28,
+				"w": 140,
+				"x": 150,
+				"y": 88
+			},
+			"type": "button"
+		},
+		{
+			"anchor": "top_left",
+			"anchor_offset": {
+				"x": 0,
+				"y": 0
+			},
+			"children": [],
+			"id": "pause_quit",
+			"properties": {
+				"action_args": "",
+				"action_id": "quit_to_menu",
+				"enabled_condition": "",
+				"label": "QUIT TO MENU",
+				"show_label": true,
+				"sprite_hover": "",
+				"sprite_normal": "",
+				"sprite_pressed": "",
+				"sprite_tint": "#ffffff",
+				"tab_group": "default",
+				"tab_id": ""
+			},
+			"rect": {
+				"h": 28,
+				"w": 162,
+				"x": 302,
+				"y": 88
+			},
+			"type": "button"
+		},
+		{
+			"anchor": "top_left",
+			"anchor_offset": {
+				"x": 0,
+				"y": 0
+			},
+			"children": [],
+			"id": "pause_note",
+			"properties": {
+				"alignment": "left",
+				"bind_var": "",
+				"decimal_places": 0,
+				"format": "{value}",
+				"opacity": 1.0,
+				"static_text": "Stock pause screen. Swap art, relabel actions, or add trigger events from buttons.",
+				"tab_group": "default",
+				"tab_id": "",
+				"text_role": "dim",
+				"wrap": false
+			},
+			"rect": {
+				"h": 18,
+				"w": 446,
+				"x": 18,
+				"y": 132
+			},
+			"type": "label"
+		}
+	],
+	"id": "pause_root",
+	"properties": {
+		"opacity": 1.0,
+		"padding": 8,
+		"scroll": "none",
+		"sprite_mode": "9slice",
+		"sprite_slice_x": 0,
+		"sprite_slice_y": 0,
+		"sprite_source": "",
+		"sprite_tint": "#ffffff",
+		"tab_group": "default",
+		"tab_id": "",
+		"variant": "dark"
+	},
+	"rect": {
+		"h": 272,
+		"w": 480,
+		"x": 0,
+		"y": 0
+	},
+	"type": "panel"
+}

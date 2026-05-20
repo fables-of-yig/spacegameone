@@ -2,16 +2,12 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://cpcqx7d04yvlq"
-path="res://.godot/imported/Scorpion.png-80786ec03ca88050fe9e3d9ecce3eb6a.ctex"
-metadata={
-"vram_texture": false
-}
+uid="uid://be1v33mak42w6"
+valid=false
 
 [deps]
 
 source_file="res://Content/demo/TilesetSources/imported/Legacy Classic VL.II - Medina/Madina/Social/Scorpion.png"
-dest_files=["res://.godot/imported/Scorpion.png-80786ec03ca88050fe9e3d9ecce3eb6a.ctex"]
 
 [params]
 

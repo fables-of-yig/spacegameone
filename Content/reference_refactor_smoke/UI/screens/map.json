@@ -1,0 +1,115 @@
+{
+	"anchor": "top_left",
+	"anchor_offset": {
+		"x": 0,
+		"y": 0
+	},
+	"children": [
+		{
+			"anchor": "top_left",
+			"anchor_offset": {
+				"x": 0,
+				"y": 0
+			},
+			"children": [],
+			"id": "map_title",
+			"properties": {
+				"alignment": "left",
+				"bind_var": "",
+				"decimal_places": 0,
+				"format": "{value}",
+				"opacity": 1.0,
+				"static_text": "MAP",
+				"tab_group": "default",
+				"tab_id": "",
+				"text_role": "title",
+				"wrap": false
+			},
+			"rect": {
+				"h": 24,
+				"w": 140,
+				"x": 16,
+				"y": 14
+			},
+			"type": "label"
+		},
+		{
+			"anchor": "top_left",
+			"anchor_offset": {
+				"x": 0,
+				"y": 0
+			},
+			"children": [],
+			"id": "map_rooms",
+			"properties": {
+				"bind_array": "map.rooms",
+				"item_action_arg_key": "",
+				"item_action_id": "",
+				"item_template": {
+
+				},
+				"max_visible": 10,
+				"spacing": 4,
+				"tab_group": "default",
+				"tab_id": ""
+			},
+			"rect": {
+				"h": 176,
+				"w": 448,
+				"x": 16,
+				"y": 48
+			},
+			"type": "list"
+		},
+		{
+			"anchor": "top_left",
+			"anchor_offset": {
+				"x": 0,
+				"y": 0
+			},
+			"children": [],
+			"id": "map_close",
+			"properties": {
+				"action_args": "",
+				"action_id": "close_screen",
+				"enabled_condition": "",
+				"label": "CLOSE",
+				"show_label": true,
+				"sprite_hover": "",
+				"sprite_normal": "",
+				"sprite_pressed": "",
+				"sprite_tint": "#ffffff",
+				"tab_group": "default",
+				"tab_id": ""
+			},
+			"rect": {
+				"h": 28,
+				"w": 110,
+				"x": 16,
+				"y": 232
+			},
+			"type": "button"
+		}
+	],
+	"id": "map_root",
+	"properties": {
+		"opacity": 1.0,
+		"padding": 8,
+		"scroll": "none",
+		"sprite_mode": "9slice",
+		"sprite_slice_x": 0,
+		"sprite_slice_y": 0,
+		"sprite_source": "",
+		"sprite_tint": "#ffffff",
+		"tab_group": "default",
+		"tab_id": "",
+		"variant": "dark"
+	},
+	"rect": {
+		"h": 272,
+		"w": 480,
+		"x": 0,
+		"y": 0
+	},
+	"type": "panel"
+}

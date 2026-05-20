@@ -2,16 +2,12 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://c650nsthipngg"
-path="res://.godot/imported/Web2.png-a88314622d95439b7da1af4e1312f1a1.ctex"
-metadata={
-"vram_texture": false
-}
+uid="uid://k3f3glgpyrwd"
+valid=false
 
 [deps]
 
 source_file="res://Content/demo/TilesetSources/imported/lab-game-tileset-pixel-art/3 Objects/Web2.png"
-dest_files=["res://.godot/imported/Web2.png-a88314622d95439b7da1af4e1312f1a1.ctex"]
 
 [params]
 

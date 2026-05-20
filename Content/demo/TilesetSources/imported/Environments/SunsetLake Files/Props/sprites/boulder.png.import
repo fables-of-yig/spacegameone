@@ -3,15 +3,11 @@
 importer="texture"
 type="CompressedTexture2D"
 uid="uid://bqnt53ke7xs3h"
-path="res://.godot/imported/boulder.png-4687c34af723bf5b6f07b12c75cfa7f0.ctex"
-metadata={
-"vram_texture": false
-}
+valid=false
 
 [deps]
 
 source_file="res://Content/demo/TilesetSources/imported/Environments/SunsetLake Files/Props/sprites/boulder.png"
-dest_files=["res://.godot/imported/boulder.png-4687c34af723bf5b6f07b12c75cfa7f0.ctex"]
 
 [params]
 

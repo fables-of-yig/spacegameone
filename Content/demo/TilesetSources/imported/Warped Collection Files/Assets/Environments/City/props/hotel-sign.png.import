@@ -2,16 +2,12 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://bd375aud28nxu"
-path="res://.godot/imported/hotel-sign.png-985733733b179f82abfd289b54f0c647.ctex"
-metadata={
-"vram_texture": false
-}
+uid="uid://d0lqlaxdba1um"
+valid=false
 
 [deps]
 
 source_file="res://Content/demo/TilesetSources/imported/Warped Collection Files/Assets/Environments/City/props/hotel-sign.png"
-dest_files=["res://.godot/imported/hotel-sign.png-985733733b179f82abfd289b54f0c647.ctex"]
 
 [params]
 

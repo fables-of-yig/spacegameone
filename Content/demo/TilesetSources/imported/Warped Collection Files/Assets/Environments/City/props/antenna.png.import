@@ -2,16 +2,12 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://dsu4pbuq3n7nc"
-path="res://.godot/imported/antenna.png-2ce9c30ae83fc10708d5056c5fa6895f.ctex"
-metadata={
-"vram_texture": false
-}
+uid="uid://u3ovvfg67bhv"
+valid=false
 
 [deps]
 
 source_file="res://Content/demo/TilesetSources/imported/Warped Collection Files/Assets/Environments/City/props/antenna.png"
-dest_files=["res://.godot/imported/antenna.png-2ce9c30ae83fc10708d5056c5fa6895f.ctex"]
 
 [params]
 

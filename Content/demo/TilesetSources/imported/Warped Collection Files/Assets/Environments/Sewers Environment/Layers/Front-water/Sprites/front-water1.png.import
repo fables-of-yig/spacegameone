@@ -3,15 +3,11 @@
 importer="texture"
 type="CompressedTexture2D"
 uid="uid://dg7y0tf0e7ukp"
-path="res://.godot/imported/front-water1.png-555ffd3ce8372780ea172ef98d1351ff.ctex"
-metadata={
-"vram_texture": false
-}
+valid=false
 
 [deps]
 
 source_file="res://Content/demo/TilesetSources/imported/Warped Collection Files/Assets/Environments/Sewers Environment/Layers/Front-water/Sprites/front-water1.png"
-dest_files=["res://.godot/imported/front-water1.png-555ffd3ce8372780ea172ef98d1351ff.ctex"]
 
 [params]
 

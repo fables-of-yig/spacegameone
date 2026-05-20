@@ -2,16 +2,12 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://5x0kk3ixwyqx"
-path="res://.godot/imported/Preview.png-a94056cbcb04aba7c79014c8ae9e0420.ctex"
-metadata={
-"vram_texture": false
-}
+uid="uid://bskkaohlioj0s"
+valid=false
 
 [deps]
 
 source_file="res://Content/demo/TilesetSources/imported/Warped Collection Files/Assets/Packs/Streets of Fight/StreetsOfFight-addon/Environments/Docks Stage/Preview.png"
-dest_files=["res://.godot/imported/Preview.png-a94056cbcb04aba7c79014c8ae9e0420.ctex"]
 
 [params]
 

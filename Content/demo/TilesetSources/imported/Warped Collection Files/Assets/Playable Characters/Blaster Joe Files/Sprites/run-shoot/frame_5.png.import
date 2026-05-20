@@ -2,16 +2,12 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://ddie57c2qe8yn"
-path="res://.godot/imported/frame_5.png-fd60956eb506ff4a35988f118253e4cf.ctex"
-metadata={
-"vram_texture": false
-}
+uid="uid://d04e6picna8bs"
+valid=false
 
 [deps]
 
 source_file="res://Content/demo/TilesetSources/imported/Warped Collection Files/Assets/Playable Characters/Blaster Joe Files/Sprites/run-shoot/frame_5.png"
-dest_files=["res://.godot/imported/frame_5.png-fd60956eb506ff4a35988f118253e4cf.ctex"]
 
 [params]
 

@@ -2,16 +2,12 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://de5wx4vxenud6"
-path="res://.godot/imported/BackdoorClose.png-65b2b82f93a1e281e056988515267626.ctex"
-metadata={
-"vram_texture": false
-}
+uid="uid://hltqcwap24ha"
+valid=false
 
 [deps]
 
 source_file="res://Content/demo/TilesetSources/imported/PlatformerPrototypePack/Release/Doors/Backdoor/BackdoorClose.png"
-dest_files=["res://.godot/imported/BackdoorClose.png-65b2b82f93a1e281e056988515267626.ctex"]
 
 [params]
 

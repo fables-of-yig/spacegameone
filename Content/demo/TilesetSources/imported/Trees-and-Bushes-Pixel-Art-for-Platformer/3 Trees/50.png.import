@@ -2,16 +2,12 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://bayrw4ecye86t"
-path="res://.godot/imported/50.png-d5756266d65c6baf861822a6464c2441.ctex"
-metadata={
-"vram_texture": false
-}
+uid="uid://7trlg0a1m22a"
+valid=false
 
 [deps]
 
 source_file="res://Content/demo/TilesetSources/imported/Trees-and-Bushes-Pixel-Art-for-Platformer/3 Trees/50.png"
-dest_files=["res://.godot/imported/50.png-d5756266d65c6baf861822a6464c2441.ctex"]
 
 [params]
 

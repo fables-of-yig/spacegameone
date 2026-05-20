@@ -2,16 +2,12 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://i0xhno2df6nd"
-path="res://.godot/imported/hits-4-4.png-666365ece0c514b953358871626246fa.ctex"
-metadata={
-"vram_texture": false
-}
+uid="uid://xwsyeeppp34o"
+valid=false
 
 [deps]
 
 source_file="res://Content/demo/TilesetSources/imported/Warped Collection Files/Assets/Items, VFX and Props/Warped shooting fx files/Pixelart/hits/hits-4/frames/hits-4-4.png"
-dest_files=["res://.godot/imported/hits-4-4.png-666365ece0c514b953358871626246fa.ctex"]
 
 [params]
 

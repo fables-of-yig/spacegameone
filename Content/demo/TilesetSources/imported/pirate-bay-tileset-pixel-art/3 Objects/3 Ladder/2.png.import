@@ -2,16 +2,12 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://chl451wiivpa7"
-path="res://.godot/imported/2.png-230b27904d268c677de4ba102e0b5ecf.ctex"
-metadata={
-"vram_texture": false
-}
+uid="uid://br7x64gmjhmv0"
+valid=false
 
 [deps]
 
 source_file="res://Content/demo/TilesetSources/imported/pirate-bay-tileset-pixel-art/3 Objects/3 Ladder/2.png"
-dest_files=["res://.godot/imported/2.png-230b27904d268c677de4ba102e0b5ecf.ctex"]
 
 [params]
 

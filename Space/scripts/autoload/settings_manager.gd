@@ -1,7 +1,5 @@
 extends Node
 
-const InputSetup := preload("res://Space/scripts/autoload/input_setup.gd")
-
 const SETTINGS_PATH := "user://settings.json"
 
 const BUS_MUSIC := "Music"

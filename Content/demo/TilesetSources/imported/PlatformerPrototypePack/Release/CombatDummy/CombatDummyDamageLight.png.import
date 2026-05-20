@@ -2,16 +2,12 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://g1s5l2m5e5lu"
-path="res://.godot/imported/CombatDummyDamageLight.png-939e2f228a7f7dee94f779d57fb7b9ec.ctex"
-metadata={
-"vram_texture": false
-}
+uid="uid://bcx66qsbehjat"
+valid=false
 
 [deps]
 
 source_file="res://Content/demo/TilesetSources/imported/PlatformerPrototypePack/Release/CombatDummy/CombatDummyDamageLight.png"
-dest_files=["res://.godot/imported/CombatDummyDamageLight.png-939e2f228a7f7dee94f779d57fb7b9ec.ctex"]
 
 [params]
 

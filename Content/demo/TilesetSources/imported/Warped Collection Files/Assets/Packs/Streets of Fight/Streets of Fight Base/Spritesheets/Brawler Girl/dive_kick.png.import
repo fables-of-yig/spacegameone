@@ -3,15 +3,11 @@
 importer="texture"
 type="CompressedTexture2D"
 uid="uid://b3ibntu6ny3o5"
-path="res://.godot/imported/dive_kick.png-a7c1f9d031c707cb2ffed221b4578951.ctex"
-metadata={
-"vram_texture": false
-}
+valid=false
 
 [deps]
 
 source_file="res://Content/demo/TilesetSources/imported/Warped Collection Files/Assets/Packs/Streets of Fight/Streets of Fight Base/Spritesheets/Brawler Girl/dive_kick.png"
-dest_files=["res://.godot/imported/dive_kick.png-a7c1f9d031c707cb2ffed221b4578951.ctex"]
 
 [params]
 

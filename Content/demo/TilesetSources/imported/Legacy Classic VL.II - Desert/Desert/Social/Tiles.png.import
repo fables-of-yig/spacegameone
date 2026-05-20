@@ -2,16 +2,12 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://b1cit2so3xcj7"
-path="res://.godot/imported/Tiles.png-805b69fe5265a47c0c7b6afbd6423c86.ctex"
-metadata={
-"vram_texture": false
-}
+uid="uid://b0l4o1owcam0o"
+valid=false
 
 [deps]
 
 source_file="res://Content/demo/TilesetSources/imported/Legacy Classic VL.II - Desert/Desert/Social/Tiles.png"
-dest_files=["res://.godot/imported/Tiles.png-805b69fe5265a47c0c7b6afbd6423c86.ctex"]
 
 [params]
 

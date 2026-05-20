@@ -2,16 +2,12 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://daelbf2u46t8y"
-path="res://.godot/imported/impact1.png-01eb306e5ffaa40d77400f54ae0f484b.ctex"
-metadata={
-"vram_texture": false
-}
+uid="uid://cjr7pkrhya6u"
+valid=false
 
 [deps]
 
 source_file="res://Content/demo/TilesetSources/imported/Warped Collection Files/Assets/Items, VFX and Props/Warped Station FX/impact/sprites/impact1.png"
-dest_files=["res://.godot/imported/impact1.png-01eb306e5ffaa40d77400f54ae0f484b.ctex"]
 
 [params]
 

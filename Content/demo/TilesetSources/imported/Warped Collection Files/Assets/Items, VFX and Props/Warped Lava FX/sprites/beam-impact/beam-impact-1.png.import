@@ -2,16 +2,12 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://barygenwfoa8p"
-path="res://.godot/imported/beam-impact-1.png-b713d76f655a95bb83f5c3e5ed9efe6f.ctex"
-metadata={
-"vram_texture": false
-}
+uid="uid://bx8i58dhbqhvy"
+valid=false
 
 [deps]
 
 source_file="res://Content/demo/TilesetSources/imported/Warped Collection Files/Assets/Items, VFX and Props/Warped Lava FX/sprites/beam-impact/beam-impact-1.png"
-dest_files=["res://.godot/imported/beam-impact-1.png-b713d76f655a95bb83f5c3e5ed9efe6f.ctex"]
 
 [params]
 

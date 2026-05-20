@@ -3,15 +3,11 @@
 importer="texture"
 type="CompressedTexture2D"
 uid="uid://bbskixfow4sbn"
-path="res://.godot/imported/server-gabinetes.png-ac143e6560eddeb310bd9acd0cd95f19.ctex"
-metadata={
-"vram_texture": false
-}
+valid=false
 
 [deps]
 
 source_file="res://Content/demo/TilesetSources/imported/Warped Collection Files/Assets/Environments/cyberpunk-corridor-files/Props/PNG/server-gabinetes.png"
-dest_files=["res://.godot/imported/server-gabinetes.png-ac143e6560eddeb310bd9acd0cd95f19.ctex"]
 
 [params]
 

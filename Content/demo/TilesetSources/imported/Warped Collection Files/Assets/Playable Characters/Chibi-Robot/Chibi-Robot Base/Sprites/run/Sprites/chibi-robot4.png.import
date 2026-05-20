@@ -2,16 +2,12 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://bewhv0yxv6lmi"
-path="res://.godot/imported/chibi-robot4.png-9284e5d3b2b6c0e53edb4561269e2479.ctex"
-metadata={
-"vram_texture": false
-}
+uid="uid://d3ojnx5gno2ob"
+valid=false
 
 [deps]
 
 source_file="res://Content/demo/TilesetSources/imported/Warped Collection Files/Assets/Playable Characters/Chibi-Robot/Chibi-Robot Base/Sprites/run/Sprites/chibi-robot4.png"
-dest_files=["res://.godot/imported/chibi-robot4.png-9284e5d3b2b6c0e53edb4561269e2479.ctex"]
 
 [params]
 

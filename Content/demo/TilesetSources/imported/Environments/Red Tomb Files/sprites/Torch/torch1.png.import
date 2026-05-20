@@ -3,15 +3,11 @@
 importer="texture"
 type="CompressedTexture2D"
 uid="uid://licjwfgjr5a3"
-path="res://.godot/imported/torch1.png-73e39b92056faf632e91b1fa6d99efc5.ctex"
-metadata={
-"vram_texture": false
-}
+valid=false
 
 [deps]
 
 source_file="res://Content/demo/TilesetSources/imported/Environments/Red Tomb Files/sprites/Torch/torch1.png"
-dest_files=["res://.godot/imported/torch1.png-73e39b92056faf632e91b1fa6d99efc5.ctex"]
 
 [params]
 

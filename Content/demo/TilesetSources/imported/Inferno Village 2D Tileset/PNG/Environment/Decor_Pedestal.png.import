@@ -3,15 +3,11 @@
 importer="texture"
 type="CompressedTexture2D"
 uid="uid://sfpd66t3yi80"
-path="res://.godot/imported/Decor_Pedestal.png-9d329a5b2650c1a2c4f25ec4e131cb34.ctex"
-metadata={
-"vram_texture": false
-}
+valid=false
 
 [deps]
 
 source_file="res://Content/demo/TilesetSources/imported/Inferno Village 2D Tileset/PNG/Environment/Decor_Pedestal.png"
-dest_files=["res://.godot/imported/Decor_Pedestal.png-9d329a5b2650c1a2c4f25ec4e131cb34.ctex"]
 
 [params]
 

@@ -2,16 +2,12 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://dt4t77vodvsag"
-path="res://.godot/imported/stairs3.png-dae1137e09ffbc314cbaa37b581ee108.ctex"
-metadata={
-"vram_texture": false
-}
+uid="uid://db8ab4u381pua"
+valid=false
 
 [deps]
 
 source_file="res://Content/demo/TilesetSources/imported/Mountain-platformer-pixel-art-tileset/PNG/Objects/stairs3.png"
-dest_files=["res://.godot/imported/stairs3.png-dae1137e09ffbc314cbaa37b581ee108.ctex"]
 
 [params]
 

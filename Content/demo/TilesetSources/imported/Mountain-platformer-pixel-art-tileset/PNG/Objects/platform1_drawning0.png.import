@@ -2,16 +2,12 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://cln2lgtbhkiv2"
-path="res://.godot/imported/platform1_drawning0.png-71dccc3a9d4eb723ca334af047dae7a2.ctex"
-metadata={
-"vram_texture": false
-}
+uid="uid://bqbn4w3y74qvf"
+valid=false
 
 [deps]
 
 source_file="res://Content/demo/TilesetSources/imported/Mountain-platformer-pixel-art-tileset/PNG/Objects/platform1_drawning0.png"
-dest_files=["res://.godot/imported/platform1_drawning0.png-71dccc3a9d4eb723ca334af047dae7a2.ctex"]
 
 [params]
 

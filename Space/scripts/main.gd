@@ -2,14 +2,14 @@ extends Node2D
 
 
 const UIPanels = preload("res://Space/scripts/ui/ui_panels.gd")
-const RegIO = preload("res://Space/scripts/editor/reg/reg_io.gd")
-const SystemIO = preload("res://Space/scripts/editor/system_io.gd")
+const RegIO = preload("res://Space/scripts/shared/reg/reg_io.gd")
+const SystemIO = preload("res://Space/scripts/shared/system_io.gd")
 const StarfieldRenderer = preload("res://Space/scripts/world/starfield_renderer.gd")
 const WorldRenderer = preload("res://Space/scripts/world/world_renderer.gd")
 const UICoordinator = preload("res://Space/scripts/ui/ui_coordinator.gd")
 const SpawnManager = preload("res://Space/scripts/runtime/spawn_manager.gd")
 const CreativeModeController = preload("res://Space/scripts/runtime/creative_mode_controller.gd")
-const PackPaths = preload("res://Space/scripts/editor/pack_paths.gd")
+const PackPaths = preload("res://Space/scripts/shared/pack_paths.gd")
 
 
 var player_scene: PackedScene = preload("res://Space/scenes/player_ship.tscn")
@@ -47,6 +47,7 @@ var modules_editor = null
 var loot_editor = null
 var trigger_editor = null
 var dialogue_editor = null
+var factions_editor = null
 var shop_editor = null
 var quest_editor = null
 var _editor_active_pack_id: String = ""
@@ -122,7 +123,16 @@ var _cached_npc_ships: Array = []
 var _cached_station_entities: Array = []
 var _cached_pois: Array = []
 var _group_cache_frame: int = 0
-var _proximity_trigger_armed: Dictionary = {}
+# Per-rule arm state for ECA rules with event="space_proximity_band".
+# Keyed by rule_id; true while the player is currently inside the band, so
+# subsequent ticks don't re-fire. Cleared on band exit so a re-entry fires
+# again. Replaces the old per-system spawn_triggers proximity tracking.
+var _proximity_band_armed: Dictionary = {}
+# Cached band specs for the current system. Rebuilt on system entry from
+# the ECA rule registry: [{rule_id, band_min, band_max}]. _poll_proximity_bands
+# iterates this every tick — cheap as long as authors keep band rules in
+# the dozens, not thousands.
+var _proximity_bands_cache: Array = []
 
 var starfield: Node2D = null
 var _ui: Node = null
@@ -222,28 +232,33 @@ func _ready():
     builder = _ui.setup_builder(self)
     star_map = _ui.setup_star_map(self)
     event_panel = _ui.setup_event_panel(self)
+    # In shipped builds setup_editors returns {} (no editor scripts in the
+    # export); use .get(..., null) so every editor handle stays null and
+    # the rest of boot just no-ops past missing entries.
     var editors = _ui.setup_editors(self)
-    content_editor = editors["content_editor"]
-    region_editor = editors["region_editor"]
-    environment_editor = editors["environment_editor"]
-    entity_editor = editors["entity_editor"]
-    behavior_editor = editors["behavior_editor"]
-    theme_editor = editors["theme_editor"]
-    audio_editor = editors["audio_editor"]
-    player_editor = editors["player_editor"]
-    system_editor = editors["system_editor"]
-    ship_editor = editors["ship_editor"]
-    modules_editor = editors["modules_editor"]
-    loot_editor = editors["loot_editor"]
-    trigger_editor = editors["trigger_editor"]
-    dialogue_editor = editors["dialogue_editor"]
-    shop_editor = editors["shop_editor"]
-    quest_editor = editors["quest_editor"]
+    content_editor = editors.get("content_editor", null)
+    region_editor = editors.get("region_editor", null)
+    environment_editor = editors.get("environment_editor", null)
+    entity_editor = editors.get("entity_editor", null)
+    behavior_editor = editors.get("behavior_editor", null)
+    theme_editor = editors.get("theme_editor", null)
+    audio_editor = editors.get("audio_editor", null)
+    player_editor = editors.get("player_editor", null)
+    system_editor = editors.get("system_editor", null)
+    ship_editor = editors.get("ship_editor", null)
+    modules_editor = editors.get("modules_editor", null)
+    loot_editor = editors.get("loot_editor", null)
+    trigger_editor = editors.get("trigger_editor", null)
+    dialogue_editor = editors.get("dialogue_editor", null)
+    factions_editor = editors.get("factions_editor", null)
+    shop_editor = editors.get("shop_editor", null)
+    quest_editor = editors.get("quest_editor", null)
     _restore_editor_from_playtest_if_any()
     pause_menu = _ui.setup_pause_menu(self)
     _ui.setup_cinematic_overlay()
     death_screen = _ui.setup_death_screen(self)
     main_menu = _ui.setup_main_menu(self, GameManager)
+    _auto_route_to_shipped_pack_if_any()
     var pv = _ui.setup_planet_viewport()
     planet_viewport_layer = pv["layer"]
     planet_viewport_container = pv["container"]
@@ -264,6 +279,9 @@ func _ready():
     if MvTriggerEngine != null and MvTriggerEngine.has_signal("action_spawn_space_ship"):
         if not MvTriggerEngine.action_spawn_space_ship.is_connected(_on_trigger_spawn_space_ship):
             MvTriggerEngine.action_spawn_space_ship.connect(_on_trigger_spawn_space_ship)
+    if MvTriggerEngine != null and MvTriggerEngine.has_signal("action_spawn_space_enemies"):
+        if not MvTriggerEngine.action_spawn_space_enemies.is_connected(_on_trigger_spawn_space_enemies):
+            MvTriggerEngine.action_spawn_space_enemies.connect(_on_trigger_spawn_space_enemies)
     if not menu_open:
         var start_pos = system_world_positions.get(GameManager.current_system, Vector2.ZERO)
 
@@ -391,56 +409,70 @@ func _migrate_module_positions():
             gp = Vector2i(int(gp[0]), int(gp[1]))
         mod["grid_pos"] = gp + offset
 
-func _evaluate_spawn_triggers(event_type: String):
-
-    var sys = DataManager.systems.get(GameManager.current_system, {})
-    var triggers: Array = sys.get("spawn_triggers", [])
-    var player_dist_from_star: float = -1.0
-    if event_type == "proximity" and player and is_instance_valid(player) and system_world_positions.has(GameManager.current_system):
-        player_dist_from_star = player.global_position.distance_to(system_world_positions[GameManager.current_system])
-    for trig_idx in triggers.size():
-        var trig: Dictionary = triggers[trig_idx]
-        var trig_on: String = str(trig.get("on", "enter")).strip_edges().to_lower()
-        if trig_on != event_type.to_lower():
+# Scans the loaded ECA ruleset for rules with event="space_proximity_band"
+# whose event_params.system_id matches the active system, and caches their
+# band parameters so _poll_proximity_bands can check them cheaply. Called
+# on system entry; rebuilds the cache from scratch (and clears arm state
+# so stale arms from a prior system don't suppress fires in the new one).
+func _rebuild_proximity_bands_for_system(sys_id: String) -> void:
+    _proximity_bands_cache.clear()
+    _proximity_band_armed.clear()
+    if MvTriggerEngine == null or not MvTriggerEngine.has_method("get_rules"):
+        return
+    for rule_v in MvTriggerEngine.get_rules():
+        if typeof(rule_v) != TYPE_DICTIONARY:
             continue
-        var tid: String = trig.get("id", "")
-        var trig_key: String = "%s:%s" % [GameManager.current_system, tid if not tid.is_empty() else str(trig_idx)]
-
-        if trig_on == "proximity":
-            var proximity_dist: Array = trig.get("dist", [400, 800])
-            var dist_min: float = float(proximity_dist[0]) if proximity_dist.size() > 0 else 400.0
-            var dist_max: float = float(proximity_dist[1]) if proximity_dist.size() > 1 else dist_min
-            var inside_band: bool = player_dist_from_star >= dist_min and player_dist_from_star <= dist_max
-            if not inside_band:
-                _proximity_trigger_armed.erase(trig_key)
-                continue
-            if bool(_proximity_trigger_armed.get(trig_key, false)):
-                continue
-            _proximity_trigger_armed[trig_key] = true
-
-        if trig.get("once", false) and tid in GameManager.fired_triggers:
+        var rule: Dictionary = rule_v
+        if str(rule.get("event", "")) != "space_proximity_band":
             continue
-
-        var conditions: Dictionary = trig.get("conditions", {})
-        var pass_all: bool = true
-        for tag_key in conditions:
-            if tag_key == "chance":
-                var chance_percent: float = clampf(float(conditions[tag_key]), 0.0, 100.0)
-                if randf() * 100.0 >= chance_percent:
-                    pass_all = false
-                    break
-                continue
-            if MvTriggerEngine.get_global_tag(tag_key) != conditions[tag_key]:
-                pass_all = false
-                break
-        if not pass_all:
+        var params_v: Variant = rule.get("event_params", {})
+        if typeof(params_v) != TYPE_DICTIONARY:
             continue
+        var params: Dictionary = params_v
+        if str(params.get("system_id", "")) != sys_id:
+            continue
+        _proximity_bands_cache.append({
+            "rule_id": str(rule.get("id", "")),
+            "band_min": float(params.get("band_min", 0.0)),
+            "band_max": float(params.get("band_max", 0.0)),
+        })
 
-        if trig.get("once", false) and tid != "":
-            GameManager.fired_triggers.append(tid)
-        var spawns: Array = trig.get("spawns", [])
-        var spawn_dist_range: Array = trig.get("dist", [400, 800])
-        _spawn.spawn_trigger_enemies(spawns, spawn_dist_range[0], spawn_dist_range[1])
+
+# Polled every Space-layer tick. For each cached band rule, checks whether
+# the player ship is currently inside its [band_min, band_max] ring around
+# the star. Fires "space_proximity_band" once per entry (arms the rule),
+# and clears the arm on exit so the next entry fires again.
+func _poll_proximity_bands() -> void:
+    if _proximity_bands_cache.is_empty():
+        return
+    if player == null or not is_instance_valid(player):
+        return
+    var sys_id: String = GameManager.current_system
+    if not system_world_positions.has(sys_id):
+        return
+    var dist: float = player.global_position.distance_to(system_world_positions[sys_id])
+    for entry_v in _proximity_bands_cache:
+        var entry: Dictionary = entry_v
+        var rule_id: String = str(entry.get("rule_id", ""))
+        if rule_id.is_empty():
+            continue
+        var band_min: float = float(entry.get("band_min", 0.0))
+        var band_max: float = float(entry.get("band_max", 0.0))
+        var inside: bool = dist >= band_min and dist <= band_max
+        if not inside:
+            _proximity_band_armed.erase(rule_id)
+            continue
+        if bool(_proximity_band_armed.get(rule_id, false)):
+            continue
+        _proximity_band_armed[rule_id] = true
+        if MvTriggerEngine != null:
+            MvTriggerEngine.fire_event("space_proximity_band", {
+                "system_id": sys_id,
+                "band_min": band_min,
+                "band_max": band_max,
+                "distance": dist,
+                "rule_id": rule_id,
+            })
 
 func _despawn_npc_ships():
 
@@ -538,7 +570,6 @@ func _on_station_destroyed(station_key: String, pos: Vector2):
         sdata["health"] = 0.0
     if hud_control:
         hud_control.show_bark("STATION", "Station destroyed", Color(0.95, 0.45, 0.35), 2.5)
-    _evaluate_spawn_triggers("station_destroyed")
     if MvTriggerEngine != null:
         MvTriggerEngine.fire_event("space_station_destroyed", {
             "system_id": loaded_system,
@@ -571,10 +602,9 @@ func _load_system_content(sys_id: String):
         GameManager.visited_systems.append(sys_id)
 
 
-    var sys_count_before = DataManager.systems.size()
-    DataManager.expand_frontier(sys_id, 2)
-    if DataManager.systems.size() != sys_count_before:
-        _compute_world_positions()
+    # expand_frontier used to lazy-expand procedural systems around the
+    # player; with procedural generation deleted, all systems are
+    # pack-authored and the call is a noop.
 
     _spawn.spawn_system_pois(sys_id)
     if _should_spawn_procedural_asteroids(sys_id):
@@ -584,9 +614,22 @@ func _load_system_content(sys_id: String):
             _spawn.spawn_npc_ships(sys_id)
         _spawn.spawn_placed_npcs(sys_id)
 
-    _evaluate_spawn_triggers("enter")
+    _rebuild_proximity_bands_for_system(sys_id)
     if MvTriggerEngine != null:
         MvTriggerEngine.fire_event("space_system_enter", {"system_id": sys_id})
+
+    # Drain any ship spawns queued by MV-side triggers for this system.
+    # Authors push these via the space_spawn_ship_on_return action — the
+    # ship class id is spawned at the system center using the standard
+    # enemy spawn manager (matching the spawn_space_ship action's anchor
+    # = "system" with no offset).
+    if PlanetaryInterface != null and PlanetaryInterface.has_method("consume_ship_spawn_queue") and _spawn != null:
+        var queued: Array = PlanetaryInterface.consume_ship_spawn_queue(sys_id)
+        var sys_center: Vector2 = system_world_positions.get(sys_id, Vector2.ZERO)
+        for class_v in queued:
+            var class_id: String = str(class_v).strip_edges()
+            if not class_id.is_empty():
+                _spawn.spawn_enemy_ship(sys_center, class_id, false, 0.0)
 
 
     in_combat = false
@@ -630,8 +673,6 @@ func _update_current_system():
         var _sys_data = DataManager.systems.get(nearest, {})
         player.nearest_star_radius = _sys_data.get("star_size", 60) * 20.0
         GameManager.near_star = player.global_position.distance_to(system_world_positions[nearest]) < 6000.0
-
-var _pending_galaxy_size: int = 120
 
 func _on_creative_mode():
     _cmc.on_creative_mode()
@@ -689,132 +730,13 @@ func _on_fight_ai_requested(placed: Array, core_id: String, template_name: Strin
 func _end_fight_ai():
     _cmc.end_fight_ai()
 
-func _on_new_game(galaxy_size: int = 120):
-    menu_open = false
-    main_menu.visible = false
-    _pending_galaxy_size = galaxy_size
-    _finalize_new_game()
-
-func _finalize_new_game():
-    GameManager.skip_main_menu = true
-    GameManager.start_template_path = "res://Space/data/npc_templates/initial_damaged_frame.json"
-    GameManager.reset_to_new_game()
-    var seed_val = randi()
-    DataManager.generate_new_galaxy(seed_val, _pending_galaxy_size)
-    GameManager.init_faction_reputation()
-
-    # Strip the starting system down to just a station — player starts in an empty system
-    var start_id = GameManager.current_system
-    if DataManager.systems.has(start_id):
-        var sys = DataManager.systems[start_id]
-        var station_name = sys.get("name", "Haven") + " Station"
-        sys["pois"] = [{
-            "name": station_name,
-            "type": "station",
-            "orbit_dist": 3500.0,
-            "event_id": "home_station",
-        }]
-        sys["threat_level"] = 0
-        sys["enemies"] = []
-        sys["asteroids"] = []
-        sys["placed_npcs"] = []
-
-    _compute_world_positions()
-    var start_pos = system_world_positions.get(start_id, Vector2.ZERO)
-    var start_sys = DataManager.systems.get(start_id, {})
-    var star_r = start_sys.get("star_size", 60) * 20.0
-    if player:
-        player.position = start_pos + Vector2(star_r + 2000.0, 0)
-        player.nearest_star_pos = start_pos
-    _load_system_content(start_id)
-    _apply_initial_loadout()
-    get_tree().paused = false
-    _start_intro_sequence()
-
-var _intro_active: bool = false
-var _intro_portal: Node2D = null
-
-func _start_intro_sequence():
-    if not player or not is_instance_valid(player):
-        return
-    _intro_active = true
-    # Spawn the warp portal on the player
-    var portal = Node2D.new()
-    portal.set_script(warp_portal_script)
-    portal.global_position = player.global_position
-    add_child(portal)
-    portal.setup(player.ship_size if player else 20.0, player)
-    _intro_portal = portal
-    portal.finished.connect(_on_intro_portal_finished)
-    # After the ship appears in the portal, auto-drift it forward
-    var appear_delay = (64.0 / 24.0) + 1.8 + 0.3  # intro + ship appear + small buffer
-    get_tree().create_timer(appear_delay, false, false, false).timeout.connect(_intro_drift_ship)
-
-func _intro_drift_ship():
-    if not player or not is_instance_valid(player):
-        return
-    # Keep player input frozen during the intro drift
-    player.set_process(false)
-    player.set_physics_process(false)
-    var facing = Vector2.from_angle(player.rotation)
-    var target_pos = player.position + facing * 200.0
-    var tween = create_tween()
-    tween.tween_property(player, "position", target_pos, 1.0).set_ease(Tween.EASE_OUT).set_trans(Tween.TRANS_QUAD)
-
-func _on_intro_portal_finished():
-    _intro_portal = null
-    if not _intro_active:
-        return
-    # Give a short beat after portal closes, then open dialogue
-    get_tree().create_timer(0.5, false, false, false).timeout.connect(_open_intro_dialogue)
-
-func _open_intro_dialogue():
-    if not _intro_active:
-        return
-    # Load intro dialogue data
-    var file = FileAccess.open("res://Space/data/events/intro.json", FileAccess.READ)
-    if file == null:
-        push_warning("Could not open intro dialogue")
-        _intro_active = false
-        if player:
-            player.set_physics_process(true)
-        return
-    var json = JSON.new()
-    if json.parse(file.get_as_text()) != OK:
-        push_warning("Failed to parse intro dialogue")
-        _intro_active = false
-        if player:
-            player.set_physics_process(true)
-        return
-    var data = json.data
-    # Open dialogue — event_panel expects {"event_id": {nodes: ...}}
-    var intro_events = {"intro": data}
-    event_panel.open_event(intro_events, "intro")
-    event_open = true
-    get_tree().paused = true
-    # Connect to close signal for this specific dialogue
-    if not event_panel.closed.is_connected(_on_intro_dialogue_closed):
-        event_panel.closed.connect(_on_intro_dialogue_closed, CONNECT_ONE_SHOT)
-
-func _on_intro_dialogue_closed():
-    _intro_active = false
-    event_open = false
-    get_tree().paused = false
-    if player and is_instance_valid(player):
-        player.set_process(true)
-        player.set_physics_process(true)
-    # Save checkpoint so Retry loads back here instead of a trashed state
-    GameManager.save_game(GameManager.current_save_slot)
-    # After 3 seconds, warp in two interceptors north and south of the player
-    get_tree().create_timer(3.0, false, false, false).timeout.connect(_spawn_intro_interceptors)
-
-func _spawn_intro_interceptors():
-    if not player or not is_instance_valid(player):
-        return
-    var pos_north = player.global_position + Vector2(0, -300)
-    var pos_south = player.global_position + Vector2(0, 300)
-    _spawn.spawn_enemy_with_wormhole(pos_north, "interceptor", 0.0)
-    _spawn.spawn_enemy_with_wormhole(pos_south, "interceptor", 0.3)
+# The procedural "New Game" flow (_on_new_game / _finalize_new_game) and
+# the hardcoded intro sequence that it triggered (warp portal, drift,
+# intro.json dialogue, intro interceptors) used to live here. Both were
+# the only path through DataManager.generate_new_galaxy + the engine-level
+# galaxy_generator.gd; gameplay now enters exclusively through the pack
+# picker in main_menu, which loads authored systems.json. Author intros
+# as ECA rules on the `game_started` event in the active pack instead.
 
 func _on_load_slot(slot: int):
     menu_open = false
@@ -1147,6 +1069,8 @@ func _on_content_editor_editor_requested(kind: String, pack_id: String) -> void:
             _open_mv_editor(shop_editor, pack_id)
         "quest":
             _open_mv_editor(quest_editor, pack_id)
+        "factions":
+            _open_mv_editor(factions_editor, pack_id)
         _:
             _editor_return_to_content_hub = false
             push_warning("main._on_content_editor_editor_requested: unknown kind '%s'" % kind)
@@ -1287,6 +1211,32 @@ func _on_region_room_chosen(region_id: String, room_addr: String):
 # handler scene-changes back to Space, PlanetaryInterface.pending_return_to_editor
 # is set and the pack/region/room triple is stashed. Re-open the env editor at
 # that exact spot instead of dropping the user on the main menu.
+# Shipped builds carry a res://shipped_pack.json at the project root
+# saying which pack the binary is glued to. When present, skip the dev
+# main menu entirely and call _start_play_pack_menu on the pack id so
+# the player lands directly on that pack's authored main_menu screen.
+# Deferred because setup is still finishing — the dev main_menu hasn't
+# finished its first _draw yet, and _start_play_pack_menu touches its
+# _authored_screen child + sets _authored_pack_id. Empty / missing /
+# malformed config: silently no-op (boot proceeds as a normal dev build).
+func _auto_route_to_shipped_pack_if_any() -> void:
+    var ui_script = preload("res://Space/scripts/ui/ui_coordinator.gd")
+    if not ui_script.is_shipped_build():
+        return
+    var cfg: Dictionary = ui_script.read_shipped_pack_config()
+    var pack_id: String = str(cfg.get("pack_id", "")).strip_edges()
+    if pack_id.is_empty():
+        push_warning("[main] shipped_pack.json missing pack_id — falling back to dev main menu.")
+        return
+    if main_menu == null:
+        return
+    # Suppress dev-menu interactivity while we wait for the deferred call.
+    # The authored screen will overlay once load completes; the starfield
+    # behind it is harmless ambient draw.
+    menu_open = false
+    main_menu._start_play_pack_menu.call_deferred(pack_id)
+
+
 func _restore_editor_from_playtest_if_any() -> void:
     var pi = get_node_or_null("/root/PlanetaryInterface")
     if pi == null or not pi.pending_return_to_editor:
@@ -1296,6 +1246,12 @@ func _restore_editor_from_playtest_if_any() -> void:
     var region_id: String = str(info.get("region_id", ""))
     var room_addr: String = str(info.get("room_addr", ""))
     if pack_id.is_empty():
+        return
+    # Shipped builds have no editor; the playtest-return path is a
+    # dev-only roundtrip from the environment editor, so the stash should
+    # never even be set. Defensive guard in case PlanetaryInterface ends
+    # up with stale state from a transferred save.
+    if environment_editor == null:
         return
     if main_menu:
         main_menu.visible = false
@@ -1892,10 +1848,7 @@ func _toggle_star_map():
         _exit_surface()
         return
 
-    var sys_count_before = DataManager.systems.size()
-    DataManager.expand_frontier(GameManager.current_system, 2)
-    if DataManager.systems.size() != sys_count_before:
-        _compute_world_positions()
+    # expand_frontier deleted — see _load_system_content for context.
     var player_data = player.global_position / WORLD_SCALE if player else Vector2.ZERO
     star_map.open_map(DataManager.systems, GameManager.current_system, player_data)
     star_map_open = true
@@ -2348,10 +2301,13 @@ func _on_event_finished(effects: Array):
                 if tag_name != "":
                     MvTriggerEngine.set_global_tag(tag_name, tag_value)
             "fire_triggers":
-
-                get_tree().create_timer(0.5).timeout.connect( func():
-                    _evaluate_spawn_triggers("event")
-                )
+                # Legacy galaxy_data event effect that used to invoke the
+                # systems.json spawn_triggers list. With spawn_triggers
+                # deleted, this is a noop — author ECA rules listening
+                # for a named event instead, and have the event effect
+                # dispatch via the engine (or use 'event_type: spawn_wave'
+                # in galaxy_data with a matching ECA rule).
+                pass
             "give_resource_random":
 
                 var res_keys = GameManager.RESOURCE_TYPES.keys()
@@ -2827,7 +2783,7 @@ func _process(delta: float):
 
     _update_current_system()
     if not on_surface:
-        _evaluate_spawn_triggers("proximity")
+        _poll_proximity_bands()
 
 func _process_surface(_delta: float):
     if not player or not is_instance_valid(player):
@@ -2968,6 +2924,19 @@ func _on_trigger_spawn_space_ship(class_id: String, anchor: String, pos: Vector2
         _:
             spawn_pos = pos
     _spawn.spawn_enemy_ship(spawn_pos, class_id, use_wormhole, delay)
+
+
+# Handles MvTriggerEngine's `spawn_space_enemies` action by adapting the
+# (class_id, count, dist_min, dist_max, use_wormhole) tuple into the
+# spawn_manager's existing spawn_trigger_enemies signature, which expects
+# an Array of {class, count} entries. Keeps spawn_manager's scatter math
+# (random angle, clamped distance, staggered delays) as the single
+# implementation point so the action behaves like the old spawn_triggers.
+func _on_trigger_spawn_space_enemies(class_id: String, count: int, dist_min: int, dist_max: int, _use_wormhole: bool) -> void:
+    if _spawn == null or class_id.strip_edges().is_empty() or count <= 0:
+        return
+    var spawns: Array = [{"class": class_id, "count": count}]
+    _spawn.spawn_trigger_enemies(spawns, float(dist_min), float(dist_max))
 
 
 func _spawn_loot(pos: Vector2):

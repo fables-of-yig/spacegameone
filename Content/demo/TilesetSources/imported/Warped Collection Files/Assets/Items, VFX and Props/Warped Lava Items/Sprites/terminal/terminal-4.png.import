@@ -2,16 +2,12 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://cfsx83g4477ak"
-path="res://.godot/imported/terminal-4.png-f05918e8aa10f8d05ce14d3aa4dec48a.ctex"
-metadata={
-"vram_texture": false
-}
+uid="uid://c2suxpomr8vgh"
+valid=false
 
 [deps]
 
 source_file="res://Content/demo/TilesetSources/imported/Warped Collection Files/Assets/Items, VFX and Props/Warped Lava Items/Sprites/terminal/terminal-4.png"
-dest_files=["res://.godot/imported/terminal-4.png-f05918e8aa10f8d05ce14d3aa4dec48a.ctex"]
 
 [params]
 

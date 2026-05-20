@@ -3,15 +3,11 @@
 importer="texture"
 type="CompressedTexture2D"
 uid="uid://dd5mmtvhuutai"
-path="res://.godot/imported/4.png-c48b886c16043f9f4b5ebb54c5951359.ctex"
-metadata={
-"vram_texture": false
-}
+valid=false
 
 [deps]
 
 source_file="res://Content/demo/TilesetSources/imported/ruins-game-tileset-pixel-art/2 Background/Layers/4.png"
-dest_files=["res://.godot/imported/4.png-c48b886c16043f9f4b5ebb54c5951359.ctex"]
 
 [params]
 

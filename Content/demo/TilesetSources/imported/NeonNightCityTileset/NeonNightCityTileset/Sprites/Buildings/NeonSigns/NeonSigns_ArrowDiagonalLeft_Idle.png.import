@@ -2,16 +2,12 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://db2i3s2og1trb"
-path="res://.godot/imported/NeonSigns_ArrowDiagonalLeft_Idle.png-282c36d11ac3daeeb5526eb3015c2186.ctex"
-metadata={
-"vram_texture": false
-}
+uid="uid://q6208h7ae6tx"
+valid=false
 
 [deps]
 
 source_file="res://Content/demo/TilesetSources/imported/NeonNightCityTileset/NeonNightCityTileset/Sprites/Buildings/NeonSigns/NeonSigns_ArrowDiagonalLeft_Idle.png"
-dest_files=["res://.godot/imported/NeonSigns_ArrowDiagonalLeft_Idle.png-282c36d11ac3daeeb5526eb3015c2186.ctex"]
 
 [params]
 

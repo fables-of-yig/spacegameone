@@ -3,15 +3,11 @@
 importer="texture"
 type="CompressedTexture2D"
 uid="uid://bjb085pxlrtaw"
-path="res://.godot/imported/Background Props.png-4186f938e33c21773cf44d499556b03b.ctex"
-metadata={
-"vram_texture": false
-}
+valid=false
 
 [deps]
 
 source_file="res://Content/demo/TilesetSources/imported/Sidescroller Shooter - Central City/Background/Background Props.png"
-dest_files=["res://.godot/imported/Background Props.png-4186f938e33c21773cf44d499556b03b.ctex"]
 
 [params]
 

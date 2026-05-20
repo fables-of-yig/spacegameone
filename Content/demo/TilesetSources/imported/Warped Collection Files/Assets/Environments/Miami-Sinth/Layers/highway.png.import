@@ -2,16 +2,12 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://cx4b6tcbopjlf"
-path="res://.godot/imported/highway.png-2ff2f71a6573d3edd69c039f85974531.ctex"
-metadata={
-"vram_texture": false
-}
+uid="uid://b5wbdukibkvmp"
+valid=false
 
 [deps]
 
 source_file="res://Content/demo/TilesetSources/imported/Warped Collection Files/Assets/Environments/Miami-Sinth/Layers/highway.png"
-dest_files=["res://.godot/imported/highway.png-2ff2f71a6573d3edd69c039f85974531.ctex"]
 
 [params]
 

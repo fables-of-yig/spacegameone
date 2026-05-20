@@ -18,6 +18,7 @@ signal action_spawn_entity(entity_id: String, pos: Vector2, data: Dictionary)
 signal action_despawn_entity(entity_id: String)
 signal action_spawn_entity_at_zone(entity_id: String, zone_id: String, data: Dictionary)
 signal action_spawn_space_ship(class_id: String, anchor: String, pos: Vector2, use_wormhole: bool, delay: float)
+signal action_spawn_space_enemies(class_id: String, count: int, dist_min: int, dist_max: int, use_wormhole: bool)
 signal action_move_entity_to_zone(entity_ref: String, zone_id: String, speed: float)
 signal action_play_entity_anim(entity_ref: String, anim_name: String, loop: bool, speed_scale: float)
 signal action_set_entity_facing(entity_ref: String, direction: String, zone_id: String)
@@ -32,8 +33,8 @@ var _action_handlers: Dictionary = {}
 
 # Global tag dictionary. Shared between MV and Space so triggers can
 # branch on world-scoped state ("defeated_boss_ice", "met_shopkeep_a").
-# Entity-scoped tags still travel in the event payload; see
-# `_cond_has_tag` / `_cond_entity_has_tag` for the payload form.
+# Entity-scoped tags still travel in the event payload; see `_cond_has_tag`
+# for the payload form.
 var global_tags: Dictionary = {}
 var quest_state: Dictionary = {}
 const RESERVED_LOCAL_KEY: String = "__trigger_locals"
@@ -574,7 +575,24 @@ func _run_rule_sequence(rule: Dictionary, payload: Dictionary) -> void:
 		"locals": _locals_snapshot(payload),
 	})
 	await _await_pause_gate(sequence_id, rule, 0, payload, true)
-	var actions: Array = actions_v
+	await _run_action_list(actions_v as Array, rule, payload, sequence_id)
+	if not rule_id.is_empty():
+		fire_event("trigger_sequence_finished", {"rule_id": rule_id})
+	_push_debug("sequence_finished", {
+		"sequence_id": sequence_id,
+		"rule_id": rule_id,
+		"locals": _locals_snapshot(payload),
+	})
+	_active_sequences.erase(sequence_id)
+	debug_state_changed.emit()
+
+
+# Iterates an action array sequentially, awaiting waits and recursing into
+# any nested action arrays carried by structural actions (random_pick today,
+# if/else in Phase E). Extracted from _run_rule_sequence so the same logic
+# drives both the top-level rule body and nested branch bodies.
+func _run_action_list(actions: Array, rule: Dictionary, payload: Dictionary, sequence_id: int) -> void:
+	var rule_id: String = str(rule.get("id", "")).strip_edges()
 	for action_idx in range(actions.size()):
 		var action_v: Variant = actions[action_idx]
 		if typeof(action_v) != TYPE_DICTIONARY:
@@ -649,6 +667,26 @@ func _run_rule_sequence(rule: Dictionary, payload: Dictionary) -> void:
 			_set_active_sequence(sequence_id, rule, action_idx, "wait_for_dialogue", payload)
 			await _await_dialogue(action, payload, sequence_id, rule_id)
 			continue
+		if atype == "random_pick":
+			_push_debug("action", {
+				"sequence_id": sequence_id,
+				"rule_id": rule_id,
+				"action": atype,
+				"step": action_idx,
+				"locals": _locals_snapshot(payload),
+			})
+			await _run_random_pick(action, rule, payload, sequence_id)
+			continue
+		if atype == "if":
+			_push_debug("action", {
+				"sequence_id": sequence_id,
+				"rule_id": rule_id,
+				"action": atype,
+				"step": action_idx,
+				"locals": _locals_snapshot(payload),
+			})
+			await _run_if(action, rule, payload, sequence_id)
+			continue
 		_push_debug("action", {
 			"sequence_id": sequence_id,
 			"rule_id": rule_id,
@@ -658,15 +696,51 @@ func _run_rule_sequence(rule: Dictionary, payload: Dictionary) -> void:
 		})
 		execute_action(action, payload)
 		_set_active_sequence(sequence_id, rule, action_idx + 1, "", payload)
-	if not rule_id.is_empty():
-		fire_event("trigger_sequence_finished", {"rule_id": rule_id})
-	_push_debug("sequence_finished", {
+
+
+# Weighted random branch: rolls across `options[].weight` and recurses
+# into the chosen entry's `actions` array via _run_action_list. Missing
+# weights default to 1.0; empty/zero-weight option arrays no-op. The
+# nested action list inherits the parent rule's payload (so locals,
+# breakpoints, and wait semantics work transparently inside a branch).
+func _run_random_pick(action: Dictionary, rule: Dictionary, payload: Dictionary, sequence_id: int) -> void:
+	var options_v: Variant = action.get("options", [])
+	if typeof(options_v) != TYPE_ARRAY:
+		return
+	var options: Array = options_v
+	if options.is_empty():
+		return
+	var total: float = 0.0
+	for opt_v in options:
+		if typeof(opt_v) != TYPE_DICTIONARY:
+			continue
+		total += maxf(0.0, float((opt_v as Dictionary).get("weight", 1.0)))
+	if total <= 0.0:
+		return
+	var roll: float = randf() * total
+	var accumulated: float = 0.0
+	var picked: Dictionary = {}
+	for opt_v in options:
+		if typeof(opt_v) != TYPE_DICTIONARY:
+			continue
+		var opt: Dictionary = opt_v
+		var w: float = maxf(0.0, float(opt.get("weight", 1.0)))
+		accumulated += w
+		if roll <= accumulated:
+			picked = opt
+			break
+	if picked.is_empty():
+		return
+	var nested_v: Variant = picked.get("actions", [])
+	if typeof(nested_v) != TYPE_ARRAY:
+		return
+	_push_debug("random_pick", {
 		"sequence_id": sequence_id,
-		"rule_id": rule_id,
-		"locals": _locals_snapshot(payload),
+		"rule_id": str(rule.get("id", "")),
+		"roll": roll,
+		"total_weight": total,
 	})
-	_active_sequences.erase(sequence_id)
-	debug_state_changed.emit()
+	await _run_action_list(nested_v as Array, rule, payload, sequence_id)
 
 
 func _await_pause_gate(sequence_id: int, rule: Dictionary, step: int, payload: Dictionary, check_breakpoint: bool) -> void:
@@ -746,16 +820,18 @@ func _register_builtins() -> void:
 	# Conditions
 	register_condition("payload_eq", _cond_payload_eq)
 	register_condition("has_tag", _cond_has_tag)
-	register_condition("entity_has_tag", _cond_has_tag)  # alias — payload-scoped tag check
 	register_condition("has_global_tag", _cond_has_global_tag)
 	register_condition("var_eq", _cond_var_eq)
 	register_condition("var_gte", _cond_var_gte)
+	register_condition("var_eq_var", _cond_var_eq_var)
+	register_condition("var_gte_var", _cond_var_gte_var)
 	register_condition("chance_roll", _cond_chance_roll)
 	register_condition("local_var_eq", _cond_local_var_eq)
 	register_condition("local_var_gte", _cond_local_var_gte)
 	register_condition("has_item", _cond_has_item)
 	register_condition("has_ability", _cond_has_ability)
 	register_condition("has_flag", _cond_has_flag)
+	register_condition("has_global_flag", _cond_has_global_flag)
 	register_condition("quest_status", _cond_quest_status)
 	register_condition("quest_stage", _cond_quest_stage)
 	register_condition("quest_objective_done", _cond_quest_objective_done)
@@ -800,6 +876,7 @@ func _register_builtins() -> void:
 	register_action("despawn_entity", _act_despawn_entity)
 	register_action("spawn_entity_at_zone", _act_spawn_entity_at_zone)
 	register_action("spawn_space_ship", _act_spawn_space_ship)
+	register_action("spawn_space_enemies", _act_spawn_space_enemies)
 	register_action("move_entity_to_zone", _act_move_entity_to_zone)
 	register_action("play_entity_anim", _act_play_entity_anim)
 	register_action("set_entity_facing", _act_set_entity_facing)
@@ -812,6 +889,27 @@ func _register_builtins() -> void:
 	register_action("set_door_locked", _act_set_door_locked)
 	register_action("save_checkpoint", _act_save_checkpoint)
 	register_action("return_to_space", _act_return_to_space)
+	register_action("heal_player", _act_heal_player)
+	register_action("damage_player", _act_damage_player)
+	register_action("play_music", _act_play_music)
+	register_action("stop_music", _act_stop_music)
+	register_action("pause_game", _act_pause_game)
+	register_action("resume_game", _act_resume_game)
+	register_action("end_game", _act_end_game)
+	register_action("quest_fail", _act_quest_fail)
+	register_action("camera_shake", _act_camera_shake)
+	register_action("screen_flash", _act_screen_flash)
+	register_action("set_player_invuln", _act_set_player_invuln)
+	register_action("show_toast", _act_show_toast)
+	register_action("reveal_system", _act_reveal_system)
+	register_action("unlock_poi", _act_unlock_poi)
+	register_action("space_add_credits", _act_space_add_credits)
+	register_action("space_set_credits", _act_space_set_credits)
+	register_action("set_global_flag", _act_set_global_flag)
+	register_action("clear_global_flag", _act_clear_global_flag)
+	register_action("space_spawn_ship_on_return", _act_space_spawn_ship_on_return)
+	register_action("random_pick", _act_random_pick)
+	register_action("if", _act_if)
 
 
 # ── Condition implementations ──────────────────────────────────────────
@@ -836,6 +934,18 @@ func _cond_var_eq(cond: Dictionary, _payload: Dictionary) -> bool:
 func _cond_var_gte(cond: Dictionary, _payload: Dictionary) -> bool:
 	var val = float(PlayerInventory.get_var(cond.get("name", ""), 0))
 	return val >= float(cond.get("value", 0))
+
+
+func _cond_var_eq_var(cond: Dictionary, _payload: Dictionary) -> bool:
+	var a := float(PlayerInventory.get_var(str(cond.get("name_a", "")), 0))
+	var b := float(PlayerInventory.get_var(str(cond.get("name_b", "")), 0))
+	return a == b
+
+
+func _cond_var_gte_var(cond: Dictionary, _payload: Dictionary) -> bool:
+	var a := float(PlayerInventory.get_var(str(cond.get("name_a", "")), 0))
+	var b := float(PlayerInventory.get_var(str(cond.get("name_b", "")), 0))
+	return a >= b
 
 
 func _cond_chance_roll(cond: Dictionary, _payload: Dictionary) -> bool:
@@ -932,6 +1042,13 @@ func _cond_not(cond: Dictionary, payload: Dictionary) -> bool:
 
 
 # ── Action implementations ─────────────────────────────────────────────
+
+# NOTE: comment / delay / wait_for_* handlers below are intentional no-ops.
+# These action types are intercepted earlier in _run_rule_sequence so the
+# sequence runner can suspend/resume the coroutine, which a fire-and-forget
+# handler can't do. The registrations exist only so the dispatcher recognises
+# the type and doesn't log "unknown action". Don't add behaviour here — edit
+# _run_rule_sequence (and the matching _await_* helpers) instead.
 
 func _act_comment(_action: Dictionary, _payload: Dictionary) -> void:
 	pass
@@ -1199,7 +1316,15 @@ func _act_spawn_player(action: Dictionary, _payload: Dictionary) -> void:
 	var pos := Vector2(-1, -1)
 	var x_text: String = str(action.get("x", "")).strip_edges()
 	var y_text: String = str(action.get("y", "")).strip_edges()
-	if _is_optional_float(x_text) and _is_optional_float(y_text) \
+	var use_position: bool
+	if action.has("use_position"):
+		use_position = bool(action.get("use_position", false))
+	else:
+		# Back-compat: rules saved before use_position existed had x/y as
+		# opt_strings and treated populated text as "teleport here." Honor
+		# that convention when the explicit toggle isn't present.
+		use_position = not x_text.is_empty() and not y_text.is_empty()
+	if use_position and _is_optional_float(x_text) and _is_optional_float(y_text) \
 			and not x_text.is_empty() and not y_text.is_empty():
 		pos = Vector2(float(x_text), float(y_text))
 	MvGame.main.spawn_player(pos, room_addr, zone_id, entry_direction,
@@ -1247,6 +1372,17 @@ func _act_spawn_space_ship(action: Dictionary, _payload: Dictionary) -> void:
 	var use_wormhole: bool = bool(action.get("wormhole", true))
 	var delay: float = maxf(0.0, float(action.get("delay", 0.0)))
 	action_spawn_space_ship.emit(class_id, anchor, pos, use_wormhole, delay)
+
+
+func _act_spawn_space_enemies(action: Dictionary, _payload: Dictionary) -> void:
+	var class_id: String = str(action.get("class_id", "")).strip_edges()
+	if class_id.is_empty():
+		return
+	var count: int = maxi(1, int(action.get("count", 1)))
+	var dist_min: int = int(action.get("dist_min", 600))
+	var dist_max: int = int(action.get("dist_max", 800))
+	var use_wormhole: bool = bool(action.get("use_wormhole", true))
+	action_spawn_space_enemies.emit(class_id, count, dist_min, dist_max, use_wormhole)
 
 
 func _act_move_entity_to_zone(action: Dictionary, _payload: Dictionary) -> void:
@@ -1455,7 +1591,251 @@ func _act_save_checkpoint(action: Dictionary, _payload: Dictionary) -> void:
 func _act_return_to_space(_action: Dictionary, _payload: Dictionary) -> void:
 	if MvGame.main == null:
 		return
-	PlanetaryInterface.begin_launch(MvGame.main)
+	if MvGame.main.has_method("launch_to_space"):
+		MvGame.main.launch_to_space()
+	else:
+		PlanetaryInterface.begin_launch(MvGame.main)
+
+
+func _act_heal_player(action: Dictionary, _payload: Dictionary) -> void:
+	var amount: int = int(action.get("amount", 0))
+	if amount <= 0:
+		return
+	var p := _find_mv_player()
+	if p != null and p.has_method("heal"):
+		p.call("heal", amount)
+
+
+func _act_damage_player(action: Dictionary, _payload: Dictionary) -> void:
+	var amount: int = int(action.get("amount", 0))
+	if amount <= 0:
+		return
+	var p := _find_mv_player()
+	if p != null and p.has_method("take_damage"):
+		p.call("take_damage", amount, str(action.get("source", "")), null)
+
+
+func _act_play_music(action: Dictionary, _payload: Dictionary) -> void:
+	var track: String = str(action.get("track", "")).strip_edges()
+	var am: Node = get_node_or_null("/root/AudioManager")
+	if am == null or not am.has_method("set_ambient"):
+		return
+	am.call("set_ambient", track)
+
+
+func _act_stop_music(_action: Dictionary, _payload: Dictionary) -> void:
+	var am: Node = get_node_or_null("/root/AudioManager")
+	if am == null or not am.has_method("set_ambient"):
+		return
+	am.call("set_ambient", "")
+
+
+func _act_pause_game(_action: Dictionary, _payload: Dictionary) -> void:
+	if MvGame != null:
+		MvGame.simulation_paused = true
+
+
+func _act_resume_game(_action: Dictionary, _payload: Dictionary) -> void:
+	if MvGame != null:
+		MvGame.simulation_paused = false
+
+
+func _act_end_game(_action: Dictionary, _payload: Dictionary) -> void:
+	if MvGameOver != null and MvGameOver.has_method("show_game_over"):
+		MvGameOver.call("show_game_over")
+
+
+func _act_quest_fail(action: Dictionary, _payload: Dictionary) -> void:
+	var quest_id := str(action.get("quest_id", "")).strip_edges()
+	if quest_id.is_empty():
+		return
+	var state := _ensure_quest_state(quest_id, true)
+	state["status"] = "failed"
+	_store_quest_state(quest_id, state)
+	fire_event("quest_failed", {
+		"quest_id": quest_id,
+		"stage_id": str(state.get("stage_id", "")),
+	})
+
+
+func _act_camera_shake(action: Dictionary, _payload: Dictionary) -> void:
+	if MvGame.main == null or not MvGame.main.has_method("camera_shake"):
+		return
+	var intensity: float = float(action.get("intensity", 0.0))
+	var duration: float = float(action.get("duration", 0.0))
+	MvGame.main.call("camera_shake", intensity, duration)
+
+
+func _act_screen_flash(action: Dictionary, _payload: Dictionary) -> void:
+	if MvGame.main == null or not MvGame.main.has_method("screen_flash"):
+		return
+	var color_text: String = str(action.get("color", "")).strip_edges()
+	var color: Color = Color(1.0, 1.0, 1.0, 1.0)
+	if not color_text.is_empty():
+		color = Color.html(color_text) if Color.html_is_valid(color_text) else color
+	var duration: float = float(action.get("duration", 0.2))
+	MvGame.main.call("screen_flash", color, duration)
+
+
+func _act_set_player_invuln(action: Dictionary, _payload: Dictionary) -> void:
+	var seconds: float = float(action.get("seconds", 0.0))
+	if seconds <= 0.0:
+		return
+	var p := _find_mv_player()
+	if p != null and p.has_method("set_invuln"):
+		p.call("set_invuln", seconds)
+
+
+func _act_show_toast(action: Dictionary, _payload: Dictionary) -> void:
+	var message: String = str(action.get("message", "")).strip_edges()
+	if message.is_empty():
+		return
+	var duration: float = float(action.get("duration", 0.0))
+	if duration <= 0.0:
+		duration = 2.5
+	var style: String = str(action.get("style", "info")).strip_edges()
+	if style.is_empty():
+		style = "info"
+	var hud: Node = _find_mv_hud()
+	if hud != null and hud.has_method("show_toast"):
+		hud.call("show_toast", message, duration, style)
+
+
+func _find_mv_hud() -> Node:
+	var tree := get_tree()
+	if tree == null:
+		return null
+	return tree.get_first_node_in_group("mv_hud")
+
+
+func _act_reveal_system(action: Dictionary, _payload: Dictionary) -> void:
+	var sys_id: String = str(action.get("system_id", "")).strip_edges()
+	if sys_id.is_empty():
+		return
+	var gm: Node = get_node_or_null("/root/GameManager")
+	if gm == null:
+		return
+	var visited_v: Variant = gm.get("visited_systems")
+	if typeof(visited_v) != TYPE_ARRAY:
+		return
+	var visited: Array = visited_v
+	if sys_id in visited:
+		return
+	visited.append(sys_id)
+	gm.set("visited_systems", visited)
+
+
+# Flip a `hidden: true` POI to visible by recording its id in
+# GameManager.unlocked_pois. The change takes effect the next time the
+# player jumps into `system_id` (spawn_system_pois reads the map at
+# system entry); the POI does not appear live in the current session.
+func _act_unlock_poi(action: Dictionary, _payload: Dictionary) -> void:
+	var sys_id: String = str(action.get("system_id", "")).strip_edges()
+	var poi_id: String = str(action.get("poi_id", "")).strip_edges()
+	if sys_id.is_empty() or poi_id.is_empty():
+		return
+	var gm: Node = get_node_or_null("/root/GameManager")
+	if gm == null:
+		return
+	if gm.has_method("unlock_poi"):
+		gm.call("unlock_poi", sys_id, poi_id)
+
+
+func _act_space_add_credits(action: Dictionary, _payload: Dictionary) -> void:
+	var amount: int = int(action.get("amount", 0))
+	if amount == 0:
+		return
+	var gm: Node = get_node_or_null("/root/GameManager")
+	if gm == null:
+		return
+	var current: int = int(gm.get("credits"))
+	gm.set("credits", maxi(0, current + amount))
+
+
+func _act_space_set_credits(action: Dictionary, _payload: Dictionary) -> void:
+	var gm: Node = get_node_or_null("/root/GameManager")
+	if gm == null:
+		return
+	gm.set("credits", maxi(0, int(action.get("amount", 0))))
+
+
+func _act_set_global_flag(action: Dictionary, _payload: Dictionary) -> void:
+	var flag_name: String = str(action.get("name", "")).strip_edges()
+	if flag_name.is_empty():
+		return
+	var pi: Node = get_node_or_null("/root/PlanetaryInterface")
+	if pi == null or not pi.has_method("set_global_flag"):
+		return
+	pi.call("set_global_flag", flag_name, action.get("value", true))
+
+
+func _act_clear_global_flag(action: Dictionary, _payload: Dictionary) -> void:
+	var flag_name: String = str(action.get("name", "")).strip_edges()
+	if flag_name.is_empty():
+		return
+	var pi: Node = get_node_or_null("/root/PlanetaryInterface")
+	if pi == null or not pi.has_method("clear_global_flag"):
+		return
+	pi.call("clear_global_flag", flag_name)
+
+
+func _act_space_spawn_ship_on_return(action: Dictionary, _payload: Dictionary) -> void:
+	var cls: String = str(action.get("class", "")).strip_edges()
+	var sys_id: String = str(action.get("system_id", "")).strip_edges()
+	if cls.is_empty() or sys_id.is_empty():
+		return
+	var pi: Node = get_node_or_null("/root/PlanetaryInterface")
+	if pi == null or not pi.has_method("queue_ship_spawn"):
+		return
+	pi.call("queue_ship_spawn", sys_id, cls)
+
+
+# Stub: the real logic lives in _run_action_list / _run_random_pick because
+# the runner needs to await the chosen branch's nested actions (waits,
+# breakpoints) cooperatively. This handler exists only so dispatching the
+# raw action type by hand doesn't log an "unknown action" warning.
+func _act_random_pick(_action: Dictionary, _payload: Dictionary) -> void:
+	pass
+
+
+# Stub: same pattern as random_pick — _run_action_list intercepts `if` and
+# routes through _run_if to await the chosen branch.
+func _act_if(_action: Dictionary, _payload: Dictionary) -> void:
+	pass
+
+
+# Inline conditional branch. Evaluates the action's `conditions` array
+# against the current payload, then runs either `then` or `else` via
+# _run_action_list. Both branches inherit the parent rule's payload so
+# locals/waits/breakpoints work the same as in a flat sequence.
+func _run_if(action: Dictionary, rule: Dictionary, payload: Dictionary, sequence_id: int) -> void:
+	var conds_v: Variant = action.get("conditions", [])
+	var conditions: Array = conds_v if typeof(conds_v) == TYPE_ARRAY else []
+	var passed: bool = _evaluate_conditions(conditions, payload)
+	_push_debug("if_branch", {
+		"sequence_id": sequence_id,
+		"rule_id": str(rule.get("id", "")),
+		"passed": passed,
+		"condition_count": conditions.size(),
+	})
+	var branch_key: String = "then" if passed else "else"
+	var branch_v: Variant = action.get(branch_key, [])
+	if typeof(branch_v) != TYPE_ARRAY:
+		return
+	await _run_action_list(branch_v as Array, rule, payload, sequence_id)
+
+
+func _cond_has_global_flag(cond: Dictionary, _payload: Dictionary) -> bool:
+	var flag_name: String = str(cond.get("name", "")).strip_edges()
+	if flag_name.is_empty():
+		return false
+	var pi: Node = get_node_or_null("/root/PlanetaryInterface")
+	if pi == null or not pi.has_method("get_global_flag"):
+		return false
+	var actual: Variant = pi.call("get_global_flag", flag_name, null)
+	if cond.has("value"):
+		return actual == cond.get("value")
+	return actual != null
 
 
 func _is_optional_float(text: String) -> bool:

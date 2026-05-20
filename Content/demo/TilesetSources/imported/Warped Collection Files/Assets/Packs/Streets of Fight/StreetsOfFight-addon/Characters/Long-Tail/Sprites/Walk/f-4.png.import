@@ -2,16 +2,12 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://dfnyrcb5t4a47"
-path="res://.godot/imported/f-4.png-647be8eb599290bdc3011bca4bb3e619.ctex"
-metadata={
-"vram_texture": false
-}
+uid="uid://b4om65c2r4kgq"
+valid=false
 
 [deps]
 
 source_file="res://Content/demo/TilesetSources/imported/Warped Collection Files/Assets/Packs/Streets of Fight/StreetsOfFight-addon/Characters/Long-Tail/Sprites/Walk/f-4.png"
-dest_files=["res://.godot/imported/f-4.png-647be8eb599290bdc3011bca4bb3e619.ctex"]
 
 [params]
 

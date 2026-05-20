@@ -2,16 +2,12 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://bi27afwinrbaw"
-path="res://.godot/imported/big-guy-hurt4.png-319ec400f8fff74ab8f636c1f93386c5.ctex"
-metadata={
-"vram_texture": false
-}
+uid="uid://cjuuc53ft8d7a"
+valid=false
 
 [deps]
 
 source_file="res://Content/demo/TilesetSources/imported/Warped Collection Files/Assets/Packs/Streets of Fight/StreetsOfFight-addon/Characters/BigGuy/Sprites/Hurt/big-guy-hurt4.png"
-dest_files=["res://.godot/imported/big-guy-hurt4.png-319ec400f8fff74ab8f636c1f93386c5.ctex"]
 
 [params]
 

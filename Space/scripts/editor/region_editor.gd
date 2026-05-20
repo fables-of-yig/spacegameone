@@ -14,9 +14,7 @@ extends Control
 # No pan / zoom — the region grid scales to fit the canvas rect.
 
 const UIPanels = preload("res://Space/scripts/ui/ui_panels.gd")
-const RegIO = preload("res://Space/scripts/editor/reg/reg_io.gd")
-const EditorUndo = preload("res://Space/scripts/editor/editor_undo.gd")
-const ContentReferenceRefactor = preload("res://Space/scripts/editor/content_reference_refactor.gd")
+const RegIO = preload("res://Space/scripts/shared/reg/reg_io.gd")
 
 
 @warning_ignore("unused_signal")
@@ -375,15 +373,15 @@ func _next_room_identity() -> Dictionary:
         for key in (rooms_v as Dictionary).keys():
             used[str(key)] = true
     var idx: int = 1
-    var name := "Room %d" % idx
-    var room_id := RegIO.unique_content_id(name, used, "room")
+    var room_name := "Room %d" % idx
+    var room_id := RegIO.unique_content_id(room_name, used, "room")
     while used.has(room_id):
         idx += 1
-        name = "Room %d" % idx
-        room_id = RegIO.unique_content_id(name, used, "room")
+        room_name = "Room %d" % idx
+        room_id = RegIO.unique_content_id(room_name, used, "room")
     return {
         "id": room_id,
-        "name": name,
+        "name": room_name,
     }
 
 

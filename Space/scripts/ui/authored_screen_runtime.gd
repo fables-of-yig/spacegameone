@@ -1,7 +1,7 @@
 extends Control
 
 const UIPanels = preload("res://Space/scripts/ui/ui_panels.gd")
-const UIIo = preload("res://Space/scripts/editor/ui/ui_io.gd")
+const UIIo = preload("res://Space/scripts/shared/ui/ui_io.gd")
 
 signal action_requested(action_id: String, action_args: String, element_id: String)
 
@@ -231,8 +231,8 @@ func _draw_label(rect: Rect2, props: Dictionary) -> void:
         font_size = UIPanels.font_size(size_role)
     font_size = _scaled_font_size(font_size)
     var padding_x := _scaled_value(4.0)
-    var wrap := bool(props.get("wrap", false))
-    if wrap:
+    var wrap_text := bool(props.get("wrap", false))
+    if wrap_text:
         var lines := _wrap_text_lines(text, maxf(rect.size.x - padding_x * 2.0, 1.0), font_size, font)
         var line_h := font_size + int(round(_scaled_value(4.0)))
         var baseline := rect.position.y + _scaled_value(6.0) + float(font_size)
@@ -654,11 +654,11 @@ func _item_text(item: Variant) -> String:
         if d.has("text"):
             return str(d.get("text", ""))
         if d.has("name"):
-            var name := str(d.get("name", ""))
+            var item_name := str(d.get("name", ""))
             if d.has("price"):
                 var count_suffix := (" x%d" % int(d.get("count", 1))) if int(d.get("count", 1)) > 1 else ""
-                return "%s%s - %d gold" % [name, count_suffix, int(d.get("price", 0))]
-            return name
+                return "%s%s - %d gold" % [item_name, count_suffix, int(d.get("price", 0))]
+            return item_name
         return JSON.stringify(d)
     return str(item)
 
@@ -706,8 +706,8 @@ func _item_tooltip(item: Variant, props: Dictionary) -> String:
         return str(item)
     var d: Dictionary = item
     var lines: Array = []
-    var name := str(d.get("name", d.get("id", d.get("key", "Item"))))
-    lines.append(name)
+    var item_name := str(d.get("name", d.get("id", d.get("key", "Item"))))
+    lines.append(item_name)
     if d.has("price"):
         lines.append("%d gold" % int(d.get("price", 0)))
     var desc := str(d.get("description", "")).strip_edges()

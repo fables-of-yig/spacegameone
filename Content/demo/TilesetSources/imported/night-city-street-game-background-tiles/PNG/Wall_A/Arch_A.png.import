@@ -3,15 +3,11 @@
 importer="texture"
 type="CompressedTexture2D"
 uid="uid://cn7kivlldljdm"
-path="res://.godot/imported/Arch_A.png-ac57e13bbc192062af52a9af3984c0ff.ctex"
-metadata={
-"vram_texture": false
-}
+valid=false
 
 [deps]
 
 source_file="res://Content/demo/TilesetSources/imported/night-city-street-game-background-tiles/PNG/Wall_A/Arch_A.png"
-dest_files=["res://.godot/imported/Arch_A.png-ac57e13bbc192062af52a9af3984c0ff.ctex"]
 
 [params]
 

@@ -3,15 +3,11 @@
 importer="texture"
 type="CompressedTexture2D"
 uid="uid://b3babawwtxxik"
-path="res://.godot/imported/frame_1.png-c29d42e5c9c360411b372ec5705e6ec7.ctex"
-metadata={
-"vram_texture": false
-}
+valid=false
 
 [deps]
 
 source_file="res://Content/demo/TilesetSources/imported/Warped Collection Files/Assets/Playable Characters/Blaster Joe Files/Sprites/victory/frame_1.png"
-dest_files=["res://.godot/imported/frame_1.png-c29d42e5c9c360411b372ec5705e6ec7.ctex"]
 
 [params]
 

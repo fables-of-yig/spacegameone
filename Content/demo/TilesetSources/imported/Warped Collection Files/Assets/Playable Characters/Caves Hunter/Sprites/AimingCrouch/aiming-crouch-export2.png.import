@@ -2,16 +2,12 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://cdc4ilisd4t3n"
-path="res://.godot/imported/aiming-crouch-export2.png-3822a9c1253deae614848ac8fb42b804.ctex"
-metadata={
-"vram_texture": false
-}
+uid="uid://drl0x4ly43ukc"
+valid=false
 
 [deps]
 
 source_file="res://Content/demo/TilesetSources/imported/Warped Collection Files/Assets/Playable Characters/Caves Hunter/Sprites/AimingCrouch/aiming-crouch-export2.png"
-dest_files=["res://.godot/imported/aiming-crouch-export2.png-3822a9c1253deae614848ac8fb42b804.ctex"]
 
 [params]
 

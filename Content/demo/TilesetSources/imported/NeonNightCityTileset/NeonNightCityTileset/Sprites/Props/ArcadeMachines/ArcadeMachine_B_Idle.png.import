@@ -2,16 +2,12 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://bfimb8d2enkk6"
-path="res://.godot/imported/ArcadeMachine_B_Idle.png-c3e1db35c0b681a2b7dbeb61a898f938.ctex"
-metadata={
-"vram_texture": false
-}
+uid="uid://cm0kn5tb5mbke"
+valid=false
 
 [deps]
 
 source_file="res://Content/demo/TilesetSources/imported/NeonNightCityTileset/NeonNightCityTileset/Sprites/Props/ArcadeMachines/ArcadeMachine_B_Idle.png"
-dest_files=["res://.godot/imported/ArcadeMachine_B_Idle.png-c3e1db35c0b681a2b7dbeb61a898f938.ctex"]
 
 [params]
 

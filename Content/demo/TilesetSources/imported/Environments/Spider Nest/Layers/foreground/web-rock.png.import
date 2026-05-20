@@ -2,16 +2,12 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://2lf7xjuoxh04"
-path="res://.godot/imported/web-rock.png-a99d52587d2293794fadcd52bdfb9525.ctex"
-metadata={
-"vram_texture": false
-}
+uid="uid://c7rwnsgb8d18a"
+valid=false
 
 [deps]
 
 source_file="res://Content/demo/TilesetSources/imported/Environments/Spider Nest/Layers/foreground/web-rock.png"
-dest_files=["res://.godot/imported/web-rock.png-a99d52587d2293794fadcd52bdfb9525.ctex"]
 
 [params]
 

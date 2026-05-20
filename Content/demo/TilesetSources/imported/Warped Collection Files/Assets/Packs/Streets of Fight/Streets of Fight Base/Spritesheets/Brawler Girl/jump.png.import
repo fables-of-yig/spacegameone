@@ -2,16 +2,12 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://dt5n0fbpqjqqb"
-path="res://.godot/imported/jump.png-6cfd625a88854038d345d4a2fab1756c.ctex"
-metadata={
-"vram_texture": false
-}
+uid="uid://cw22fnd554nok"
+valid=false
 
 [deps]
 
 source_file="res://Content/demo/TilesetSources/imported/Warped Collection Files/Assets/Packs/Streets of Fight/Streets of Fight Base/Spritesheets/Brawler Girl/jump.png"
-dest_files=["res://.godot/imported/jump.png-6cfd625a88854038d345d4a2fab1756c.ctex"]
 
 [params]
 

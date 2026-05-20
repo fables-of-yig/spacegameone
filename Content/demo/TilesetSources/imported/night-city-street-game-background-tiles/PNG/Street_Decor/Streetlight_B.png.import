@@ -2,16 +2,12 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://bxx78k3kqefvl"
-path="res://.godot/imported/Streetlight_B.png-2b9a69457b78684d9d93f23a72586df6.ctex"
-metadata={
-"vram_texture": false
-}
+uid="uid://d0g5u08mfq4kd"
+valid=false
 
 [deps]
 
 source_file="res://Content/demo/TilesetSources/imported/night-city-street-game-background-tiles/PNG/Street_Decor/Streetlight_B.png"
-dest_files=["res://.godot/imported/Streetlight_B.png-2b9a69457b78684d9d93f23a72586df6.ctex"]
 
 [params]
 

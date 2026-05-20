@@ -2,16 +2,12 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://d2v8bcupoob56"
-path="res://.godot/imported/homing3.png-350e892f34666333b7ee3679a27eea88.ctex"
-metadata={
-"vram_texture": false
-}
+uid="uid://djg306o7sgqas"
+valid=false
 
 [deps]
 
 source_file="res://Content/demo/TilesetSources/imported/pixel-art-space-shooter-2d-tileset/Icons_PNG&Spriter_Animation/homing/homing3.png"
-dest_files=["res://.godot/imported/homing3.png-350e892f34666333b7ee3679a27eea88.ctex"]
 
 [params]
 

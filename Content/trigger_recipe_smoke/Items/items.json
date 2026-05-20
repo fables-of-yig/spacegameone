@@ -1,0 +1,37 @@
+{
+  "items": [
+    {
+      "category": "currency",
+      "description": "Currency.",
+      "id": "coin",
+      "max_stack": 9999,
+      "name": "Coin",
+      "price": 1,
+      "use_amount": 0,
+      "use_arg": "",
+      "use_effect": ""
+    },
+    {
+      "category": "key",
+      "description": "Gate key.",
+      "id": "key_silver",
+      "max_stack": 1,
+      "name": "Silver Key",
+      "price": 25,
+      "use_amount": 0,
+      "use_arg": "",
+      "use_effect": ""
+    },
+    {
+      "category": "quest",
+      "description": "Boss reward.",
+      "id": "boss_core",
+      "max_stack": 9,
+      "name": "Boss Core",
+      "price": 100,
+      "use_amount": 0,
+      "use_arg": "",
+      "use_effect": ""
+    }
+  ]
+}

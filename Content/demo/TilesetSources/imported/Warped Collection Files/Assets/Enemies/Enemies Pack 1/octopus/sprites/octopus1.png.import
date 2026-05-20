@@ -3,15 +3,11 @@
 importer="texture"
 type="CompressedTexture2D"
 uid="uid://b0mym1u7oyhkx"
-path="res://.godot/imported/octopus1.png-0578fef2f67efeeaa2141c1f6e28cf73.ctex"
-metadata={
-"vram_texture": false
-}
+valid=false
 
 [deps]
 
 source_file="res://Content/demo/TilesetSources/imported/Warped Collection Files/Assets/Enemies/Enemies Pack 1/octopus/sprites/octopus1.png"
-dest_files=["res://.godot/imported/octopus1.png-0578fef2f67efeeaa2141c1f6e28cf73.ctex"]
 
 [params]
 

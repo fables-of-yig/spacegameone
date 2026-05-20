@@ -1,0 +1,313 @@
+{
+	"anchor": "top_left",
+	"anchor_offset": {
+		"x": 0,
+		"y": 0
+	},
+	"children": [
+		{
+			"anchor": "top_left",
+			"anchor_offset": {
+				"x": 0,
+				"y": 0
+			},
+			"children": [],
+			"id": "inventory_title",
+			"properties": {
+				"alignment": "left",
+				"bind_var": "",
+				"decimal_places": 0,
+				"format": "{value}",
+				"opacity": 1.0,
+				"static_text": "INVENTORY",
+				"tab_group": "default",
+				"tab_id": "",
+				"text_role": "title",
+				"wrap": false
+			},
+			"rect": {
+				"h": 24,
+				"w": 200,
+				"x": 16,
+				"y": 12
+			},
+			"type": "label"
+		},
+		{
+			"anchor": "top_left",
+			"anchor_offset": {
+				"x": 0,
+				"y": 0
+			},
+			"children": [],
+			"id": "inventory_help",
+			"properties": {
+				"alignment": "left",
+				"bind_var": "",
+				"decimal_places": 0,
+				"format": "{value}",
+				"opacity": 1.0,
+				"static_text": "This stock screen is data-bound. Replace labels/art and wire specific buttons as you author items.",
+				"tab_group": "default",
+				"tab_id": "",
+				"text_role": "dim",
+				"wrap": false
+			},
+			"rect": {
+				"h": 18,
+				"w": 448,
+				"x": 16,
+				"y": 36
+			},
+			"type": "label"
+		},
+		{
+			"anchor": "top_left",
+			"anchor_offset": {
+				"x": 0,
+				"y": 0
+			},
+			"children": [],
+			"id": "inventory_items_lbl",
+			"properties": {
+				"alignment": "left",
+				"bind_var": "",
+				"decimal_places": 0,
+				"format": "{value}",
+				"opacity": 1.0,
+				"static_text": "Items",
+				"tab_group": "default",
+				"tab_id": "",
+				"text_role": "body",
+				"wrap": false
+			},
+			"rect": {
+				"h": 18,
+				"w": 160,
+				"x": 16,
+				"y": 64
+			},
+			"type": "label"
+		},
+		{
+			"anchor": "top_left",
+			"anchor_offset": {
+				"x": 0,
+				"y": 0
+			},
+			"children": [],
+			"id": "inventory_items",
+			"properties": {
+				"bind_array": "inventory.items",
+				"columns": 4,
+				"empty_slot_style": "dim",
+				"item_action_arg_key": "",
+				"item_action_id": "",
+				"slot_size": 36,
+				"slot_template": {
+
+				},
+				"tab_group": "default",
+				"tab_id": ""
+			},
+			"rect": {
+				"h": 140,
+				"w": 180,
+				"x": 16,
+				"y": 84
+			},
+			"type": "grid"
+		},
+		{
+			"anchor": "top_left",
+			"anchor_offset": {
+				"x": 0,
+				"y": 0
+			},
+			"children": [],
+			"id": "inventory_equip_lbl",
+			"properties": {
+				"alignment": "left",
+				"bind_var": "",
+				"decimal_places": 0,
+				"format": "{value}",
+				"opacity": 1.0,
+				"static_text": "Equipment",
+				"tab_group": "default",
+				"tab_id": "",
+				"text_role": "body",
+				"wrap": false
+			},
+			"rect": {
+				"h": 18,
+				"w": 120,
+				"x": 214,
+				"y": 64
+			},
+			"type": "label"
+		},
+		{
+			"anchor": "top_left",
+			"anchor_offset": {
+				"x": 0,
+				"y": 0
+			},
+			"children": [],
+			"id": "inventory_equipment",
+			"properties": {
+				"bind_array": "inventory.equipment",
+				"item_action_arg_key": "",
+				"item_action_id": "",
+				"item_template": {
+
+				},
+				"max_visible": 10,
+				"spacing": 4,
+				"tab_group": "default",
+				"tab_id": ""
+			},
+			"rect": {
+				"h": 140,
+				"w": 120,
+				"x": 214,
+				"y": 84
+			},
+			"type": "list"
+		},
+		{
+			"anchor": "top_left",
+			"anchor_offset": {
+				"x": 0,
+				"y": 0
+			},
+			"children": [],
+			"id": "inventory_abilities_lbl",
+			"properties": {
+				"alignment": "left",
+				"bind_var": "",
+				"decimal_places": 0,
+				"format": "{value}",
+				"opacity": 1.0,
+				"static_text": "Abilities",
+				"tab_group": "default",
+				"tab_id": "",
+				"text_role": "body",
+				"wrap": false
+			},
+			"rect": {
+				"h": 18,
+				"w": 120,
+				"x": 348,
+				"y": 64
+			},
+			"type": "label"
+		},
+		{
+			"anchor": "top_left",
+			"anchor_offset": {
+				"x": 0,
+				"y": 0
+			},
+			"children": [],
+			"id": "inventory_abilities",
+			"properties": {
+				"bind_array": "inventory.abilities",
+				"item_action_arg_key": "",
+				"item_action_id": "",
+				"item_template": {
+
+				},
+				"max_visible": 10,
+				"spacing": 4,
+				"tab_group": "default",
+				"tab_id": ""
+			},
+			"rect": {
+				"h": 140,
+				"w": 116,
+				"x": 348,
+				"y": 84
+			},
+			"type": "list"
+		},
+		{
+			"anchor": "top_left",
+			"anchor_offset": {
+				"x": 0,
+				"y": 0
+			},
+			"children": [],
+			"id": "inventory_close",
+			"properties": {
+				"action_args": "",
+				"action_id": "close_screen",
+				"enabled_condition": "",
+				"label": "CLOSE",
+				"show_label": true,
+				"sprite_hover": "",
+				"sprite_normal": "",
+				"sprite_pressed": "",
+				"sprite_tint": "#ffffff",
+				"tab_group": "default",
+				"tab_id": ""
+			},
+			"rect": {
+				"h": 26,
+				"w": 120,
+				"x": 16,
+				"y": 234
+			},
+			"type": "button"
+		},
+		{
+			"anchor": "top_left",
+			"anchor_offset": {
+				"x": 0,
+				"y": 0
+			},
+			"children": [],
+			"id": "inventory_fire_event",
+			"properties": {
+				"action_args": "ui_button",
+				"action_id": "fire_event",
+				"enabled_condition": "",
+				"label": "FIRE UI EVENT",
+				"show_label": true,
+				"sprite_hover": "",
+				"sprite_normal": "",
+				"sprite_pressed": "",
+				"sprite_tint": "#ffffff",
+				"tab_group": "default",
+				"tab_id": ""
+			},
+			"rect": {
+				"h": 26,
+				"w": 180,
+				"x": 148,
+				"y": 234
+			},
+			"type": "button"
+		}
+	],
+	"id": "inventory_root",
+	"properties": {
+		"opacity": 1.0,
+		"padding": 8,
+		"scroll": "none",
+		"sprite_mode": "9slice",
+		"sprite_slice_x": 0,
+		"sprite_slice_y": 0,
+		"sprite_source": "",
+		"sprite_tint": "#ffffff",
+		"tab_group": "default",
+		"tab_id": "",
+		"variant": "dark"
+	},
+	"rect": {
+		"h": 272,
+		"w": 480,
+		"x": 0,
+		"y": 0
+	},
+	"type": "panel"
+}

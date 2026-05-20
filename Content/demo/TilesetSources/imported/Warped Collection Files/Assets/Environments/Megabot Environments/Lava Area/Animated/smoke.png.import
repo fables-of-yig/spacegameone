@@ -2,16 +2,12 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://dtyk3a7kvrebs"
-path="res://.godot/imported/smoke.png-c465f0b47e8dd0e14b9aef0b002fc25a.ctex"
-metadata={
-"vram_texture": false
-}
+uid="uid://d3nsqyxf7gj6r"
+valid=false
 
 [deps]
 
 source_file="res://Content/demo/TilesetSources/imported/Warped Collection Files/Assets/Environments/Megabot Environments/Lava Area/Animated/smoke.png"
-dest_files=["res://.godot/imported/smoke.png-c465f0b47e8dd0e14b9aef0b002fc25a.ctex"]
 
 [params]
 

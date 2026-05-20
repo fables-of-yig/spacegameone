@@ -2,16 +2,12 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://jmo4touc6lp"
-path="res://.godot/imported/Miami-synth.png-752cc241dd7174687b261df3f2fbe52f.ctex"
-metadata={
-"vram_texture": false
-}
+uid="uid://baqbn83qi0hyy"
+valid=false
 
 [deps]
 
 source_file="res://Content/demo/TilesetSources/imported/Warped Collection Files/Assets/Environments/Miami-Sinth/Miami-synth.png"
-dest_files=["res://.godot/imported/Miami-synth.png-752cc241dd7174687b261df3f2fbe52f.ctex"]
 
 [params]
 

@@ -2,16 +2,12 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://1r1hcu2ugpr3"
-path="res://.godot/imported/RunningAimingDiagonal-export1.png-c5670a9eb7a72bf17103d785cda68bbe.ctex"
-metadata={
-"vram_texture": false
-}
+uid="uid://dc8r0qq4yuxo"
+valid=false
 
 [deps]
 
 source_file="res://Content/demo/TilesetSources/imported/Warped Collection Files/Assets/Playable Characters/Caves Hunter/Sprites/RunningAimingDiagonal/RunningAimingDiagonal-export1.png"
-dest_files=["res://.godot/imported/RunningAimingDiagonal-export1.png-c5670a9eb7a72bf17103d785cda68bbe.ctex"]
 
 [params]
 

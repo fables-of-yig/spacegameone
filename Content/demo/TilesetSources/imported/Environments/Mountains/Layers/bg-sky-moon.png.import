@@ -2,16 +2,12 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://duf4j2w8rlojd"
-path="res://.godot/imported/bg-sky-moon.png-91d0e23f90c75380c9b512ebf2e165db.ctex"
-metadata={
-"vram_texture": false
-}
+uid="uid://rs3na3te507p"
+valid=false
 
 [deps]
 
 source_file="res://Content/demo/TilesetSources/imported/Environments/Mountains/Layers/bg-sky-moon.png"
-dest_files=["res://.godot/imported/bg-sky-moon.png-91d0e23f90c75380c9b512ebf2e165db.ctex"]
 
 [params]
 

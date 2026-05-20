@@ -2,16 +2,12 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://dj6rx1k3d5a7h"
-path="res://.godot/imported/BlueprintTilesetHorizontalAnglesWhite.png-8d29a9cd18862a4068c51baee01b12ea.ctex"
-metadata={
-"vram_texture": false
-}
+uid="uid://d3m836ix0d1gx"
+valid=false
 
 [deps]
 
 source_file="res://Content/demo/TilesetSources/imported/PlatformerPrototypePack/Release/Tilesets/HorizontalAngles/BlueprintTilesetHorizontalAnglesWhite.png"
-dest_files=["res://.godot/imported/BlueprintTilesetHorizontalAnglesWhite.png-8d29a9cd18862a4068c51baee01b12ea.ctex"]
 
 [params]
 

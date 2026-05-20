@@ -3,15 +3,11 @@
 importer="texture"
 type="CompressedTexture2D"
 uid="uid://c2mw5e1hn8tax"
-path="res://.godot/imported/Vehicles_VanWhite_Land.png-a54c40be7c4297bc694e543e7ebca20d.ctex"
-metadata={
-"vram_texture": false
-}
+valid=false
 
 [deps]
 
 source_file="res://Content/demo/TilesetSources/imported/NeonNightCityTileset/NeonNightCityTileset/Sprites/Vehicles/Vehicles_VanWhite_Land.png"
-dest_files=["res://.godot/imported/Vehicles_VanWhite_Land.png-a54c40be7c4297bc694e543e7ebca20d.ctex"]
 
 [params]
 

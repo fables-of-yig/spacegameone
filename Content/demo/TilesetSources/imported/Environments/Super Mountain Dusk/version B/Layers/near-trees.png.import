@@ -2,16 +2,12 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://b581t428lcn6l"
-path="res://.godot/imported/near-trees.png-b4d7b2e72eace131d245660d1295ad1e.ctex"
-metadata={
-"vram_texture": false
-}
+uid="uid://mobe6ra1jqwk"
+valid=false
 
 [deps]
 
 source_file="res://Content/demo/TilesetSources/imported/Environments/Super Mountain Dusk/version B/Layers/near-trees.png"
-dest_files=["res://.godot/imported/near-trees.png-b4d7b2e72eace131d245660d1295ad1e.ctex"]
 
 [params]
 

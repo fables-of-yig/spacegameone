@@ -3,15 +3,11 @@
 importer="texture"
 type="CompressedTexture2D"
 uid="uid://bngpvtal38p3d"
-path="res://.godot/imported/Tile_36.png-9b36c3225387f370c850a21125261f81.ctex"
-metadata={
-"vram_texture": false
-}
+valid=false
 
 [deps]
 
 source_file="res://Content/demo/TilesetSources/imported/residential-area-tileset-pixel-art/1 Tiles/Tile_36.png"
-dest_files=["res://.godot/imported/Tile_36.png-9b36c3225387f370c850a21125261f81.ctex"]
 
 [params]
 

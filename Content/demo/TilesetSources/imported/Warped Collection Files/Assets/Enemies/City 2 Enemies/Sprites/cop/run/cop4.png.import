@@ -2,16 +2,12 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://fskxigx5edfk"
-path="res://.godot/imported/cop4.png-d8bf611620d66bb52c76f70e7f0e0d9e.ctex"
-metadata={
-"vram_texture": false
-}
+uid="uid://b10cibiqlxge"
+valid=false
 
 [deps]
 
 source_file="res://Content/demo/TilesetSources/imported/Warped Collection Files/Assets/Enemies/City 2 Enemies/Sprites/cop/run/cop4.png"
-dest_files=["res://.godot/imported/cop4.png-d8bf611620d66bb52c76f70e7f0e0d9e.ctex"]
 
 [params]
 

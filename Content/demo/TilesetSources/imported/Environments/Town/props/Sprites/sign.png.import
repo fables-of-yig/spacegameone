@@ -2,16 +2,12 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://bfxi1snhyh1hh"
-path="res://.godot/imported/sign.png-b6e03afafb3b0e75aaa4ea6b132677db.ctex"
-metadata={
-"vram_texture": false
-}
+uid="uid://cgh60uu3qsau6"
+valid=false
 
 [deps]
 
 source_file="res://Content/demo/TilesetSources/imported/Environments/Town/props/Sprites/sign.png"
-dest_files=["res://.godot/imported/sign.png-b6e03afafb3b0e75aaa4ea6b132677db.ctex"]
 
 [params]
 

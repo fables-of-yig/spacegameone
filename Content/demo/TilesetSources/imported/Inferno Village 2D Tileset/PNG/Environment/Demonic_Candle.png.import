@@ -2,16 +2,12 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://d1bq8oep6m0aw"
-path="res://.godot/imported/Demonic_Candle.png-51dfe36afc13fb0da9687e7a9d99ead9.ctex"
-metadata={
-"vram_texture": false
-}
+uid="uid://d2xi0syn5qenb"
+valid=false
 
 [deps]
 
 source_file="res://Content/demo/TilesetSources/imported/Inferno Village 2D Tileset/PNG/Environment/Demonic_Candle.png"
-dest_files=["res://.godot/imported/Demonic_Candle.png-51dfe36afc13fb0da9687e7a9d99ead9.ctex"]
 
 [params]
 

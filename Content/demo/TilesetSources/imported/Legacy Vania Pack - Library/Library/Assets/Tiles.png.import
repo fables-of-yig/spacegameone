@@ -3,15 +3,11 @@
 importer="texture"
 type="CompressedTexture2D"
 uid="uid://xya0a4s4c530"
-path="res://.godot/imported/Tiles.png-05459d098f57bf341e09b2cbf3be3abd.ctex"
-metadata={
-"vram_texture": false
-}
+valid=false
 
 [deps]
 
 source_file="res://Content/demo/TilesetSources/imported/Legacy Vania Pack - Library/Library/Assets/Tiles.png"
-dest_files=["res://.godot/imported/Tiles.png-05459d098f57bf341e09b2cbf3be3abd.ctex"]
 
 [params]
 

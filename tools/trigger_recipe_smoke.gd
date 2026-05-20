@@ -1,9 +1,7 @@
 extends SceneTree
 
-const ContentValidator := preload("res://Space/scripts/editor/content_validator.gd")
-const PedIO := preload("res://Space/scripts/editor/ped/ped_io.gd")
-const EntIO := preload("res://Space/scripts/editor/ent/ent_io.gd")
-const QuestIO := preload("res://Space/scripts/editor/quest_io.gd")
+const PedIO := preload("res://Space/scripts/shared/ped/ped_io.gd")
+const EntIO := preload("res://Space/scripts/shared/ent/ent_io.gd")
 const TriggerRecipes := preload("res://Space/scripts/editor/dlg/trigger_recipes.gd")
 
 const PACK_ID := "trigger_recipe_smoke"

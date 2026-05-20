@@ -2,16 +2,12 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://jqpn458niden"
-path="res://.godot/imported/HP5.png-461d65aefb95a5d29805c4fd61622d2d.ctex"
-metadata={
-"vram_texture": false
-}
+uid="uid://tu2mw3wxtdis"
+valid=false
 
 [deps]
 
 source_file="res://Content/demo/TilesetSources/imported/pixel-art-space-shooter-game-tileset/Icons_PNG&Spriter_Animation/Hit_Point/HP5.png"
-dest_files=["res://.godot/imported/HP5.png-461d65aefb95a5d29805c4fd61622d2d.ctex"]
 
 [params]
 

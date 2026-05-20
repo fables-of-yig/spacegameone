@@ -2,16 +2,12 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://dldi551o1c1fi"
-path="res://.godot/imported/7.png-b09e980a8c03a8dc5e9eda2089958fd3.ctex"
-metadata={
-"vram_texture": false
-}
+uid="uid://tx8hn8gsdt7d"
+valid=false
 
 [deps]
 
 source_file="res://Content/demo/TilesetSources/imported/ruins-game-tileset-pixel-art/3 Objects/Pointers/7.png"
-dest_files=["res://.godot/imported/7.png-b09e980a8c03a8dc5e9eda2089958fd3.ctex"]
 
 [params]
 

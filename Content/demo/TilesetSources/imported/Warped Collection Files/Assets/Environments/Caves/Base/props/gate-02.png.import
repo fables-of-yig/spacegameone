@@ -2,16 +2,12 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://cjujtvi6aew0t"
-path="res://.godot/imported/gate-02.png-b260400e94c8d93bf9d5142c179ce1d1.ctex"
-metadata={
-"vram_texture": false
-}
+uid="uid://c46vt38s0yjx0"
+valid=false
 
 [deps]
 
 source_file="res://Content/demo/TilesetSources/imported/Warped Collection Files/Assets/Environments/Caves/Base/props/gate-02.png"
-dest_files=["res://.godot/imported/gate-02.png-b260400e94c8d93bf9d5142c179ce1d1.ctex"]
 
 [params]
 

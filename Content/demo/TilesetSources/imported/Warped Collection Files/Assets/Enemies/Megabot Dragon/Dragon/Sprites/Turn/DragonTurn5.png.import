@@ -2,16 +2,12 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://bobom53p43gnt"
-path="res://.godot/imported/DragonTurn5.png-62c5736e13eb1299f18b48662590c543.ctex"
-metadata={
-"vram_texture": false
-}
+uid="uid://ckjpk65csqj3k"
+valid=false
 
 [deps]
 
 source_file="res://Content/demo/TilesetSources/imported/Warped Collection Files/Assets/Enemies/Megabot Dragon/Dragon/Sprites/Turn/DragonTurn5.png"
-dest_files=["res://.godot/imported/DragonTurn5.png-62c5736e13eb1299f18b48662590c543.ctex"]
 
 [params]
 

@@ -2,16 +2,12 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://dnuyl4jg7iu01"
-path="res://.godot/imported/front.png-0f050732dcf0305ba4eaca9a10d124ea.ctex"
-metadata={
-"vram_texture": false
-}
+uid="uid://cayidhg6vo621"
+valid=false
 
 [deps]
 
 source_file="res://Content/demo/TilesetSources/imported/Warped Collection Files/Assets/Environments/Scifi lab Files/layers/front.png"
-dest_files=["res://.godot/imported/front.png-0f050732dcf0305ba4eaca9a10d124ea.ctex"]
 
 [params]
 

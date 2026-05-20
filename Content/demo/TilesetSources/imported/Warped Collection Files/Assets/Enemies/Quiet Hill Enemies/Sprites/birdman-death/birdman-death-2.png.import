@@ -2,16 +2,12 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://blij7tlifrcaf"
-path="res://.godot/imported/birdman-death-2.png-c2568d2232a94e3abb59be58a2dea8f8.ctex"
-metadata={
-"vram_texture": false
-}
+uid="uid://ec0fqpoidybf"
+valid=false
 
 [deps]
 
 source_file="res://Content/demo/TilesetSources/imported/Warped Collection Files/Assets/Enemies/Quiet Hill Enemies/Sprites/birdman-death/birdman-death-2.png"
-dest_files=["res://.godot/imported/birdman-death-2.png-c2568d2232a94e3abb59be58a2dea8f8.ctex"]
 
 [params]
 

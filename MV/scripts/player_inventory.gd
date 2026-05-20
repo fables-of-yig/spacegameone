@@ -309,7 +309,11 @@ func _apply_item_effect(def: Dictionary, count: int = 1) -> bool:
 		"add_tag":
 			if arg.is_empty() or MvTriggerEngine == null:
 				return false
-			var tag_value: Variant = true if amount <= 0 else amount * count
+			var tag_value: Variant
+			if amount <= 0:
+				tag_value = true
+			else:
+				tag_value = amount * count
 			MvTriggerEngine.set_global_tag(arg, tag_value)
 		"fire_event":
 			if arg.is_empty() or MvTriggerEngine == null:

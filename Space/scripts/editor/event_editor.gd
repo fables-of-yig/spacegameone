@@ -1,7 +1,7 @@
 extends Control
 
 
-const PackAssetIndex = preload("res://Space/scripts/editor/pack_asset_index.gd")
+const PackAssetIndex = preload("res://Space/scripts/shared/pack_asset_index.gd")
 
 
 var events: Dictionary = {}

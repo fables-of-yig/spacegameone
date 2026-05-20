@@ -2,16 +2,12 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://ba72evongbu5w"
-path="res://.godot/imported/f-4.png-232f655f7b23185c6b7f4b9178083ae6.ctex"
-metadata={
-"vram_texture": false
-}
+uid="uid://dpicj173oagfi"
+valid=false
 
 [deps]
 
 source_file="res://Content/demo/TilesetSources/imported/Warped Collection Files/Assets/Packs/Streets of Fight/StreetsOfFight-addon/Characters/Long-Tail/Sprites/Round-Kick/f-4.png"
-dest_files=["res://.godot/imported/f-4.png-232f655f7b23185c6b7f4b9178083ae6.ctex"]
 
 [params]
 

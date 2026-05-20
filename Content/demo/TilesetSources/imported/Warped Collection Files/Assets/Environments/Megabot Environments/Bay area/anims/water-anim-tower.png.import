@@ -2,16 +2,12 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://c8wor2ftwg1t3"
-path="res://.godot/imported/water-anim-tower.png-f0423020f1ac00b0ab448c8719c05c16.ctex"
-metadata={
-"vram_texture": false
-}
+uid="uid://dn0ns6vdo345i"
+valid=false
 
 [deps]
 
 source_file="res://Content/demo/TilesetSources/imported/Warped Collection Files/Assets/Environments/Megabot Environments/Bay area/anims/water-anim-tower.png"
-dest_files=["res://.godot/imported/water-anim-tower.png-f0423020f1ac00b0ab448c8719c05c16.ctex"]
 
 [params]
 

@@ -2,16 +2,12 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://gn3dkw7xgatn"
-path="res://.godot/imported/cryo-pod.png-1a63c76c38a313d400a294cdf718f02e.ctex"
-metadata={
-"vram_texture": false
-}
+uid="uid://ca4d3mglye78n"
+valid=false
 
 [deps]
 
 source_file="res://Content/demo/TilesetSources/imported/Warped Collection Files/Assets/Environments/cyberpunk-corridor-files/Props/PNG/cryo-pod.png"
-dest_files=["res://.godot/imported/cryo-pod.png-1a63c76c38a313d400a294cdf718f02e.ctex"]
 
 [params]
 

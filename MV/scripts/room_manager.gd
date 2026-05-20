@@ -6,7 +6,7 @@ const _MvPickup := preload("res://MV/scripts/pickup.gd")
 const _MvTriggerVolume := preload("res://MV/scripts/trigger_volume.gd")
 const _MvBoss := preload("res://MV/scripts/boss.gd")
 const _MvWeatherOverlay := preload("res://MV/scripts/weather_overlay.gd")
-const RegIO := preload("res://Space/scripts/editor/reg/reg_io.gd")
+const RegIO := preload("res://Space/scripts/shared/reg/reg_io.gd")
 
 # Loads room definitions from the current content pack, builds a dynamic
 # stack of TileMapLayers per room (bg layers behind the player, main at
@@ -1761,7 +1761,7 @@ func _fallback_entity_instance_id(type_id: String, pos: Vector2) -> String:
 
 
 static func _load_entity_defs(pack_id: String) -> Dictionary:
-    const EntIO := preload("res://Space/scripts/editor/ent/ent_io.gd")
+    const EntIO := preload("res://Space/scripts/shared/ent/ent_io.gd")
     var data := EntIO.load_or_init(pack_id)
     var out: Dictionary = {}
     var list_v: Variant = data.get("entities", [])
@@ -2165,13 +2165,13 @@ func _make_background_shader_material(bg: Dictionary) -> Variant:
             mode = 3
     if mode == 0:
         return null
-    var material := ShaderMaterial.new()
-    material.shader = _backdrop_shader
-    material.set_shader_parameter("effect_mode", mode)
-    material.set_shader_parameter("tint", bg.get("shader_tint", Color.WHITE))
-    material.set_shader_parameter("strength", clampf(float(bg.get("shader_strength", 0.6)), 0.0, 2.0))
-    material.set_shader_parameter("speed", clampf(float(bg.get("shader_speed", 1.0)), 0.0, 4.0))
-    return material
+    var bg_material := ShaderMaterial.new()
+    bg_material.shader = _backdrop_shader
+    bg_material.set_shader_parameter("effect_mode", mode)
+    bg_material.set_shader_parameter("tint", bg.get("shader_tint", Color.WHITE))
+    bg_material.set_shader_parameter("strength", clampf(float(bg.get("shader_strength", 0.6)), 0.0, 2.0))
+    bg_material.set_shader_parameter("speed", clampf(float(bg.get("shader_speed", 1.0)), 0.0, 4.0))
+    return bg_material
 
 
 func _apply_shader_region(region: Dictionary) -> void:
@@ -2194,9 +2194,9 @@ func _apply_shader_region(region: Dictionary) -> void:
     poly.position = Vector2(
         float(region.get("x_blocks", 0.0)) * BLOCK_SIZE,
         float(region.get("y_blocks", 0.0)) * BLOCK_SIZE)
-    var material: Variant = _make_room_fx_material(region)
-    if material != null:
-        poly.material = material
+    var region_material: Variant = _make_room_fx_material(region)
+    if region_material != null:
+        poly.material = region_material
     _shader_fx_root.add_child(poly)
 
 
@@ -2215,13 +2215,13 @@ func _make_room_fx_material(region: Dictionary) -> Variant:
     if _room_fx_shader == null:
         _room_fx_shader = Shader.new()
         _room_fx_shader.code = _ROOM_FX_SHADER_CODE
-    var material := ShaderMaterial.new()
-    material.shader = _room_fx_shader
-    material.set_shader_parameter("effect_mode", mode)
-    material.set_shader_parameter("tint", region.get("shader_tint", Color.WHITE))
-    material.set_shader_parameter("strength", clampf(float(region.get("shader_strength", 0.6)), 0.0, 2.0))
-    material.set_shader_parameter("speed", clampf(float(region.get("shader_speed", 1.0)), 0.0, 4.0))
-    return material
+    var fx_material := ShaderMaterial.new()
+    fx_material.shader = _room_fx_shader
+    fx_material.set_shader_parameter("effect_mode", mode)
+    fx_material.set_shader_parameter("tint", region.get("shader_tint", Color.WHITE))
+    fx_material.set_shader_parameter("strength", clampf(float(region.get("shader_strength", 0.6)), 0.0, 2.0))
+    fx_material.set_shader_parameter("speed", clampf(float(region.get("shader_speed", 1.0)), 0.0, 4.0))
+    return fx_material
 
 
 func _apply_weather(weather_v: Variant) -> void:
@@ -2299,12 +2299,12 @@ func _update_backdrop_layer_transform(entry: Dictionary, cam: Camera2D, cam_pos:
     var entry_type := str(entry.get("type", "fullscreen"))
     if entry_type == "placed":
         var tex_size_placed: Vector2 = entry.get("texture_size", node.texture.get_size())
-        var target_size: Vector2 = entry.get("target_size", tex_size_placed)
+        var placed_target_size: Vector2 = entry.get("target_size", tex_size_placed)
         var speed_placed: Vector2 = entry.get("scroll_speed", Vector2.ONE)
         var base_position: Vector2 = entry.get("base_position", Vector2.ZERO)
         if tex_size_placed.x <= 0.0 or tex_size_placed.y <= 0.0:
             return
-        node.scale = Vector2(target_size.x / tex_size_placed.x, target_size.y / tex_size_placed.y)
+        node.scale = Vector2(placed_target_size.x / tex_size_placed.x, placed_target_size.y / tex_size_placed.y)
         node.position = base_position + Vector2(
             cam_pos.x * (1.0 - speed_placed.x),
             cam_pos.y * (1.0 - speed_placed.y))

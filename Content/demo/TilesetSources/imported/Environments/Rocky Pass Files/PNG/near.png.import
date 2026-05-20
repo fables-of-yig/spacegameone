@@ -2,16 +2,12 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://bnfxvfvmbejcu"
-path="res://.godot/imported/near.png-63ae3fe15b4f8c28a59f6b53e47d07a6.ctex"
-metadata={
-"vram_texture": false
-}
+uid="uid://d1n0dl3yy863g"
+valid=false
 
 [deps]
 
 source_file="res://Content/demo/TilesetSources/imported/Environments/Rocky Pass Files/PNG/near.png"
-dest_files=["res://.godot/imported/near.png-63ae3fe15b4f8c28a59f6b53e47d07a6.ctex"]
 
 [params]
 

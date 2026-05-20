@@ -2,16 +2,12 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://k1eeotir6182"
-path="res://.godot/imported/Demonic_Plant_01.png-65d2ef6a5c1e7df91fc0480d6f3a2701.ctex"
-metadata={
-"vram_texture": false
-}
+uid="uid://bit67j7jj4at8"
+valid=false
 
 [deps]
 
 source_file="res://Content/demo/TilesetSources/imported/Inferno Village 2D Tileset/PNG/Environment/Demonic_Plant_01.png"
-dest_files=["res://.godot/imported/Demonic_Plant_01.png-65d2ef6a5c1e7df91fc0480d6f3a2701.ctex"]
 
 [params]
 

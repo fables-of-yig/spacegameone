@@ -2,16 +2,12 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://65mew64vuw5b"
-path="res://.godot/imported/spade2.png-ba5fd0c7316d94955df7851629cc344c.ctex"
-metadata={
-"vram_texture": false
-}
+uid="uid://cu13k5mmrtgkb"
+valid=false
 
 [deps]
 
 source_file="res://Content/demo/TilesetSources/imported/Warped Collection Files/Assets/Environments/Casino City/Layers/Props/spade2.png"
-dest_files=["res://.godot/imported/spade2.png-ba5fd0c7316d94955df7851629cc344c.ctex"]
 
 [params]
 

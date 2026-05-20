@@ -19,8 +19,6 @@ const _WEAPON_ICONS := {
 	1: "res://Content/demo/Beams/power.png",
 }
 
-const QuestIO := preload("res://Space/scripts/editor/quest_io.gd")
-
 static var _warned_unknown_bindings: Dictionary = {}
 
 

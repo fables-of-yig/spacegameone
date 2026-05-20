@@ -1,7 +1,7 @@
 class_name ContentReferenceIndex
 extends RefCounted
 
-const PackPaths := preload("res://Space/scripts/editor/pack_paths.gd")
+const PackPaths := preload("res://Space/scripts/shared/pack_paths.gd")
 
 
 static func build(pack_id: String) -> Dictionary:
@@ -25,6 +25,7 @@ static func build(pack_id: String) -> Dictionary:
 	_scan_catalog(pid, "Entities/entities.json", "entities", "entity", index)
 	_scan_catalog(pid, "Entities/behaviors.json", "behaviors", "behavior", index)
 	_scan_world(pid, index)
+	_scan_factions(pid, index)
 	_scan_systems(pid, index)
 	_scan_global_triggers(pid, index)
 	_scan_dialogues(pid, index)
@@ -255,6 +256,23 @@ static func _scan_room_links(entries: Array, source: String, field: String, inde
 			_add_ref(index, "room", str((dest_v as Dictionary).get("target", "")).strip_edges(), source, "%s.destinations.target" % prefix, "room link")
 
 
+static func _scan_factions(pack_id: String, index: Dictionary) -> void:
+	var FactionsIO := preload("res://Space/scripts/shared/factions_io.gd")
+	var factions := FactionsIO.load_existing(pack_id)
+	for fid_v in factions.keys():
+		var fid: String = str(fid_v)
+		var entry: Dictionary = factions[fid_v]
+		_add_def(index, "faction", fid, "Factions/factions.json:%s" % fid, str(entry.get("name", "")))
+		# Cross-faction relations are also references — show up in the
+		# reference lookup so renaming a faction surfaces every other
+		# faction that mentions it.
+		var rels_v: Variant = entry.get("relations", {})
+		if typeof(rels_v) == TYPE_DICTIONARY:
+			for other_v in (rels_v as Dictionary).keys():
+				_add_ref(index, "faction", str(other_v).strip_edges(),
+					"Faction '%s'" % fid, "relations", "inter-faction relation")
+
+
 static func _scan_systems(pack_id: String, index: Dictionary) -> void:
 	var root := _load_pack_json_root(pack_id, "Systems/systems.json")
 	var systems_v: Variant = root.get("systems", {})
@@ -271,8 +289,8 @@ static func _scan_systems(pack_id: String, index: Dictionary) -> void:
 		_add_def(index, "system", system_id, "Systems/systems.json:%s" % system_id, str(system.get("name", "")))
 		for connection_v in _as_array(system.get("connections", [])):
 			_add_ref(index, "system", str(connection_v).strip_edges(), source, "connections", "system connection")
+		_add_ref(index, "faction", str(system.get("faction", "")).strip_edges(), source, "faction", "controlling faction")
 		_scan_system_pois(source, _as_array(system.get("pois", [])), index)
-		_scan_system_spawn_triggers(source, _as_array(system.get("spawn_triggers", [])), index)
 		_scan_system_npcs(source, _as_array(system.get("placed_npcs", [])), index)
 
 
@@ -306,17 +324,6 @@ static func _scan_system_pois(source: String, pois: Array, index: Dictionary) ->
 					"planet_data.regions[%d].spawn_room" % ri, "planet spawn")
 
 
-static func _scan_system_spawn_triggers(source: String, triggers: Array, index: Dictionary) -> void:
-	for i in range(triggers.size()):
-		var trigger_v: Variant = triggers[i]
-		if typeof(trigger_v) != TYPE_DICTIONARY:
-			continue
-		for spawn_v in _as_array((trigger_v as Dictionary).get("spawns", [])):
-			if typeof(spawn_v) == TYPE_DICTIONARY:
-				_add_ref(index, "enemy_class", str((spawn_v as Dictionary).get("class", "")).strip_edges(),
-					source, "spawn_triggers[%d].spawns.class" % i, "space spawn")
-
-
 static func _scan_system_npcs(source: String, npcs: Array, index: Dictionary) -> void:
 	for i in range(npcs.size()):
 		var npc_v: Variant = npcs[i]
@@ -325,6 +332,7 @@ static func _scan_system_npcs(source: String, npcs: Array, index: Dictionary) ->
 		var npc: Dictionary = npc_v
 		_add_ref(index, "ship_template", str(npc.get("template", "")).strip_edges(), source, "placed_npcs[%d].template" % i, "placed npc")
 		_add_ref(index, "event", str(npc.get("hail_event_id", "")).strip_edges(), source, "placed_npcs[%d].hail_event_id" % i, "npc hail")
+		_add_ref(index, "faction", str(npc.get("faction", "")).strip_edges(), source, "placed_npcs[%d].faction" % i, "npc faction")
 
 
 static func _scan_global_triggers(pack_id: String, index: Dictionary) -> void:
@@ -352,6 +360,7 @@ static func _scan_dialogues(pack_id: String, index: Dictionary) -> void:
 			var source := "Dialogue '%s' line #%d" % [dialogue_id, i]
 			_scan_conditions(line.get("condition", {}), source, "condition", index)
 			_scan_actions(_as_array(line.get("actions", [])), source, "actions", index)
+			_add_ref(index, "faction", str(line.get("speaker_faction", "")).strip_edges(), source, "speaker_faction", "dialogue speaker faction")
 			var choices := _as_array(line.get("choices", []))
 			for c in range(choices.size()):
 				var choice_v: Variant = choices[c]

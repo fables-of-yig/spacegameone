@@ -1,13 +1,12 @@
 extends RefCounted
 
-const ContentValidator := preload("res://Space/scripts/editor/content_validator.gd")
-const RegIO := preload("res://Space/scripts/editor/reg/reg_io.gd")
-const EnvIO := preload("res://Space/scripts/editor/env/env_io.gd")
-const SystemIO := preload("res://Space/scripts/editor/system_io.gd")
-const PedIO := preload("res://Space/scripts/editor/ped/ped_io.gd")
-const EntIO := preload("res://Space/scripts/editor/ent/ent_io.gd")
+const RegIO := preload("res://Space/scripts/shared/reg/reg_io.gd")
+const EnvIO := preload("res://Space/scripts/shared/env/env_io.gd")
+const SystemIO := preload("res://Space/scripts/shared/system_io.gd")
+const PedIO := preload("res://Space/scripts/shared/ped/ped_io.gd")
+const EntIO := preload("res://Space/scripts/shared/ent/ent_io.gd")
 const TriggerRecipes := preload("res://Space/scripts/editor/dlg/trigger_recipes.gd")
-const PackPaths := preload("res://Space/scripts/editor/pack_paths.gd")
+const PackPaths := preload("res://Space/scripts/shared/pack_paths.gd")
 
 const REGION_ID := RegIO.DEFAULT_REGION_ID
 const RECIPE_POI_ID := "recipe_landing"
@@ -271,7 +270,6 @@ static func _write_system(pack_id: String, system_id: String, planet_name: Strin
 			"faction": "independent",
 			"connections": [],
 			"pois": [],
-			"spawn_triggers": [],
 			"placed_npcs": [],
 		}
 	var pois: Array = []

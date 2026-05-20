@@ -2,16 +2,12 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://b2hp6gp3sk878"
-path="res://.godot/imported/Wide_Door_02.png-d5a2042f24432a7e236ce33dd43b2323.ctex"
-metadata={
-"vram_texture": false
-}
+uid="uid://dj6xcsyiko3ie"
+valid=false
 
 [deps]
 
 source_file="res://Content/demo/TilesetSources/imported/Inferno Village 2D Tileset/PNG/Building/Wide_Door_02.png"
-dest_files=["res://.godot/imported/Wide_Door_02.png-d5a2042f24432a7e236ce33dd43b2323.ctex"]
 
 [params]
 

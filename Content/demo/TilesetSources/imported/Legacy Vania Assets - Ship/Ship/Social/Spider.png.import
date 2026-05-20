@@ -2,16 +2,12 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://dwpchj341fcvf"
-path="res://.godot/imported/Spider.png-87332371b41d69040d161f96a1303213.ctex"
-metadata={
-"vram_texture": false
-}
+uid="uid://dfuygabltrdpe"
+valid=false
 
 [deps]
 
 source_file="res://Content/demo/TilesetSources/imported/Legacy Vania Assets - Ship/Ship/Social/Spider.png"
-dest_files=["res://.godot/imported/Spider.png-87332371b41d69040d161f96a1303213.ctex"]
 
 [params]
 

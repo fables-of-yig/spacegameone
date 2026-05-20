@@ -2,16 +2,12 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://k7c0ortpmh0f"
-path="res://.godot/imported/container-yellow.png-f742903650b6ba6799d911fe57718646.ctex"
-metadata={
-"vram_texture": false
-}
+uid="uid://t14w65f1uhv0"
+valid=false
 
 [deps]
 
 source_file="res://Content/demo/TilesetSources/imported/Warped Collection Files/Assets/Items, VFX and Props/Props Pack 2/sprites/container-yellow.png"
-dest_files=["res://.godot/imported/container-yellow.png-f742903650b6ba6799d911fe57718646.ctex"]
 
 [params]
 

@@ -3,15 +3,11 @@
 importer="texture"
 type="CompressedTexture2D"
 uid="uid://cphv4rc2o0pyj"
-path="res://.godot/imported/waveform.png-44d64a3a4f45c76360c4188878a2b546.ctex"
-metadata={
-"vram_texture": false
-}
+valid=false
 
 [deps]
 
 source_file="res://Content/demo/TilesetSources/imported/Warped Collection Files/Assets/Items, VFX and Props/Warped shooting fx files/Pixelart/waveform/waveform.png"
-dest_files=["res://.godot/imported/waveform.png-44d64a3a4f45c76360c4188878a2b546.ctex"]
 
 [params]
 

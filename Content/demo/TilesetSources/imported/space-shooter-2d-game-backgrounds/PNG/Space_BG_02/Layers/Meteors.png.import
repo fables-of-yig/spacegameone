@@ -2,16 +2,12 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://dqm66qxau5ayj"
-path="res://.godot/imported/Meteors.png-1cedbdffaaae4a6b916d6814b145d533.ctex"
-metadata={
-"vram_texture": false
-}
+uid="uid://c24yn2xc2ks0c"
+valid=false
 
 [deps]
 
 source_file="res://Content/demo/TilesetSources/imported/space-shooter-2d-game-backgrounds/PNG/Space_BG_02/Layers/Meteors.png"
-dest_files=["res://.godot/imported/Meteors.png-1cedbdffaaae4a6b916d6814b145d533.ctex"]
 
 [params]
 

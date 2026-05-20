@@ -2,16 +2,12 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://dkxy2c7xk2b7o"
-path="res://.godot/imported/tree.png-04cd067a7fa12fce77efa5fbfdf73c88.ctex"
-metadata={
-"vram_texture": false
-}
+uid="uid://c5wu18cukmo4b"
+valid=false
 
 [deps]
 
 source_file="res://Content/demo/TilesetSources/imported/Environments/SunsetLake Files/Props/sprites/tree.png"
-dest_files=["res://.godot/imported/tree.png-04cd067a7fa12fce77efa5fbfdf73c88.ctex"]
 
 [params]
 

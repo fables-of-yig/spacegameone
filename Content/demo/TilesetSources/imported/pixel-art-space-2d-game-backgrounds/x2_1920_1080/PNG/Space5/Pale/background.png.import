@@ -3,15 +3,11 @@
 importer="texture"
 type="CompressedTexture2D"
 uid="uid://dqw6mqs5nohfr"
-path="res://.godot/imported/background.png-e2a4ac634f5adea82a8a0f443da75b50.ctex"
-metadata={
-"vram_texture": false
-}
+valid=false
 
 [deps]
 
 source_file="res://Content/demo/TilesetSources/imported/pixel-art-space-2d-game-backgrounds/x2_1920_1080/PNG/Space5/Pale/background.png"
-dest_files=["res://.godot/imported/background.png-e2a4ac634f5adea82a8a0f443da75b50.ctex"]
 
 [params]
 

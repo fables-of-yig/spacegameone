@@ -1,11 +1,11 @@
 extends Control
 
 const UIPanels = preload("res://Space/scripts/ui/ui_panels.gd")
-const UIIo = preload("res://Space/scripts/editor/ui/ui_io.gd")
+const UIIo = preload("res://Space/scripts/shared/ui/ui_io.gd")
 const AuthoredScreenRuntime = preload("res://Space/scripts/ui/authored_screen_runtime.gd")
 const HudDataSource = preload("res://Space/scripts/ui/hud_data_source.gd")
 const SettingsMenuScript = preload("res://Space/scripts/ui/settings_menu.gd")
-const PackPaths = preload("res://Space/scripts/editor/pack_paths.gd")
+const PackPaths = preload("res://Space/scripts/shared/pack_paths.gd")
 
 
 var _stars: Array = []
@@ -15,14 +15,9 @@ var _slot_info: Array = []
 var _fade_in: float = 0.0
 
 
-var _galaxy_size: int = 120
-const GALAXY_SIZES = [10, 20, 40, 80, 120, 200]
-const GALAXY_LABELS = ["Tiny (10)", "Small (20)", "Medium (40)", "Large (80)", "Huge (120)", "Epic (200)"]
-var _size_index: int = 4
-@warning_ignore("unused_private_class_variable")
-var _slider_rect: Rect2 = Rect2()
-var _slider_minus_rect: Rect2 = Rect2()
-var _slider_plus_rect: Rect2 = Rect2()
+# Galaxy-size slider state (procedural new-game knob) lived here. Removed
+# along with the procedural new-game flow; new entries go through
+# _open_play_pack_picker → _start_play_pack_menu now.
 
 
 var _update_state: int = 0
@@ -39,8 +34,6 @@ var _authored_screen: Control = null
 var _authored_pack_id: String = ""
 var _settings_menu: Control = null
 
-@warning_ignore("unused_signal")
-signal new_game_pressed(galaxy_size: int)
 signal load_slot_pressed(slot: int)
 signal creative_pressed
 signal test_fly_pressed
@@ -351,14 +344,6 @@ func _handle_click(pos: Vector2):
         _delete_confirm_slot = -1
         return
 
-    if _slider_minus_rect.has_point(pos):
-        _size_index = maxi(_size_index - 1, 0)
-        _galaxy_size = GALAXY_SIZES[_size_index]
-        return
-    if _slider_plus_rect.has_point(pos):
-        _size_index = mini(_size_index + 1, GALAXY_SIZES.size() - 1)
-        _galaxy_size = GALAXY_SIZES[_size_index]
-        return
     var buttons = _get_button_rects()
     for i in buttons.size():
         if buttons[i].has_point(pos):
@@ -518,11 +503,6 @@ func reopen_editor_picker() -> void:
 func _start_creative():
     visible = false
     creative_pressed.emit()
-
-func _start_new_game():
-    visible = false
-    new_game_pressed.emit(120)
-
 
 func _return_to_launcher() -> void:
     _authored_pack_id = ""

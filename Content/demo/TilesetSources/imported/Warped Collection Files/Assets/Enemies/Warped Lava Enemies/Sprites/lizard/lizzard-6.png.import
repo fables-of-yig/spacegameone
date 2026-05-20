@@ -3,15 +3,11 @@
 importer="texture"
 type="CompressedTexture2D"
 uid="uid://clg46v1xcs87g"
-path="res://.godot/imported/lizzard-6.png-60aa008dc9120d15f7daac3fa56e475c.ctex"
-metadata={
-"vram_texture": false
-}
+valid=false
 
 [deps]
 
 source_file="res://Content/demo/TilesetSources/imported/Warped Collection Files/Assets/Enemies/Warped Lava Enemies/Sprites/lizard/lizzard-6.png"
-dest_files=["res://.godot/imported/lizzard-6.png-60aa008dc9120d15f7daac3fa56e475c.ctex"]
 
 [params]
 

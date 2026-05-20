@@ -3,15 +3,11 @@
 importer="texture"
 type="CompressedTexture2D"
 uid="uid://bmn6xy4mc0e3b"
-path="res://.godot/imported/cyber-tiger.png-097db25de417f38dea850a4f8b95e174.ctex"
-metadata={
-"vram_texture": false
-}
+valid=false
 
 [deps]
 
 source_file="res://Content/demo/TilesetSources/imported/Warped Collection Files/Assets/Enemies/City Enemies/Add-On-1/Spritesheets/cyber-tiger.png"
-dest_files=["res://.godot/imported/cyber-tiger.png-097db25de417f38dea850a4f8b95e174.ctex"]
 
 [params]
 

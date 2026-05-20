@@ -3,15 +3,11 @@
 importer="texture"
 type="CompressedTexture2D"
 uid="uid://b0te7ijt2cg2m"
-path="res://.godot/imported/statue.png-e706e4ee47a690c2ebfb17a862d67641.ctex"
-metadata={
-"vram_texture": false
-}
+valid=false
 
 [deps]
 
 source_file="res://Content/demo/TilesetSources/imported/Warped Collection Files/Assets/Environments/Caves/Add-on-1/PNG/Props/statue.png"
-dest_files=["res://.godot/imported/statue.png-e706e4ee47a690c2ebfb17a862d67641.ctex"]
 
 [params]
 

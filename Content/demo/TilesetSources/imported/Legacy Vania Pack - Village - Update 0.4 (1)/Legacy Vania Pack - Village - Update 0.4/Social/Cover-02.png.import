@@ -2,16 +2,12 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://b7txk7g4y5x27"
-path="res://.godot/imported/Cover-02.png-736381e87443e0f28b9e51787ff6c486.ctex"
-metadata={
-"vram_texture": false
-}
+uid="uid://btt156b8e4dqe"
+valid=false
 
 [deps]
 
 source_file="res://Content/demo/TilesetSources/imported/Legacy Vania Pack - Village - Update 0.4 (1)/Legacy Vania Pack - Village - Update 0.4/Social/Cover-02.png"
-dest_files=["res://.godot/imported/Cover-02.png-736381e87443e0f28b9e51787ff6c486.ctex"]
 
 [params]
 

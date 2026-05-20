@@ -3,15 +3,11 @@
 importer="texture"
 type="CompressedTexture2D"
 uid="uid://c3hapg3xjw816"
-path="res://.godot/imported/far-mountains.png-39ab1df20269f8ab5ddb0eb4566cbc7e.ctex"
-metadata={
-"vram_texture": false
-}
+valid=false
 
 [deps]
 
 source_file="res://Content/demo/TilesetSources/imported/Environments/Super Mountain Dusk/version B/Layers/far-mountains.png"
-dest_files=["res://.godot/imported/far-mountains.png-39ab1df20269f8ab5ddb0eb4566cbc7e.ctex"]
 
 [params]
 

@@ -3,15 +3,11 @@
 importer="texture"
 type="CompressedTexture2D"
 uid="uid://cue1a86adli36"
-path="res://.godot/imported/Skateboard_OllieApex.png-06e504907103cadd611b704f35b87016.ctex"
-metadata={
-"vram_texture": false
-}
+valid=false
 
 [deps]
 
 source_file="res://Content/demo/TilesetSources/imported/NeonNightCityTileset/NeonNightCityTileset/Sprites/Props/Skateboard/Skateboard_OllieApex.png"
-dest_files=["res://.godot/imported/Skateboard_OllieApex.png-06e504907103cadd611b704f35b87016.ctex"]
 
 [params]
 

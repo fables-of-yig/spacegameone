@@ -1,0 +1,115 @@
+{
+	"anchor": "top_left",
+	"anchor_offset": {
+		"x": 0,
+		"y": 0
+	},
+	"children": [
+		{
+			"anchor": "top_left",
+			"anchor_offset": {
+				"x": 0,
+				"y": 0
+			},
+			"children": [],
+			"id": "boss_intro_title",
+			"properties": {
+				"alignment": "left",
+				"bind_var": "",
+				"decimal_places": 0,
+				"format": "{value}",
+				"opacity": 1.0,
+				"static_text": "CINEMATIC",
+				"tab_group": "default",
+				"tab_id": "",
+				"text_role": "title",
+				"wrap": false
+			},
+			"rect": {
+				"h": 24,
+				"w": 416,
+				"x": 32,
+				"y": 26
+			},
+			"type": "label"
+		},
+		{
+			"anchor": "top_left",
+			"anchor_offset": {
+				"x": 0,
+				"y": 0
+			},
+			"children": [],
+			"id": "boss_intro_subtitle",
+			"properties": {
+				"alignment": "left",
+				"bind_var": "",
+				"decimal_places": 0,
+				"format": "{value}",
+				"opacity": 1.0,
+				"static_text": "Use this screen for letterboxed scenes, title cards, or dialogue-free moments.",
+				"tab_group": "default",
+				"tab_id": "",
+				"text_role": "dim",
+				"wrap": false
+			},
+			"rect": {
+				"h": 18,
+				"w": 416,
+				"x": 32,
+				"y": 56
+			},
+			"type": "label"
+		},
+		{
+			"anchor": "top_left",
+			"anchor_offset": {
+				"x": 0,
+				"y": 0
+			},
+			"children": [],
+			"id": "boss_intro_close",
+			"properties": {
+				"action_args": "",
+				"action_id": "close_screen",
+				"enabled_condition": "",
+				"label": "CONTINUE",
+				"show_label": true,
+				"sprite_hover": "",
+				"sprite_normal": "",
+				"sprite_pressed": "",
+				"sprite_tint": "#ffffff",
+				"tab_group": "default",
+				"tab_id": ""
+			},
+			"rect": {
+				"h": 24,
+				"w": 116,
+				"x": 182,
+				"y": 84
+			},
+			"type": "button"
+		}
+	],
+	"id": "boss_intro_root",
+	"properties": {
+		"opacity": 1.0,
+		"padding": 8,
+		"scroll": "none",
+		"sprite_mode": "9slice",
+		"sprite_slice_x": 0,
+		"sprite_slice_y": 0,
+		"sprite_source": "",
+		"sprite_tint": "#ffffff",
+		"tab_group": "default",
+		"tab_id": "",
+		"variant": "dark"
+	},
+	"rect": {
+		"h": 120,
+		"w": 480,
+		"x": 0,
+		"y": 0
+	},
+	"type": "panel"
+}

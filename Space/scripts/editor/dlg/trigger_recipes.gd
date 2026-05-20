@@ -1,8 +1,7 @@
 extends RefCounted
 
-const PedIO := preload("res://Space/scripts/editor/ped/ped_io.gd")
-const EntIO := preload("res://Space/scripts/editor/ent/ent_io.gd")
-const QuestIO := preload("res://Space/scripts/editor/quest_io.gd")
+const PedIO := preload("res://Space/scripts/shared/ped/ped_io.gd")
+const EntIO := preload("res://Space/scripts/shared/ent/ent_io.gd")
 
 const PICKUP_UNLOCKS_GATE: int = 1
 const NPC_STARTS_DIALOGUE: int = 2

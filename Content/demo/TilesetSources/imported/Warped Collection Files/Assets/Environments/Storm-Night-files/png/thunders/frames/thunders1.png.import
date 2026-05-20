@@ -2,16 +2,12 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://b7ra6elimamuh"
-path="res://.godot/imported/thunders1.png-e27e076fac4dfbd9b9f3fbb39924718f.ctex"
-metadata={
-"vram_texture": false
-}
+uid="uid://kyuc6omk613c"
+valid=false
 
 [deps]
 
 source_file="res://Content/demo/TilesetSources/imported/Warped Collection Files/Assets/Environments/Storm-Night-files/png/thunders/frames/thunders1.png"
-dest_files=["res://.godot/imported/thunders1.png-e27e076fac4dfbd9b9f3fbb39924718f.ctex"]
 
 [params]
 

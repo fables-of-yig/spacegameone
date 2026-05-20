@@ -1,12 +1,13 @@
 extends Control
 
 
-const RegIO = preload("res://Space/scripts/editor/reg/reg_io.gd")
-const SystemIO = preload("res://Space/scripts/editor/system_io.gd")
-const PackAssetIndex = preload("res://Space/scripts/editor/pack_asset_index.gd")
-const PackPaths = preload("res://Space/scripts/editor/pack_paths.gd")
+const RegIO = preload("res://Space/scripts/shared/reg/reg_io.gd")
+const SystemIO = preload("res://Space/scripts/shared/system_io.gd")
+const PackAssetIndex = preload("res://Space/scripts/shared/pack_asset_index.gd")
+const PackPaths = preload("res://Space/scripts/shared/pack_paths.gd")
 const PsgPanel = preload("res://Space/scripts/editor/psg/psg_panel.gd")
 const PsgIO = preload("res://Space/scripts/editor/psg/psg_io.gd")
+const FactionsIO = preload("res://Space/scripts/shared/factions_io.gd")
 
 signal closed
 signal systems_saved(pack_id: String, systems: Dictionary)
@@ -21,7 +22,6 @@ var drag_offset: Vector2 = Vector2.ZERO
 var connect_mode: bool = false
 var connect_from: String = ""
 var selected_poi: int = -1
-var selected_trigger: int = -1
 var scroll_y: float = 0.0
 var status_text: String = ""
 var status_timer: float = 0.0
@@ -90,19 +90,17 @@ const _FIELD_TIPS: Dictionary = {
     "poi_anim_frames": "If the POI sprite is a horizontal strip, set how many frames it contains. 1 = static sprite.",
     "poi_anim_fps": "Frames per second for the POI strip animation. 0 = static.",
     "poi_gravity": "Gravity-well radius around this POI in pixels. 0 disables.",
+    "poi_hidden": "When true, this POI is skipped during spawn until an unlock_poi trigger action records its `id`. Use for gated landings revealed by quests, dialogue, or scanning beacons. Requires the POI to have a stable `id` — if `id` is blank, the POI cannot be unlocked at runtime.",
     "planet_pack": "Optional pack override for cross-pack travel. Leave blank to land inside this campaign pack.",
+    # Per-system spawn triggers used to live here; they're authored in the
+    # Triggers tab now as ECA rules with event=space_proximity_band /
+    # space_system_enter / space_station_destroyed plus the
+    # spawn_space_enemies action. See dlg/eca_schema.gd.
     "region_id": "Stable region id (folder name under Content/<pack>/Regions/). Renaming here renames the region on disk and rewrites POI links.",
     "region_name": "Display name for this region. Shown in the landing prompt.",
     "region_spawn_room": "Room address inside this region the player spawns in when landing here. Must exist in the region's rooms.json.",
     "region_spawn_x": "X position inside the spawn room (pixels).",
     "region_spawn_y": "Y position inside the spawn room (pixels).",
-    "trig_id": "Unique id for this spawn trigger within the system. Used by the once-flag system to remember whether it has fired.",
-    "trig_on": "When the trigger fires: enter, proximity, station_destroyed, or event. Proximity arms when the player enters the [min,max] distance band around the current star.",
-    "trig_once": "true = fires once per save; false = re-arms when you leave and re-enter the proximity band, or re-evaluates on later enter/event calls.",
-    "trig_conditions": "Optional conditions as key=value pairs. Normal keys check global trigger tags. Special key `chance=25` rolls a d100-style 25% gate when the trigger evaluates.",
-    "trig_spawns": "Enemies spawned when triggered. Format: count:class per entry. Classes reference the Enemies tab.",
-    "trig_dist_min": "Proximity mode: minimum distance from the star in pixels at which the trigger arms.",
-    "trig_dist_max": "Proximity mode: maximum distance from the star in pixels. Trigger arms while within [min, max].",
     "npc_id": "Unique NPC id within this system. Used by dialogue and event effects to reference this specific NPC.",
     "npc_name": "NPC display name shown in hails and on the HUD.",
     "npc_template": "Template id from the NPC templates library. Applies a default ship + stat block. Click to open the picker.",
@@ -130,9 +128,6 @@ const _BUTTON_TIPS: Dictionary = {
     "add_poi": "Add a new point of interest inside the selected system. Drag on the inset map to position.",
     "remove_poi": "Remove the selected POI from this system.",
     "select_poi": "Click to select this POI; shows its fields below and highlights it on the inset map.",
-    "add_trigger": "Add a new enemy spawn trigger to this system.",
-    "remove_trigger": "Remove the selected trigger.",
-    "select_trigger": "Click to select this trigger; shows its conditions and spawn list below.",
     "add_npc": "Place a new NPC in this system. Drag the diamond on the inset map to position.",
     "remove_npc": "Remove the selected NPC from this system.",
     "select_npc": "Click to select this NPC; shows its fields, behavior, and patrol route below.",
@@ -199,7 +194,6 @@ func _capture_state() -> Dictionary:
         "systems": systems.duplicate(true),
         "selected_id": selected_id,
         "selected_poi": selected_poi,
-        "selected_trigger": selected_trigger,
         "selected_npc": selected_npc,
     }
 
@@ -210,7 +204,6 @@ func _apply_state(snap: Dictionary) -> void:
         systems = s_v
     selected_id = str(snap.get("selected_id", ""))
     selected_poi = int(snap.get("selected_poi", -1))
-    selected_trigger = int(snap.get("selected_trigger", -1))
     selected_npc = int(snap.get("selected_npc", -1))
 
 
@@ -218,7 +211,6 @@ func refresh():
     _load_systems()
     selected_id = ""
     selected_poi = -1
-    selected_trigger = -1
     selected_npc = -1
     template_picker_open = false
     sprite_picker_target = ""
@@ -545,6 +537,9 @@ func _draw_panel(font: Font):
     y = _draw_field("name", "Name", str(sys.get("name", "")), x, y, font)
     y = _draw_field("star_class", "Class", str(sys.get("star_class", "")), x, y, font)
     y = _draw_field("faction", "Faction", str(sys.get("faction", "")), x, y, font)
+    var _sys_faction := str(sys.get("faction", "")).strip_edges()
+    if not _sys_faction.is_empty() and not _faction_id_exists(_sys_faction):
+        _draw_warning(field_rects.back().rect, font)
     y = _draw_field("threat_level", "Threat", str(sys.get("threat_level", 1)), x, y, font)
     y = _draw_field("description", "Desc", str(sys.get("description", "")), x, y, font)
     var _bg = sys.get("background_image", "")
@@ -634,6 +629,7 @@ func _draw_panel(font: Font):
         y = _draw_field("poi_anim_frames", "Anim Frames", str(int(poi.get("anim_frames", 1))), x, y, font)
         y = _draw_field("poi_anim_fps", "Anim FPS", "%.2f" % float(poi.get("anim_fps", 0.0)), x, y, font)
         y = _draw_field("poi_gravity", "Gravity R", str(int(poi.get("gravity_radius", 0))), x, y, font)
+        y = _draw_field("poi_hidden", "Hidden", str(bool(poi.get("hidden", false))), x, y, font)
         if str(poi.get("type", "")) == "planet":
             var planet_data: Dictionary = _ensure_planet_data(poi)
             y += 4
@@ -642,77 +638,11 @@ func _draw_panel(font: Font):
             y = _draw_regions_list(x, y, font, planet_data)
 
 
-    y += 8
-    y = _draw_section("SPAWN TRIGGERS", x, y, font)
-    var triggers: Array = sys.get("spawn_triggers", [])
-    for ti in triggers.size():
-        var trig = triggers[ti]
-        var is_tsel = (ti == selected_trigger)
-        var trig_rect = Rect2(x + 4, y, PANEL_W - 36, 22)
-        draw_rect(trig_rect, Color(0.18, 0.14, 0.2) if is_tsel else Color(0.08, 0.08, 0.1))
-        if is_tsel:
-            draw_rect(trig_rect, Color(0.6, 0.4, 0.9), false, 1.0)
-        var tlabel = trig.get("id", "trigger_%d" % ti)
-        var tonce = " [once]" if trig.get("once", false) else ""
-        draw_string(font, Vector2(x + 10, y + 16), tlabel + tonce, HORIZONTAL_ALIGNMENT_LEFT, -1, 12, 
-            Color(0.85, 0.85, 0.9) if is_tsel else Color(0.55, 0.55, 0.6))
-
-        var spawns: Array = trig.get("spawns", [])
-        var summary = ""
-        for sp in spawns:
-            if summary != "":
-                summary += ", "
-            summary += "%dx %s" % [int(sp.get("count", 1)), sp.get("class", "?")]
-        draw_string(font, Vector2(x + 160, y + 16), summary, HORIZONTAL_ALIGNMENT_LEFT, int(PANEL_W - 200), 9, Color(0.4, 0.5, 0.6))
-        button_rects.append({"id": "select_trigger_%d" % ti, "rect": trig_rect})
-        y += 24
-
-
-    var trig_btn_y = y + 4
-    var tadd_r = Rect2(x + 4, trig_btn_y, 80, 22)
-    var trem_r = Rect2(x + 90, trig_btn_y, 80, 22)
-    draw_rect(tadd_r, Color(0.15, 0.15, 0.2))
-    draw_rect(tadd_r, Color(0.4, 0.3, 0.6), false, 1.0)
-    draw_string(font, Vector2(x + 14, trig_btn_y + 16), "+ Trigger", HORIZONTAL_ALIGNMENT_LEFT, -1, 11, Color(0.6, 0.5, 0.9))
-    button_rects.append({"id": "add_trigger", "rect": tadd_r})
-    draw_rect(trem_r, Color(0.2, 0.12, 0.15))
-    draw_rect(trem_r, Color(0.5, 0.3, 0.4), false, 1.0)
-    draw_string(font, Vector2(x + 100, trig_btn_y + 16), "- Trigger", HORIZONTAL_ALIGNMENT_LEFT, -1, 11, Color(0.85, 0.4, 0.5))
-    button_rects.append({"id": "remove_trigger", "rect": trem_r})
-    y = trig_btn_y + 28
-
-
-    if selected_trigger >= 0 and selected_trigger < triggers.size():
-        y += 4
-        y = _draw_section("TRIGGER DETAILS", x, y, font)
-        var trig = triggers[selected_trigger]
-        y = _draw_field("trig_id", "ID", str(trig.get("id", "")), x, y, font)
-        y = _draw_field("trig_on", "On", str(trig.get("on", "enter")), x, y, font)
-        y = _draw_field("trig_once", "Once", str(trig.get("once", false)), x, y, font)
-
-        var conds: Dictionary = trig.get("conditions", {})
-        var cond_str = ""
-        for ck in conds:
-            if cond_str != "":
-                cond_str += ", "
-            cond_str += "%s=%s" % [ck, str(conds[ck])]
-        if cond_str == "":
-            cond_str = "(none)"
-        y = _draw_field("trig_conditions", "Conditions", cond_str, x, y, font)
-
-        var spawns: Array = trig.get("spawns", [])
-        var spawn_str = ""
-        for sp in spawns:
-            if spawn_str != "":
-                spawn_str += ", "
-            spawn_str += "%d:%s" % [int(sp.get("count", 1)), sp.get("class", "fighter")]
-        if spawn_str == "":
-            spawn_str = "(none)"
-        y = _draw_field("trig_spawns", "Spawns", spawn_str, x, y, font)
-
-        var dist: Array = trig.get("dist", [400, 800])
-        y = _draw_field("trig_dist_min", "Dist Min", str(int(dist[0])), x, y, font)
-        y = _draw_field("trig_dist_max", "Dist Max", str(int(dist[1])), x, y, font)
+    # Per-system spawn triggers used to live here as a bespoke stub. They
+    # are now authored as ECA rules in the Triggers tab (event
+    # space_proximity_band / space_system_enter / space_station_destroyed
+    # + action spawn_space_enemies), so the runtime keeps a single
+    # condition/action vocabulary across the whole pack.
 
     y += 8
     y = _draw_section("PLACED NPCs", x, y, font)
@@ -755,6 +685,9 @@ func _draw_panel(font: Font):
         var hull_path: String = str(npc.get("static_hull_path", ""))
         y = _draw_field("npc_static_hull", "Static Hull", _sprite_field_display("npc_static_hull", hull_path), x, y, font)
         y = _draw_field("npc_faction", "Faction", str(npc.get("faction", "independent")), x, y, font)
+        var _npc_faction := str(npc.get("faction", "")).strip_edges()
+        if not _npc_faction.is_empty() and not _faction_id_exists(_npc_faction):
+            _draw_warning(field_rects.back().rect, font)
         y = _draw_field("npc_hostile", "Hostile", str(npc.get("hostile", false)), x, y, font)
         y = _draw_field("npc_type", "Type", str(npc.get("npc_type", "patrol")), x, y, font)
         y = _draw_field("npc_combat_style", "Combat Style", str(npc.get("combat_style", "standard")), x, y, font)
@@ -828,6 +761,18 @@ func _draw_field(key: String, label: String, value: String, x: float, y: float, 
 func _draw_warning(rect: Rect2, font: Font):
     draw_rect(rect, Color(0.9, 0.2, 0.1, 0.25), false, 1.0)
     draw_string(font, Vector2(rect.position.x + rect.size.x - 14, rect.position.y + 14), "!", HORIZONTAL_ALIGNMENT_LEFT, -1, 13, Color(0.95, 0.3, 0.2))
+
+
+# Lightweight existence check used by the inline faction-field warning
+# indicator. Loads factions.json on every paint — not free, but the
+# system_editor only paints when the panel is dirty, and packs have a
+# handful of factions at most. Swap for a cached map if it ever shows up
+# in profiles.
+func _faction_id_exists(fid: String) -> bool:
+    if fid.is_empty():
+        return false
+    var factions := FactionsIO.load_or_empty(_pack_id)
+    return factions.has(fid)
 
 
 
@@ -1028,7 +973,6 @@ func _handle_left_click(pos: Vector2):
         elif sid != "":
             selected_id = sid
             selected_poi = -1
-            selected_trigger = -1
             selected_npc = -1
             scroll_y = 0
 
@@ -1040,7 +984,6 @@ func _handle_left_click(pos: Vector2):
         else:
             selected_id = ""
             selected_poi = -1
-            selected_trigger = -1
             selected_npc = -1
         queue_redraw()
         accept_event()
@@ -1063,12 +1006,6 @@ func _handle_button(btn_id: String):
         _remove_poi()
     elif btn_id.begins_with("select_poi_"):
         selected_poi = int(btn_id.replace("select_poi_", ""))
-    elif btn_id == "add_trigger":
-        _add_trigger()
-    elif btn_id == "remove_trigger":
-        _remove_trigger()
-    elif btn_id.begins_with("select_trigger_"):
-        selected_trigger = int(btn_id.replace("select_trigger_", ""))
     elif btn_id == "add_npc":
         _add_npc()
     elif btn_id == "remove_npc":
@@ -1579,73 +1516,18 @@ func _on_field_submitted(text: String):
                 var pois: Array = sys.get("pois", [])
                 if selected_poi < pois.size():
                     pois[selected_poi]["gravity_radius"] = maxi(int(text), 0)
+        "poi_hidden":
+            if selected_poi >= 0:
+                var pois: Array = sys.get("pois", [])
+                if selected_poi < pois.size():
+                    var trimmed := text.strip_edges().to_lower()
+                    pois[selected_poi]["hidden"] = trimmed == "true" or trimmed == "1" or trimmed == "yes"
         "planet_pack":
             if selected_poi >= 0:
                 var pois: Array = sys.get("pois", [])
                 if selected_poi < pois.size():
                     var planet_data: Dictionary = _ensure_planet_data(pois[selected_poi])
                     planet_data["pack_id"] = text.strip_edges()
-        "trig_id":
-            if selected_trigger >= 0:
-                var trigs: Array = sys.get("spawn_triggers", [])
-                if selected_trigger < trigs.size():
-                    trigs[selected_trigger]["id"] = text
-        "trig_on":
-            if selected_trigger >= 0:
-                var trigs: Array = sys.get("spawn_triggers", [])
-                if selected_trigger < trigs.size():
-                    trigs[selected_trigger]["on"] = text
-        "trig_once":
-            if selected_trigger >= 0:
-                var trigs: Array = sys.get("spawn_triggers", [])
-                if selected_trigger < trigs.size():
-                    trigs[selected_trigger]["once"] = (text.to_lower() == "true")
-        "trig_conditions":
-            if selected_trigger >= 0:
-                var trigs: Array = sys.get("spawn_triggers", [])
-                if selected_trigger < trigs.size():
-
-                    var conds: Dictionary = {}
-                    if text.strip_edges() != "" and text.strip_edges() != "(none)":
-                        var parts = text.split(",")
-                        for p in parts:
-                            var kv = p.strip_edges().split("=")
-                            if kv.size() == 2:
-                                var v = kv[1].strip_edges()
-                                if v == "true":
-                                    conds[kv[0].strip_edges()] = true
-                                elif v == "false":
-                                    conds[kv[0].strip_edges()] = false
-                                else:
-                                    conds[kv[0].strip_edges()] = v
-                    trigs[selected_trigger]["conditions"] = conds
-        "trig_spawns":
-            if selected_trigger >= 0:
-                var trigs: Array = sys.get("spawn_triggers", [])
-                if selected_trigger < trigs.size():
-
-                    var spawns: Array = []
-                    if text.strip_edges() != "" and text.strip_edges() != "(none)":
-                        var parts = text.split(",")
-                        for p in parts:
-                            var cc = p.strip_edges().split(":")
-                            if cc.size() == 2:
-                                spawns.append({"count": int(cc[0].strip_edges()), "class": cc[1].strip_edges()})
-                    trigs[selected_trigger]["spawns"] = spawns
-        "trig_dist_min":
-            if selected_trigger >= 0:
-                var trigs: Array = sys.get("spawn_triggers", [])
-                if selected_trigger < trigs.size():
-                    var dist: Array = trigs[selected_trigger].get("dist", [400, 800])
-                    dist[0] = maxf(float(text), 50)
-                    trigs[selected_trigger]["dist"] = dist
-        "trig_dist_max":
-            if selected_trigger >= 0:
-                var trigs: Array = sys.get("spawn_triggers", [])
-                if selected_trigger < trigs.size():
-                    var dist: Array = trigs[selected_trigger].get("dist", [400, 800])
-                    dist[1] = maxf(float(text), 100)
-                    trigs[selected_trigger]["dist"] = dist
         _:
             if key.begins_with("npc_"):
                 _apply_npc_field(sys, key, text)
@@ -1681,12 +1563,10 @@ func _add_system():
         "faction": "independent",
         "connections": [],
         "pois": [],
-        "spawn_triggers": [],
         "placed_npcs": []
     }
     selected_id = sid
     selected_poi = -1
-    selected_trigger = -1
     _set_status("Added system: " + sid)
     if _undo != null:
         _undo.commit("add system")
@@ -1749,38 +1629,6 @@ func _remove_poi():
         selected_poi = mini(selected_poi, pois.size() - 1)
         if _undo != null:
             _undo.commit("remove poi")
-
-func _add_trigger():
-    if selected_id == "" or not systems.has(selected_id):
-        return
-    if _undo != null:
-        _undo.begin()
-    var trigs: Array = systems[selected_id].get("spawn_triggers", [])
-    var tid = "%s_trigger_%d" % [selected_id, trigs.size() + 1]
-    trigs.append({
-        "id": tid,
-        "on": "enter",
-        "conditions": {},
-        "spawns": [{"class": "fighter", "count": 2}],
-        "dist": [400, 800],
-        "once": false
-    })
-    systems[selected_id]["spawn_triggers"] = trigs
-    selected_trigger = trigs.size() - 1
-    if _undo != null:
-        _undo.commit("add trigger")
-
-func _remove_trigger():
-    if selected_id == "" or selected_trigger < 0:
-        return
-    var trigs: Array = systems[selected_id].get("spawn_triggers", [])
-    if selected_trigger < trigs.size():
-        if _undo != null:
-            _undo.begin()
-        trigs.remove_at(selected_trigger)
-        selected_trigger = mini(selected_trigger, trigs.size() - 1)
-        if _undo != null:
-            _undo.commit("remove trigger")
 
 func _save_systems():
     DataManager.systems = systems.duplicate(true)

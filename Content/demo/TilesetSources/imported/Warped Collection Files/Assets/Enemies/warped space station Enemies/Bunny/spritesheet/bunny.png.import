@@ -3,15 +3,11 @@
 importer="texture"
 type="CompressedTexture2D"
 uid="uid://cfkntqkt2spnm"
-path="res://.godot/imported/bunny.png-488f4b707fb769bf7a3264cccb8b9da0.ctex"
-metadata={
-"vram_texture": false
-}
+valid=false
 
 [deps]
 
 source_file="res://Content/demo/TilesetSources/imported/Warped Collection Files/Assets/Enemies/warped space station Enemies/Bunny/spritesheet/bunny.png"
-dest_files=["res://.godot/imported/bunny.png-488f4b707fb769bf7a3264cccb8b9da0.ctex"]
 
 [params]
 

@@ -2,16 +2,12 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://d0khewap80e35"
-path="res://.godot/imported/hp6.png-0a7d9f00976884a3d9a91de2f20e1d6d.ctex"
-metadata={
-"vram_texture": false
-}
+uid="uid://bcmtod6fdpphe"
+valid=false
 
 [deps]
 
 source_file="res://Content/demo/TilesetSources/imported/Mountain-platformer-pixel-art-tileset/PNG/items/Health/hp6.png"
-dest_files=["res://.godot/imported/hp6.png-0a7d9f00976884a3d9a91de2f20e1d6d.ctex"]
 
 [params]
 

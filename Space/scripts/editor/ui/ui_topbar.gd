@@ -1,7 +1,7 @@
 extends Control
 
 const UIPanels = preload("res://Space/scripts/ui/ui_panels.gd")
-const UITypes = preload("res://Space/scripts/editor/ui/ui_types.gd")
+const UITypes = preload("res://Space/scripts/shared/ui/ui_types.gd")
 
 var editor: Node = null
 

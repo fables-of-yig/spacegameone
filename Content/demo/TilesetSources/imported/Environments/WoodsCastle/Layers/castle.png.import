@@ -3,15 +3,11 @@
 importer="texture"
 type="CompressedTexture2D"
 uid="uid://cy578y3uyw2yc"
-path="res://.godot/imported/castle.png-7f885b773b5219ed9d280f23a38da051.ctex"
-metadata={
-"vram_texture": false
-}
+valid=false
 
 [deps]
 
 source_file="res://Content/demo/TilesetSources/imported/Environments/WoodsCastle/Layers/castle.png"
-dest_files=["res://.godot/imported/castle.png-7f885b773b5219ed9d280f23a38da051.ctex"]
 
 [params]
 

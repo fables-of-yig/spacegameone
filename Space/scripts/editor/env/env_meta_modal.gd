@@ -8,8 +8,8 @@ signal submitted(meta: Dictionary)
 signal cancelled
 
 const UIPanels = preload("res://Space/scripts/ui/ui_panels.gd")
-const EnvIO = preload("res://Space/scripts/editor/env/env_io.gd")
-const PackAssetIndex = preload("res://Space/scripts/editor/pack_asset_index.gd")
+const EnvIO = preload("res://Space/scripts/shared/env/env_io.gd")
+const PackAssetIndex = preload("res://Space/scripts/shared/pack_asset_index.gd")
 
 const BOX_W: float = 860.0
 const BOX_H: float = 760.0

@@ -2,16 +2,12 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://ilsl2rtl5i1j"
-path="res://.godot/imported/Demonic_Parts.png-3a56a700fe4ae1c0dfbc7bcd44ec68f9.ctex"
-metadata={
-"vram_texture": false
-}
+uid="uid://cwpjaqsx4jfum"
+valid=false
 
 [deps]
 
 source_file="res://Content/demo/TilesetSources/imported/Inferno Village 2D Tileset/PNG/Environment/Demonic_Parts.png"
-dest_files=["res://.godot/imported/Demonic_Parts.png-3a56a700fe4ae1c0dfbc7bcd44ec68f9.ctex"]
 
 [params]
 

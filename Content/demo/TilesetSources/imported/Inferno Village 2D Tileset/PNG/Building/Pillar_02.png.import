@@ -2,16 +2,12 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://b5qm64o0epffy"
-path="res://.godot/imported/Pillar_02.png-a08be23ca2ba40dbf32c063fd757ce70.ctex"
-metadata={
-"vram_texture": false
-}
+uid="uid://cesufw4orduou"
+valid=false
 
 [deps]
 
 source_file="res://Content/demo/TilesetSources/imported/Inferno Village 2D Tileset/PNG/Building/Pillar_02.png"
-dest_files=["res://.godot/imported/Pillar_02.png-a08be23ca2ba40dbf32c063fd757ce70.ctex"]
 
 [params]
 

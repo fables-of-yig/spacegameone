@@ -1,0 +1,99 @@
+{
+	"systems": {
+		"start": {
+			"background_image": "",
+			"connections": [],
+			"description": "Campaign starting system.",
+			"faction": "independent",
+			"name": "Start System",
+			"placed_npcs": [],
+			"pois": [
+				{
+					"anim_fps": 0.0,
+					"anim_frames": 1,
+					"description": "Recipe-created landing route.",
+					"event_id": "",
+					"gravity_radius": 0,
+					"id": "recipe_landing",
+					"name": "Quest Landing",
+					"orbit_angle": 0,
+					"orbit_dist": 900,
+					"planet_data": {
+						"horizon_color": [
+							0.72,
+							0.58,
+							0.32
+						],
+						"name": "Quest Landing",
+						"pack_id": "quest_schema_smoke",
+						"patrol_count": [
+							0,
+							0
+						],
+						"planet_key": "recipe_landing",
+						"poi_id": "recipe_landing",
+						"regions": [
+							{
+								"id": "region_default",
+								"name": "Recipe Region",
+								"spawn_pos": [
+									80.0,
+									208.0
+								],
+								"spawn_room": "landing"
+							}
+						],
+						"roughness": 0.62,
+						"sky_color": [
+							0.35,
+							0.43,
+							0.62
+						],
+						"surface_pois": [],
+						"terrain_colors": [
+							[
+								0.18,
+								0.22,
+								0.26
+							],
+							[
+								0.25,
+								0.22,
+								0.17
+							],
+							[
+								0.09,
+								0.11,
+								0.14
+							]
+						],
+						"turret_count": [
+							0,
+							0
+						]
+					},
+					"sprite": "",
+					"type": "planet",
+					"visual_scale": 1.0
+				}
+			],
+			"position": [
+				500.0,
+				500.0
+			],
+			"spawn_triggers": [],
+			"star_anim_fps": 0.0,
+			"star_anim_frames": 1.0,
+			"star_class": "G",
+			"star_color": [
+				1.0,
+				0.96,
+				0.78
+			],
+			"star_gravity": 0.0,
+			"star_size": 60.0,
+			"star_sprite": "",
+			"threat_level": 1.0
+		}
+	}
+}

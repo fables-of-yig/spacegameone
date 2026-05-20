@@ -2,16 +2,12 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://c2mbvemk2p4o5"
-path="res://.godot/imported/Bitmask.png-632d2563c71d7dff57a2293b878e76d4.ctex"
-metadata={
-"vram_texture": false
-}
+uid="uid://b1fdbvxl6jiq1"
+valid=false
 
 [deps]
 
 source_file="res://Content/demo/TilesetSources/imported/NeonNightCityTileset/NeonNightCityTileset/Sprites/Tilesets/Bitmask.png"
-dest_files=["res://.godot/imported/Bitmask.png-632d2563c71d7dff57a2293b878e76d4.ctex"]
 
 [params]
 

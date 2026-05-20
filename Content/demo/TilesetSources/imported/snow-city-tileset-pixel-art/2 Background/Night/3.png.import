@@ -2,16 +2,12 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://6iksf5ldg3ah"
-path="res://.godot/imported/3.png-dc6e59f0907929f593919b534f199f56.ctex"
-metadata={
-"vram_texture": false
-}
+uid="uid://bk6kv8olvlbum"
+valid=false
 
 [deps]
 
 source_file="res://Content/demo/TilesetSources/imported/snow-city-tileset-pixel-art/2 Background/Night/3.png"
-dest_files=["res://.godot/imported/3.png-dc6e59f0907929f593919b534f199f56.ctex"]
 
 [params]
 

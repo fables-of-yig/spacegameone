@@ -2,16 +2,12 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://dqom3kb7w2v1"
-path="res://.godot/imported/Conditioner2.png-94d2281fa44e3ee8ef08092989f6c6cf.ctex"
-metadata={
-"vram_texture": false
-}
+uid="uid://c7y46oaeinwfo"
+valid=false
 
 [deps]
 
 source_file="res://Content/demo/TilesetSources/imported/ghetto-tileset-pixel-art/3 Objects/Conditioner2.png"
-dest_files=["res://.godot/imported/Conditioner2.png-94d2281fa44e3ee8ef08092989f6c6cf.ctex"]
 
 [params]
 

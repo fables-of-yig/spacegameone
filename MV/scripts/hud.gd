@@ -5,10 +5,10 @@ extends CanvasLayer
 # and PlayerInventory.
 
 const UIPanels := preload("res://Space/scripts/ui/ui_panels.gd")
-const UIIo = preload("res://Space/scripts/editor/ui/ui_io.gd")
-const QuestIO := preload("res://Space/scripts/editor/quest_io.gd")
+const UIIo = preload("res://Space/scripts/shared/ui/ui_io.gd")
 const AuthoredScreenRuntime = preload("res://Space/scripts/ui/authored_screen_runtime.gd")
 const HudDataSource = preload("res://Space/scripts/ui/hud_data_source.gd")
+const ToastDataSource = preload("res://Space/scripts/ui/toast_data_source.gd")
 const BAR_WIDTH: int = 80
 const BAR_HEIGHT: int = 8
 const MARGIN: int = 8
@@ -29,6 +29,16 @@ var boss_hp: int = 0
 var boss_max_hp: int = 0
 var show_boss_bar: bool = false
 var _using_custom_screen: bool = false
+
+# Toast stack — top-right vertical column populated by show_toast(). Newest
+# toast lands on top, fades in over 0.2s, holds for `duration`, fades out
+# over 0.5s, then queue_free's itself. Authored pack template (B-2) takes
+# precedence over the default Panel+Label card built here.
+var _toast_stack: VBoxContainer = null
+const TOAST_WIDTH: int = 240
+const TOAST_FADE_IN: float = 0.2
+const TOAST_FADE_OUT: float = 0.5
+const TOAST_DEFAULT_DURATION: float = 2.5
 
 
 func _ready() -> void:
@@ -295,6 +305,134 @@ func hide_boss() -> void:
 	show_boss_bar = false
 	boss_hp = 0
 	boss_max_hp = 0
+
+
+# ── Toast notifications ─────────────────────────────────────────────────
+
+# Spawn a transient notification card in the top-right toast stack.
+# message: the text to display.
+# duration: hold time in seconds before fade-out (defaults to 2.5).
+# style: one of "info" (default), "success", "warning", "error" — picks
+#        background + accent border on the default card. Ignored if the
+#        pack provides an authored "toast" screen (B-2).
+func show_toast(message: String, duration: float = TOAST_DEFAULT_DURATION, style: String = "info") -> void:
+	var trimmed := message.strip_edges()
+	if trimmed.is_empty():
+		return
+	_ensure_toast_stack()
+	var dur: float = duration if duration > 0.0 else TOAST_DEFAULT_DURATION
+	var style_id: String = style.strip_edges()
+	if style_id.is_empty():
+		style_id = "info"
+	var card: Control = _build_authored_toast(trimmed, style_id, dur)
+	if card == null:
+		card = _build_default_toast(trimmed, style_id)
+	_attach_toast(card, dur)
+
+
+func _ensure_toast_stack() -> void:
+	if _toast_stack != null and is_instance_valid(_toast_stack):
+		return
+	_toast_stack = VBoxContainer.new()
+	_toast_stack.name = "ToastStack"
+	_toast_stack.anchor_left = 1.0
+	_toast_stack.anchor_right = 1.0
+	_toast_stack.anchor_top = 0.0
+	_toast_stack.anchor_bottom = 0.0
+	_toast_stack.offset_left = -TOAST_WIDTH - 8.0
+	_toast_stack.offset_right = -8.0
+	_toast_stack.offset_top = 8.0
+	_toast_stack.offset_bottom = 8.0
+	_toast_stack.add_theme_constant_override("separation", 4)
+	_toast_stack.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	add_child(_toast_stack)
+
+
+func _build_default_toast(message: String, style: String) -> Control:
+	var card := PanelContainer.new()
+	card.custom_minimum_size = Vector2(TOAST_WIDTH, 0)
+	card.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	var stylebox := StyleBoxFlat.new()
+	stylebox.bg_color = _toast_bg_color(style)
+	stylebox.border_color = _toast_border_color(style)
+	stylebox.border_width_left = 3
+	stylebox.corner_radius_top_left = 3
+	stylebox.corner_radius_top_right = 3
+	stylebox.corner_radius_bottom_left = 3
+	stylebox.corner_radius_bottom_right = 3
+	stylebox.content_margin_left = 10
+	stylebox.content_margin_right = 8
+	stylebox.content_margin_top = 6
+	stylebox.content_margin_bottom = 6
+	card.add_theme_stylebox_override("panel", stylebox)
+	var lbl := Label.new()
+	lbl.text = message
+	lbl.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	lbl.add_theme_color_override("font_color", Color(0.98, 0.98, 1.0))
+	lbl.add_theme_font_size_override("font_size", UIPanels.font_size("hint_size"))
+	lbl.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	card.add_child(lbl)
+	return card
+
+
+func _toast_bg_color(style: String) -> Color:
+	match style:
+		"warning":
+			return Color(0.35, 0.25, 0.05, 0.92)
+		"success":
+			return Color(0.05, 0.32, 0.10, 0.92)
+		"error":
+			return Color(0.42, 0.06, 0.06, 0.92)
+		_:
+			return Color(0.08, 0.10, 0.18, 0.92)
+
+
+func _toast_border_color(style: String) -> Color:
+	match style:
+		"warning":
+			return Color(0.95, 0.78, 0.20)
+		"success":
+			return Color(0.30, 0.85, 0.40)
+		"error":
+			return Color(0.95, 0.32, 0.25)
+		_:
+			return Color(0.45, 0.65, 0.95)
+
+
+# Returns an AuthoredScreenRuntime hosting the pack's authored "toast"
+# screen, or null when the pack has not authored one. The runtime is
+# constructed per-toast so each card has its own data source frozen
+# around the message at fire time — switching messages on a live toast
+# is intentionally not supported.
+func _build_authored_toast(message: String, style: String, _duration: float) -> Control:
+	var pack_id := ""
+	if MvPackLoader.current_pack != null:
+		pack_id = str(MvPackLoader.current_pack.pack_id).strip_edges()
+	if pack_id.is_empty():
+		return null
+	if not UIIo.screen_exists(pack_id, "toast"):
+		return null
+	var data := UIIo.load_screen(pack_id, "toast")
+	if data.is_empty():
+		return null
+	var source := ToastDataSource.new(message, style, _find_player(), GameManager)
+	var renderer := Control.new()
+	renderer.custom_minimum_size = Vector2(TOAST_WIDTH, 0)
+	renderer.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	renderer.set_script(AuthoredScreenRuntime)
+	renderer.call("load_screen", "toast", data, source)
+	return renderer
+
+
+func _attach_toast(card: Control, duration: float) -> void:
+	_toast_stack.add_child(card)
+	_toast_stack.move_child(card, 0)
+	card.modulate.a = 0.0
+	var tween := create_tween()
+	tween.tween_property(card, "modulate:a", 1.0, TOAST_FADE_IN)
+	tween.tween_interval(maxf(duration, 0.2))
+	tween.tween_property(card, "modulate:a", 0.0, TOAST_FADE_OUT)
+	tween.tween_callback(Callable(card, "queue_free"))
 
 
 # ── Utility ─────────────────────────────────────────────────────────────

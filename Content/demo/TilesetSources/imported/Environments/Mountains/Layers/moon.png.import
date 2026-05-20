@@ -2,16 +2,12 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://1f7ry5wq5bwx"
-path="res://.godot/imported/moon.png-24313b52465041a6add0333870bb3c9b.ctex"
-metadata={
-"vram_texture": false
-}
+uid="uid://d27onhsr273o6"
+valid=false
 
 [deps]
 
 source_file="res://Content/demo/TilesetSources/imported/Environments/Mountains/Layers/moon.png"
-dest_files=["res://.godot/imported/moon.png-24313b52465041a6add0333870bb3c9b.ctex"]
 
 [params]
 

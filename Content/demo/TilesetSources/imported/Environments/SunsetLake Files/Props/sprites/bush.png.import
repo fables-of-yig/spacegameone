@@ -2,16 +2,12 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://c5oc2f4n7q706"
-path="res://.godot/imported/bush.png-aca3b5677876b3be155522587d915bf6.ctex"
-metadata={
-"vram_texture": false
-}
+uid="uid://bbg3bxr0syql8"
+valid=false
 
 [deps]
 
 source_file="res://Content/demo/TilesetSources/imported/Environments/SunsetLake Files/Props/sprites/bush.png"
-dest_files=["res://.godot/imported/bush.png-aca3b5677876b3be155522587d915bf6.ctex"]
 
 [params]
 

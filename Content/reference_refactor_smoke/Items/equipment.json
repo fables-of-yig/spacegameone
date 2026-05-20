@@ -1,0 +1,40 @@
+{
+	"equipment": [
+		{
+			"description": "Starter melee weapon wired to the default three-hit authored combo.",
+			"frame_height": 16.0,
+			"frame_index": 0.0,
+			"frame_width": 16.0,
+			"grants_abilities": [],
+			"id": "cadet_blade",
+			"name": "Cadet Blade",
+			"secondary_ammo_cost": 1.0,
+			"secondary_ammo_key": "",
+			"secondary_attack": "",
+			"slot": "RightHand",
+			"sprite_sheet": "equipment_sheet.png",
+			"stat_mods": {
+
+			},
+			"weapon": "combo_slash_1"
+		},
+		{
+			"description": "Reference smoke equipment.",
+			"frame_height": 16.0,
+			"frame_index": 0.0,
+			"frame_width": 16.0,
+			"granted_ability": "new_ability",
+			"grants_abilities": [
+				"new_ability"
+			],
+			"id": "refactor_equipment",
+			"name": "Refactor Equipment",
+			"slot": "RightHand",
+			"sprite_sheet": "equipment_sheet.png",
+			"stat_mods": {
+
+			},
+			"weapon": "new_attack"
+		}
+	]
+}

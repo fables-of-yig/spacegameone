@@ -3,15 +3,11 @@
 importer="texture"
 type="CompressedTexture2D"
 uid="uid://b5v8qevwhpus0"
-path="res://.godot/imported/shoot3.png-0a591a62b371dabc6da883f3e6ce839e.ctex"
-metadata={
-"vram_texture": false
-}
+valid=false
 
 [deps]
 
 source_file="res://Content/demo/TilesetSources/imported/Warped Collection Files/Assets/Enemies/City 2 Enemies/Sprites/egg turret/Shoot/shoot3.png"
-dest_files=["res://.godot/imported/shoot3.png-0a591a62b371dabc6da883f3e6ce839e.ctex"]
 
 [params]
 

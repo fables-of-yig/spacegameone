@@ -1,0 +1,24 @@
+{
+  "base": {
+    "con": 4,
+    "exp": 0,
+    "exp_to_next": 100,
+    "heart_max": 5,
+    "hp_max": 50,
+    "int": 3,
+    "lck": 4,
+    "level": 1,
+    "mp_max": 10,
+    "str": 5
+  },
+  "growth": {
+    "con_per_level": 1,
+    "exp_curve_multiplier": 1.5,
+    "heart_per_level": 1,
+    "hp_per_level": 4,
+    "int_per_level": 1,
+    "lck_per_level": 1,
+    "mp_per_level": 2,
+    "str_per_level": 1
+  }
+}

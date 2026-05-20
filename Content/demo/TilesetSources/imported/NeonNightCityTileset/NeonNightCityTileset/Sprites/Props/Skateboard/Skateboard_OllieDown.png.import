@@ -2,16 +2,12 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://bdtljdgkdgw8q"
-path="res://.godot/imported/Skateboard_OllieDown.png-59d027216ba7d4933e2353916ef64478.ctex"
-metadata={
-"vram_texture": false
-}
+uid="uid://be35ucwq315o6"
+valid=false
 
 [deps]
 
 source_file="res://Content/demo/TilesetSources/imported/NeonNightCityTileset/NeonNightCityTileset/Sprites/Props/Skateboard/Skateboard_OllieDown.png"
-dest_files=["res://.godot/imported/Skateboard_OllieDown.png-59d027216ba7d4933e2353916ef64478.ctex"]
 
 [params]
 

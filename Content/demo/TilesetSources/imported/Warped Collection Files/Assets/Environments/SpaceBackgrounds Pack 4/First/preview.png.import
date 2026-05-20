@@ -2,16 +2,12 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://tg121ru6a4th"
-path="res://.godot/imported/preview.png-e1062f9a105f826a4548949cfa39b30f.ctex"
-metadata={
-"vram_texture": false
-}
+uid="uid://t7lrd7on1n83"
+valid=false
 
 [deps]
 
 source_file="res://Content/demo/TilesetSources/imported/Warped Collection Files/Assets/Environments/SpaceBackgrounds Pack 4/First/preview.png"
-dest_files=["res://.godot/imported/preview.png-e1062f9a105f826a4548949cfa39b30f.ctex"]
 
 [params]
 

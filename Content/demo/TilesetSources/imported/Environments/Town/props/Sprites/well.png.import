@@ -2,16 +2,12 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://dvasp3kj3ook7"
-path="res://.godot/imported/well.png-d55d1f9c98680ace86893935089fb7d4.ctex"
-metadata={
-"vram_texture": false
-}
+uid="uid://dgjevs8qs2c5e"
+valid=false
 
 [deps]
 
 source_file="res://Content/demo/TilesetSources/imported/Environments/Town/props/Sprites/well.png"
-dest_files=["res://.godot/imported/well.png-d55d1f9c98680ace86893935089fb7d4.ctex"]
 
 [params]
 

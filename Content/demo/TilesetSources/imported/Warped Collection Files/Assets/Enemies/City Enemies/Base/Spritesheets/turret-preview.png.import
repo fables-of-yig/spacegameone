@@ -2,16 +2,12 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://c7g7qtoxp7d4r"
-path="res://.godot/imported/turret-preview.png-829b3d1e01758945fb3624960b05f4d1.ctex"
-metadata={
-"vram_texture": false
-}
+uid="uid://d1nft1ym63ltw"
+valid=false
 
 [deps]
 
 source_file="res://Content/demo/TilesetSources/imported/Warped Collection Files/Assets/Enemies/City Enemies/Base/Spritesheets/turret-preview.png"
-dest_files=["res://.godot/imported/turret-preview.png-829b3d1e01758945fb3624960b05f4d1.ctex"]
 
 [params]
 

@@ -1,7 +1,0 @@
-﻿{
-    "id":  "classic_demo",
-    "name":  "Classic Demo",
-    "description":  "Current shipped demo player sprite baseline.",
-    "frames":  "player_frames.json",
-    "poses":  "player_poses.json"
-}

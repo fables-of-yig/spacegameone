@@ -2,16 +2,12 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://dmdsdg8vo3fum"
-path="res://.godot/imported/player-RunningAimDiagonal.png-9e2713d531742015932995c54685ebd8.ctex"
-metadata={
-"vram_texture": false
-}
+uid="uid://cxjr64de6eeai"
+valid=false
 
 [deps]
 
 source_file="res://Content/demo/TilesetSources/imported/Warped Collection Files/Assets/Playable Characters/Caves Hunter/Spritesheets/player-RunningAimDiagonal.png"
-dest_files=["res://.godot/imported/player-RunningAimDiagonal.png-9e2713d531742015932995c54685ebd8.ctex"]
 
 [params]
 

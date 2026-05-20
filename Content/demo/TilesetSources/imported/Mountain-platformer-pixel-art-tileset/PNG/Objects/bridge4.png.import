@@ -3,15 +3,11 @@
 importer="texture"
 type="CompressedTexture2D"
 uid="uid://i17j7781d27v"
-path="res://.godot/imported/bridge4.png-cffabd022fcf79331c6bc2c2bbf9f83d.ctex"
-metadata={
-"vram_texture": false
-}
+valid=false
 
 [deps]
 
 source_file="res://Content/demo/TilesetSources/imported/Mountain-platformer-pixel-art-tileset/PNG/Objects/bridge4.png"
-dest_files=["res://.godot/imported/bridge4.png-cffabd022fcf79331c6bc2c2bbf9f83d.ctex"]
 
 [params]
 

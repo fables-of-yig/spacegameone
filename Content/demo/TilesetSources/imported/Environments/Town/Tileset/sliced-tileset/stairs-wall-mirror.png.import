@@ -2,16 +2,12 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://buiwqqlk5skwm"
-path="res://.godot/imported/stairs-wall-mirror.png-06efab23ccf31218fc71ce19106b2240.ctex"
-metadata={
-"vram_texture": false
-}
+uid="uid://cmkjtahsl7eib"
+valid=false
 
 [deps]
 
 source_file="res://Content/demo/TilesetSources/imported/Environments/Town/Tileset/sliced-tileset/stairs-wall-mirror.png"
-dest_files=["res://.godot/imported/stairs-wall-mirror.png-06efab23ccf31218fc71ce19106b2240.ctex"]
 
 [params]
 

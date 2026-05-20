@@ -2,16 +2,12 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://cbuvvofbmpwn8"
-path="res://.godot/imported/spritesheet.png-002c555f148f779792c1607223e7e040.ctex"
-metadata={
-"vram_texture": false
-}
+uid="uid://6hvcpjnofh32"
+valid=false
 
 [deps]
 
 source_file="res://Content/demo/TilesetSources/imported/Warped Collection Files/Assets/Environments/Sewers Environment/Layers/Front-water/spritesheet.png"
-dest_files=["res://.godot/imported/spritesheet.png-002c555f148f779792c1607223e7e040.ctex"]
 
 [params]
 

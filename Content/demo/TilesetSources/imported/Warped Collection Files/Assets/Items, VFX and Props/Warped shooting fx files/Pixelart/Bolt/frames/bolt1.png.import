@@ -3,15 +3,11 @@
 importer="texture"
 type="CompressedTexture2D"
 uid="uid://bpnhuax4fh5yx"
-path="res://.godot/imported/bolt1.png-c931fdf35185a194de27629e877f561c.ctex"
-metadata={
-"vram_texture": false
-}
+valid=false
 
 [deps]
 
 source_file="res://Content/demo/TilesetSources/imported/Warped Collection Files/Assets/Items, VFX and Props/Warped shooting fx files/Pixelart/Bolt/frames/bolt1.png"
-dest_files=["res://.godot/imported/bolt1.png-c931fdf35185a194de27629e877f561c.ctex"]
 
 [params]
 

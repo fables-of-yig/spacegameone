@@ -1,9 +1,0 @@
-﻿{
-    "poses":  {
-                  "hurt.png":  {
-                                   "fps":  10,
-                                   "loop_from":  0,
-                                   "frames":  1
-                               }
-              }
-}

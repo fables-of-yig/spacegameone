@@ -2,16 +2,12 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://dfq77ir8b0cnk"
-path="res://.godot/imported/monitor.png-b4ea9daa8d36f4491e3e45d47bed510b.ctex"
-metadata={
-"vram_texture": false
-}
+uid="uid://dcxclsq3rbyfi"
+valid=false
 
 [deps]
 
 source_file="res://Content/demo/TilesetSources/imported/Warped Collection Files/Assets/Environments/Storm-Night-files/png/props/monitor.png"
-dest_files=["res://.godot/imported/monitor.png-b4ea9daa8d36f4491e3e45d47bed510b.ctex"]
 
 [params]
 

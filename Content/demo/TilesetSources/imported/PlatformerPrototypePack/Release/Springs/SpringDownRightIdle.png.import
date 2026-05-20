@@ -2,16 +2,12 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://brgqbs6l1d2a0"
-path="res://.godot/imported/SpringDownRightIdle.png-fd69d23e14c0ca3896535b9feeb1f6e8.ctex"
-metadata={
-"vram_texture": false
-}
+uid="uid://bel6hcpy17kno"
+valid=false
 
 [deps]
 
 source_file="res://Content/demo/TilesetSources/imported/PlatformerPrototypePack/Release/Springs/SpringDownRightIdle.png"
-dest_files=["res://.godot/imported/SpringDownRightIdle.png-fd69d23e14c0ca3896535b9feeb1f6e8.ctex"]
 
 [params]
 

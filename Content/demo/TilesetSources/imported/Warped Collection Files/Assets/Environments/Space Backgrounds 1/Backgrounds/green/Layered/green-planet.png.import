@@ -2,16 +2,12 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://x24vmfp7l3sa"
-path="res://.godot/imported/green-planet.png-9118704c110390e457f813e02e3660e1.ctex"
-metadata={
-"vram_texture": false
-}
+uid="uid://bxmf3ktupfyge"
+valid=false
 
 [deps]
 
 source_file="res://Content/demo/TilesetSources/imported/Warped Collection Files/Assets/Environments/Space Backgrounds 1/Backgrounds/green/Layered/green-planet.png"
-dest_files=["res://.godot/imported/green-planet.png-9118704c110390e457f813e02e3660e1.ctex"]
 
 [params]
 

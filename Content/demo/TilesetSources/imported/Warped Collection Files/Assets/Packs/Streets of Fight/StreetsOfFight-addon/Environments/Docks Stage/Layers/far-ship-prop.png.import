@@ -3,15 +3,11 @@
 importer="texture"
 type="CompressedTexture2D"
 uid="uid://bhkqfo8uf0qvn"
-path="res://.godot/imported/far-ship-prop.png-ac340dabef571f1725c602ee458ab1df.ctex"
-metadata={
-"vram_texture": false
-}
+valid=false
 
 [deps]
 
 source_file="res://Content/demo/TilesetSources/imported/Warped Collection Files/Assets/Packs/Streets of Fight/StreetsOfFight-addon/Environments/Docks Stage/Layers/far-ship-prop.png"
-dest_files=["res://.godot/imported/far-ship-prop.png-ac340dabef571f1725c602ee458ab1df.ctex"]
 
 [params]
 

@@ -2,16 +2,12 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://bt8jn1dwumdqw"
-path="res://.godot/imported/Tile_91.png-f3ca6122317db2a6cd0f0b5391b852c4.ctex"
-metadata={
-"vram_texture": false
-}
+uid="uid://lci6wmy1es3e"
+valid=false
 
 [deps]
 
 source_file="res://Content/demo/TilesetSources/imported/residential-area-tileset-pixel-art/1 Tiles/Tile_91.png"
-dest_files=["res://.godot/imported/Tile_91.png-f3ca6122317db2a6cd0f0b5391b852c4.ctex"]
 
 [params]
 

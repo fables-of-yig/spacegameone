@@ -2,16 +2,12 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://da4piwdq7v377"
-path="res://.godot/imported/Grass9.png-cb8b649e41df87d2befb6e07eb8b6e4f.ctex"
-metadata={
-"vram_texture": false
-}
+uid="uid://b8b2yatphdxcl"
+valid=false
 
 [deps]
 
 source_file="res://Content/demo/TilesetSources/imported/ghetto-tileset-pixel-art/3 Objects/Grass9.png"
-dest_files=["res://.godot/imported/Grass9.png-cb8b649e41df87d2befb6e07eb8b6e4f.ctex"]
 
 [params]
 

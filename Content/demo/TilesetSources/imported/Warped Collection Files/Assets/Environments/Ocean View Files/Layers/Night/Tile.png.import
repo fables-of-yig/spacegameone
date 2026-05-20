@@ -2,16 +2,12 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://bol1lrkc24d1c"
-path="res://.godot/imported/Tile.png-60f8699222d355c879ab7fbe66c44285.ctex"
-metadata={
-"vram_texture": false
-}
+uid="uid://b8dtaqksesjju"
+valid=false
 
 [deps]
 
 source_file="res://Content/demo/TilesetSources/imported/Warped Collection Files/Assets/Environments/Ocean View Files/Layers/Night/Tile.png"
-dest_files=["res://.godot/imported/Tile.png-60f8699222d355c879ab7fbe66c44285.ctex"]
 
 [params]
 

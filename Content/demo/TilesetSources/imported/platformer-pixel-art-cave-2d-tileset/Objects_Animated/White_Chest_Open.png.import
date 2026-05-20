@@ -2,16 +2,12 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://dewgu3i2gva3r"
-path="res://.godot/imported/White_Chest_Open.png-e2662982305687b3f699ad34f718a1b1.ctex"
-metadata={
-"vram_texture": false
-}
+uid="uid://cknvk1c7lv85j"
+valid=false
 
 [deps]
 
 source_file="res://Content/demo/TilesetSources/imported/platformer-pixel-art-cave-2d-tileset/Objects_Animated/White_Chest_Open.png"
-dest_files=["res://.godot/imported/White_Chest_Open.png-e2662982305687b3f699ad34f718a1b1.ctex"]
 
 [params]
 

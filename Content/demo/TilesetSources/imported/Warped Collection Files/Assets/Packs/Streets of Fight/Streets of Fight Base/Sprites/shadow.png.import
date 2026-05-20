@@ -2,16 +2,12 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://bqlytfhhqx328"
-path="res://.godot/imported/shadow.png-ea7bc3a717e5b89433a1559ec8b4c5b2.ctex"
-metadata={
-"vram_texture": false
-}
+uid="uid://buf5wscuw3u8a"
+valid=false
 
 [deps]
 
 source_file="res://Content/demo/TilesetSources/imported/Warped Collection Files/Assets/Packs/Streets of Fight/Streets of Fight Base/Sprites/shadow.png"
-dest_files=["res://.godot/imported/shadow.png-ea7bc3a717e5b89433a1559ec8b4c5b2.ctex"]
 
 [params]
 

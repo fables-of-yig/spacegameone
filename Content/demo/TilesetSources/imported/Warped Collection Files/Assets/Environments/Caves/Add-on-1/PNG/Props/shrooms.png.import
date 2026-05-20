@@ -2,16 +2,12 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://bves4f3hmvbwq"
-path="res://.godot/imported/shrooms.png-2b6aed112a6f2acff96a35c973df8e32.ctex"
-metadata={
-"vram_texture": false
-}
+uid="uid://b4ffhep5ut8f4"
+valid=false
 
 [deps]
 
 source_file="res://Content/demo/TilesetSources/imported/Warped Collection Files/Assets/Environments/Caves/Add-on-1/PNG/Props/shrooms.png"
-dest_files=["res://.godot/imported/shrooms.png-2b6aed112a6f2acff96a35c973df8e32.ctex"]
 
 [params]
 

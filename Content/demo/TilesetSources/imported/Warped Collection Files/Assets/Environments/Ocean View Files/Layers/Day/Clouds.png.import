@@ -2,16 +2,12 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://hix12m5blct6"
-path="res://.godot/imported/Clouds.png-84114f6aaa4e14a3ed19dc528c329a8e.ctex"
-metadata={
-"vram_texture": false
-}
+uid="uid://cr2j6kn5224qa"
+valid=false
 
 [deps]
 
 source_file="res://Content/demo/TilesetSources/imported/Warped Collection Files/Assets/Environments/Ocean View Files/Layers/Day/Clouds.png"
-dest_files=["res://.godot/imported/Clouds.png-84114f6aaa4e14a3ed19dc528c329a8e.ctex"]
 
 [params]
 

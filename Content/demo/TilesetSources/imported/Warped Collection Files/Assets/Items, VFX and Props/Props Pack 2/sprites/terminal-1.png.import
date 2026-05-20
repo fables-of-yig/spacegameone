@@ -3,15 +3,11 @@
 importer="texture"
 type="CompressedTexture2D"
 uid="uid://dqayb1h4yfi5w"
-path="res://.godot/imported/terminal-1.png-a9bf0b7e2be7241dbb8656ca6222a841.ctex"
-metadata={
-"vram_texture": false
-}
+valid=false
 
 [deps]
 
 source_file="res://Content/demo/TilesetSources/imported/Warped Collection Files/Assets/Items, VFX and Props/Props Pack 2/sprites/terminal-1.png"
-dest_files=["res://.godot/imported/terminal-1.png-a9bf0b7e2be7241dbb8656ca6222a841.ctex"]
 
 [params]
 

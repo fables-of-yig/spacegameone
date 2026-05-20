@@ -2,16 +2,12 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://uknosf0mphtr"
-path="res://.godot/imported/middle.png-613cc34b899d017b30247432560bae83.ctex"
-metadata={
-"vram_texture": false
-}
+uid="uid://8eam1v6bcpjj"
+valid=false
 
 [deps]
 
 source_file="res://Content/demo/TilesetSources/imported/Environments/Old Forest/v2/layers/middle.png"
-dest_files=["res://.godot/imported/middle.png-613cc34b899d017b30247432560bae83.ctex"]
 
 [params]
 

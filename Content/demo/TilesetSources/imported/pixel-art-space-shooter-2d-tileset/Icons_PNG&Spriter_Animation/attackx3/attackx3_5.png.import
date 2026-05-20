@@ -2,16 +2,12 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://1qh73ktewc6p"
-path="res://.godot/imported/attackx3_5.png-36d15dcf322adaeb0d8516c3ccf1ffcb.ctex"
-metadata={
-"vram_texture": false
-}
+uid="uid://bcupgre4ji6wq"
+valid=false
 
 [deps]
 
 source_file="res://Content/demo/TilesetSources/imported/pixel-art-space-shooter-2d-tileset/Icons_PNG&Spriter_Animation/attackx3/attackx3_5.png"
-dest_files=["res://.godot/imported/attackx3_5.png-36d15dcf322adaeb0d8516c3ccf1ffcb.ctex"]
 
 [params]
 

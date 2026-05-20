@@ -2,16 +2,12 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://bampiauaxi5p"
-path="res://.godot/imported/preview-chars.png-e4ba48a5233fd797e5a2000a5d55ff6f.ctex"
-metadata={
-"vram_texture": false
-}
+uid="uid://bsvapvbi3rr1f"
+valid=false
 
 [deps]
 
 source_file="res://Content/demo/TilesetSources/imported/Warped Collection Files/Assets/Environments/Quiet Hill environment/preview-chars.png"
-dest_files=["res://.godot/imported/preview-chars.png-e4ba48a5233fd797e5a2000a5d55ff6f.ctex"]
 
 [params]
 

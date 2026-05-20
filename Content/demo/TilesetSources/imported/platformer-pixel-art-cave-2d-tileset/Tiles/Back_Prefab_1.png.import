@@ -2,16 +2,12 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://dupn1a7mb6gg7"
-path="res://.godot/imported/Back_Prefab_1.png-a7d0bf58820c4accce8768f971489aa9.ctex"
-metadata={
-"vram_texture": false
-}
+uid="uid://be7i2b1lnd2mo"
+valid=false
 
 [deps]
 
 source_file="res://Content/demo/TilesetSources/imported/platformer-pixel-art-cave-2d-tileset/Tiles/Back_Prefab_1.png"
-dest_files=["res://.godot/imported/Back_Prefab_1.png-a7d0bf58820c4accce8768f971489aa9.ctex"]
 
 [params]
 

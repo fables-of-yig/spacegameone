@@ -2,16 +2,12 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://w781xic64ku2"
-path="res://.godot/imported/water-anim-tank-purple2.png-16a1b9b6c9131c8ccede66965a8518f0.ctex"
-metadata={
-"vram_texture": false
-}
+uid="uid://ddrncspi3uo6y"
+valid=false
 
 [deps]
 
 source_file="res://Content/demo/TilesetSources/imported/Warped Collection Files/Assets/Environments/Megabot Environments/Bay area/anims/water-purple-frames/water-anim-tank-purple2.png"
-dest_files=["res://.godot/imported/water-anim-tank-purple2.png-16a1b9b6c9131c8ccede66965a8518f0.ctex"]
 
 [params]
 

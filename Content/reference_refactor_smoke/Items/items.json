@@ -1,0 +1,59 @@
+{
+	"items": [
+		{
+			"category": "currency",
+			"description": "Currency.",
+			"id": "coin",
+			"max_stack": 9999.0,
+			"name": "Coin",
+			"price": 1.0,
+			"use_amount": 0.0,
+			"use_arg": "",
+			"use_effect": ""
+		},
+		{
+			"category": "key",
+			"description": "Recipe-created gate key.",
+			"id": "key_renamed",
+			"max_stack": 1.0,
+			"name": "Key Silver",
+			"price": 25.0,
+			"use_amount": 0.0,
+			"use_arg": "",
+			"use_effect": ""
+		},
+		{
+			"category": "quest",
+			"description": "Recipe-created boss reward.",
+			"id": "boss_core",
+			"max_stack": 9.0,
+			"name": "Boss Core",
+			"price": 100.0,
+			"use_amount": 0.0,
+			"use_arg": "",
+			"use_effect": ""
+		},
+		{
+			"category": "upgrade",
+			"description": "Grants old ability.",
+			"id": "ability_ref_item",
+			"max_stack": 1.0,
+			"name": "Ability Ref Item",
+			"price": 0.0,
+			"use_amount": 1.0,
+			"use_arg": "new_ability",
+			"use_effect": "grant_ability"
+		},
+		{
+			"category": "weapon",
+			"description": "Selects old attack.",
+			"id": "attack_ref_item",
+			"max_stack": 1.0,
+			"name": "Attack Ref Item",
+			"price": 0.0,
+			"use_amount": 1.0,
+			"use_arg": "new_attack",
+			"use_effect": "set_weapon"
+		}
+	]
+}

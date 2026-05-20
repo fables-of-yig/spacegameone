@@ -3,15 +3,11 @@
 importer="texture"
 type="CompressedTexture2D"
 uid="uid://c6m5is8hmc5q0"
-path="res://.godot/imported/Preview.png-0289bf3e0a3738d42efa8a018faa4f18.ctex"
-metadata={
-"vram_texture": false
-}
+valid=false
 
 [deps]
 
 source_file="res://Content/demo/TilesetSources/imported/Environments/Sunset Forest/Preview.png"
-dest_files=["res://.godot/imported/Preview.png-0289bf3e0a3738d42efa8a018faa4f18.ctex"]
 
 [params]
 

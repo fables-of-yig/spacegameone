@@ -2,16 +2,12 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://c6i8u56a0qjw8"
-path="res://.godot/imported/Tiles.png-28a4c0b0df9d8a8e73cdf7ca71b06009.ctex"
-metadata={
-"vram_texture": false
-}
+uid="uid://c4xy67k32ujte"
+valid=false
 
 [deps]
 
 source_file="res://Content/demo/TilesetSources/imported/Legacy Classic VL.II - Medina/Madina/Social/Tiles.png"
-dest_files=["res://.godot/imported/Tiles.png-28a4c0b0df9d8a8e73cdf7ca71b06009.ctex"]
 
 [params]
 

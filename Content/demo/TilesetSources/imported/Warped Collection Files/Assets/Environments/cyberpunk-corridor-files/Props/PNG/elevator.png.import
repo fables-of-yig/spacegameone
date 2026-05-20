@@ -2,16 +2,12 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://l7iq4oauo0x2"
-path="res://.godot/imported/elevator.png-a4fd7833f07da0341f665cdb2669fbdb.ctex"
-metadata={
-"vram_texture": false
-}
+uid="uid://cfkpv60c2g0f0"
+valid=false
 
 [deps]
 
 source_file="res://Content/demo/TilesetSources/imported/Warped Collection Files/Assets/Environments/cyberpunk-corridor-files/Props/PNG/elevator.png"
-dest_files=["res://.godot/imported/elevator.png-a4fd7833f07da0341f665cdb2669fbdb.ctex"]
 
 [params]
 

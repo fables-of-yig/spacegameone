@@ -345,6 +345,7 @@ func _make_placeholder_sheet(sheet_id: String) -> Texture2D:
     for row in range(rows):
         for col in range(cols):
             var origin := Vector2i(col * cell_w, row * cell_h)
+            @warning_ignore("integer_division")
             var body := Rect2i(origin + Vector2i(maxi(1, cell_w / 4), maxi(1, cell_h / 6)), Vector2i(maxi(2, cell_w / 2), maxi(2, cell_h * 2 / 3)))
             img.fill_rect(body, fill)
             img.fill_rect(Rect2i(body.position, Vector2i(body.size.x, 1)), edge)
@@ -2220,7 +2221,7 @@ func _tick_authored_melee_attack() -> void:
         _authored_melee_attack.clear()
         _melee_input_locked = false
         return
-    var hit_frames: Array = _normalized_attack_hit_frames(attack)
+    var _hit_frames: Array = _normalized_attack_hit_frames(attack)
     var spawned: Dictionary = _authored_melee_attack.get("spawned_frames", {})
     var hit_targets: Dictionary = _authored_melee_attack.get("hit_targets", {})
     var min_frame: int = int(_authored_melee_attack.get("min_frame", 0))
@@ -2701,6 +2702,16 @@ func heal(amount: int) -> void:
     if amount <= 0:
         return
     hp = min(max_hp, hp + amount)
+
+
+# Grants the player invulnerability frames for `seconds`. The existing
+# _invuln_timer already gates damage in _check_spike_overlap and take_damage,
+# so this just raises that timer when the requested duration is longer than
+# what's already running.
+func set_invuln(seconds: float) -> void:
+    if seconds <= 0.0:
+        return
+    _invuln_timer = maxf(_invuln_timer, seconds)
 
 
 # ===== Spike hazard detection =====

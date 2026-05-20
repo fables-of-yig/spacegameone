@@ -3,15 +3,11 @@
 importer="texture"
 type="CompressedTexture2D"
 uid="uid://b13fh3x8rwwuu"
-path="res://.godot/imported/PressurePlatePress.png-16373a86b8e753fbffe242f018a20a9b.ctex"
-metadata={
-"vram_texture": false
-}
+valid=false
 
 [deps]
 
 source_file="res://Content/demo/TilesetSources/imported/PlatformerPrototypePack/Release/PressurePlate/PressurePlatePress.png"
-dest_files=["res://.godot/imported/PressurePlatePress.png-16373a86b8e753fbffe242f018a20a9b.ctex"]
 
 [params]
 

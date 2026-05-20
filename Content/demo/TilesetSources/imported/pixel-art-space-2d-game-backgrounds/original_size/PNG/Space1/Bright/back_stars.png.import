@@ -2,16 +2,12 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://cy6sh0kqase2q"
-path="res://.godot/imported/back_stars.png-1a41abaa763b6c920d85fa89cba3fa73.ctex"
-metadata={
-"vram_texture": false
-}
+uid="uid://y80n364286su"
+valid=false
 
 [deps]
 
 source_file="res://Content/demo/TilesetSources/imported/pixel-art-space-2d-game-backgrounds/original_size/PNG/Space1/Bright/back_stars.png"
-dest_files=["res://.godot/imported/back_stars.png-1a41abaa763b6c920d85fa89cba3fa73.ctex"]
 
 [params]
 

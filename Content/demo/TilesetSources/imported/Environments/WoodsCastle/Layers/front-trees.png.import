@@ -2,16 +2,12 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://7hpbauw7w2tv"
-path="res://.godot/imported/front-trees.png-8458cad66350dcc8d5db995ad9e88dba.ctex"
-metadata={
-"vram_texture": false
-}
+uid="uid://bmegeptsbce0k"
+valid=false
 
 [deps]
 
 source_file="res://Content/demo/TilesetSources/imported/Environments/WoodsCastle/Layers/front-trees.png"
-dest_files=["res://.godot/imported/front-trees.png-8458cad66350dcc8d5db995ad9e88dba.ctex"]
 
 [params]
 

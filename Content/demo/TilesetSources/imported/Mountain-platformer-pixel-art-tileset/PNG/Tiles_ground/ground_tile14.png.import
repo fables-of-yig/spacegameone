@@ -2,16 +2,12 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://dcg6xnxn1xcq7"
-path="res://.godot/imported/ground_tile14.png-ee5c2b12c26c2d9f8785a2714d97b9fe.ctex"
-metadata={
-"vram_texture": false
-}
+uid="uid://koht4trwnnau"
+valid=false
 
 [deps]
 
 source_file="res://Content/demo/TilesetSources/imported/Mountain-platformer-pixel-art-tileset/PNG/Tiles_ground/ground_tile14.png"
-dest_files=["res://.godot/imported/ground_tile14.png-ee5c2b12c26c2d9f8785a2714d97b9fe.ctex"]
 
 [params]
 

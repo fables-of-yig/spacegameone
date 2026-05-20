@@ -1,0 +1,76 @@
+{
+  "entities": [
+    {
+      "attack_damage": 0,
+      "behavior": "",
+      "category": "pickup",
+      "contact_cooldown": 0.8,
+      "contact_damage": 0,
+      "description": "",
+      "hp": 1,
+      "id": "pickup",
+      "item_drops": [],
+      "melee_attack_trigger_frame": -1,
+      "melee_range": 24,
+      "move_speed": 0,
+      "movement_mode": "ground",
+      "name": "Pickup",
+      "projectile_attack_trigger_frame": -1,
+      "projectile_damage": 0,
+      "projectile_range": 0,
+      "projectile_speed": 0,
+      "scene": "",
+      "sprite_set": ""
+    },
+    {
+      "attack_damage": 0,
+      "behavior": "",
+      "category": "logic",
+      "contact_cooldown": 0.8,
+      "contact_damage": 0,
+      "description": "",
+      "hp": 1,
+      "id": "trigger_volume",
+      "item_drops": [],
+      "melee_attack_trigger_frame": -1,
+      "melee_range": 24,
+      "move_speed": 0,
+      "movement_mode": "ground",
+      "name": "Trigger Volume",
+      "projectile_attack_trigger_frame": -1,
+      "projectile_damage": 0,
+      "projectile_range": 0,
+      "projectile_speed": 0,
+      "scene": "",
+      "sprite_set": ""
+    },
+    {
+      "attack_damage": 0,
+      "behavior": "",
+      "category": "boss",
+      "contact_cooldown": 0.8,
+      "contact_damage": 8,
+      "description": "",
+      "hp": 120,
+      "id": "golden_boss",
+      "item_drops": [
+        {
+          "chance": 1.0,
+          "count": 1,
+          "id": "boss_core"
+        }
+      ],
+      "melee_attack_trigger_frame": -1,
+      "melee_range": 24,
+      "move_speed": 30,
+      "movement_mode": "ground",
+      "name": "Golden Boss",
+      "projectile_attack_trigger_frame": -1,
+      "projectile_damage": 0,
+      "projectile_range": 0,
+      "projectile_speed": 0,
+      "scene": "",
+      "sprite_set": ""
+    }
+  ]
+}

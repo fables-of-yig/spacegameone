@@ -2,16 +2,12 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://ctf2mde0gh7br"
-path="res://.godot/imported/hanging-terminal.png-81174ed5bf8db39fdf9b7e9cff8d404a.ctex"
-metadata={
-"vram_texture": false
-}
+uid="uid://dp4e63pf2d00h"
+valid=false
 
 [deps]
 
 source_file="res://Content/demo/TilesetSources/imported/Warped Collection Files/Assets/Environments/cyberpunk-corridor-files/Props/PNG/hanging-terminal.png"
-dest_files=["res://.godot/imported/hanging-terminal.png-81174ed5bf8db39fdf9b7e9cff8d404a.ctex"]
 
 [params]
 

@@ -2,16 +2,12 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://dqcbxk2a17djs"
-path="res://.godot/imported/Planets.png-f9817bb8c58ae56a3ce59ad11122e475.ctex"
-metadata={
-"vram_texture": false
-}
+uid="uid://ief8oic3cacq"
+valid=false
 
 [deps]
 
 source_file="res://Content/demo/TilesetSources/imported/space-vertical-game-backgrounds/PNG/Space_BG_03/Layers/Planets.png"
-dest_files=["res://.godot/imported/Planets.png-f9817bb8c58ae56a3ce59ad11122e475.ctex"]
 
 [params]
 

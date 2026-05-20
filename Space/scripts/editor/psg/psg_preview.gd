@@ -246,7 +246,7 @@ func bake_strip_frames(frame_count: int) -> Array:
 	if _body == null or _viewport == null or frame_count <= 0:
 		return frames
 
-	var previous_update_mode: int = _viewport.render_target_update_mode
+	var previous_update_mode: SubViewport.UpdateMode = _viewport.render_target_update_mode
 	_viewport.render_target_update_mode = SubViewport.UPDATE_ALWAYS
 	set_override_time(true)
 

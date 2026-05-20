@@ -2,16 +2,12 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://cos10bat6rji7"
-path="res://.godot/imported/bg-trees-row.png-cbccf134c865defc876ecc7b34edfab4.ctex"
-metadata={
-"vram_texture": false
-}
+uid="uid://bbfvy2letbrdt"
+valid=false
 
 [deps]
 
 source_file="res://Content/demo/TilesetSources/imported/Environments/Mountains/Layers/bg-trees-row.png"
-dest_files=["res://.godot/imported/bg-trees-row.png-cbccf134c865defc876ecc7b34edfab4.ctex"]
 
 [params]
 

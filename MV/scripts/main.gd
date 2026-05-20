@@ -3,7 +3,7 @@ extends Node2D
 
 signal camera_focus_finished
 
-const RegIO = preload("res://Space/scripts/editor/reg/reg_io.gd")
+const RegIO = preload("res://Space/scripts/shared/reg/reg_io.gd")
 const HUD_SCRIPT = preload("res://MV/scripts/hud.gd")
 
 # Top-level game orchestrator for the MVMania planet layer. Ported from the
@@ -26,8 +26,22 @@ var _room_manager: MvRoomManager = null
 var _camera: Camera2D = null
 var _player: MvPlayer = null
 var _fade_rect: ColorRect = null
+var _flash_rect: ColorRect = null
+var _flash_tween: Tween = null
 var _trigger_debug_overlay: CanvasLayer = null
 var _hud: CanvasLayer = null
+
+# Screen-shake state — see camera_shake() for the trigger entry point.
+# _shake_intensity is the peak px offset at full strength; _shake_remaining
+# decays toward zero and scales intensity for a natural taper-off.
+# _shake_offset is the source of truth for the current frame's displacement;
+# _physics_process applies it to _camera.offset each tick so a position-
+# tweening pan and an active shake compose (pan owns position, shake owns
+# offset) instead of one clobbering the other.
+var _shake_intensity: float = 0.0
+var _shake_remaining: float = 0.0
+var _shake_duration: float = 0.0
+var _shake_offset: Vector2 = Vector2.ZERO
 
 # Runtime viewport — the C# code swapped this between game (480x270) and
 # editor (1280x720) sizes when the editor opened. Editor's deferred, so we
@@ -116,6 +130,7 @@ func _ready() -> void:
     # The fade is purely visual; let input pass straight through.
     _fade_rect.mouse_filter = Control.MOUSE_FILTER_IGNORE
     _layout_fade_rect()
+    _ensure_flash_overlay()
     if not get_viewport().size_changed.is_connected(_on_viewport_size_changed):
         get_viewport().size_changed.connect(_on_viewport_size_changed)
     _ensure_trigger_debug_overlay()
@@ -247,7 +262,13 @@ func _physics_process(_delta: float) -> void:
     # camera to the player every physics tick.
     if not MvGame.simulation_paused and not _camera_pan_active:
         _camera.position = _resolve_camera_focus_position()
-        _camera.offset = Vector2.ZERO
+
+    _tick_camera_shake(get_physics_process_delta_time())
+    # Apply the shake offset to the camera every tick so pan tweens
+    # (which animate position) and shake (which owns offset) compose.
+    # Pan-finished / focus-reset code no longer touches offset directly.
+    if _camera != null:
+        _camera.offset = _shake_offset
 
     # Initial room fade-in (black → clear over 30 frames).
     if _fade > 0.0 and _transition_phase == 0:
@@ -268,6 +289,67 @@ func _layout_fade_rect() -> void:
     if _fade_rect == null:
         return
     _fade_rect.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+    if _flash_rect != null:
+        _flash_rect.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+
+
+# Lazy-create a fullscreen ColorRect sibling of _fade_rect on the same
+# FadeLayer CanvasLayer. Used by screen_flash trigger action.
+func _ensure_flash_overlay() -> void:
+    if _flash_rect != null and is_instance_valid(_flash_rect):
+        return
+    var layer: Node = get_node_or_null("FadeLayer")
+    if layer == null:
+        return
+    _flash_rect = ColorRect.new()
+    _flash_rect.color = Color(0, 0, 0, 0)
+    _flash_rect.mouse_filter = Control.MOUSE_FILTER_IGNORE
+    _flash_rect.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+    layer.add_child(_flash_rect)
+
+
+# Triggered by the camera_shake action. Adds a decaying random offset to
+# the active camera so explosions/impacts feel weighty without touching
+# camera.position (which the follow code re-snaps every physics tick).
+func camera_shake(intensity: float, duration: float) -> void:
+    if _camera == null:
+        return
+    if duration <= 0.0 or intensity <= 0.0:
+        return
+    _shake_intensity = maxf(_shake_intensity, intensity)
+    _shake_remaining = maxf(_shake_remaining, duration)
+    _shake_duration = maxf(_shake_duration, duration)
+
+
+# Triggered by the screen_flash action. Sets _flash_rect to `color`, then
+# tweens its alpha to zero over `duration` seconds. A new flash interrupts
+# any in-flight tween so back-to-back flashes don't queue forever.
+func screen_flash(color: Color, duration: float) -> void:
+    _ensure_flash_overlay()
+    if _flash_rect == null:
+        return
+    if _flash_tween != null and _flash_tween.is_valid():
+        _flash_tween.kill()
+    _flash_rect.color = color
+    if duration <= 0.0:
+        _flash_rect.color = Color(color.r, color.g, color.b, 0.0)
+        return
+    _flash_tween = create_tween()
+    _flash_tween.tween_property(_flash_rect, "color:a", 0.0, duration)
+
+
+func _tick_camera_shake(delta: float) -> void:
+    if _shake_remaining <= 0.0:
+        return
+    _shake_remaining = maxf(0.0, _shake_remaining - delta)
+    var falloff: float = (_shake_remaining / _shake_duration) if _shake_duration > 0.0 else 0.0
+    var amt: float = _shake_intensity * falloff
+    if amt <= 0.0001:
+        _shake_offset = Vector2.ZERO
+        _shake_intensity = 0.0
+        _shake_duration = 0.0
+        return
+    _shake_offset = Vector2(randf_range(-amt, amt), randf_range(-amt, amt))
 
 
 func _ensure_trigger_debug_overlay() -> void:
@@ -498,7 +580,6 @@ func _set_camera_focus(mode: String, target_ref: String = "", pos: Vector2 = Vec
         duration = _camera.position.distance_to(target_pos) / speed
     if duration <= 0.0:
         _camera.position = target_pos
-        _camera.offset = Vector2.ZERO
         camera_focus_finished.emit()
         return
     _camera_pan_active = true
@@ -512,7 +593,6 @@ func _on_camera_pan_finished() -> void:
     _camera_pan_tween = null
     if _camera != null:
         _camera.position = _resolve_camera_focus_position()
-        _camera.offset = Vector2.ZERO
     camera_focus_finished.emit()
 
 
@@ -543,10 +623,21 @@ func load_room_by_addr(addr: String) -> void:
     _spawn_player_in_room()
 
 
+# Fires the region_exit trigger event for the active region (if any) and
+# hands off to PlanetaryInterface.begin_launch. Use this from anywhere
+# that previously called begin_launch directly so authors can react to
+# leaving a region without each call site re-implementing the event.
+func launch_to_space() -> void:
+    var region_id := _resolve_current_region_id()
+    if not region_id.is_empty():
+        MvTriggerEngine.fire_event("region_exit", {"region_id": region_id})
+    PlanetaryInterface.begin_launch(self)
+
+
 # Dev hotkey entry point for the SSB F9 force-launch: bounce out of the
 # planet without going through a door.
 func debug_force_launch_from_here() -> void:
-    PlanetaryInterface.begin_launch(self)
+    launch_to_space()
 
 
 # ===== Snapshot helpers (post-port rebuild target) =====
@@ -682,7 +773,6 @@ func _on_trigger_camera_unlock() -> void:
     _stop_camera_pan()
     if _camera != null:
         _camera.position = _resolve_camera_focus_position()
-        _camera.offset = Vector2.ZERO
     camera_focus_finished.emit()
 
 
@@ -938,7 +1028,7 @@ func _load_destination_room() -> bool:
     var tags: Array = door.get("tags", [])
     if bool(door.get("launch_to_space", false)) or tags.has("exit_to_space"):
         print("MvMain: launch_to_space door traversed — requesting launch")
-        PlanetaryInterface.begin_launch(self)
+        launch_to_space()
         return true
 
     var target_link := _pending_target_link if not _pending_target_link.is_empty() else _resolve_door_target_link(door)

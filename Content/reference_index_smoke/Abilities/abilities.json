@@ -1,0 +1,13 @@
+{
+  "abilities": [
+    {
+      "category": "movement",
+      "description": "Recipe-created gate ability.",
+      "id": "phase_dash",
+      "name": "Phase Dash",
+      "params": {
+
+      }
+    }
+  ]
+}

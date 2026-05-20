@@ -11,7 +11,7 @@ extends Control
 signal closed
 
 const UIPanels = preload("res://Space/scripts/ui/ui_panels.gd")
-const PackPaths = preload("res://Space/scripts/editor/pack_paths.gd")
+const PackPaths = preload("res://Space/scripts/shared/pack_paths.gd")
 
 var pack_id: String = ""
 var _manifest: Dictionary = {}

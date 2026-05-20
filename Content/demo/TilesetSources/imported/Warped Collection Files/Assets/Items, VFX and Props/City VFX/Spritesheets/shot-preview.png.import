@@ -2,16 +2,12 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://cg71l8wsgtc0t"
-path="res://.godot/imported/shot-preview.png-30a0b2cd3f64ea06793088300d53232c.ctex"
-metadata={
-"vram_texture": false
-}
+uid="uid://cunqp8g4ejle2"
+valid=false
 
 [deps]
 
 source_file="res://Content/demo/TilesetSources/imported/Warped Collection Files/Assets/Items, VFX and Props/City VFX/Spritesheets/shot-preview.png"
-dest_files=["res://.godot/imported/shot-preview.png-30a0b2cd3f64ea06793088300d53232c.ctex"]
 
 [params]
 
