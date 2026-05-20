@@ -31,6 +31,10 @@ func resolve_write(rel: String) -> String:
 func rooms_path() -> String:
 	return resolve_read("Rooms/rooms.json")
 
+
+func room_variants_path(region_id: String) -> String:
+	return resolve_read("Regions/%s/room_variants.json" % region_id)
+
 func slope_shapes_path() -> String:
 	return resolve_read("SlopeShapes.json")
 

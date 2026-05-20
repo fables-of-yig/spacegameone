@@ -67,7 +67,15 @@ var _collision_container: Node2D
 var _entities_container: Node2D
 var _tileset_mgr: MvTilesetManager
 var _pack: MvPackRef = null
+# _current_room_addr is the CANONICAL addr the rest of the game tracks —
+# what doors target, what the map screen records, what save snapshots
+# store. _loaded_room_addr is the actual key into _rooms whose data was
+# instantiated this frame. The two differ when a room_variants.json rule
+# fired and the player is standing inside an alternate. current_room()
+# returns the loaded data; current_room_addr() returns the canonical id
+# so external state stays stable across variant swaps.
 var _current_room_addr: String = ""
+var _loaded_room_addr: String = ""
 var _rooms: Dictionary = {}   # addr -> room info dict
 var _start_room: String = ""
 
@@ -1104,7 +1112,15 @@ func load_room(addr: String) -> void:
 
     _reset_active_crumbles(true)
 
-    var info: Dictionary = _rooms[addr]
+    # Variant resolution: if room_variants.json gates this canonical addr
+    # behind a planet/global flag and the flag matches, load the alternate
+    # room data instead. Falls back to canonical when no variants fire or
+    # when the resolved alternate is missing from _rooms.
+    var resolved_addr: String = resolve_room_variant(addr)
+    if not _rooms.has(resolved_addr):
+        push_warning("MvRoomManager: variant resolved '%s' -> '%s' which is missing — using canonical" % [addr, resolved_addr])
+        resolved_addr = addr
+    var info: Dictionary = _rooms[resolved_addr]
 
     # Free any existing TileMapLayer nodes from the previous room.
     if _tile_animator != null:
@@ -1179,13 +1195,15 @@ func load_room(addr: String) -> void:
     _tile_animator.load_animations(anim_pairs)
 
     _current_room_addr = addr
+    _loaded_room_addr = resolved_addr
     _build_collision(info)
     _spawn_entities(info)
     MvTriggerEngine.set_room_triggers(info.get("raw_triggers", []))
     MvMapScreen.mark_visited(addr)
 
-    print("[MvRoomManager] entered '%s' (%s) %dx%dpx, blocks %dx%d, tileset %d, tile_layers %d, slopes %d, doors %d, entities %d" % [
-        info["name"], addr, info["width_px"], info["height_px"],
+    var variant_suffix: String = "" if resolved_addr == addr else " [variant '%s']" % resolved_addr
+    print("[MvRoomManager] entered '%s' (%s)%s %dx%dpx, blocks %dx%d, tileset %d, tile_layers %d, slopes %d, doors %d, entities %d" % [
+        info["name"], addr, variant_suffix, info["width_px"], info["height_px"],
         info["width_blocks"], info["height_blocks"], info["tileset"],
         _tile_layers.size(),
         info["slopes"].size(), info["doors"].size(), info["entities"].size()
@@ -2367,11 +2385,25 @@ func _backdrop_axis_position(progress: float, slack: float, speed: float) -> flo
 
 
 func current_room() -> Dictionary:
-    return _rooms.get(_current_room_addr, {})
+    # Returns the actually-loaded room data — when a variant rule fired,
+    # this is the alternate's data, not the canonical's. External code
+    # that needs the stable identity should use current_room_addr().
+    var key: String = _loaded_room_addr if not _loaded_room_addr.is_empty() else _current_room_addr
+    return _rooms.get(key, {})
 
 
 func current_room_addr() -> String:
+    # Returns the CANONICAL addr regardless of which variant is loaded so
+    # doors, map state, and save snapshots stay stable across hot-swaps.
     return _current_room_addr
+
+
+# Internal accessor for callers that genuinely need the loaded key (e.g.
+# the live re-resolve subscriber in slice 3 comparing what was loaded vs.
+# what would resolve now). Kept off the public surface to discourage
+# accidental coupling to variant identity.
+func _current_loaded_room_addr() -> String:
+    return _loaded_room_addr if not _loaded_room_addr.is_empty() else _current_room_addr
 
 
 func has_room(addr: String) -> bool:
@@ -2421,6 +2453,92 @@ func resolve_room_addr(addr: String, from_room_addr: String = "") -> String:
         if name_match.is_empty():
             name_match = key
     return name_match
+
+
+# Variant resolution: takes a fully-qualified canonical addr like
+# "forest/town_square" and returns either the same addr (no variant fired)
+# or the qualified addr of an alternate (e.g. "forest/town_square_burned").
+#
+# Walks Regions/<region_id>/room_variants.json's rule list for the canonical
+# bare room id, evaluates each rule's `when` clause against the live
+# PlanetaryInterface flag state, and returns the first matching `use`.
+# Empty or missing variants file -> canonical unchanged.
+#
+# Resolution is recomputed on every load_room call so updated flag state
+# is honored on each room entry. Slice 3 adds live re-resolve while the
+# player is already inside the room.
+func resolve_room_variant(canonical_addr: String) -> String:
+    var parsed: Dictionary = RegIO.parse_room_addr(canonical_addr)
+    var region_id: String = str(parsed.get("region_id", "")).strip_edges()
+    var bare_room: String = str(parsed.get("room_addr", "")).strip_edges()
+    if region_id.is_empty() or bare_room.is_empty():
+        return canonical_addr
+    if _pack == null:
+        return canonical_addr
+
+    var variants_path: String = _pack.room_variants_path(region_id)
+    if not FileAccess.file_exists(variants_path):
+        return canonical_addr
+    var file := FileAccess.open(variants_path, FileAccess.READ)
+    if file == null:
+        return canonical_addr
+    var parsed_v: Variant = JSON.parse_string(file.get_as_text())
+    file.close()
+    if typeof(parsed_v) != TYPE_DICTIONARY:
+        return canonical_addr
+
+    var root: Dictionary = parsed_v
+    var variants_v: Variant = root.get("variants", {})
+    if typeof(variants_v) != TYPE_DICTIONARY:
+        return canonical_addr
+    var rules_v: Variant = (variants_v as Dictionary).get(bare_room, [])
+    if typeof(rules_v) != TYPE_ARRAY:
+        return canonical_addr
+
+    for rule_v in (rules_v as Array):
+        if typeof(rule_v) != TYPE_DICTIONARY:
+            continue
+        var rule: Dictionary = rule_v
+        if not _variant_when_matches(rule.get("when", null)):
+            continue
+        var use_room: String = str(rule.get("use", "")).strip_edges()
+        if use_room.is_empty():
+            continue
+        return RegIO.runtime_room_addr(region_id, use_room)
+
+    return canonical_addr
+
+
+# Evaluates a single variant `when` clause against PlanetaryInterface
+# flag state. Returns true iff the named flag (scope-qualified) currently
+# equals the authored `equals` value. `equals: null` matches an unset flag.
+# Bad/missing PlanetaryInterface returns false so the canonical wins.
+func _variant_when_matches(when_v: Variant) -> bool:
+    if typeof(when_v) != TYPE_DICTIONARY:
+        return false
+    var when_dict: Dictionary = when_v
+    var scope: String = str(when_dict.get("scope", "")).strip_edges().to_lower()
+    var flag_name: String = str(when_dict.get("flag", "")).strip_edges()
+    if flag_name.is_empty():
+        return false
+    if not when_dict.has("equals"):
+        return false
+    var pi: Node = get_node_or_null("/root/PlanetaryInterface")
+    if pi == null:
+        return false
+    var actual: Variant = null
+    if scope == "planet":
+        actual = pi.call("get_planet_flag", flag_name, null)
+    elif scope == "global":
+        actual = pi.call("get_global_flag", flag_name, null)
+    else:
+        return false
+    var expected: Variant = when_dict.get("equals", null)
+    if expected == null:
+        return actual == null
+    if actual == null:
+        return false
+    return typeof(actual) == typeof(expected) and actual == expected
 
 
 func start_room() -> String:
