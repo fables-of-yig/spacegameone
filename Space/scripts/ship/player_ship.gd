@@ -1,6 +1,15 @@
 extends "res://Space/scripts/ship/ship_base.gd"
 
 
+# Fired once per successful fire-event (regardless of how many weapons
+# the group has). Tactical HUD readouts and any other listeners connect
+# here to mirror a fire flash / heat tick.
+signal primary_fired
+signal secondary_fired
+signal special_fired
+# Emitted when the shield-supercharger parry activates from a scan press
+# (see _handle_scan). Not emitted on cooldown / when supercharger absent.
+signal parry_activated
 
 
 @export var max_speed: float = 310.0
@@ -874,6 +883,7 @@ func _handle_scan(delta: float):
                 parry_reflected_count = 0
                 parry_hp = parry_max_hp
                 AudioManager.play_sfx("shield_up", 0.8, 0.0)
+                parry_activated.emit()
                 _add_shake(2.0)
                 return
         elif GameManager.has_sensor() and not scan_pulse_active and scan_cooldown <= 0:
@@ -1195,6 +1205,8 @@ func _fire_primary():
         weapon_heat["energy"] = weapon_heat.get("energy", 0.0) + _heat_per_shot.get("energy", DEFAULT_HEAT_PER_SHOT)
         if weapon_heat["energy"] >= overheat_threshold:
             _overheat_blowout("energy")
+    if fired > 0:
+        primary_fired.emit()
 
 func _fire_spread():
     var shots: Array = []
@@ -1248,6 +1260,7 @@ func _fire_secondary_weapon():
             weapon_heat["lance"] = weapon_heat.get("lance", 0.0) + _heat_per_shot.get("lance", DEFAULT_HEAT_PER_SHOT) * 0.5
             if weapon_heat["lance"] >= overheat_threshold:
                 _overheat_blowout("lance")
+        secondary_fired.emit()
 
 func _fire_single_secondary(idx: int, w: Dictionary):
     var subtype = w.get("subtype", "energy")
@@ -1300,6 +1313,7 @@ func _fire_special_weapon():
     for i in group_indices:
         if special_cooldowns.get(i, 0.0) <= 0.0:
             _fire_single_special(i, special_weapons[i])
+            special_fired.emit()
             return
 
 func _fire_single_special(idx: int, w: Dictionary):

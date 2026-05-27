@@ -6,6 +6,21 @@ extends Node
 # `hud_color`/`hud_dim`/`hud_deep` are derived from a single hue so the
 # accent can be re-tinted by calling `apply_hue(degrees)`. State colors
 # (warn/danger/ok) stay fixed regardless of hue.
+#
+# Sprite tinting strategy
+# -----------------------
+# The design package ships SVGs where every accent element is in a
+# `.tint` class (baked at #5cf2ff for preview) and chassis art is in a
+# `.chassis` class. Three approaches:
+#   A) Pre-render variants (one SVG per hue)
+#   B) Runtime modulate (only safe on single-color sprites)
+#   C) Hue-shift shader on `.tint` pixels only
+#
+# Current usage only needs the reticle, which is solid accent — so B
+# is in effect (see tactical_hud.gd: `_reticle.modulate = hud_color`).
+# When/if the shield-glyph, cannon, or enemy-ship sprites get used in
+# the tactical HUD, switch to A or C; CanvasItem.modulate would also
+# tint the chassis art and break the look.
 
 signal hue_changed(hue_deg: float)
 

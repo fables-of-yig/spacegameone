@@ -13,6 +13,10 @@ signal dry_fire
 
 const FIRE_FLASH_SEC := 0.6
 const FLIGHT_SEC := 1.1
+# tokens.animations.tip_blink — torpedo nose light, 1.2s opacity loop.
+const TIP_BLINK_SEC := 1.2
+# tokens.animations.exhaust_flicker — 80ms while flying.
+const EXHAUST_FLICKER_SEC := 0.08
 
 @export var key_label: String = "3"
 @export var weapon_name: String = "Torpedoes"
@@ -61,6 +65,10 @@ func _process(delta: float) -> void:
         if _flight_timer <= 0.0:
             _flight_timer = 0.0
             exploded.emit()
+        dirty = true
+    # tip_blink + exhaust_flicker need continuous redraws while there
+    # are loaded torpedoes or a torpedo is in flight.
+    if ammo > 0 or _flight_timer > 0.0:
         dirty = true
     if dirty:
         queue_redraw()
@@ -161,6 +169,23 @@ func _draw_torpedo_pip(rect: Rect2, loaded: bool, flashing: bool) -> void:
         var flash := Color(1.0, 0.85, 0.45, flash_alpha)
         draw_colored_polygon(pts, flash)
 
+    if loaded:
+        _draw_tip_blink(pts)
+
+
+# tokens.animations.tip_blink — a small dot at the torpedo nose
+# (vertex 2 of the pip polygon, the right-pointing tip) that pulses
+# opacity 1.0 → 0.3 → 1.0 over 1.2s. Phase-staggered per pip in
+# `pts[2]` so the row doesn't blink in lockstep.
+func _draw_tip_blink(pts: PackedVector2Array) -> void:
+    var tip: Vector2 = pts[2]
+    var phase_offset := fmod(tip.x * 0.013, 1.0)  # de-sync neighboring pips
+    var t := fposmod(Time.get_ticks_msec() / 1000.0 + phase_offset * TIP_BLINK_SEC, TIP_BLINK_SEC) / TIP_BLINK_SEC
+    var pulse := lerpf(1.0, 0.3, sin(t * PI))
+    var col := Tokens.warn
+    col.a = clampf(pulse, 0.0, 1.0)
+    draw_circle(tip - Vector2(2.0, 0.0), 2.0, col)
+
 
 func _draw_flight_bar(x: float, y: float, w: float, h: float) -> void:
     draw_rect(Rect2(x, y, w, h), Tokens.ink, true)
@@ -169,6 +194,16 @@ func _draw_flight_bar(x: float, y: float, w: float, h: float) -> void:
     draw_rect(Rect2(x, y, w, h), border, false, 1.0)
     var t := 1.0 - clampf(_flight_timer / FLIGHT_SEC, 0.0, 1.0)
     var fill_w := w * t
+    # Base fill — warn-colored progress to impact.
     var col := Tokens.warn
     col.a = 0.9
     draw_rect(Rect2(x, y, fill_w, h), col, true)
+    # tokens.animations.exhaust_flicker — bright tail at the head of the
+    # progress fill that flickers opacity 0.4 → 1.0 every 80ms while the
+    # torpedo is in flight.
+    if fill_w > 4.0:
+        var flicker_t := fposmod(Time.get_ticks_msec() / 1000.0, EXHAUST_FLICKER_SEC) / EXHAUST_FLICKER_SEC
+        var alpha := lerpf(0.4, 1.0, sin(flicker_t * PI))
+        var exhaust := Color(1.0, 0.95, 0.7, clampf(alpha, 0.0, 1.0))
+        var exhaust_w := minf(8.0, fill_w)
+        draw_rect(Rect2(x + fill_w - exhaust_w, y, exhaust_w, h), exhaust, true)

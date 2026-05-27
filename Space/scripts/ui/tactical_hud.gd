@@ -43,6 +43,40 @@ func _ready() -> void:
     mouse_filter = Control.MOUSE_FILTER_IGNORE
     process_mode = PROCESS_MODE_ALWAYS
     _build_layout()
+    _connect_player_signals()
+
+
+# Hooks the four player fire events to the matching readout. Signals
+# are connected in `_ready` once and stay live for the lifetime of the
+# HUD — even while the legacy HUD is visible, so readout state stays
+# accurate across F10 toggles.
+func _connect_player_signals() -> void:
+    if not is_instance_valid(player):
+        return
+    if _pulse_readout != null and player.has_signal("primary_fired"):
+        player.primary_fired.connect(_on_player_primary_fired)
+    if _gauss_readout != null and player.has_signal("secondary_fired"):
+        player.secondary_fired.connect(_on_player_secondary_fired)
+    if _torpedo_readout != null and player.has_signal("special_fired"):
+        player.special_fired.connect(_on_player_special_fired)
+    if _shield_readout != null and player.has_signal("parry_activated"):
+        player.parry_activated.connect(_on_player_parry_activated)
+
+
+func _on_player_primary_fired() -> void:
+    _pulse_readout.fire()
+
+
+func _on_player_secondary_fired() -> void:
+    _gauss_readout.fire()
+
+
+func _on_player_special_fired() -> void:
+    _torpedo_readout.fire()
+
+
+func _on_player_parry_activated() -> void:
+    _shield_readout.fire()
 
 
 func _process(_delta: float) -> void:

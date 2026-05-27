@@ -23,6 +23,10 @@ const SWEEP_WEDGE_DEG := 45.0
 const PING_PERIOD_SEC := 1.6
 const ORBIT_RADII := [22.0, 38.0, 54.0, 66.0]
 const ENEMY_GROUP := "enemies"
+# tokens.animations.drift — contact idle wobble: ~6px translate + 2°
+# rotate over 4s, phase-staggered per contact.
+const DRIFT_PERIOD_SEC := 4.0
+const DRIFT_AMP_PX := 3.0
 
 # Refs to enemy contacts captured each frame so ping rings can phase by
 # index instead of waking on the same frame for every dot.
@@ -164,6 +168,7 @@ func _draw_contacts(center: Vector2, r: float) -> void:
     var origin: Vector2 = player_node.global_position
     var scale := r / world_range
     var enemies := get_tree().get_nodes_in_group(ENEMY_GROUP)
+    var now := Time.get_ticks_msec() / 1000.0
     for e in enemies:
         if not is_instance_valid(e):
             continue
@@ -171,10 +176,18 @@ func _draw_contacts(center: Vector2, r: float) -> void:
         if rel.length() > r:
             continue
         _contacts.append({"local": rel})
-        var dot_pos := center + rel
+        # tokens.animations.drift — phase by contact index so the row
+        # of dots doesn't wobble in lockstep.
+        var idx := _contacts.size()
+        var drift_phase := fposmod(now / DRIFT_PERIOD_SEC + float(idx) * 0.21, 1.0)
+        var drift_offset := Vector2(
+            sin(drift_phase * TAU) * DRIFT_AMP_PX * 0.4,
+            sin(drift_phase * TAU + PI * 0.5) * DRIFT_AMP_PX,
+        )
+        var dot_pos := center + rel + drift_offset
         var dot_col := Tokens.danger
         draw_circle(dot_pos, 3.0, dot_col)
-        var ping_alpha_t: float = fposmod(Time.get_ticks_msec() / 1000.0 + float(_contacts.size()) * 0.13, PING_PERIOD_SEC) / PING_PERIOD_SEC
+        var ping_alpha_t: float = fposmod(now + float(idx) * 0.13, PING_PERIOD_SEC) / PING_PERIOD_SEC
         var ping_r := lerpf(4.0, 14.0, ping_alpha_t)
         var ping_col := Tokens.danger
         ping_col.a = lerpf(0.7, 0.0, ping_alpha_t)
