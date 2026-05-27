@@ -1,196 +1,1137 @@
 {
-  "center_x": 25,
-  "center_y": 22,
-  "frame_height": 44,
-  "frame_width": 50,
+  "center_x": 40,
+  "center_y": 32,
+  "frame_height": 64,
+  "frame_width": 80,
   "frames": [
     {
       "layers": [
         {
           "index": 0,
-          "sheet": "base"
+          "sheet": "warriorman-sheet"
         }
       ],
-      "pose": 0
+      "pose": 1,
+      "rotation_deg": 0.0
     },
     {
       "layers": [
         {
-          "index": 0,
-          "sheet": "base"
+          "index": 1,
+          "sheet": "warriorman-sheet"
         }
       ],
-      "pose": 1
+      "pose": 1,
+      "rotation_deg": 0.0
     },
     {
       "layers": [
         {
-          "index": 0,
-          "sheet": "base"
+          "index": 2,
+          "sheet": "warriorman-sheet"
         }
       ],
-      "pose": 9
+      "pose": 1,
+      "rotation_deg": 0.0
     },
     {
       "layers": [
         {
-          "index": 0,
-          "sheet": "base"
+          "index": 3,
+          "sheet": "warriorman-sheet"
         }
       ],
-      "pose": 25
+      "pose": 1,
+      "rotation_deg": 0.0
     },
     {
       "layers": [
         {
-          "index": 0,
-          "sheet": "base"
+          "index": 4,
+          "sheet": "warriorman-sheet"
         }
       ],
-      "pose": 37
+      "pose": 1,
+      "rotation_deg": 0.0
     },
     {
       "layers": [
         {
-          "index": 0,
-          "sheet": "base"
+          "index": 5,
+          "sheet": "warriorman-sheet"
         }
       ],
-      "pose": 41
+      "pose": 1,
+      "rotation_deg": 0.0
     },
     {
       "layers": [
         {
-          "index": 0,
-          "sheet": "base"
+          "index": 6,
+          "sheet": "warriorman-sheet"
         }
       ],
-      "pose": 47
+      "pose": 1,
+      "rotation_deg": 0.0
     },
     {
       "layers": [
         {
-          "index": 0,
-          "sheet": "base"
+          "index": 7,
+          "sheet": "warriorman-sheet"
         }
       ],
-      "pose": 53
+      "pose": 1,
+      "rotation_deg": 0.0
     },
     {
       "layers": [
         {
-          "index": 0,
-          "sheet": "base"
+          "index": 48,
+          "sheet": "warriorman-sheet"
         }
       ],
-      "pose": 59
+      "pose": 9,
+      "rotation_deg": 0.0
     },
     {
       "layers": [
         {
-          "index": 0,
-          "sheet": "base"
+          "index": 49,
+          "sheet": "warriorman-sheet"
         }
       ],
-      "pose": 67
+      "pose": 9,
+      "rotation_deg": 0.0
     },
     {
       "layers": [
         {
-          "index": 0,
-          "sheet": "base"
+          "index": 50,
+          "sheet": "warriorman-sheet"
         }
       ],
-      "pose": 75
+      "pose": 9,
+      "rotation_deg": 0.0
     },
     {
       "layers": [
         {
-          "index": 0,
-          "sheet": "base"
+          "index": 51,
+          "sheet": "warriorman-sheet"
         }
       ],
-      "pose": 135
+      "pose": 9,
+      "rotation_deg": 0.0
     },
     {
       "layers": [
         {
-          "index": 0,
-          "sheet": "base"
+          "index": 52,
+          "sheet": "warriorman-sheet"
         }
       ],
-      "pose": 164
+      "pose": 9,
+      "rotation_deg": 0.0
     },
     {
       "layers": [
         {
-          "index": 0,
-          "sheet": "base"
+          "index": 53,
+          "sheet": "warriorman-sheet"
         }
       ],
-      "pose": 166
+      "pose": 9,
+      "rotation_deg": 0.0
     },
     {
       "layers": [
         {
-          "index": 0,
-          "sheet": "base"
+          "index": 54,
+          "sheet": "warriorman-sheet"
         }
       ],
-      "pose": 201
+      "pose": 9,
+      "rotation_deg": 0.0
     },
     {
       "layers": [
         {
-          "index": 0,
-          "sheet": "base"
+          "index": 55,
+          "sheet": "warriorman-sheet"
         }
       ],
-      "pose": 203
+      "pose": 9,
+      "rotation_deg": 0.0
     },
     {
       "layers": [
         {
-          "index": 0,
-          "sheet": "base"
+          "index": 72,
+          "sheet": "warriorman-sheet"
         }
       ],
-      "pose": 205
+      "pose": 41,
+      "rotation_deg": 0.0
     },
     {
       "layers": [
         {
-          "index": 0,
-          "sheet": "base"
+          "index": 71,
+          "sheet": "warriorman-sheet"
         }
       ],
-      "pose": 207
+      "pose": 41,
+      "rotation_deg": 0.0
     },
     {
       "layers": [
         {
-          "index": 0,
-          "sheet": "base"
+          "index": 70,
+          "sheet": "warriorman-sheet"
         }
       ],
-      "pose": 209
+      "pose": 41,
+      "rotation_deg": 0.0
     },
     {
       "layers": [
         {
-          "index": 0,
-          "sheet": "base"
+          "index": 112,
+          "sheet": "warriorman-sheet"
         }
       ],
-      "pose": 211
+      "pose": 53,
+      "rotation_deg": 0.0
+    },
+    {
+      "layers": [
+        {
+          "index": 113,
+          "sheet": "warriorman-sheet"
+        }
+      ],
+      "pose": 53,
+      "rotation_deg": 0.0
+    },
+    {
+      "layers": [
+        {
+          "index": 114,
+          "sheet": "warriorman-sheet"
+        }
+      ],
+      "pose": 53,
+      "rotation_deg": 0.0
+    },
+    {
+      "layers": [
+        {
+          "index": 114,
+          "sheet": "warriorman-sheet"
+        }
+      ],
+      "pose": 67,
+      "rotation_deg": 0.0
+    },
+    {
+      "layers": [
+        {
+          "index": 64,
+          "sheet": "warriorman-sheet"
+        }
+      ],
+      "pose": 75,
+      "rotation_deg": 0.0
+    },
+    {
+      "layers": [
+        {
+          "index": 65,
+          "sheet": "warriorman-sheet"
+        }
+      ],
+      "pose": 75,
+      "rotation_deg": 0.0
+    },
+    {
+      "layers": [
+        {
+          "index": 66,
+          "sheet": "warriorman-sheet"
+        }
+      ],
+      "pose": 75,
+      "rotation_deg": 0.0
+    },
+    {
+      "layers": [
+        {
+          "index": 67,
+          "sheet": "warriorman-sheet"
+        }
+      ],
+      "pose": 75,
+      "rotation_deg": 0.0
+    },
+    {
+      "layers": [
+        {
+          "index": 68,
+          "sheet": "warriorman-sheet"
+        }
+      ],
+      "pose": 75,
+      "rotation_deg": 0.0
+    },
+    {
+      "layers": [
+        {
+          "index": 69,
+          "sheet": "warriorman-sheet"
+        }
+      ],
+      "pose": 75,
+      "rotation_deg": 0.0
+    },
+    {
+      "layers": [
+        {
+          "index": 71,
+          "sheet": "warriorman-sheet"
+        }
+      ],
+      "pose": 164,
+      "rotation_deg": 0.0
+    },
+    {
+      "layers": [
+        {
+          "index": 72,
+          "sheet": "warriorman-sheet"
+        }
+      ],
+      "pose": 164,
+      "rotation_deg": 0.0
+    },
+    {
+      "layers": [
+        {
+          "index": 73,
+          "sheet": "warriorman-sheet"
+        }
+      ],
+      "pose": 164,
+      "rotation_deg": 0.0
+    },
+    {
+      "layers": [
+        {
+          "index": 74,
+          "sheet": "warriorman-sheet"
+        }
+      ],
+      "pose": 164,
+      "rotation_deg": 0.0
+    },
+    {
+      "layers": [
+        {
+          "index": 80,
+          "sheet": "warriorman-sheet"
+        }
+      ],
+      "pose": 201,
+      "rotation_deg": 0.0
+    },
+    {
+      "layers": [
+        {
+          "index": 81,
+          "sheet": "warriorman-sheet"
+        }
+      ],
+      "pose": 201,
+      "rotation_deg": 0.0
+    },
+    {
+      "layers": [
+        {
+          "index": 82,
+          "sheet": "warriorman-sheet"
+        }
+      ],
+      "pose": 201,
+      "rotation_deg": 0.0
+    },
+    {
+      "layers": [
+        {
+          "index": 83,
+          "sheet": "warriorman-sheet"
+        }
+      ],
+      "pose": 201,
+      "rotation_deg": 0.0
+    },
+    {
+      "layers": [
+        {
+          "index": 84,
+          "sheet": "warriorman-sheet"
+        }
+      ],
+      "pose": 201,
+      "rotation_deg": 0.0
+    },
+    {
+      "layers": [
+        {
+          "index": 85,
+          "sheet": "warriorman-sheet"
+        }
+      ],
+      "pose": 201,
+      "rotation_deg": 0.0
+    },
+    {
+      "layers": [
+        {
+          "index": 96,
+          "sheet": "warriorman-sheet"
+        }
+      ],
+      "pose": 203,
+      "rotation_deg": 0.0
+    },
+    {
+      "layers": [
+        {
+          "index": 97,
+          "sheet": "warriorman-sheet"
+        }
+      ],
+      "pose": 203,
+      "rotation_deg": 0.0
+    },
+    {
+      "layers": [
+        {
+          "index": 98,
+          "sheet": "warriorman-sheet"
+        }
+      ],
+      "pose": 203,
+      "rotation_deg": 0.0
+    },
+    {
+      "layers": [
+        {
+          "index": 99,
+          "sheet": "warriorman-sheet"
+        }
+      ],
+      "pose": 203,
+      "rotation_deg": 0.0
+    },
+    {
+      "layers": [
+        {
+          "index": 100,
+          "sheet": "warriorman-sheet"
+        }
+      ],
+      "pose": 203,
+      "rotation_deg": 0.0
+    },
+    {
+      "layers": [
+        {
+          "index": 176,
+          "sheet": "warriorman-sheet"
+        }
+      ],
+      "pose": 205,
+      "rotation_deg": 0.0
+    },
+    {
+      "layers": [
+        {
+          "index": 177,
+          "sheet": "warriorman-sheet"
+        }
+      ],
+      "pose": 205,
+      "rotation_deg": 0.0
+    },
+    {
+      "layers": [
+        {
+          "index": 178,
+          "sheet": "warriorman-sheet"
+        }
+      ],
+      "pose": 205,
+      "rotation_deg": 0.0
+    },
+    {
+      "layers": [
+        {
+          "index": 179,
+          "sheet": "warriorman-sheet"
+        }
+      ],
+      "pose": 205,
+      "rotation_deg": 0.0
+    },
+    {
+      "layers": [
+        {
+          "index": 180,
+          "sheet": "warriorman-sheet"
+        }
+      ],
+      "pose": 205,
+      "rotation_deg": 0.0
+    },
+    {
+      "layers": [
+        {
+          "index": 181,
+          "sheet": "warriorman-sheet"
+        }
+      ],
+      "pose": 205,
+      "rotation_deg": 0.0
+    },
+    {
+      "layers": [
+        {
+          "index": 182,
+          "sheet": "warriorman-sheet"
+        }
+      ],
+      "pose": 205,
+      "rotation_deg": 0.0
+    },
+    {
+      "layers": [
+        {
+          "index": 183,
+          "sheet": "warriorman-sheet"
+        }
+      ],
+      "pose": 205,
+      "rotation_deg": 0.0
+    },
+    {
+      "layers": [
+        {
+          "index": 216,
+          "sheet": "warriorman-sheet"
+        }
+      ],
+      "pose": 207,
+      "rotation_deg": 0.0
+    },
+    {
+      "layers": [
+        {
+          "index": 217,
+          "sheet": "warriorman-sheet"
+        }
+      ],
+      "pose": 207,
+      "rotation_deg": 0.0
+    },
+    {
+      "layers": [
+        {
+          "index": 218,
+          "sheet": "warriorman-sheet"
+        }
+      ],
+      "pose": 207,
+      "rotation_deg": 0.0
+    },
+    {
+      "layers": [
+        {
+          "index": 219,
+          "sheet": "warriorman-sheet"
+        }
+      ],
+      "pose": 207,
+      "rotation_deg": 0.0
+    },
+    {
+      "layers": [
+        {
+          "index": 208,
+          "sheet": "warriorman-sheet"
+        }
+      ],
+      "pose": 209,
+      "rotation_deg": 0.0
+    },
+    {
+      "layers": [
+        {
+          "index": 209,
+          "sheet": "warriorman-sheet"
+        }
+      ],
+      "pose": 209,
+      "rotation_deg": 0.0
+    },
+    {
+      "layers": [
+        {
+          "index": 210,
+          "sheet": "warriorman-sheet"
+        }
+      ],
+      "pose": 209,
+      "rotation_deg": 0.0
+    },
+    {
+      "layers": [
+        {
+          "index": 211,
+          "sheet": "warriorman-sheet"
+        }
+      ],
+      "pose": 209,
+      "rotation_deg": 0.0
+    },
+    {
+      "layers": [
+        {
+          "index": 212,
+          "sheet": "warriorman-sheet"
+        }
+      ],
+      "pose": 209,
+      "rotation_deg": 0.0
+    },
+    {
+      "layers": [
+        {
+          "index": 213,
+          "sheet": "warriorman-sheet"
+        }
+      ],
+      "pose": 209,
+      "rotation_deg": 0.0
+    },
+    {
+      "layers": [
+        {
+          "index": 214,
+          "sheet": "warriorman-sheet"
+        }
+      ],
+      "pose": 209,
+      "rotation_deg": 0.0
+    },
+    {
+      "layers": [
+        {
+          "index": 215,
+          "sheet": "warriorman-sheet"
+        }
+      ],
+      "pose": 209,
+      "rotation_deg": 0.0
+    },
+    {
+      "layers": [
+        {
+          "index": 213,
+          "sheet": "warriorman-sheet"
+        }
+      ],
+      "pose": 209,
+      "rotation_deg": 0.0
+    },
+    {
+      "layers": [
+        {
+          "index": 214,
+          "sheet": "warriorman-sheet"
+        }
+      ],
+      "pose": 209,
+      "rotation_deg": 0.0
+    },
+    {
+      "layers": [
+        {
+          "index": 215,
+          "sheet": "warriorman-sheet"
+        }
+      ],
+      "pose": 209,
+      "rotation_deg": 0.0
+    },
+    {
+      "layers": [
+        {
+          "index": 213,
+          "sheet": "warriorman-sheet"
+        }
+      ],
+      "pose": 209,
+      "rotation_deg": 0.0
+    },
+    {
+      "layers": [
+        {
+          "index": 214,
+          "sheet": "warriorman-sheet"
+        }
+      ],
+      "pose": 209,
+      "rotation_deg": 0.0
+    },
+    {
+      "layers": [
+        {
+          "index": 215,
+          "sheet": "warriorman-sheet"
+        }
+      ],
+      "pose": 209,
+      "rotation_deg": 0.0
+    },
+    {
+      "layers": [
+        {
+          "index": 213,
+          "sheet": "warriorman-sheet"
+        }
+      ],
+      "pose": 209,
+      "rotation_deg": 0.0
+    },
+    {
+      "layers": [
+        {
+          "index": 214,
+          "sheet": "warriorman-sheet"
+        }
+      ],
+      "pose": 209,
+      "rotation_deg": 0.0
+    },
+    {
+      "layers": [
+        {
+          "index": 215,
+          "sheet": "warriorman-sheet"
+        }
+      ],
+      "pose": 209,
+      "rotation_deg": 0.0
+    },
+    {
+      "layers": [
+        {
+          "index": 256,
+          "sheet": "warriorman-sheet"
+        }
+      ],
+      "pose": 211,
+      "rotation_deg": 0.0
+    },
+    {
+      "layers": [
+        {
+          "index": 257,
+          "sheet": "warriorman-sheet"
+        }
+      ],
+      "pose": 211,
+      "rotation_deg": 0.0
+    },
+    {
+      "layers": [
+        {
+          "index": 258,
+          "sheet": "warriorman-sheet"
+        }
+      ],
+      "pose": 211,
+      "rotation_deg": 0.0
+    },
+    {
+      "layers": [
+        {
+          "index": 259,
+          "sheet": "warriorman-sheet"
+        }
+      ],
+      "pose": 211,
+      "rotation_deg": 0.0
+    },
+    {
+      "layers": [
+        {
+          "index": 260,
+          "sheet": "warriorman-sheet"
+        }
+      ],
+      "pose": 211,
+      "rotation_deg": 0.0
+    },
+    {
+      "layers": [
+        {
+          "index": 261,
+          "sheet": "warriorman-sheet"
+        }
+      ],
+      "pose": 211,
+      "rotation_deg": 0.0
+    },
+    {
+      "layers": [
+        {
+          "index": 262,
+          "sheet": "warriorman-sheet"
+        }
+      ],
+      "pose": 211,
+      "rotation_deg": 0.0
+    },
+    {
+      "layers": [
+        {
+          "index": 263,
+          "sheet": "warriorman-sheet"
+        }
+      ],
+      "pose": 211,
+      "rotation_deg": 0.0
+    },
+    {
+      "layers": [
+        {
+          "index": 264,
+          "sheet": "warriorman-sheet"
+        }
+      ],
+      "pose": 211,
+      "rotation_deg": 0.0
+    },
+    {
+      "layers": [
+        {
+          "index": 265,
+          "sheet": "warriorman-sheet"
+        }
+      ],
+      "pose": 211,
+      "rotation_deg": 0.0
+    },
+    {
+      "layers": [
+        {
+          "index": 240,
+          "sheet": "warriorman-sheet"
+        }
+      ],
+      "pose": 213,
+      "rotation_deg": 0.0
+    },
+    {
+      "layers": [
+        {
+          "index": 241,
+          "sheet": "warriorman-sheet"
+        }
+      ],
+      "pose": 213,
+      "rotation_deg": 0.0
+    },
+    {
+      "layers": [
+        {
+          "index": 241,
+          "sheet": "warriorman-sheet"
+        }
+      ],
+      "pose": 213,
+      "rotation_deg": 0.0
+    },
+    {
+      "layers": [
+        {
+          "index": 242,
+          "sheet": "warriorman-sheet"
+        }
+      ],
+      "pose": 213,
+      "rotation_deg": 0.0
+    },
+    {
+      "layers": [
+        {
+          "index": 242,
+          "sheet": "warriorman-sheet"
+        }
+      ],
+      "pose": 213,
+      "rotation_deg": 0.0
+    },
+    {
+      "layers": [
+        {
+          "index": 243,
+          "sheet": "warriorman-sheet"
+        }
+      ],
+      "pose": 213,
+      "rotation_deg": 0.0
+    },
+    {
+      "layers": [
+        {
+          "index": 243,
+          "sheet": "warriorman-sheet"
+        }
+      ],
+      "pose": 213,
+      "rotation_deg": 0.0
+    },
+    {
+      "layers": [
+        {
+          "index": 244,
+          "sheet": "warriorman-sheet"
+        }
+      ],
+      "pose": 213,
+      "rotation_deg": 0.0
+    },
+    {
+      "layers": [
+        {
+          "index": 244,
+          "sheet": "warriorman-sheet"
+        }
+      ],
+      "pose": 213,
+      "rotation_deg": 0.0
+    },
+    {
+      "layers": [
+        {
+          "index": 245,
+          "sheet": "warriorman-sheet"
+        }
+      ],
+      "pose": 213,
+      "rotation_deg": 0.0
+    },
+    {
+      "layers": [
+        {
+          "index": 368,
+          "sheet": "warriorman-sheet"
+        }
+      ],
+      "pose": 220,
+      "rotation_deg": 0.0
+    },
+    {
+      "layers": [
+        {
+          "index": 369,
+          "sheet": "warriorman-sheet"
+        }
+      ],
+      "pose": 220,
+      "rotation_deg": 0.0
+    },
+    {
+      "layers": [
+        {
+          "index": 370,
+          "sheet": "warriorman-sheet"
+        }
+      ],
+      "pose": 220,
+      "rotation_deg": 0.0
+    },
+    {
+      "layers": [
+        {
+          "index": 371,
+          "sheet": "warriorman-sheet"
+        }
+      ],
+      "pose": 220,
+      "rotation_deg": 0.0
+    },
+    {
+      "layers": [
+        {
+          "index": 372,
+          "sheet": "warriorman-sheet"
+        }
+      ],
+      "pose": 220,
+      "rotation_deg": 0.0
+    },
+    {
+      "layers": [
+        {
+          "index": 373,
+          "sheet": "warriorman-sheet"
+        }
+      ],
+      "pose": 220,
+      "rotation_deg": 0.0
+    },
+    {
+      "layers": [
+        {
+          "index": 374,
+          "sheet": "warriorman-sheet"
+        }
+      ],
+      "pose": 220,
+      "rotation_deg": 0.0
+    },
+    {
+      "layers": [
+        {
+          "index": 374,
+          "sheet": "warriorman-sheet"
+        }
+      ],
+      "pose": 220,
+      "rotation_deg": 0.0
+    },
+    {
+      "layers": [
+        {
+          "index": 374,
+          "sheet": "warriorman-sheet"
+        }
+      ],
+      "pose": 220,
+      "rotation_deg": 0.0
+    },
+    {
+      "layers": [
+        {
+          "index": 374,
+          "sheet": "warriorman-sheet"
+        }
+      ],
+      "pose": 220,
+      "rotation_deg": 0.0
+    },
+    {
+      "layers": [
+        {
+          "index": 384,
+          "sheet": "warriorman-sheet"
+        }
+      ],
+      "pose": 222,
+      "rotation_deg": 0.0
+    },
+    {
+      "layers": [
+        {
+          "index": 384,
+          "sheet": "warriorman-sheet"
+        }
+      ],
+      "pose": 222,
+      "rotation_deg": 0.0
+    },
+    {
+      "layers": [
+        {
+          "index": 385,
+          "sheet": "warriorman-sheet"
+        }
+      ],
+      "pose": 222,
+      "rotation_deg": 0.0
+    },
+    {
+      "layers": [
+        {
+          "index": 386,
+          "sheet": "warriorman-sheet"
+        }
+      ],
+      "pose": 222,
+      "rotation_deg": 0.0
+    },
+    {
+      "layers": [
+        {
+          "index": 387,
+          "sheet": "warriorman-sheet"
+        }
+      ],
+      "pose": 222,
+      "rotation_deg": 0.0
+    },
+    {
+      "layers": [
+        {
+          "index": 388,
+          "sheet": "warriorman-sheet"
+        }
+      ],
+      "pose": 222,
+      "rotation_deg": 0.0
+    },
+    {
+      "layers": [
+        {
+          "index": 389,
+          "sheet": "warriorman-sheet"
+        }
+      ],
+      "pose": 222,
+      "rotation_deg": 0.0
+    },
+    {
+      "layers": [
+        {
+          "index": 390,
+          "sheet": "warriorman-sheet"
+        }
+      ],
+      "pose": 222,
+      "rotation_deg": 0.0
     }
   ],
-  "sheet_cols": 10,
+  "seed_version": 0.0,
+  "sheet_cols": 16,
   "sheets": [
     {
       "file": "player_sheet.png",
       "id": "base",
       "z": 0
+    },
+    {
+      "file": "run.png",
+      "id": "run",
+      "z": 1
+    },
+    {
+      "file": "warriorman-sheet.png",
+      "id": "warriorman-sheet",
+      "z": 2
     }
   ]
 }

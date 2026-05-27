@@ -29,6 +29,9 @@ const MV_TRANS: int = 15
 const MV_WALLJUMP: int = 20
 const MV_TURN_AIR: int = 23
 const MV_TURN_FALL: int = 24
+const MV_PARRY: int = 30
+const MV_KNOCKDOWN: int = 31
+const MV_STAND_UP: int = 32
 
 # ===== Physics profile (loaded from the current content pack) =====
 var _profile: MvPhysicsProfile = null
@@ -101,6 +104,19 @@ var _was_shoot_held: bool = false
 var _authored_melee_attack: Dictionary = {}
 var _melee_input_locked: bool = false
 var _secondary_mode_active: bool = false
+
+# Grace window: after an authored melee attack ends, allow a follow-up
+# click to chain `combo_next_id` for COMBO_GRACE_SECONDS so the player
+# doesn't have to mash inside the active animation frames.
+var _combo_grace_timer: float = 0.0
+var _combo_grace_next_id: String = ""
+const COMBO_GRACE_SECONDS: float = 0.2
+
+# Knockdown state: true between apply_knockdown() and the pose chain leaving
+# MV_KNOCKDOWN / MV_STAND_UP. While active the player is set_locked(true) and
+# _invuln_timer is held high so the recovery animation can't be interrupted
+# by another hit.
+var _knockdown_active: bool = false
 
 # ===== Bomb state (grenade launcher) =====
 var _bomb_count: int = 0
@@ -553,6 +569,11 @@ func _set_pose(p: int) -> void:
     var anim_owner: int = _resolved_animation_owner(p)
     if anim_owner < 0:
         return
+
+    if _knockdown_active:
+        var new_mv: int = int((_poses[p] as Dictionary).get("mvtype", -999))
+        if new_mv != MV_KNOCKDOWN and new_mv != MV_STAND_UP:
+            _release_knockdown()
 
     _pose = p
     var info: Dictionary = _poses[p]
@@ -1125,13 +1146,10 @@ func _physics_process(delta: float) -> void:
     if on_floor and jump_pressed and _poses.has(_pose) and _is_transition():
         var transition_pi: Dictionary = _poses[_pose]
         var transition_mv: int = int(transition_pi.get("mvtype", MV_STAND))
-        var should_spin_jump := transition_mv == MV_TURN \
+        var running_jump := transition_mv == MV_TURN \
             or (absf(vel.x) >= 10.0 and transition_mv != MV_CROUCH)
-        vel.y = -_jump_speed_with_run_bonus(vel.x) if should_spin_jump else -_effective_jump_speed()
-        if should_spin_jump:
-            _try_set_pose(25 if _right else 26, 75 if _right else 76)
-        else:
-            _try_set_pose(75 if _right else 76)
+        vel.y = -_jump_speed_with_run_bonus(vel.x) if running_jump else -_effective_jump_speed()
+        _try_set_pose(75 if _right else 76)
 
     # ---- State transitions ----
     # When the pack lacks jump/fall/run poses, the "became airborne"
@@ -1169,7 +1187,7 @@ func _physics_process(delta: float) -> void:
                 _try_set_pose(1 if _right else 2)
             elif jump_pressed:
                 vel.y = -_jump_speed_with_run_bonus(vel.x)
-                _try_set_pose(25 if _right else 26)  # spin jump
+                _try_set_pose(75 if _right else 76)
             elif down_pressed:
                 _try_set_pose(53 if _right else 54)
         elif eff_mv == MV_CROUCH:
@@ -1277,11 +1295,15 @@ func _physics_process(delta: float) -> void:
     var melee_pressed := Input.is_action_just_pressed("melee_attack") and not _locked
     var ranged_pressed := Input.is_action_just_pressed("ranged_attack") and not secondary_held and not _melee_input_locked and not _locked
     var secondary_pressed := Input.is_action_just_pressed("fire_secondary") and not _melee_input_locked and not _locked
+    var parry_pressed := InputMap.has_action("parry") and Input.is_action_just_pressed("parry") and not _melee_input_locked and not _locked
     var authored_charge := authored_hold_behavior == "charge_release"
     var charge_feedback_active := authored_charge or not has_authored_ranged_attack
 
     if melee_pressed:
         _try_melee_attack()
+
+    if parry_pressed:
+        _try_parry()
 
     if secondary_pressed:
         _toggle_secondary_mode()
@@ -1293,6 +1315,8 @@ func _physics_process(delta: float) -> void:
                 _try_ranged_attack()
         elif ranged_pressed:
             _try_ranged_attack()
+        if authored_charge and ranged_held:
+            _apply_ranged_charge_hold_pose(active_ranged_attack)
     elif ranged_pressed:
         _try_ranged_attack()
 
@@ -1347,6 +1371,11 @@ func _physics_process(delta: float) -> void:
 
     _advance_animation(dt)
     _tick_authored_melee_attack()
+    if _combo_grace_timer > 0.0:
+        _combo_grace_timer -= dt
+        if _combo_grace_timer <= 0.0:
+            _combo_grace_timer = 0.0
+            _combo_grace_next_id = ""
     _check_door_edges()
 
 
@@ -1659,7 +1688,7 @@ func _try_air_jump_or_wall_jump(jump_pressed: bool, vel: Vector2) -> Vector2:
     if _air_jumps_remaining > 0:
         vel.y = -_effective_jump_speed()
         _air_jumps_remaining -= 1
-        _try_set_pose(25 if _right else 26)
+        _try_set_pose(75 if _right else 76)
         return vel
     if is_on_wall() and PlayerInventory.has_ability("wall_jump"):
         vel = _do_wall_jump(vel)
@@ -1870,6 +1899,47 @@ func _apply_full_auto_hold_pose(attack: Dictionary = {}) -> void:
     _try_set_pose(hold_pose_id)
 
 
+# Pose displayed while holding the ranged-attack button on a charge_release
+# weapon. Prefers an authored ranged_charge_* pose for the current facing —
+# that's the dedicated "winding up a charged shot" loop authors set in the
+# sprite editor. Falls back to the charged variant's player_pose if no
+# dedicated charge pose exists so the player isn't stuck idle during the
+# hold.
+func _ranged_charge_hold_pose_id(attack: Dictionary = {}) -> int:
+    var pose_names: Array = []
+    if _right:
+        pose_names = ["ranged_charge_right", "charged_right", "charge_right"]
+    else:
+        pose_names = ["ranged_charge_left", "charged_left", "charge_left"]
+    for pose_name_v in pose_names:
+        var pose_id := _find_pose_id_by_name(str(pose_name_v))
+        if pose_id >= 0 and _resolved_animation_owner(pose_id) >= 0:
+            return pose_id
+
+    var resolved_attack: Dictionary = attack
+    if resolved_attack.is_empty():
+        resolved_attack = _active_ranged_attack()
+    if resolved_attack.is_empty():
+        return -1
+    var charged_attack_id := str(resolved_attack.get("charged_attack_id", "")).strip_edges()
+    if not charged_attack_id.is_empty():
+        var charged_attack: Dictionary = _attack_definition_by_id(charged_attack_id)
+        if not charged_attack.is_empty():
+            var charged_pose_id := _resolved_attack_pose_id(int(charged_attack.get("player_pose", -1)))
+            if charged_pose_id >= 0:
+                return charged_pose_id
+    return -1
+
+
+func _apply_ranged_charge_hold_pose(attack: Dictionary = {}) -> void:
+    var hold_pose_id := _ranged_charge_hold_pose_id(attack)
+    if hold_pose_id < 0:
+        return
+    if _pose == hold_pose_id:
+        return
+    _try_set_pose(hold_pose_id)
+
+
 func _restore_after_full_auto_hold(on_floor: bool, dir: float, vel: Vector2) -> void:
     var hold_pose_id := _full_auto_hold_pose_id()
     if hold_pose_id < 0 or _pose != hold_pose_id:
@@ -2012,6 +2082,12 @@ func _try_melee_attack() -> void:
     if not _authored_melee_attack.is_empty():
         _consume_authored_combo_input()
         return
+    if _combo_grace_timer > 0.0 and not _combo_grace_next_id.is_empty():
+        var grace_next_id: String = _combo_grace_next_id
+        _combo_grace_timer = 0.0
+        _combo_grace_next_id = ""
+        _try_fire_authored_attack(grace_next_id, true)
+        return
     if not _can_shoot():
         return
     var melee_attack_id: String = PlayerInventory.get_melee_attack_id()
@@ -2019,6 +2095,139 @@ func _try_melee_attack() -> void:
         return
     if not _consume_authored_combo_input():
         _try_fire_authored_attack(melee_attack_id)
+
+
+# Parry: swap to the first authored pose with mvtype == MV_PARRY for the
+# current facing. No deflect / damage gating yet — this just plays the
+# authored animation so the sprite editor's parry slot has a runtime hook.
+# Combat behavior (timing window, deflect, iframes) is a future slice.
+func _try_parry() -> void:
+    if not _authored_melee_attack.is_empty():
+        return
+    var pose_id: int = _find_pose_id_by_mvtype(MV_PARRY, 1 if _right else -1)
+    if pose_id < 0:
+        # Try the opposite facing as a fallback; mirror lookup will flip it.
+        pose_id = _find_pose_id_by_mvtype(MV_PARRY, -1 if _right else 1)
+    if pose_id < 0:
+        return
+    _try_set_pose(pose_id)
+
+
+func _find_pose_id_by_mvtype(mvtype: int, desired_dir: int) -> int:
+    for pose_id_v in _poses.keys():
+        var pose_id: int = int(pose_id_v)
+        var info: Dictionary = _poses[pose_id]
+        if int(info.get("mvtype", -999)) != mvtype:
+            continue
+        if _pose_dir_value(info) != desired_dir:
+            continue
+        return pose_id
+    return -1
+
+
+# Public mirror of _is_parry_active() so projectiles and other external
+# damage sources can check parry state before applying damage. They use
+# this to deflect themselves instead of just being absorbed silently.
+func is_parry_active() -> bool:
+    return _is_parry_active()
+
+
+# True when the player is in a parry pose AND the current animation frame
+# is the active window (anything except the first and last frame). Authors
+# need at least 3 frames of parry animation: first = windup, last =
+# recovery, middles = active window.
+func _is_parry_active() -> bool:
+    if not _poses.has(_pose):
+        return false
+    var info: Dictionary = _poses[_pose]
+    if int(info.get("mvtype", -999)) != MV_PARRY:
+        return false
+    var anim_owner: int = _resolved_animation_owner(_pose)
+    if anim_owner < 0 or not _frames.has(anim_owner):
+        return false
+    var frame_count: int = (_frames[anim_owner] as Array).size()
+    if frame_count < 3:
+        return false
+    return _anim_idx > 0 and _anim_idx < frame_count - 1
+
+
+# Counter-attack fired by a successful parry. Reuses the equipped melee
+# attack with damage doubled. Ignores cooldown so the counter always
+# triggers when the parry lands.
+func _fire_parry_counter() -> void:
+    var melee_attack_id: String = PlayerInventory.get_melee_attack_id()
+    if melee_attack_id.is_empty():
+        return
+    var attack: Dictionary = PlayerInventory.get_attack_definition(melee_attack_id)
+    if attack.is_empty():
+        return
+    if str(attack.get("type", "")).strip_edges() != "melee":
+        return
+    attack = attack.duplicate(true)
+    attack["damage"] = int(attack.get("damage", 0)) * 2
+
+    var aim := get_aim_direction()
+    _apply_attack_facing_from_aim(aim)
+    var pose_id := _resolved_attack_pose_id(int(attack.get("player_pose", -1)))
+    if pose_id >= 0:
+        _try_set_pose(pose_id)
+    _begin_authored_melee_attack(attack, pose_id)
+    var cooldown_ticks := maxf(0.0, float(int(attack.get("cooldown_ticks", 0))))
+    var reload_mult := maxf(0.01, float(PlayerInventory.get_var("mv_reload_speed_mult", 1.0)))
+    _shoot_cooldown = (cooldown_ticks / 60.0) / reload_mult
+
+
+# Public API: knock the player down. Cancels any in-flight melee combo, plays
+# the MV_KNOCKDOWN pose for the matching facing, and locks input + invuln
+# until the pose chain (knockdown -> stand_up -> idle) leaves the recovery
+# state. Returns false if a cutscene already owns the player or if no
+# MV_KNOCKDOWN pose has been authored. from_pos faces the player toward the
+# threat the same way take_damage() does.
+func apply_knockdown(from_pos = null) -> bool:
+    if _knockdown_active:
+        return false
+    if _locked:
+        return false
+    var desired_dir: int = 1 if _right else -1
+    if from_pos != null and typeof(from_pos) == TYPE_VECTOR2:
+        var fp: Vector2 = from_pos
+        _right = fp.x < position.x
+        desired_dir = 1 if _right else -1
+        if _sprite != null:
+            _set_sprite_flip_all(not _right)
+    var pose_id: int = _find_pose_id_by_mvtype(MV_KNOCKDOWN, desired_dir)
+    if pose_id < 0:
+        pose_id = _find_pose_id_by_mvtype(MV_KNOCKDOWN, -desired_dir)
+    if pose_id < 0:
+        return false
+    if not _authored_melee_attack.is_empty():
+        _authored_melee_attack.clear()
+    _melee_input_locked = false
+    _combo_grace_timer = 0.0
+    _combo_grace_next_id = ""
+    _knockdown_active = true
+    set_locked(true)
+    # Held high so the recovery animation can't be interrupted by a second
+    # hit. _release_knockdown() drops it to invuln_seconds when the chain
+    # exits MV_STAND_UP, which leaves a small post-getup grace.
+    _invuln_timer = maxf(_invuln_timer, 99.0)
+    _set_pose(pose_id)
+    return true
+
+
+# Called from _set_pose when the active pose's mvtype leaves the knockdown /
+# stand_up chain. Restores normal input + caps invuln to invuln_seconds.
+func _release_knockdown() -> void:
+    _knockdown_active = false
+    set_locked(false)
+    _invuln_timer = minf(_invuln_timer, invuln_seconds)
+
+
+# True while apply_knockdown() has the player locked into the
+# knockdown -> stand_up chain. Lets external systems (HUD, AI) check the
+# recovery state.
+func is_knockdown_active() -> bool:
+    return _knockdown_active
 
 
 func _try_ranged_attack() -> void:
@@ -2236,10 +2445,14 @@ func _tick_authored_melee_attack() -> void:
         _authored_melee_attack["spawned_frames"] = spawned
     if _anim_idx > max_frame:
         var queued_next_id: String = str(_authored_melee_attack.get("queued_next_id", "")).strip_edges()
+        var combo_next_id: String = str(attack.get("combo_next_id", "")).strip_edges()
         _authored_melee_attack.clear()
         _melee_input_locked = false
         if not queued_next_id.is_empty():
             _try_fire_authored_attack(queued_next_id, true)
+        elif not combo_next_id.is_empty():
+            _combo_grace_timer = COMBO_GRACE_SECONDS
+            _combo_grace_next_id = combo_next_id
 
 
 func _spawn_authored_melee_hitbox(attack: Dictionary) -> void:
@@ -2600,6 +2813,8 @@ func current_authored_door(preferred_direction: String = "") -> Dictionary:
 func cleanup_room_transition_transients() -> void:
     _authored_melee_attack.clear()
     _melee_input_locked = false
+    _combo_grace_timer = 0.0
+    _combo_grace_next_id = ""
     _beam_count = 0
     _bomb_count = 0
     _grapple_swinging = false
@@ -2664,6 +2879,14 @@ func spawn_at(pos: Vector2, entry_direction: String = "", facing_direction: Stri
 func take_damage(amount: int, source: String = "", from_pos = null) -> bool:
     if _invuln_timer > 0.0 or amount <= 0:
         return false
+    if _is_parry_active():
+        if from_pos != null and typeof(from_pos) == TYPE_VECTOR2:
+            var parry_target: Vector2 = from_pos
+            _right = parry_target.x >= position.x
+            if _sprite != null:
+                _set_sprite_flip_all(not _right)
+        _fire_parry_counter()
+        return false
     hp = max(0, hp - amount)
     _invuln_timer = invuln_seconds
 
@@ -2681,6 +2904,8 @@ func take_damage(amount: int, source: String = "", from_pos = null) -> bool:
         _right = s < 0
         if _sprite != null:
             _set_sprite_flip_all(not _right)
+        _combo_grace_timer = 0.0
+        _combo_grace_next_id = ""
 
     # SM rule: any hit cancels Speed Booster charge + shine state.
     _reset_shine()

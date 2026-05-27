@@ -20,6 +20,13 @@ var _age: float = 0.0
 var _shape: CollisionShape2D = null
 var _initial_overlap_scan_pending: bool = true
 const HIT_RADIUS: float = 4.0
+const DEFLECT_SPEED_MULT: float = 1.5
+
+# Set when a parry redirects this projectile. While true the projectile
+# damages mv_enemy nodes instead of mv_player nodes and skips the parry
+# check on re-entry.
+var _deflected: bool = false
+var _deflected_hit_ids: Dictionary = {}
 
 
 func _ready() -> void:
@@ -63,22 +70,79 @@ func _physics_process(delta: float) -> void:
 func _on_body_entered(body: Node) -> void:
     if body == null:
         return
+    if _deflected:
+        _try_damage_enemy(body)
+        return
     if body.is_in_group("mv_player") and body.has_method("take_damage"):
+        if _try_deflect_against(body):
+            return
         body.take_damage(damage, "enemy_projectile", global_position)
         _spawn_impact_fx(global_position, _impact_normal_toward(body))
         queue_free()
 
 
 func _on_area_entered(area: Area2D) -> void:
+    if _deflected:
+        return
     if area == null or not area.is_in_group("mv_player_hurt"):
         return
     var player: Node = area.get_meta("player", null)
     if player == null:
         player = area.get_parent()
     if player != null and player.has_method("take_damage"):
+        if _try_deflect_against(player):
+            return
         player.take_damage(damage, "enemy_projectile", global_position)
         _spawn_impact_fx(global_position, _impact_normal_toward(player))
         queue_free()
+
+
+# Returns true if the player was parrying and the projectile was deflected.
+# Caller should NOT then apply damage or despawn — the projectile keeps
+# living, now hostile to enemies.
+func _try_deflect_against(player: Node) -> bool:
+    if not is_instance_valid(player) or not player.has_method("is_parry_active"):
+        return false
+    if not bool(player.call("is_parry_active")):
+        return false
+    # Tell the player to fire its counter-attack reaction. take_damage will
+    # absorb the 0-damage hit and trigger _fire_parry_counter().
+    if player.has_method("take_damage"):
+        player.call("take_damage", damage, "enemy_projectile", global_position)
+    _begin_deflection(player)
+    return true
+
+
+func _begin_deflection(player: Node) -> void:
+    _deflected = true
+    direction = -direction
+    if player is Node2D and player.has_method("get_aim_direction"):
+        var aim_v: Variant = player.call("get_aim_direction")
+        if aim_v is Vector2:
+            var aim: Vector2 = aim_v
+            if aim.length_squared() > 0.01:
+                direction = aim.normalized()
+    speed *= DEFLECT_SPEED_MULT
+    modulate = Color(0.6, 0.95, 1.0, 1.0)
+    if is_in_group("mv_projectile"):
+        remove_from_group("mv_projectile")
+    add_to_group("mv_deflected_projectile")
+    # Reset age so the deflected shot gets a fresh lifetime budget back.
+    _age = 0.0
+
+
+func _try_damage_enemy(body: Node) -> void:
+    if body == null or not body.is_in_group("mv_enemy"):
+        return
+    var instance_id := body.get_instance_id()
+    if _deflected_hit_ids.has(instance_id):
+        return
+    if not body.has_method("take_damage"):
+        return
+    _deflected_hit_ids[instance_id] = true
+    body.call("take_damage", damage, global_position)
+    _spawn_impact_fx(global_position, _impact_normal_toward(body))
+    queue_free()
 
 
 func _apply_initial_overlaps() -> void:
@@ -94,20 +158,39 @@ func _apply_initial_overlaps() -> void:
 
 func _apply_geometry_hits() -> void:
     var hit_rect := Rect2(global_position - Vector2(HIT_RADIUS, HIT_RADIUS), Vector2(HIT_RADIUS * 2.0, HIT_RADIUS * 2.0))
+    if _deflected:
+        for enemy in get_tree().get_nodes_in_group("mv_enemy"):
+            if not is_instance_valid(enemy):
+                continue
+            var enemy_id := enemy.get_instance_id()
+            if _deflected_hit_ids.has(enemy_id):
+                continue
+            var hit_enemy: bool = false
+            if enemy.has_method("hurtbox_intersects_rect"):
+                hit_enemy = bool(enemy.call("hurtbox_intersects_rect", hit_rect))
+            elif enemy is Node2D:
+                hit_enemy = hit_rect.has_point((enemy as Node2D).global_position)
+            if hit_enemy:
+                _try_damage_enemy(enemy)
+                if is_queued_for_deletion():
+                    return
+        return
     for player in get_tree().get_nodes_in_group("mv_player"):
         if not is_instance_valid(player):
             continue
+        var collided: bool = false
         if player.has_method("hurtbox_intersects_rect"):
-            if bool(player.call("hurtbox_intersects_rect", hit_rect)):
-                if player.has_method("take_damage"):
-                    player.call("take_damage", damage, "enemy_projectile", global_position)
-                    queue_free()
-                    return
-        elif player is Node2D and hit_rect.has_point((player as Node2D).global_position):
-            if player.has_method("take_damage"):
-                player.call("take_damage", damage, "enemy_projectile", global_position)
-                queue_free()
-                return
+            collided = bool(player.call("hurtbox_intersects_rect", hit_rect))
+        elif player is Node2D:
+            collided = hit_rect.has_point((player as Node2D).global_position)
+        if not collided:
+            continue
+        if _try_deflect_against(player):
+            return
+        if player.has_method("take_damage"):
+            player.call("take_damage", damage, "enemy_projectile", global_position)
+            queue_free()
+            return
 
 
 func _draw() -> void:
