@@ -1,0 +1,16 @@
+{
+  "region_id": "733b_island",
+  "variants": {
+    "start": [
+      {
+        "use": "start_burnt",
+        "when": {
+          "equals": true,
+          "flag": "test",
+          "scope": "planet"
+        }
+      }
+    ]
+  },
+  "version": "1.0"
+}
