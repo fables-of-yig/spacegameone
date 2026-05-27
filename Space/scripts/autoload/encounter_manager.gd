@@ -7,6 +7,11 @@ signal encounter_started(event_id: String, enc_id: int)
 
 var all_encounters: Dictionary = {}
 
+# Master gate. Random encounters fire from tick() while flying in the void;
+# this flag short-circuits that so playtest sessions don't get surprised by
+# them. Flip to true (or set "enabled": true in encounters.json) when the
+# random-encounter system is wanted again.
+var enabled: bool = false
 
 var void_timer: float = 0.0
 var encounter_cooldown: float = 0.0
@@ -42,6 +47,8 @@ func load_encounters(data: Dictionary):
     print("[EncounterManager] Loaded %d encounters." % all_encounters.size())
 
 func tick(delta: float, nearest_system_dist: float):
+    if not enabled:
+        return
 
     if nearest_system_dist < VOID_DISTANCE:
 
@@ -253,6 +260,7 @@ func _load_encounter_tuning() -> void:
             var raw = JSON.parse_string(f.get_as_text())
             f.close()
             if typeof(raw) == TYPE_DICTIONARY:
+                enabled = bool(raw.get("enabled", false))
                 MIN_VOID_TIME = float(raw.get("min_void_time", 30.0))
                 ENCOUNTER_CHANCE_PER_SEC = float(raw.get("encounter_chance_per_sec", 0.003))
                 ENCOUNTER_INTERVAL_MIN = float(raw.get("encounter_interval_min", 45.0))

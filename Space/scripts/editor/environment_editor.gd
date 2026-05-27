@@ -109,6 +109,10 @@ var _pending_import_paths: PackedStringArray = PackedStringArray()
 # Same reasoning as _pending_import_paths — keep rename target on the
 # instance instead of binding through the text-modal callback chain.
 var _pending_rename_idx: int = -1
+# Last directory used in the tileset import/append picker, so the OS
+# dialog reopens where the user was last working instead of snapping
+# back to the project root every time.
+var _last_tileset_import_dir: String = ""
 var _grid_clipboard: Dictionary = {}
 var _grid_paste_preview_active: bool = false
 
@@ -863,6 +867,7 @@ func request_import_tileset() -> void:
     dlg.access = FileDialog.ACCESS_FILESYSTEM
     dlg.filters = PackedStringArray(["*.png ; PNG images"])
     dlg.title = "Import PNG(s) as new tileset"
+    _apply_last_import_dir(dlg)
     dlg.files_selected.connect(_on_tileset_files_selected)
     dlg.canceled.connect(_on_tileset_dialog_closed.bind(dlg))
     dlg.visibility_changed.connect(_on_tileset_dialog_visibility_changed.bind(dlg))
@@ -879,11 +884,32 @@ func request_append_to_tileset(tileset_idx: int) -> void:
     dlg.access = FileDialog.ACCESS_FILESYSTEM
     dlg.filters = PackedStringArray(["*.png ; PNG images"])
     dlg.title = "Append PNG(s) to tileset %02d" % tileset_idx
+    _apply_last_import_dir(dlg)
     dlg.files_selected.connect(_on_append_files_selected.bind(tileset_idx))
     dlg.canceled.connect(_on_tileset_dialog_closed.bind(dlg))
     dlg.visibility_changed.connect(_on_tileset_dialog_visibility_changed.bind(dlg))
     add_child(dlg)
     dlg.popup_centered_ratio(0.7)
+
+
+func _apply_last_import_dir(dlg: FileDialog) -> void:
+    if _last_tileset_import_dir.is_empty():
+        return
+    if not DirAccess.dir_exists_absolute(_last_tileset_import_dir):
+        return
+    dlg.current_dir = _last_tileset_import_dir
+
+
+func _remember_import_dir_from(paths: PackedStringArray) -> void:
+    if paths.is_empty():
+        return
+    var first := String(paths[0])
+    if first.is_empty():
+        return
+    var dir := first.get_base_dir()
+    if dir.is_empty():
+        return
+    _last_tileset_import_dir = dir
 
 
 func _on_tileset_dialog_visibility_changed(dlg: FileDialog) -> void:
@@ -898,6 +924,7 @@ func _on_tileset_dialog_closed(dlg: FileDialog) -> void:
 func _on_tileset_files_selected(paths: PackedStringArray) -> void:
     if paths.is_empty():
         return
+    _remember_import_dir_from(paths)
     # Stage the paths on the instance and hand off to the tile-size modal.
     # When the user submits, _finish_tileset_import reads _pending_import_paths.
     _pending_import_paths = paths
@@ -1010,6 +1037,7 @@ func _on_tileset_delete_confirmed(tileset_idx: int) -> void:
 func _on_append_files_selected(paths: PackedStringArray, tileset_idx: int) -> void:
     if paths.is_empty():
         return
+    _remember_import_dir_from(paths)
     var n := EnvIO.append_to_tileset(pack_id, tileset_idx, paths)
     if n <= 0:
         return

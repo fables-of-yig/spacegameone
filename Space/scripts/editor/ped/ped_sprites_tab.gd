@@ -52,6 +52,12 @@ var _layer_mode_btn: Button = null
 var _preset_option: OptionButton = null
 var _apply_preset_btn: Button = null
 var _overwrite_preset_btn: Button = null
+var _save_as_preset_btn: Button = null
+var _save_as_preset_dialog: ConfirmationDialog = null
+var _save_as_preset_id_edit: LineEdit = null
+var _save_as_preset_name_edit: LineEdit = null
+var _save_as_preset_desc_edit: LineEdit = null
+var _save_as_preset_error_label: Label = null
 var _preset_entries: Array = []
 var _file_dialog: FileDialog = null
 var _sheet_zoom: float = 1.0
@@ -153,6 +159,9 @@ const MVTYPE_NAMES: Array = [
     ["Wall Jump", 20, "Pose played during or right after a wall jump."],
     ["Turn In Air", 23, "Airborne turnaround pose while changing facing."],
     ["Turn While Falling", 24, "Falling turnaround pose."],
+    ["Parry", 30, "Defensive parry pose. Plays when the player presses the parry input (Q). Combat / deflect behavior is authored separately."],
+    ["Knockdown", 31, "Player has been knocked down. Played by attacks that explicitly call apply_knockdown() (not by ordinary damage). Author this as a one-shot animation with transition_to set to the matching stand_up pose ID; input is locked and invuln granted for the whole knockdown -> stand_up chain."],
+    ["Stand Up", 32, "Stand-up animation that plays after Knockdown finishes. Author this as a one-shot with transition_to set to the standing pose ID (1 for right, 2 for left). The chain ends when this pose transitions out, which releases the input lock."],
 ]
 
 
@@ -298,6 +307,8 @@ func _update_tooltips() -> void:
         EditorTooltip.show_text("Apply the selected preset into this pack's player sprite data. This rewrites the current sprite setup for the active pack.")
     elif _overwrite_preset_btn != null and Rect2(_overwrite_preset_btn.position, _overwrite_preset_btn.size).has_point(mp):
         EditorTooltip.show_text("Overwrite the selected preset with the current editor state so you can fix and reship a preset from this tab.")
+    elif _save_as_preset_btn != null and Rect2(_save_as_preset_btn.position, _save_as_preset_btn.size).has_point(mp):
+        EditorTooltip.show_text("Save the current editor state as a brand-new preset inside this pack. The preset is written to res://Content/<pack>/Sprites/presets/<id>/ alongside its sheet PNGs so it ships with the pack.")
     elif _rot_ccw_btn != null and Rect2(_rot_ccw_btn.position, _rot_ccw_btn.size).has_point(mp):
         EditorTooltip.show_text("Rotate the selected frame 22.5 degrees counter-clockwise. Useful for spin frames when the source pack doesn't ship a dedicated spin strip.")
     elif _rot_cw_btn != null and Rect2(_rot_cw_btn.position, _rot_cw_btn.size).has_point(mp):
@@ -372,6 +383,123 @@ func _on_overwrite_preset_pressed() -> void:
     if not PspIO.overwrite_preset(pack_id, preset_id, frames_data, poses_data):
         push_error("[PedSpritesTab] failed to overwrite preset '%s'" % preset_id)
         return
+
+
+func _on_save_as_preset_pressed() -> void:
+    _ensure_save_as_preset_dialog()
+    if _save_as_preset_id_edit != null:
+        _save_as_preset_id_edit.text = ""
+    if _save_as_preset_name_edit != null:
+        _save_as_preset_name_edit.text = ""
+    if _save_as_preset_desc_edit != null:
+        _save_as_preset_desc_edit.text = ""
+    if _save_as_preset_error_label != null:
+        _save_as_preset_error_label.text = ""
+        _save_as_preset_error_label.visible = false
+    _save_as_preset_dialog.popup_centered(Vector2(420, 280))
+    if _save_as_preset_id_edit != null:
+        _save_as_preset_id_edit.grab_focus()
+
+
+func _ensure_save_as_preset_dialog() -> void:
+    if _save_as_preset_dialog != null:
+        return
+    _save_as_preset_dialog = ConfirmationDialog.new()
+    _save_as_preset_dialog.title = "Save current sprites as new preset"
+    _save_as_preset_dialog.ok_button_text = "Save preset"
+    _save_as_preset_dialog.cancel_button_text = "Cancel"
+    _save_as_preset_dialog.hide_on_ok = false
+    _save_as_preset_dialog.get_ok_button().disabled = false
+
+    var vbox := VBoxContainer.new()
+    vbox.custom_minimum_size = Vector2(380, 0)
+
+    var id_label := Label.new()
+    id_label.text = "Preset ID (lowercase letters, digits, underscores)"
+    vbox.add_child(id_label)
+    _save_as_preset_id_edit = LineEdit.new()
+    _save_as_preset_id_edit.placeholder_text = "my_preset"
+    vbox.add_child(_save_as_preset_id_edit)
+
+    var name_label := Label.new()
+    name_label.text = "Display name"
+    vbox.add_child(name_label)
+    _save_as_preset_name_edit = LineEdit.new()
+    _save_as_preset_name_edit.placeholder_text = "My Preset"
+    vbox.add_child(_save_as_preset_name_edit)
+
+    var desc_label := Label.new()
+    desc_label.text = "Description (optional)"
+    vbox.add_child(desc_label)
+    _save_as_preset_desc_edit = LineEdit.new()
+    _save_as_preset_desc_edit.placeholder_text = "Notes about this preset"
+    vbox.add_child(_save_as_preset_desc_edit)
+
+    _save_as_preset_error_label = Label.new()
+    _save_as_preset_error_label.add_theme_color_override("font_color", Color(1.0, 0.5, 0.4, 1.0))
+    _save_as_preset_error_label.visible = false
+    vbox.add_child(_save_as_preset_error_label)
+
+    _save_as_preset_dialog.add_child(vbox)
+    _save_as_preset_dialog.confirmed.connect(_on_save_as_preset_confirmed)
+    add_child(_save_as_preset_dialog)
+
+
+func _on_save_as_preset_confirmed() -> void:
+    var raw_id: String = _save_as_preset_id_edit.text if _save_as_preset_id_edit != null else ""
+    var preset_id: String = raw_id.strip_edges()
+    if preset_id.is_empty():
+        _show_save_as_preset_error("Preset ID is required.")
+        return
+    var lowered: String = preset_id.to_lower()
+    for c in lowered:
+        if not ((c >= "a" and c <= "z") or (c >= "0" and c <= "9") or c == "_"):
+            _show_save_as_preset_error("Preset ID may only contain lowercase letters, digits, and underscores.")
+            return
+    preset_id = lowered
+
+    var preset_name: String = ""
+    if _save_as_preset_name_edit != null:
+        preset_name = _save_as_preset_name_edit.text.strip_edges()
+    var preset_desc: String = ""
+    if _save_as_preset_desc_edit != null:
+        preset_desc = _save_as_preset_desc_edit.text.strip_edges()
+
+    var payload: Dictionary = _build_save_payload()
+    var frames_data_v: Variant = payload.get("frames", {})
+    var poses_data_v: Variant = payload.get("poses", {})
+    if typeof(frames_data_v) != TYPE_DICTIONARY or typeof(poses_data_v) != TYPE_DICTIONARY:
+        _show_save_as_preset_error("Could not build sprite payload from current state.")
+        return
+    var frames_data: Dictionary = frames_data_v
+    var poses_data: Dictionary = poses_data_v
+
+    if not _commit_save_payload(frames_data, poses_data):
+        _show_save_as_preset_error("Saving the current pack failed; preset not written.")
+        return
+
+    if not PspIO.save_as_new_preset(pack_id, preset_id, preset_name, preset_desc, frames_data, poses_data):
+        _show_save_as_preset_error("Preset '%s' could not be written. Check the Godot console." % preset_id)
+        return
+
+    _preset_entries = PspIO.list_presets(pack_id)
+    _rebuild_preset_option()
+    if _preset_option != null:
+        for i in range(_preset_entries.size()):
+            var entry_v: Variant = _preset_entries[i]
+            if typeof(entry_v) != TYPE_DICTIONARY:
+                continue
+            if str((entry_v as Dictionary).get("id", "")).strip_edges() == preset_id:
+                _preset_option.select(i)
+                break
+    if _save_as_preset_dialog != null:
+        _save_as_preset_dialog.hide()
+
+
+func _show_save_as_preset_error(msg: String) -> void:
+    if _save_as_preset_error_label != null:
+        _save_as_preset_error_label.text = msg
+        _save_as_preset_error_label.visible = true
 
 
 func save() -> bool:
@@ -539,6 +667,11 @@ func _build_layout() -> void:
     _overwrite_preset_btn.text = "OVERWRITE PRESET"
     _overwrite_preset_btn.pressed.connect(_on_overwrite_preset_pressed)
     add_child(_overwrite_preset_btn)
+
+    _save_as_preset_btn = Button.new()
+    _save_as_preset_btn.text = "SAVE AS PRESET"
+    _save_as_preset_btn.pressed.connect(_on_save_as_preset_pressed)
+    add_child(_save_as_preset_btn)
 
     _pose_list = ItemList.new()
     _pose_list.item_selected.connect(_on_pose_list_selected)
@@ -991,13 +1124,14 @@ func _layout_children() -> void:
         _layer_mode_btn.position = Vector2(row1_x, 6)
         _layer_mode_btn.size = Vector2(row1_layer_w, 28)
 
-    var preset_w: float = 220.0
-    var apply_w: float = 118.0
-    var overwrite_w: float = 152.0
-    var row2_fixed: float = preset_w + apply_w + overwrite_w + top_gap * 2.0
+    var preset_w: float = 200.0
+    var apply_w: float = 110.0
+    var overwrite_w: float = 142.0
+    var save_as_w: float = 142.0
+    var row2_fixed: float = preset_w + apply_w + overwrite_w + save_as_w + top_gap * 3.0
     if row2_fixed > (top_right - top_left):
         var shrink: float = row2_fixed - (top_right - top_left)
-        preset_w = maxf(150.0, preset_w - shrink)
+        preset_w = maxf(140.0, preset_w - shrink)
     var row2_x: float = top_left
     if _preset_option != null:
         _preset_option.position = Vector2(row2_x, 40)
@@ -1009,7 +1143,11 @@ func _layout_children() -> void:
     row2_x += apply_w + top_gap
     if _overwrite_preset_btn != null:
         _overwrite_preset_btn.position = Vector2(row2_x, 40)
-        _overwrite_preset_btn.size = Vector2(maxf(120.0, top_right - row2_x), 28)
+        _overwrite_preset_btn.size = Vector2(overwrite_w, 28)
+    row2_x += overwrite_w + top_gap
+    if _save_as_preset_btn != null:
+        _save_as_preset_btn.position = Vector2(row2_x, 40)
+        _save_as_preset_btn.size = Vector2(maxf(120.0, top_right - row2_x), 28)
 
     var content_y: float = TOP_ACTION_H
     var content_h: float = vh - TOP_ACTION_H
@@ -1488,13 +1626,13 @@ func _on_add_pose_pressed() -> void:
         "hurtbox_h":     32,
         "weapon_anchor_x": 0,
         "weapon_anchor_y": _default_weapon_anchor_y({"y_radius": 16}),
-        "timing":        [10],
+        "timing":        [],
         "anim_speed":    1.0,
-        "frame_boxes":   [{}],
+        "frame_boxes":   [],
         "loop_from":     0,
         "transition_to": -1,
     }
-    _frames[new_id] = [{"pose": new_id, "layers": [{"sheet": _active_sheet_id, "index": 0}]}]
+    _frames[new_id] = []
     dirty = true
     _populate_pose_list()
     var keys: Array = _poses.keys()

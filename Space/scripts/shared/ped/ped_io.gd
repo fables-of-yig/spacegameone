@@ -637,15 +637,6 @@ static func _ensure_starter_attacks(pack_id: String, data: Dictionary) -> Dictio
             if str(entry.get("projectile_id", "")).strip_edges().is_empty():
                 entry["projectile_id"] = "beam_basic"
                 changed = true
-            if str(entry.get("hold_behavior", "")).strip_edges() != "full_auto":
-                entry["hold_behavior"] = "full_auto"
-                changed = true
-            if not str(entry.get("charged_attack_id", "")).strip_edges().is_empty():
-                entry["charged_attack_id"] = ""
-                changed = true
-            if int(entry.get("charge_ticks", 0)) != 0:
-                entry["charge_ticks"] = 0
-                changed = true
         elif attack_id == "sword_slash":
             if int(entry.get("player_pose", -1)) == 40:
                 entry["player_pose"] = 201
@@ -1015,7 +1006,17 @@ static func _validate_attacks(pack_id: String, data: Dictionary) -> bool:
         return false
     var projectile_ids := _projectile_id_set(pack_id)
     var pose_ids := _pose_id_set(pack_id)
-    var attack_ids := _attack_id_set(pack_id)
+    # Build the known-attack-IDs set from the data being saved instead of
+    # re-reading from disk. Otherwise an attack created in this same save
+    # (and referenced by another attack's charged_attack_id / combo_next_id)
+    # can't be resolved because disk still has the pre-save state.
+    var attack_ids: Dictionary = {}
+    for entry_v_pre in (entries_v as Array):
+        if typeof(entry_v_pre) != TYPE_DICTIONARY:
+            continue
+        var pre_id := str((entry_v_pre as Dictionary).get("id", "")).strip_edges()
+        if not pre_id.is_empty():
+            attack_ids[pre_id] = true
     var seen_ids: Dictionary = {}
     var valid_types := {"melee": true, "projectile": true}
     for i in range((entries_v as Array).size()):

@@ -552,7 +552,9 @@ func _draw():
                     alpha = 0.35
             else:
                 alpha = 0.5
-            _draw_tile_layer(tiles_v, alpha)
+            var anims_v: Variant = layer.get("animations", {})
+            var layer_anims: Dictionary = anims_v if typeof(anims_v) == TYPE_DICTIONARY else {}
+            _draw_tile_layer(tiles_v, alpha, layer_anims)
 
         # Draw animated cell indicators on the active tile layer.
         if editing_tile and editor.has_method("get_tile_layer_animations"):
@@ -856,11 +858,12 @@ func _draw_shader_region_handles(editing_shaders: bool) -> void:
     _draw_zone_handles(editing_shaders)
 
 
-func _draw_tile_layer(tiles: Array, alpha: float) -> void:
+func _draw_tile_layer(tiles: Array, alpha: float, animations: Dictionary = {}) -> void:
     var rows := tiles.size()
     if rows == 0:
         return
     var cell_size := float(BLOCK_SIZE) * zoom
+    var now_sec := Time.get_ticks_msec() / 1000.0
     for r in rows:
         var row_v: Variant = tiles[r]
         if typeof(row_v) != TYPE_ARRAY:
@@ -875,6 +878,13 @@ func _draw_tile_layer(tiles: Array, alpha: float) -> void:
             var tileset_id: int = info["tileset"]
             var hflip: bool = info["hflip"]
             var vflip: bool = info["vflip"]
+            # Swap idx for the current animation frame when this cell has
+            # a multi-frame anim configured. Matches the runtime algorithm
+            # in MV/scripts/room_renderer.gd so editor preview = gameplay.
+            if not animations.is_empty():
+                var anim_idx := _resolve_anim_frame_idx(animations, c, r, now_sec)
+                if anim_idx >= 0:
+                    idx = anim_idx
             var tex: Texture2D = editor.get_tileset_texture(tileset_id)
             if tex == null:
                 continue
@@ -891,6 +901,47 @@ func _draw_tile_layer(tiles: Array, alpha: float) -> void:
             var dst_pos := _cell_to_screen(c, r)
             var dst_rect := Rect2(dst_pos, Vector2(cell_size, cell_size))
             _draw_tile_quad(tex, dst_rect, src_rect, alpha, hflip, vflip)
+
+
+# Returns the metatile idx for the current frame of the animation at
+# (col, row), or -1 if no animation is configured. `now_sec` is the
+# shared timebase so every cell stays in lockstep within a redraw.
+func _resolve_anim_frame_idx(animations: Dictionary, col: int, row: int, now_sec: float) -> int:
+    var key := "%d,%d" % [col, row]
+    if not animations.has(key):
+        return -1
+    var cfg_v: Variant = animations[key]
+    if typeof(cfg_v) != TYPE_DICTIONARY:
+        return -1
+    var cfg: Dictionary = cfg_v
+    var frames_v: Variant = cfg.get("frames", [])
+    if typeof(frames_v) != TYPE_ARRAY:
+        return -1
+    var frames: Array = frames_v
+    var frame_count: int = frames.size()
+    if frame_count < 2:
+        return -1
+    var fps := float(cfg.get("fps", 8.0))
+    if fps <= 0.0:
+        fps = 8.0
+    var phase := float(cfg.get("phase_offset", 0.0))
+    var elapsed_frames := int(floor((now_sec + phase) * fps))
+    if elapsed_frames < 0:
+        elapsed_frames = 0
+    var new_idx: int = 0
+    if bool(cfg.get("ping_pong", false)):
+        var cycle: int = maxi(1, (frame_count - 1) * 2)
+        var pos: int = elapsed_frames % cycle
+        if pos < frame_count:
+            new_idx = pos
+        else:
+            new_idx = cycle - pos
+        new_idx = clampi(new_idx, 0, frame_count - 1)
+    elif bool(cfg.get("loop", true)):
+        new_idx = elapsed_frames % frame_count
+    else:
+        new_idx = mini(elapsed_frames, frame_count - 1)
+    return int(frames[new_idx])
 
 
 func _draw_tile_quad(tex: Texture2D, dst: Rect2, src: Rect2, alpha: float, hflip: bool, vflip: bool) -> void:
