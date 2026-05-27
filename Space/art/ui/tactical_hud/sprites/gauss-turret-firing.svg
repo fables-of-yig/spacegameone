@@ -1,0 +1,38 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="120" height="140" viewBox="0 0 120 140">
+  <defs>
+    <linearGradient id="gt-body" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#1a4c5c"></stop><stop offset="1" stop-color="#06212a"></stop>
+    </linearGradient>
+    <linearGradient id="gt-barrel" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0" stop-color="#0c3a48"></stop><stop offset="0.5" stop-color="#1a6878"></stop><stop offset="1" stop-color="#0c3a48"></stop>
+    </linearGradient>
+  </defs>
+
+  <g class="chassis">
+    <ellipse cx="60" cy="118" rx="44" ry="11" fill="#04141a" stroke="#5cf2ff" stroke-opacity="0.5"></ellipse>
+    <ellipse cx="60" cy="115" rx="36" ry="8" fill="url(#gt-body)" stroke="#5cf2ff" stroke-opacity="0.6"></ellipse>
+    <path d="M 38 104 L 44 78 L 76 78 L 82 104 Z" fill="url(#gt-body)" stroke="#5cf2ff" stroke-opacity="0.6"></path>
+    <rect x="42" y="68" width="36" height="14" rx="2" fill="#0e3744" stroke="#5cf2ff" stroke-opacity="0.7"></rect>
+    <rect x="54" y="14" width="12" height="58" rx="1.5" fill="url(#gt-barrel)" stroke="#5cf2ff" stroke-opacity="0.6"></rect>
+    <rect x="56" y="16" width="1.5" height="54" fill="#5cf2ff" opacity="0.4"></rect>
+    <line x1="54" y1="24" x2="66" y2="24" stroke="#5cf2ff" stroke-opacity="0.4" stroke-width="0.7"></line>
+    <line x1="54" y1="36" x2="66" y2="36" stroke="#5cf2ff" stroke-opacity="0.4" stroke-width="0.7"></line>
+    <line x1="54" y1="48" x2="66" y2="48" stroke="#5cf2ff" stroke-opacity="0.4" stroke-width="0.7"></line>
+    <line x1="54" y1="60" x2="66" y2="60" stroke="#5cf2ff" stroke-opacity="0.4" stroke-width="0.7"></line>
+    <rect x="52" y="8" width="16" height="8" rx="1" fill="#04141a" stroke="#5cf2ff" stroke-opacity="0.7"></rect>
+    <circle cx="60" cy="12" r="2.5" fill="#000"></circle>
+  </g>
+  <g class="tint">
+    <circle cx="40" cy="118" r="1.5" fill="#5cf2ff" opacity="0.7"></circle>
+    <circle cx="60" cy="118" r="1.5" fill="#5cf2ff" opacity="0.7"></circle>
+    <circle cx="80" cy="118" r="1.5" fill="#5cf2ff" opacity="0.7"></circle>
+    <rect x="50" y="72" width="20" height="2" fill="#5cf2ff" opacity="0.7"></rect>
+    <circle cx="60" cy="12" r="1.2" fill="#5cf2ff" opacity="1" data-anim="muzzle-glow"></circle>
+  </g>
+  
+  
+  <g class="flash" data-anim="muzzle-flash">
+    <path d="M 56 8 Q 60 -8 64 8 Z" fill="#fff5cc"></path>
+    <circle cx="60" cy="6" r="6" fill="#5cf2ff" opacity="0.6"></circle>
+  </g>
+</svg>

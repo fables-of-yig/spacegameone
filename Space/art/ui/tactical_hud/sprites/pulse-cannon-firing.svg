@@ -1,0 +1,74 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="240" height="240" viewBox="0 0 240 240">
+  <defs>
+    <linearGradient id="pc-barrel" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0" stop-color="#0c3a48"></stop>
+      <stop offset="0.45" stop-color="#1a6878"></stop>
+      <stop offset="0.55" stop-color="#1a6878"></stop>
+      <stop offset="1" stop-color="#0c3a48"></stop>
+    </linearGradient>
+    <linearGradient id="pc-base" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#1a4c5c"></stop>
+      <stop offset="1" stop-color="#06212a"></stop>
+    </linearGradient>
+    <radialGradient id="pc-lens" cx="0.5" cy="0.5" r="0.5">
+      <stop offset="0" stop-color="#ffffff"></stop>
+      <stop offset="0.3" stop-color="#5cf2ff"></stop>
+      <stop offset="1" stop-color="#0c3a48"></stop>
+    </radialGradient>
+  </defs>
+
+  
+  <g class="chassis">
+    <ellipse cx="120" cy="200" rx="78" ry="20" fill="#04141a" stroke="#5cf2ff" stroke-opacity="0.45" stroke-width="1.2"></ellipse>
+    <ellipse cx="120" cy="196" rx="64" ry="14" fill="url(#pc-base)" stroke="#5cf2ff" stroke-opacity="0.6"></ellipse>
+    <path d="M 92 180 L 100 140 L 140 140 L 148 180 Z" fill="url(#pc-base)" stroke="#5cf2ff" stroke-opacity="0.55"></path>
+    <rect x="98" y="132" width="44" height="14" fill="#0e3744" stroke="#5cf2ff" stroke-opacity="0.6"></rect>
+  </g>
+  <g class="tint" fill="#5cf2ff">
+    <circle cx="149.00" cy="185.61" r="2" opacity="0.7"></circle>
+    <circle cx="170.23" cy="190.00" r="2" opacity="0.7"></circle>
+    <circle cx="178.00" cy="196.00" r="2" opacity="0.7"></circle>
+    <circle cx="170.23" cy="202.00" r="2" opacity="0.7"></circle>
+    <circle cx="149.00" cy="206.39" r="2" opacity="0.7"></circle>
+    <line x1="100" y1="139" x2="140" y2="139" stroke="#5cf2ff" stroke-opacity="0.7" stroke-width="0.8"></line>
+  </g>
+
+  
+  <g class="chassis" opacity="0.85">
+    <rect x="92" y="110" width="56" height="6" rx="1" fill="#0e3744" stroke="#5cf2ff" stroke-opacity="0.55"></rect>
+    <rect x="92" y="88" width="56" height="6" rx="1" fill="#0e3744" stroke="#5cf2ff" stroke-opacity="0.55"></rect>
+    <rect x="92" y="66" width="56" height="6" rx="1" fill="#0e3744" stroke="#5cf2ff" stroke-opacity="0.55"></rect>
+    <rect x="92" y="44" width="56" height="6" rx="1" fill="#0e3744" stroke="#5cf2ff" stroke-opacity="0.55"></rect>
+  </g>
+  <g class="tint" data-anim="coil-pulse">
+    <rect x="100" y="111" width="40" height="2" fill="#5cf2ff" opacity="1"></rect>
+    <rect x="100" y="89" width="40" height="2" fill="#5cf2ff" opacity="1"></rect>
+    <rect x="100" y="67" width="40" height="2" fill="#5cf2ff" opacity="1"></rect>
+    <rect x="100" y="45" width="40" height="2" fill="#5cf2ff" opacity="1"></rect>
+  </g>
+
+  
+  <g class="chassis">
+    <rect x="100" y="20" width="40" height="118" rx="3" fill="url(#pc-barrel)" stroke="#5cf2ff" stroke-opacity="0.7"></rect>
+    <rect x="106" y="22" width="4" height="114" fill="#5cf2ff" opacity="0.35"></rect>
+    <rect x="130" y="22" width="4" height="114" fill="#000" opacity="0.45"></rect>
+    <line x1="100" y1="40" x2="140" y2="40" stroke="#5cf2ff" stroke-opacity="0.45" stroke-width="0.8"></line>
+    <line x1="100" y1="60" x2="140" y2="60" stroke="#5cf2ff" stroke-opacity="0.45" stroke-width="0.8"></line>
+    <line x1="100" y1="80" x2="140" y2="80" stroke="#5cf2ff" stroke-opacity="0.45" stroke-width="0.8"></line>
+    <line x1="100" y1="100" x2="140" y2="100" stroke="#5cf2ff" stroke-opacity="0.45" stroke-width="0.8"></line>
+    <rect x="96" y="10" width="48" height="14" rx="2" fill="#06212a" stroke="#5cf2ff" stroke-opacity="0.8"></rect>
+    <path d="M 96 14 L 86 -6 L 96 -2 Z" fill="#0e3744" stroke="#5cf2ff" stroke-opacity="0.7"></path>
+    <path d="M 144 14 L 154 -6 L 144 -2 Z" fill="#0e3744" stroke="#5cf2ff" stroke-opacity="0.7"></path>
+  </g>
+  <g class="tint">
+    <circle cx="120" cy="17" r="6.5" fill="url(#pc-lens)"></circle>
+    <circle cx="120" cy="17" r="3" fill="#5cf2ff" opacity="1" data-anim="lens-flare"></circle>
+  </g>
+  
+  
+  <g class="beam" data-anim="beam-flicker">
+    <rect x="116" y="-260" width="8" height="280" fill="#5cf2ff" opacity="0.95"></rect>
+    <rect x="118" y="-260" width="4" height="280" fill="#ffffff"></rect>
+    <circle cx="120" cy="-260" r="14" fill="#5cf2ff" opacity="0.6"></circle>
+  </g>
+</svg>

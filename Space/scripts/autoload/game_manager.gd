@@ -581,6 +581,11 @@ var using_controller: bool = false
 var controller_aim: Vector2 = Vector2.ZERO
 const STICK_DEADZONE: float = 0.15
 
+# When true, UICoordinator hides the legacy combat HUD and shows the new
+# Tactical HUD (SCS Meridian re-skin). F10 flips this at runtime; see
+# main.gd `_unhandled_input` and UICoordinator.toggle_tactical_hud().
+var use_tactical_hud: bool = false
+
 
 
 func detect_input_device(event: InputEvent):

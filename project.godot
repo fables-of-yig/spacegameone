@@ -21,6 +21,7 @@ config/features=PackedStringArray("4.6", "Forward Plus")
 [autoload]
 
 SettingsManager="*res://Space/scripts/autoload/settings_manager.gd"
+Tokens="*res://Space/scripts/autoload/tokens.gd"
 GameManager="*res://Space/scripts/autoload/game_manager.gd"
 DataManager="*res://Space/scripts/autoload/data_manager.gd"
 AudioManager="*res://Space/scripts/autoload/audio_manager.gd"

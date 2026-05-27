@@ -2609,6 +2609,11 @@ func _unhandled_input(event: InputEvent):
             hud_control.show_fps = not hud_control.show_fps
         return
 
+    if event is InputEventKey and event.pressed and event.keycode == KEY_F10:
+        if _ui != null:
+            _ui.toggle_tactical_hud()
+        return
+
     if GameManager.using_controller and event is InputEventJoypadButton and event.pressed and event.button_index == JOY_BUTTON_START:
         if pause_open:
             _on_pause_resumed()

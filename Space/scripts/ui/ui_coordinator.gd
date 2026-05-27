@@ -20,6 +20,13 @@ var _planet_overlay_root: Control = null
 var _region_picker_layer: CanvasLayer = null
 var _region_picker: Control = null
 
+# Refs to the two HUDs mounted in setup_hud(). `legacy_hud` is the
+# custom-draw HUD that's been here since launch; `tactical_hud` is the
+# SCS Meridian re-skin. Exactly one is visible at a time, picked by
+# `GameManager.use_tactical_hud`. Flip with toggle_tactical_hud().
+var legacy_hud: Control = null
+var tactical_hud: Control = null
+
 func _make_layer(layer_num: int) -> CanvasLayer:
     var cl = CanvasLayer.new()
     cl.layer = layer_num
@@ -37,7 +44,40 @@ func setup_hud(player: Node2D, system_positions: Dictionary) -> Control:
     hud_control.system_positions = system_positions
     hud_layer.add_child(hud_control)
     _mount_hud_screen_overlay(hud_control, player)
+    legacy_hud = hud_control
+
+    _mount_tactical_hud(player)
+    _apply_hud_visibility()
+
     return hud_control
+
+
+# Mounts the tactical HUD on a sibling CanvasLayer so it can be toggled
+# without touching the legacy HUD's render order.
+func _mount_tactical_hud(player: Node2D) -> void:
+    var tactical_layer := _make_layer(11)
+    var tactical_script := preload("res://Space/scripts/ui/tactical_hud.gd")
+    var tac := Control.new()
+    tac.set_anchors_preset(Control.PRESET_FULL_RECT)
+    tac.set_script(tactical_script)
+    tac.player = player
+    tactical_layer.add_child(tac)
+    tactical_hud = tac
+
+
+# Flips which HUD is shown. Updates `GameManager.use_tactical_hud` so
+# the choice persists across HUD remounts in the same session.
+func toggle_tactical_hud() -> void:
+    GameManager.use_tactical_hud = not GameManager.use_tactical_hud
+    _apply_hud_visibility()
+
+
+func _apply_hud_visibility() -> void:
+    var on_tactical: bool = GameManager.use_tactical_hud
+    if legacy_hud != null:
+        legacy_hud.visible = not on_tactical
+    if tactical_hud != null:
+        tactical_hud.visible = on_tactical
 
 
 # Overlays the editor-built HUD screen (if any) on top of the hardcoded
