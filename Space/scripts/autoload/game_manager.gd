@@ -348,10 +348,6 @@ var game_clock_accumulator: float = 0.0
 var total_game_hours: int = 0
 signal hour_changed(hour: int, day: int, month: int, year: int)
 signal day_changed(day: int, month: int, year: int)
-@warning_ignore("unused_signal")
-signal module_repaired
-@warning_ignore("unused_signal")
-signal module_crafted
 
 
 const RESOURCE_TYPES: Dictionary = {

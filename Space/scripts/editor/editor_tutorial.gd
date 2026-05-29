@@ -160,18 +160,6 @@ const TUTORIALS: Dictionary = {
             "Press Ctrl+9 to playtest the current room. The game launches with the player at the player_spawn entity.",
         ],
     },
-    "realm": {
-        "title": "Realm Editor Tutorial",
-        "steps": [
-            "The realm is a 32x32 tile grid representing the planet surface. It wraps toroidally — flying off one edge loops to the other side.",
-            "Paint GROUND tiles first — these form the Mode 7 perspective ground plane you fly over.",
-            "Paint STRUCTURE tiles for buildings/trees/mountains — these render as billboards standing up vertically.",
-            "Paint SKY tiles for clouds/floating islands — these render elevated above structures.",
-            "Create REGIONS as landing zones. Click + NEW REGION, set a position on the grid. Regions are where the player can land to enter the MV sidescroller.",
-            "Click a region name to open the Region Editor, where you draw room layouts.",
-            "All three layers support animated tiles — use the ANIM tool after painting.",
-        ],
-    },
     "entity": {
         "title": "Entity Editor Tutorial",
         "steps": [

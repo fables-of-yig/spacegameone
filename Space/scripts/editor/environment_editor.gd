@@ -546,8 +546,7 @@ func _apply_selected_door_fields_to_zone() -> void:
 func _sync_selected_door_fields(entry: Dictionary) -> void:
     selected_door_direction = str(entry.get("direction", selected_door_direction))
     selected_door_target_room = str(entry.get("target_door_id", entry.get("target_room", selected_door_target_room)))
-    selected_door_launch_to_space = bool(entry.get("launch_to_space",
-        entry.get("send_to_overworld", selected_door_launch_to_space)))
+    selected_door_launch_to_space = bool(entry.get("launch_to_space", selected_door_launch_to_space))
     selected_door_enabled = bool(entry.get("enabled", selected_door_enabled))
     selected_door_locked = bool(entry.get("locked", selected_door_locked))
     selected_door_required_item_id = str(entry.get("required_item_id", selected_door_required_item_id)).strip_edges()

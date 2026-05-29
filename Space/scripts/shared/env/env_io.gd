@@ -909,8 +909,7 @@ static func _normalize_zone_entry(entry: Dictionary, room_w_blocks: int, room_h_
     zone["direction"] = _normalize_zone_direction(str(entry.get("direction", defaults["direction"])))
     zone["target_door_id"] = str(entry.get("target_door_id", defaults["target_door_id"])).strip_edges()
     zone["target_room"] = str(entry.get("target_room", defaults["target_room"])).strip_edges()
-    zone["launch_to_space"] = bool(entry.get("launch_to_space",
-        entry.get("send_to_overworld", defaults["launch_to_space"])))
+    zone["launch_to_space"] = bool(entry.get("launch_to_space", defaults["launch_to_space"]))
     zone["enabled"] = bool(entry.get("enabled", defaults["enabled"]))
     zone["locked"] = bool(entry.get("locked", defaults["locked"]))
     zone["required_item_id"] = str(entry.get("required_item_id", defaults["required_item_id"])).strip_edges()

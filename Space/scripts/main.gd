@@ -1592,8 +1592,11 @@ func _resolve_planet_pack_id(data: Dictionary) -> String:
         var current_pack_id := str(MvPackLoader.current_pack.pack_id).strip_edges()
         if not current_pack_id.is_empty():
             return current_pack_id
-    if _entered_planet_from_menu:
-        return "demo"
+    # No pack_id on the POI data and no current pack loaded. Falling back to the
+    # demo pack is expected when entering a planet straight from the main menu;
+    # reaching here on an in-game landing means the POI is missing its pack_id.
+    if not _entered_planet_from_menu:
+        push_warning("_resolve_planet_pack_id: no pack_id in data and no current pack — defaulting to 'demo' (POI likely missing pack_id)")
     return "demo"
 
 

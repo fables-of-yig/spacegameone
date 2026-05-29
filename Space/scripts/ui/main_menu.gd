@@ -75,7 +75,7 @@ var _campaign_naming_mode: String = ""  # "" | "create" | "rename"
 var _campaign_rename_idx: int = -1
 var _campaign_delete_confirm_idx: int = -1  # >=0 means showing confirm
 var _sub_ship_rect: Rect2 = Rect2()
-var _sub_realm_rect: Rect2 = Rect2()
+var _sub_world_rect: Rect2 = Rect2()
 var _sub_entity_rect: Rect2 = Rect2()
 var _sub_behavior_rect: Rect2 = Rect2()
 var _sub_theme_rect: Rect2 = Rect2()
@@ -298,7 +298,7 @@ func _handle_click(pos: Vector2):
         if _sub_ship_rect.has_point(pos):
             _choose_subeditor("ship")
             return
-        if _sub_realm_rect.has_point(pos):
+        if _sub_world_rect.has_point(pos):
             _choose_subeditor("system")
             return
         if _sub_entity_rect.has_point(pos):
@@ -999,7 +999,7 @@ func _draw_subeditor_chooser(font: Font, alpha: float):
     var row2_y: float = row1_y + btn_h + row_v_gap
 
     _sub_ship_rect = Rect2(row1_x, row1_y, btn_w, btn_h)
-    _sub_realm_rect = Rect2(row1_x + (btn_w + btn_gap) * 1, row1_y, btn_w, btn_h)
+    _sub_world_rect = Rect2(row1_x + (btn_w + btn_gap) * 1, row1_y, btn_w, btn_h)
     _sub_entity_rect = Rect2(row1_x + (btn_w + btn_gap) * 2, row1_y, btn_w, btn_h)
     _sub_behavior_rect = Rect2(row1_x + (btn_w + btn_gap) * 3, row1_y, btn_w, btn_h)
     _sub_theme_rect = Rect2(row1_x + (btn_w + btn_gap) * 4, row1_y, btn_w, btn_h)
@@ -1013,8 +1013,8 @@ func _draw_subeditor_chooser(font: Font, alpha: float):
     _draw_chooser_btn(font, _sub_ship_rect, "CONTENT",
         _sub_ship_rect.has_point(mouse_pos), alpha,
         Color(0.3, 0.85, 0.95), Color(0.75, 0.95, 1.0))
-    _draw_chooser_btn(font, _sub_realm_rect, "WORLD",
-        _sub_realm_rect.has_point(mouse_pos), alpha,
+    _draw_chooser_btn(font, _sub_world_rect, "WORLD",
+        _sub_world_rect.has_point(mouse_pos), alpha,
         Color(0.85, 0.3, 0.9), Color(1.0, 0.7, 1.0))
     _draw_chooser_btn(font, _sub_entity_rect, "ENTITY",
         _sub_entity_rect.has_point(mouse_pos), alpha,
