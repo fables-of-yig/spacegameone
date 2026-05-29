@@ -209,6 +209,23 @@ var loaded_system: String = ""
 
 func _ready():
     process_mode = PROCESS_MODE_ALWAYS
+    # Boot order is load-bearing. The runtime controllers split out of the
+    # former monolithic main (StarfieldRenderer, WorldRenderer, SpawnManager,
+    # CreativeModeController, UICoordinator) each take `owner_main = self` and
+    # reach back into this node's fields/methods through that reference, so the
+    # creation order below matters:
+    #   - SpawnManager.spawn_player() sets `player` and MUST run before
+    #     UICoordinator.setup_hud(player, ...), which is handed `player`.
+    #     Reordering it after setup_hud() leaves `player` null and the HUD
+    #     unbound.
+    #   - CreativeModeController owns the creative-mode / combat-recording state
+    #     declared near the top of this script (the @warning_ignore block) — that
+    #     state is written/read by the controller via host._x, not here, which is
+    #     why the warnings are suppressed.
+    #   - UICoordinator.setup_editors() returns {} in shipped builds, so each
+    #     editor handle below is fetched with .get(..., null).
+    # The owner_main back-reference is the implicit coupling ROADMAP flags for a
+    # future typed runtime contract.
     starfield = StarfieldRenderer.new()
     starfield.owner_main = self
     add_child(starfield)
