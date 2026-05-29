@@ -767,6 +767,17 @@ static func _validate_entities(entities: Array, behavior_ids: Dictionary, item_i
 			issues.append(Issue.new("error", "Entity '%s'" % eid, "projectile_damage must be >= 0"))
 		if float(e.get("projectile_speed", 0.0)) < 0.0:
 			issues.append(Issue.new("error", "Entity '%s'" % eid, "projectile_speed must be >= 0"))
+		if float(e.get("melee_range", 0.0)) < 0.0:
+			issues.append(Issue.new("error", "Entity '%s'" % eid, "melee_range must be >= 0"))
+		if float(e.get("projectile_range", 0.0)) < 0.0:
+			issues.append(Issue.new("error", "Entity '%s'" % eid, "projectile_range must be >= 0"))
+		if int(e.get("melee_attack_trigger_frame", -1)) < -1:
+			issues.append(Issue.new("error", "Entity '%s'" % eid, "melee_attack_trigger_frame must be >= -1 (-1 = none)"))
+		if int(e.get("projectile_attack_trigger_frame", -1)) < -1:
+			issues.append(Issue.new("error", "Entity '%s'" % eid, "projectile_attack_trigger_frame must be >= -1 (-1 = none)"))
+		var scene_path := str(e.get("scene", "")).strip_edges()
+		if not scene_path.is_empty() and not ResourceLoader.exists(scene_path):
+			issues.append(Issue.new("warning", "Entity '%s'" % eid, "scene '%s' not found" % scene_path))
 		var drops_v: Variant = e.get("item_drops", [])
 		if typeof(drops_v) == TYPE_ARRAY:
 			for drop_v in drops_v:
