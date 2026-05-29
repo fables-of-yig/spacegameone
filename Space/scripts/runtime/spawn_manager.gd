@@ -72,6 +72,7 @@ func spawn_enemy_with_wormhole(pos: Vector2, class_id: String, delay: float):
 func _do_wormhole_spawn(pos: Vector2, class_id: String):
     var host = _host()
     if not is_instance_valid(host.player):
+        push_warning("spawn_manager: skipping wormhole spawn of '%s' — player is not valid" % class_id)
         return
 
     var enemy = host.enemy_scene.instantiate()
@@ -85,6 +86,7 @@ func _do_wormhole_spawn(pos: Vector2, class_id: String):
 func _do_direct_spawn(pos: Vector2, class_id: String):
     var host = _host()
     if not is_instance_valid(host.player):
+        push_warning("spawn_manager: skipping direct spawn of '%s' — player is not valid" % class_id)
         return
     var enemy = host.enemy_scene.instantiate()
     enemy.position = pos

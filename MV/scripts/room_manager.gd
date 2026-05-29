@@ -2502,6 +2502,9 @@ func resolve_room_addr(addr: String, from_room_addr: String = "") -> String:
         return ""
     if _rooms.has(trimmed):
         return trimmed
+    if trimmed.count("/") > 1:
+        push_warning("resolve_room_addr: '%s' uses the removed 3-slot realm/region/room form; expected '<region>/<room>' or '<room>'" % trimmed)
+        return ""
 
     # Figure out the source region — explicit from_room_addr first, then
     # the active room, then MvMain's region resolver (which falls back to
@@ -2526,6 +2529,7 @@ func resolve_room_addr(addr: String, from_room_addr: String = "") -> String:
     # region, but accept any region as a last resort so cross-region links
     # using a room's display name keep resolving.
     var name_match := ""
+    var name_match_count := 0
     for key_v in _rooms.keys():
         var key := str(key_v)
         var room_v: Variant = _rooms[key]
@@ -2538,6 +2542,9 @@ func resolve_room_addr(addr: String, from_room_addr: String = "") -> String:
             return key
         if name_match.is_empty():
             name_match = key
+        name_match_count += 1
+    if name_match_count > 1:
+        push_warning("resolve_room_addr: '%s' matches %d rooms by display name across regions; using '%s'. Qualify as '<region>/<room>' to disambiguate." % [trimmed, name_match_count, name_match])
     return name_match
 
 

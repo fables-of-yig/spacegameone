@@ -774,10 +774,15 @@ static func _load_json_dict(path: String) -> Dictionary:
         return {}
     var f := FileAccess.open(path, FileAccess.READ)
     if f == null:
+        push_error("_load_json_dict: file exists but failed to open '%s'" % path)
         return {}
     var raw = JSON.parse_string(f.get_as_text())
     f.close()
+    if raw == null:
+        push_error("_load_json_dict: failed to parse JSON at '%s' (corrupt or invalid)" % path)
+        return {}
     if typeof(raw) != TYPE_DICTIONARY:
+        push_error("_load_json_dict: JSON root at '%s' is %s, expected Dictionary" % [path, type_string(typeof(raw))])
         return {}
     return raw
 
