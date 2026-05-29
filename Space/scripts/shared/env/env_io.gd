@@ -607,7 +607,6 @@ static func default_room(addr: String, friendly: String, w_blocks: int, h_blocks
         "collision": _make_2d_array(h_blocks, w_blocks, 0),
         "bts": _make_2d_array(h_blocks, w_blocks, 0),
         "slopes": [],
-        "doors": [],
         "entities": [],
         "triggers": TriggerRoot.default_root(),
     }

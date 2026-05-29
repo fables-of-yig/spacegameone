@@ -37,6 +37,7 @@ static func load_pack(pack_id: String) -> MvPackRef:
 
 	_ensure_user_pack_dir(user_path)
 	repair_shipped_pack(pack_id)
+	RegIO.warn_if_runtime_stale(pack_id)
 
 	var manifest_path := _resolve_read_static(user_path, shipped, "Pack.json")
 	var manifest := read_json_dict(manifest_path)

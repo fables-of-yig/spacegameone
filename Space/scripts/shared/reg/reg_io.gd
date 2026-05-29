@@ -418,6 +418,42 @@ static func flatten_to_runtime(pack_id: String) -> void:
     _save_json(flat_rooms_json_path(pack_id), _build_flat_runtime_rooms(pack_id))
 
 
+# Per-region Regions/<id>/rooms.json are the source of truth; Rooms/rooms.json
+# is the flattened runtime view rebuilt by flatten_to_runtime() on every RegIO
+# mutation. A direct edit to a per-region file (bulk tools, hand edits) leaves
+# the flat view stale silently. This surfaces that drift at load time (warn
+# only — re-saving the region in the editor rebuilds the view properly).
+# Auto-rebuild is deliberately avoided: _build_flat_runtime_rooms()/list_regions()
+# only see the writable pack, so rebuilding from a partially-authored writable
+# copy could drop shipped-only regions.
+static func warn_if_runtime_stale(pack_id: String) -> bool:
+    var regions_root := regions_dir(pack_id)
+    if not DirAccess.dir_exists_absolute(regions_root):
+        return false
+    var flat_path := flat_rooms_json_path(pack_id)
+    if not FileAccess.file_exists(flat_path):
+        return false
+    var flat_mtime := FileAccess.get_modified_time(flat_path)
+    var dir := DirAccess.open(regions_root)
+    if dir == null:
+        return false
+    var stale_region := ""
+    dir.list_dir_begin()
+    var name := dir.get_next()
+    while name != "":
+        if dir.current_is_dir() and not name.begins_with("."):
+            var src := region_rooms_json_path(pack_id, name)
+            if FileAccess.file_exists(src) and FileAccess.get_modified_time(src) > flat_mtime:
+                stale_region = name
+                break
+        name = dir.get_next()
+    dir.list_dir_end()
+    if not stale_region.is_empty():
+        push_warning("RegIO: pack '%s' region '%s' rooms.json is newer than the flattened Rooms/rooms.json — the runtime view is stale. Re-save the region in the editor (or call flatten_to_runtime) to rebuild it." % [pack_id, stale_region])
+        return true
+    return false
+
+
 static func _build_flat_runtime_rooms(pack_id: String) -> Dictionary:
     var pack_manifest: Dictionary = _load_pack_manifest(pack_id)
     var desired_start_region: String = str(pack_manifest.get("start_region", "")).strip_edges()

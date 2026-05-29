@@ -597,6 +597,9 @@ static func _validate_rooms(rooms: Array, entity_ids: Dictionary,
 
 		var doors: Variant = r.get("doors", [])
 		if typeof(doors) == TYPE_ARRAY:
+			if not (doors as Array).is_empty():
+				issues.append(Issue.new("warning", src,
+					"room has %d legacy door(s) in doors[] — doors are authored as zones[] now; re-save the room to migrate (the runtime still converts legacy doors at load)." % (doors as Array).size()))
 			for d_v in doors:
 				if typeof(d_v) != TYPE_DICTIONARY:
 					continue
