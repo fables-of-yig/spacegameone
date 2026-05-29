@@ -63,6 +63,33 @@ class Issue:
 		return "[%s] %s - %s" % [severity.to_upper(), source, message]
 
 
+# Runs full-pack validation after an authoring save and surfaces the result in
+# the Godot log without blocking the save (non-gating "warn on save"). Errors
+# are logged in full; warnings are summarized. Returns {"errors", "warnings"}.
+static func validate_and_log(pack_id: String, context: String = "") -> Dictionary:
+	var issues: Array = validate(pack_id)
+	var errors := 0
+	var warnings := 0
+	var error_lines: Array = []
+	for issue_v in issues:
+		if issue_v == null:
+			continue
+		var text: String = issue_v.text() if issue_v.has_method("text") else str(issue_v)
+		if text.begins_with("[ERROR]"):
+			errors += 1
+			error_lines.append(text)
+		elif text.begins_with("[WARNING]"):
+			warnings += 1
+	var ctx := (" after %s" % context) if not context.is_empty() else ""
+	if errors > 0:
+		push_warning("ContentValidator%s: pack '%s' has %d error(s), %d warning(s) — run VALIDATE for the full list:" % [ctx, pack_id, errors, warnings])
+		for line in error_lines:
+			push_warning("  %s" % str(line))
+	elif warnings > 0:
+		push_warning("ContentValidator%s: pack '%s' has %d warning(s) (run VALIDATE for details)" % [ctx, pack_id, warnings])
+	return {"errors": errors, "warnings": warnings}
+
+
 static func validate(pack_id: String) -> Array:
 	var issues: Array = []
 	var flat_rooms_root := _load_json_root(pack_id, "Rooms", "rooms.json")

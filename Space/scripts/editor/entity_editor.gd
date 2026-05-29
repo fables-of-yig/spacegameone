@@ -786,6 +786,7 @@ func save_all() -> void:
         return
     _poses_dirty.clear()
     dirty = false
+    ContentValidator.validate_and_log(pack_id, "entity save")
     print("[EntEditor] saved entities + poses for pack '%s'" % pack_id)
 
 func request_close() -> void:

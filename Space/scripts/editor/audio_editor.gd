@@ -641,6 +641,7 @@ func save_all() -> void:
         push_error("[AudEditor] clips.json save failed for pack '%s'" % pack_id)
         return
     dirty = false
+    ContentValidator.validate_and_log(pack_id, "audio save")
     print("[AudEditor] saved clips for pack '%s'" % pack_id)
 
 func request_close() -> void:

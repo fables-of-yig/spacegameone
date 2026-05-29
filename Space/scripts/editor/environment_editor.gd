@@ -1669,6 +1669,7 @@ func save_all() -> bool:
         dirty = false
         print("[EnvEditor] saved rooms for pack '%s' region '%s'" % [pack_id, region_id])
         _warn_dangling_door_targets()
+        _ContentValidator.validate_and_log(pack_id, "environment save")
     else:
         push_error("[EnvEditor] save failed for pack '%s' region '%s'" % [pack_id, region_id])
     return ok

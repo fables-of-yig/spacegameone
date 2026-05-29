@@ -869,6 +869,7 @@ func save_all() -> void:
     if BehIO.save_behaviors(pack_id, behaviors_data):
         dirty = false
         print("[BehEditor] saved behaviors.json for pack '%s'" % pack_id)
+        ContentValidator.validate_and_log(pack_id, "behavior save")
         if not unregistered.is_empty():
             push_warning("[BehEditor] saved with %d unregistered leaf(s) — runtime will push_warning and fall back:\n - %s" %
                 [unregistered.size(), "\n - ".join(unregistered)])

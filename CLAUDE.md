@@ -74,7 +74,7 @@ Playtest roundtrip: the environment editor stages pack/region/room in `Planetary
 ## Key Conventions
 
 - Treat silent fallback and null-bound UI as bugs (see `ROADMAP.md` Phase 0).
-- Validation failures are blockers, not warnings to ignore. The content validator rejects bad data at save time.
+- Validation failures are blockers, not warnings to ignore. `ContentValidator` runs at playtest, the editor's VALIDATE button, and the `tools/` smoke CLIs; the entity/behavior/audio/environment editors also surface full-pack issues (non-blocking) on save via `ContentValidator.validate_and_log`, and the dialogue/shop/trigger/ped editors block their own domain saves on `PedIO` validation. It is not yet a single hard gate on every save.
 - The editor/runtime contract is tracked in `SUPPORTED_FEATURES.md` — if the editor exposes something not listed there, it's a bug.
 - Entity AI uses the Beehave addon with leaf actions/conditions in `MV/scripts/entities/leaves/`.
 - Authored screens use a universal `AuthoredScreenRuntime` that mounts into hardcoded runtime hosts (HUD, pause, inventory, etc.).
