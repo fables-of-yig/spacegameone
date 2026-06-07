@@ -48,13 +48,16 @@ const ENEMY_STEPS := [
 var _log_view: RichTextLabel = null
 var _entry: TextEdit = null
 var _open := false
-var _wiz: Dictionary = {}   # {kind, step, answers} while a wizard is running
+var _wiz: Dictionary = {}   # {kind, step, answers} while an (enemy) wizard runs
+var _player_wizard: MvPlayerWizard = null
 
 
 func _ready() -> void:
 	process_mode = Node.PROCESS_MODE_ALWAYS
 	layer = 127
 	_build_ui()
+	_player_wizard = MvPlayerWizard.new()
+	add_child(_player_wizard)
 	visible = false
 
 
@@ -462,15 +465,25 @@ func _space_respawn_pois(host: Node, sys: String) -> void:
 
 func _cmd_wizard(rest: String) -> void:
 	var kind := rest.strip_edges().to_lower()
-	if kind != "player" and kind != "enemy":
+	if kind == "player":
+		_open_player_wizard()
+		return
+	if kind != "enemy":
 		_err("usage: wizard <player|enemy>")
 		return
-	_wiz = {"kind": kind, "step": 0, "answers": {}}
-	_log("[color=#8ab4ff]── %s wizard ──[/color]  (Ctrl+Enter to answer, blank = default, 'cancel' to abort)" % kind)
-	if kind == "player":
-		_log("[color=#ffd166]note: this sets identity, stats and abilities. Sprite, animations,")
-		_log("controls and physics are asset/resource-level — use the editors for those.[/color]")
+	_wiz = {"kind": "enemy", "step": 0, "answers": {}}
+	_log("[color=#8ab4ff]── enemy wizard ──[/color]  (Ctrl+Enter to answer, blank = default, 'cancel' to abort)")
 	_wiz_prompt()
+
+
+# `wizard player` opens the picker-based overlay (sprite/physics/stats/abilities)
+# rather than a text Q&A. The console hides while it's up.
+func _open_player_wizard() -> void:
+	if _player_wizard == null:
+		_player_wizard = MvPlayerWizard.new()
+		add_child(_player_wizard)
+	close()
+	_player_wizard.open_wizard()
 
 
 func _wiz_steps() -> Array:
