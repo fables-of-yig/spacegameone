@@ -1,29 +1,24 @@
 class_name MvEditMode
 extends Node2D
 
-# In-game edit mode — Slices 2-3 of the in-game authoring build.
-# Toggle with F2 (wired in MvMain._input). While active the simulation is
-# frozen (MvGame.simulation_paused). Two sub-modes, swapped with Tab:
+# In-game edit mode — Slices 2-3 + fix-up pass (palette, undo).
+# Toggle with F2 (wired in MvMain._input). Freezes the sim while active. Two
+# sub-modes, swapped with Tab:
 #
 #   TILES (default):
-#     LMB paint  ·  RMB erase  (hold + drag)  ·  [ ] tile index  ·  S solid/deco
+#     LMB paint · RMB erase (hold + drag) · [ ] tile · S solid/deco · P palette
 #   ENTITIES:
-#     LMB place  ·  RMB delete nearest  ·  [ ] entity type
+#     LMB place · RMB delete nearest · [ ] entity type
 #
-#   Ctrl+S  save the room to the user pack   ·   Esc / F2  exit
+#   Ctrl+Z undo · Ctrl+S save · Esc / F2 exit
 #
-# Painting/placement reuse MvRoomManager (paint_cell / erase_cell /
-# place_entity / remove_entity_near) which mutate the live room data, re-render,
-# and rebuild colliders. Drag strokes defer the (whole-room) collider rebuild to
-# mouse-release. Entities spawn live AND are recorded in entities[] so they
-# persist + respawn; exit edit mode (unfreeze) to fight them, F2 to tweak.
-#
-# Save reads the pack's current rooms.json, patches the edited room's tile /
-# collision / bts / entities (same representation as the runtime data), and
-# writes the user copy via EnvIO.save_rooms — copy-on-write, shipped untouched.
+# Painting/placement go through MvRoomManager. Drag strokes defer the (whole-
+# room) collider rebuild to mouse-release and are grouped into one undo step.
+# The palette shows the room's tileset atlas; click a tile to select it.
 
 const EnvIO := preload("res://Space/scripts/shared/env/env_io.gd")
 const BLOCK := 16
+const UNDO_LIMIT := 100
 
 var _active := false
 var _prev_paused := false
@@ -35,9 +30,17 @@ var _entity_idx := 0
 var _hover := Vector2i(-9999, -9999)
 var _painting := false
 var _erasing := false
+
+var _undo: Array = []
+var _stroke: Array = []
+var _stroke_cells: Dictionary = {}
+
 var _hud: CanvasLayer = null
 var _info_label: Label = null
 var _status_label: Label = null
+var _palette: CanvasLayer = null
+var _palette_open := false
+var _atlas: Dictionary = {}
 
 
 func _ready() -> void:
@@ -45,6 +48,10 @@ func _ready() -> void:
 	z_index = 4096
 	z_as_relative = false
 	_build_hud()
+	_palette = CanvasLayer.new()
+	_palette.layer = 131
+	_palette.visible = false
+	add_child(_palette)
 	visible = false
 
 
@@ -106,6 +113,7 @@ func enter() -> void:
 func exit() -> void:
 	if not _active:
 		return
+	_close_palette()
 	_active = false
 	visible = false
 	if _hud != null:
@@ -121,12 +129,22 @@ func exit() -> void:
 func _unhandled_input(event: InputEvent) -> void:
 	if not _active:
 		return
+	if _palette_open:
+		# Palette is modal; only its close keys matter (mouse handled by its GUI).
+		if event is InputEventKey and event.pressed and not event.echo:
+			var pk := event as InputEventKey
+			if pk.keycode == KEY_P or pk.keycode == KEY_ESCAPE:
+				get_viewport().set_input_as_handled()
+				_close_palette()
+		return
 	if event is InputEventMouseMotion:
 		_update_hover()
-		if _painting:
-			_apply_primary()
-		elif _erasing:
-			_apply_secondary()
+		# Only tiles drag-paint; entities place per-click.
+		if not _entity_mode:
+			if _painting:
+				_paint_tile()
+			elif _erasing:
+				_erase_tile()
 		return
 	if event is InputEventMouseButton:
 		var mb := event as InputEventMouseButton
@@ -134,17 +152,21 @@ func _unhandled_input(event: InputEvent) -> void:
 			_painting = mb.pressed
 			if mb.pressed:
 				_update_hover()
+				if not _entity_mode:
+					_begin_stroke()
 				_apply_primary()
-			else:
-				_rebuild_collision()
+			elif not _entity_mode:
+				_finish_stroke()
 			get_viewport().set_input_as_handled()
 		elif mb.button_index == MOUSE_BUTTON_RIGHT:
 			_erasing = mb.pressed
 			if mb.pressed:
 				_update_hover()
+				if not _entity_mode:
+					_begin_stroke()
 				_apply_secondary()
-			else:
-				_rebuild_collision()
+			elif not _entity_mode:
+				_finish_stroke()
 			get_viewport().set_input_as_handled()
 		return
 	if event is InputEventKey and event.pressed and not event.echo:
@@ -160,6 +182,14 @@ func _unhandled_input(event: InputEvent) -> void:
 			KEY_BRACKETRIGHT:
 				_cycle(1)
 				get_viewport().set_input_as_handled()
+			KEY_P:
+				if not _entity_mode:
+					_open_palette()
+				get_viewport().set_input_as_handled()
+			KEY_Z:
+				if ke.ctrl_pressed:
+					_undo_last()
+					get_viewport().set_input_as_handled()
 			KEY_S:
 				if ke.ctrl_pressed:
 					_save()
@@ -195,53 +225,8 @@ func _apply_secondary() -> void:
 		_erase_tile()
 
 
-func _paint_tile() -> void:
-	var rm := _rm()
-	if rm == null or not rm.cell_in_bounds(_hover):
-		return
-	if rm.paint_cell(_hover, _tile_idx, _solid, false):
-		queue_redraw()
-
-
-func _erase_tile() -> void:
-	var rm := _rm()
-	if rm == null or not rm.cell_in_bounds(_hover):
-		return
-	if rm.erase_cell(_hover, false):
-		queue_redraw()
-
-
-func _place_entity() -> void:
-	var rm := _rm()
-	var id := _current_entity_id()
-	if rm == null or id.is_empty():
-		return
-	if rm.place_entity(id, get_global_mouse_position()) != "":
-		_set_status("placed '%s'" % id)
-
-
-func _delete_entity() -> void:
-	var rm := _rm()
-	if rm == null:
-		return
-	if rm.remove_entity_near(get_global_mouse_position()):
-		_set_status("deleted entity")
-
-
-func _current_entity_id() -> String:
-	if _entity_idx >= 0 and _entity_idx < _entity_ids.size():
-		return str(_entity_ids[_entity_idx])
-	return ""
-
-
-func _rebuild_collision() -> void:
-	var rm := _rm()
-	if rm != null:
-		rm.rebuild_collision_from_current()
-
-
 func _process(_delta: float) -> void:
-	if _active:
+	if _active and not _palette_open:
 		_update_hover()
 
 
@@ -253,6 +238,170 @@ func _update_hover() -> void:
 	if cell != _hover:
 		_hover = cell
 		queue_redraw()
+
+
+# ── Tile ops (with undo capture) ─────────────────────────────────────────────
+
+func _begin_stroke() -> void:
+	_stroke = []
+	_stroke_cells = {}
+
+
+func _capture_stroke_cell(rm: MvRoomManager, cell: Vector2i) -> void:
+	if _stroke_cells.has(cell):
+		return
+	_stroke_cells[cell] = true
+	_stroke.append({"cell": cell, "before": rm.cell_state(cell)})
+
+
+func _finish_stroke() -> void:
+	var rm := _rm()
+	if rm != null:
+		rm.rebuild_collision_from_current()
+	if not _stroke.is_empty():
+		_undo.append({"op": "tile_stroke", "cells": _stroke.duplicate()})
+		_trim_undo()
+	_stroke = []
+	_stroke_cells = {}
+
+
+func _paint_tile() -> void:
+	var rm := _rm()
+	if rm == null or not rm.cell_in_bounds(_hover):
+		return
+	_capture_stroke_cell(rm, _hover)
+	if rm.paint_cell(_hover, _tile_idx, _solid, false):
+		queue_redraw()
+
+
+func _erase_tile() -> void:
+	var rm := _rm()
+	if rm == null or not rm.cell_in_bounds(_hover):
+		return
+	_capture_stroke_cell(rm, _hover)
+	if rm.erase_cell(_hover, false):
+		queue_redraw()
+
+
+# ── Entity ops ───────────────────────────────────────────────────────────────
+
+func _place_entity() -> void:
+	var rm := _rm()
+	var id := _current_entity_id()
+	if rm == null or id.is_empty():
+		return
+	var uid := rm.place_entity(id, get_global_mouse_position())
+	if not uid.is_empty():
+		_undo.append({"op": "entity_place", "uid": uid})
+		_trim_undo()
+		_set_status("placed '%s'" % id)
+
+
+func _delete_entity() -> void:
+	var rm := _rm()
+	if rm != null and rm.remove_entity_near(get_global_mouse_position()):
+		_set_status("deleted entity (delete isn't undoable yet)")
+
+
+func _current_entity_id() -> String:
+	if _entity_idx >= 0 and _entity_idx < _entity_ids.size():
+		return str(_entity_ids[_entity_idx])
+	return ""
+
+
+# ── Undo ─────────────────────────────────────────────────────────────────────
+
+func _trim_undo() -> void:
+	while _undo.size() > UNDO_LIMIT:
+		_undo.pop_front()
+
+
+func _undo_last() -> void:
+	if _undo.is_empty():
+		_set_status("nothing to undo")
+		return
+	var rm := _rm()
+	if rm == null:
+		return
+	var op: Dictionary = _undo.pop_back()
+	match str(op.get("op", "")):
+		"tile_stroke":
+			var cells: Array = op.get("cells", [])
+			for i in range(cells.size() - 1, -1, -1):
+				var entry: Dictionary = cells[i]
+				var c: Vector2i = entry["cell"]
+				var b: Dictionary = entry["before"]
+				rm.set_cell_full(c, int(b["packed"]), int(b["collision"]), int(b["bts"]), false)
+			rm.rebuild_collision_from_current()
+			_set_status("undid tile edit")
+		"entity_place":
+			if rm.remove_entity_by_id(str(op.get("uid", ""))):
+				_set_status("undid entity placement")
+	queue_redraw()
+
+
+# ── Palette ──────────────────────────────────────────────────────────────────
+
+func _open_palette() -> void:
+	var rm := _rm()
+	if rm == null:
+		return
+	_atlas = rm.current_tileset_atlas()
+	if _atlas.is_empty() or _atlas.get("texture") == null:
+		_set_status("no tileset atlas to show")
+		return
+	for ch in _palette.get_children():
+		ch.queue_free()
+	var bg := ColorRect.new()
+	bg.color = Color(0.03, 0.04, 0.06, 0.94)
+	bg.set_anchors_preset(Control.PRESET_FULL_RECT)
+	bg.mouse_filter = Control.MOUSE_FILTER_STOP
+	_palette.add_child(bg)
+	var margin := MarginContainer.new()
+	margin.set_anchors_preset(Control.PRESET_FULL_RECT)
+	margin.add_theme_constant_override("margin_left", 8)
+	margin.add_theme_constant_override("margin_right", 8)
+	margin.add_theme_constant_override("margin_top", 6)
+	margin.add_theme_constant_override("margin_bottom", 6)
+	_palette.add_child(margin)
+	var vbox := VBoxContainer.new()
+	margin.add_child(vbox)
+	var lbl := Label.new()
+	lbl.text = "TILE PALETTE — click a tile   ·   P / Esc to close"
+	vbox.add_child(lbl)
+	var scroll := ScrollContainer.new()
+	scroll.size_flags_vertical = Control.SIZE_EXPAND_FILL
+	vbox.add_child(scroll)
+	var tex: Texture2D = _atlas["texture"]
+	var tr := TextureRect.new()
+	tr.texture = tex
+	tr.custom_minimum_size = Vector2(tex.get_width(), tex.get_height())
+	tr.mouse_filter = Control.MOUSE_FILTER_STOP
+	tr.gui_input.connect(_on_palette_click)
+	scroll.add_child(tr)
+	_palette.visible = true
+	_palette_open = true
+
+
+func _on_palette_click(event: InputEvent) -> void:
+	if event is InputEventMouseButton and event.pressed and (event as InputEventMouseButton).button_index == MOUSE_BUTTON_LEFT:
+		var ts: int = int(_atlas.get("tile_size", BLOCK))
+		var cols: int = int(_atlas.get("cols", 1))
+		var pos: Vector2 = (event as InputEventMouseButton).position
+		var col := int(pos.x / ts)
+		var row := int(pos.y / ts)
+		_tile_idx = maxi(0, row * cols + col)
+		_entity_mode = false
+		_refresh_hud()
+		_close_palette()
+
+
+func _close_palette() -> void:
+	_palette_open = false
+	if _palette != null:
+		_palette.visible = false
+		for ch in _palette.get_children():
+			ch.queue_free()
 
 
 # ── Cursor ──────────────────────────────────────────────────────────────────
@@ -307,8 +456,6 @@ func _save() -> void:
 		_set_status("save failed: room '%s' not in rooms.json (variant rooms aren't saved yet)" % addr)
 		return
 	var raw_room: Dictionary = rooms[addr]
-	# Only tile/collision/bts/entities are touched — same representation in the
-	# runtime info and the on-disk room — so all other authored fields survive.
 	raw_room["collision"] = info.get("collision", [])
 	raw_room["bts"] = info.get("bts", [])
 	var rt_layers: Array = info.get("tile_layers", [])
@@ -325,8 +472,6 @@ func _save() -> void:
 		_set_status("save failed: write error")
 
 
-# Runtime entity records carry position as a Vector2; the on-disk shape uses
-# separate x/y (see MvRoomManager._parse_room_info). Convert here.
 func _serialize_entities(entities: Array) -> Array:
 	var out: Array = []
 	for e_v in entities:
@@ -353,9 +498,9 @@ func _refresh_hud() -> void:
 	if _entity_mode:
 		var id := _current_entity_id()
 		var label := id if not id.is_empty() else "(pack has no entities)"
-		_info_label.text = "EDIT · ENTITIES · %s   ·   Tab=tiles  [ ] type  LMB place  RMB delete  Ctrl+S save  Esc exit" % label
+		_info_label.text = "EDIT · ENTITIES · %s   ·   Tab=tiles  [ ] type  LMB place  RMB delete  Ctrl+Z undo  Ctrl+S save  Esc exit" % label
 	else:
-		_info_label.text = "EDIT · TILES · tile #%d · %s   ·   Tab=entities  [ ] tile  S solid  LMB paint  RMB erase  Ctrl+S save  Esc exit" % [
+		_info_label.text = "EDIT · TILES · tile #%d · %s   ·   Tab=entities  [ ] tile  P palette  S solid  LMB paint  RMB erase  Ctrl+Z undo  Ctrl+S save" % [
 			_tile_idx, "SOLID" if _solid else "deco"]
 
 

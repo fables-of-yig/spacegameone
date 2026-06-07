@@ -1486,6 +1486,105 @@ func remove_entity_near(world_pos: Vector2, radius: float = 12.0) -> bool:
     return true
 
 
+# Remove a placed entity by its instance id (used by edit-mode undo of a place).
+func remove_entity_by_id(uid: String) -> bool:
+    if _entities_container == null or uid.strip_edges().is_empty():
+        return false
+    var removed := false
+    for child in _entities_container.get_children():
+        var v: Variant = child.get("instance_id")
+        if v != null and str(v) == uid:
+            child.queue_free()
+            removed = true
+            break
+    if not removed:
+        return false
+    var info := current_room()
+    if not info.is_empty():
+        var entities: Array = info.get("entities", [])
+        for i in range(entities.size() - 1, -1, -1):
+            if str((entities[i] as Dictionary).get("instance_id", "")) == uid:
+                entities.remove_at(i)
+                break
+        info["entities"] = entities
+    return true
+
+
+# Read a cell's full main-layer state (packed tile + collision + bts) so the
+# edit-mode undo stack can restore it later.
+func cell_state(cell: Vector2i) -> Dictionary:
+    var info := current_room()
+    if info.is_empty():
+        return {"packed": 0, "collision": BT_AIR, "bts": 0}
+    var packed := 0
+    var data_idx := _main_layer_data_index(info)
+    if data_idx >= 0:
+        var tiles: Array = (info.get("tile_layers", [])[data_idx] as Dictionary).get("tiles", [])
+        if cell.y >= 0 and cell.y < tiles.size():
+            var row_arr: Array = tiles[cell.y]
+            if cell.x >= 0 and cell.x < row_arr.size():
+                packed = int(row_arr[cell.x])
+    var coll := BT_AIR
+    var coll_arr: Array = info.get("collision", [])
+    if cell.y >= 0 and cell.y < coll_arr.size():
+        var crow: Array = coll_arr[cell.y]
+        if cell.x >= 0 and cell.x < crow.size():
+            coll = int(crow[cell.x])
+    return {"packed": packed, "collision": coll, "bts": _get_bts_value(info, cell.y, cell.x)}
+
+
+# Set a cell's tile + collision + bts to explicit values (undo restore path).
+func set_cell_full(cell: Vector2i, packed: int, collision_bt: int, bts_val: int, rebuild_collision: bool = true) -> bool:
+    var info := current_room()
+    if info.is_empty() or not cell_in_bounds(cell):
+        return false
+    var data_idx := _main_layer_data_index(info)
+    if data_idx < 0:
+        return false
+    if not _set_layer_tile_value(info, data_idx, cell, packed):
+        return false
+    var node := _tile_node_for_data_index(data_idx)
+    if node != null:
+        MvRoomRenderer.update_cell(node, cell.x, cell.y, packed)
+    _set_collision_cell(info, cell, collision_bt)
+    _set_bts_value(info, cell.y, cell.x, bts_val)
+    if rebuild_collision:
+        _build_collision(info)
+    return true
+
+
+# The room's primary tileset atlas for the edit-mode palette: the texture plus
+# its column/row count and tile size (empty if the room has no atlas source).
+func current_tileset_atlas() -> Dictionary:
+    var info := current_room()
+    if info.is_empty():
+        return {}
+    var ts := _tileset_mgr.get_tile_set(int(info.get("tileset", 0)))
+    if ts == null or ts.get_source_count() == 0:
+        return {}
+    var want := int(info.get("tileset", 0))
+    var src: TileSetAtlasSource = null
+    for i in ts.get_source_count():
+        var sid := ts.get_source_id(i)
+        var s := ts.get_source(sid)
+        if s is TileSetAtlasSource and (s as TileSetAtlasSource).texture != null:
+            if sid == want:
+                src = s as TileSetAtlasSource
+                break
+            if src == null:
+                src = s as TileSetAtlasSource
+    if src == null or src.texture == null:
+        return {}
+    var tsz: int = src.texture_region_size.x
+    if tsz < 1:
+        tsz = BLOCK_SIZE
+    @warning_ignore("integer_division")
+    var cols := maxi(1, src.texture.get_width() / tsz)
+    @warning_ignore("integer_division")
+    var rows := maxi(1, src.texture.get_height() / tsz)
+    return {"texture": src.texture, "cols": cols, "rows": rows, "tile_size": tsz}
+
+
 func block_type_at_world_pos(world_pos: Vector2) -> int:
     var info: Dictionary = current_room()
     if info.is_empty() or info["collision"].size() == 0:

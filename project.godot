@@ -43,6 +43,7 @@ MvShopUI="*res://MV/scripts/shop_ui.gd"
 BeehaveGlobalMetrics="*res://addons/beehave/metrics/beehave_global_metrics.gd"
 BeehaveGlobalDebugger="*res://addons/beehave/debug/global_debugger.gd"
 EditorTooltip="*res://Space/scripts/editor/editor_tooltip.gd"
+DevConsole="*res://MV/scripts/console/dev_console.gd"
 
 [display]
 

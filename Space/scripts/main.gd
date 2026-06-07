@@ -262,13 +262,6 @@ func _ready():
     audio_editor = editors.get("audio_editor", null)
     player_editor = editors.get("player_editor", null)
     system_editor = editors.get("system_editor", null)
-
-    # In-game Space dev console (Slices 4-5). It handles its own backtick toggle
-    # (Space main has no _input); host=self lets it reach the spawn manager,
-    # player, and system positions for live POI placement.
-    var space_console := SpaceDevConsole.new()
-    space_console.host = self
-    add_child(space_console)
     ship_editor = editors.get("ship_editor", null)
     modules_editor = editors.get("modules_editor", null)
     loot_editor = editors.get("loot_editor", null)
