@@ -221,6 +221,28 @@ func clear_room_triggers() -> void:
 	_room_rules.clear()
 
 
+# Append one authored rule live, without a full reload. Routes through
+# TriggerRoot.flatten_rules (like _load_file / set_room_triggers) so an
+# injected rule is normalized exactly like a disk-loaded one. Returns the
+# number of rules added. Used by the in-game dev console.
+func add_global_rule(rule: Dictionary) -> int:
+	var added: int = 0
+	for rule_v in TriggerRoot.flatten_rules([rule]):
+		if typeof(rule_v) == TYPE_DICTIONARY:
+			_global_rules.append((rule_v as Dictionary).duplicate(true))
+			added += 1
+	return added
+
+
+func add_room_rule(rule: Dictionary) -> int:
+	var added: int = 0
+	for rule_v in TriggerRoot.flatten_rules([rule]):
+		if typeof(rule_v) == TYPE_DICTIONARY:
+			_room_rules.append((rule_v as Dictionary).duplicate(true))
+			added += 1
+	return added
+
+
 # ── Global tag API ──────────────────────────────────────────────────────
 
 func set_global_tag(tag_name: String, value: Variant = true) -> void:

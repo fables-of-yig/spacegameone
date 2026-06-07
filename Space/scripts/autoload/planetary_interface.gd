@@ -25,6 +25,11 @@ var pending_edit_mode: bool = false
 # to Space and re-open the editor at exactly the same spot. Consumed
 # (and cleared) by Space main._ready when the flag is set.
 var pending_return_to_editor: bool = false
+
+# True while an in-game authoring overlay (dev console / edit mode) is open in
+# either engine. Lives on the autoload so it survives the MV<->Space scene swap;
+# both engines read it to gate edit-only behaviour. (Slice 4.)
+var edit_session_active: bool = false
 var pending_editor_pack_id: String = ""
 var pending_editor_region_id: String = ""
 var pending_editor_room_addr: String = ""

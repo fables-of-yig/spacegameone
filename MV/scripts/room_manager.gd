@@ -1317,6 +1317,175 @@ func rebuild_collision_from_current() -> void:
         _build_collision(_rooms[_current_room_addr])
 
 
+# ── In-game tile editing (slice 2) ────────────────────────────────────────
+# Public API for the in-game edit mode. Mutates the live room's main-role tile
+# layer + collision array, re-renders the affected cell, and (optionally)
+# rebuilds the room's colliders. Cells index [row = y][col = x]; pixel<->cell
+# uses BLOCK_SIZE, matching block_type_at_world_pos.
+
+func world_to_cell(world_pos: Vector2) -> Vector2i:
+    return Vector2i(int(world_pos.x / BLOCK_SIZE), int(world_pos.y / BLOCK_SIZE))
+
+
+func cell_in_bounds(cell: Vector2i) -> bool:
+    var info := current_room()
+    if info.is_empty():
+        return false
+    return cell.x >= 0 and cell.y >= 0 \
+        and cell.x < int(info.get("width_blocks", 0)) \
+        and cell.y < int(info.get("height_blocks", 0))
+
+
+# Paint `metatile_idx` (from the room's primary tileset) onto the main layer at
+# `cell`. `solid` marks BT_SOLID (player can stand on it) vs BT_AIR (deco).
+# When `rebuild_collision` is false the collider rebuild is skipped so a paint
+# stroke can defer the (whole-room) rebuild to mouse-release.
+func paint_cell(cell: Vector2i, metatile_idx: int, solid: bool, rebuild_collision: bool = true) -> bool:
+    var info := current_room()
+    if info.is_empty() or not cell_in_bounds(cell):
+        return false
+    var data_idx := _main_layer_data_index(info)
+    if data_idx < 0:
+        return false
+    var packed := MvTileValue.pack(metatile_idx, false, false, int(info.get("tileset", 0)))
+    if not _set_layer_tile_value(info, data_idx, cell, packed):
+        return false
+    var node := _tile_node_for_data_index(data_idx)
+    if node != null:
+        MvRoomRenderer.update_cell(node, cell.x, cell.y, packed)
+    _set_collision_cell(info, cell, BT_SOLID if solid else BT_AIR)
+    _set_bts_value(info, cell.y, cell.x, 0)
+    if rebuild_collision:
+        _build_collision(info)
+    return true
+
+
+# Clear the main-layer tile at `cell` and mark it BT_AIR (non-colliding).
+func erase_cell(cell: Vector2i, rebuild_collision: bool = true) -> bool:
+    var info := current_room()
+    if info.is_empty() or not cell_in_bounds(cell):
+        return false
+    var data_idx := _main_layer_data_index(info)
+    if data_idx < 0:
+        return false
+    if not _set_layer_tile_value(info, data_idx, cell, 0):
+        return false
+    var node := _tile_node_for_data_index(data_idx)
+    if node != null:
+        MvRoomRenderer.update_cell(node, cell.x, cell.y, 0)
+    _set_collision_cell(info, cell, BT_AIR)
+    _set_bts_value(info, cell.y, cell.x, 0)
+    if rebuild_collision:
+        _build_collision(info)
+    return true
+
+
+func _main_layer_data_index(info: Dictionary) -> int:
+    var layers: Array = info.get("tile_layers", [])
+    for i in layers.size():
+        if str((layers[i] as Dictionary).get("role", ROLE_MAIN)) == ROLE_MAIN:
+            return i
+    return 0 if not layers.is_empty() else -1
+
+
+func _tile_node_for_data_index(data_idx: int) -> TileMapLayer:
+    # load_room names nodes "TileLayer_%02d_<name>" where %02d is the data idx.
+    var prefix := "TileLayer_%02d_" % data_idx
+    for entry in _tile_layers:
+        var node: TileMapLayer = entry.get("node")
+        if node != null and str(node.name).begins_with(prefix):
+            return node
+    return null
+
+
+func _set_layer_tile_value(info: Dictionary, data_idx: int, cell: Vector2i, packed: int) -> bool:
+    var layers: Array = info.get("tile_layers", [])
+    if data_idx < 0 or data_idx >= layers.size():
+        return false
+    var tiles: Array = (layers[data_idx] as Dictionary).get("tiles", [])
+    if cell.y < 0 or cell.y >= tiles.size():
+        return false
+    var row_arr: Array = tiles[cell.y]
+    if cell.x < 0 or cell.x >= row_arr.size():
+        return false
+    row_arr[cell.x] = packed
+    return true
+
+
+func _set_collision_cell(info: Dictionary, cell: Vector2i, bt: int) -> void:
+    var coll: Array = info.get("collision", [])
+    if cell.y >= 0 and cell.y < coll.size():
+        var row_arr: Array = coll[cell.y]
+        if cell.x >= 0 and cell.x < row_arr.size():
+            row_arr[cell.x] = bt
+
+
+# ── In-game entity placement (slice 3) ─────────────────────────────────────
+# Sorted list of entity type ids the active pack defines (the edit-mode picker
+# cycles these).
+func entity_type_ids() -> Array:
+    var pack := MvPackLoader.current_pack
+    if pack == null:
+        return []
+    var ids: Array = _load_entity_defs(pack.pack_id).keys()
+    ids.sort()
+    return ids
+
+
+# Place an entity for editing: spawn the live node AND record it in the room's
+# entities[] so it survives a save + respawns on reload. Returns the instance id
+# (empty on failure).
+func place_entity(type_id: String, world_pos: Vector2) -> String:
+    var info := current_room()
+    if info.is_empty() or type_id.strip_edges().is_empty():
+        return ""
+    var uid := "%s_ed_%d" % [type_id, Time.get_ticks_msec()]
+    var node := spawn_entity_dynamic(type_id, world_pos, [], {"instance_id": uid})
+    if node == null:
+        return ""
+    var entities: Array = info.get("entities", [])
+    entities.append({
+        "type": type_id,
+        "position": world_pos,
+        "instance_id": uid,
+        "tags": [],
+        "properties": {"instance_id": uid},
+    })
+    info["entities"] = entities
+    return uid
+
+
+# Delete the live entity nearest world_pos (within `radius` px) and drop its
+# entities[] record (matched by instance_id). Returns true if one was removed.
+func remove_entity_near(world_pos: Vector2, radius: float = 12.0) -> bool:
+    if _entities_container == null:
+        return false
+    var best: Node2D = null
+    var best_d := radius
+    for child in _entities_container.get_children():
+        var n := child as Node2D
+        if n == null:
+            continue
+        var d := n.global_position.distance_to(world_pos)
+        if d <= best_d:
+            best_d = d
+            best = n
+    if best == null:
+        return false
+    var uid_v: Variant = best.get("instance_id")
+    var uid := str(uid_v) if uid_v != null else ""
+    var info := current_room()
+    if not info.is_empty() and not uid.is_empty():
+        var entities: Array = info.get("entities", [])
+        for i in range(entities.size() - 1, -1, -1):
+            if str((entities[i] as Dictionary).get("instance_id", "")) == uid:
+                entities.remove_at(i)
+                break
+        info["entities"] = entities
+    best.queue_free()
+    return true
+
+
 func block_type_at_world_pos(world_pos: Vector2) -> int:
     var info: Dictionary = current_room()
     if info.is_empty() or info["collision"].size() == 0:

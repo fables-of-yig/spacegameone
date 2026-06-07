@@ -30,6 +30,8 @@ var _flash_rect: ColorRect = null
 var _flash_tween: Tween = null
 var _trigger_debug_overlay: CanvasLayer = null
 var _hud: CanvasLayer = null
+var _dev_console: MvDevConsole = null
+var _edit_mode: MvEditMode = null
 
 # Screen-shake state — see camera_shake() for the trigger entry point.
 # _shake_intensity is the peak px offset at full strength; _shake_remaining
@@ -141,6 +143,8 @@ func _ready() -> void:
     if not get_viewport().size_changed.is_connected(_on_viewport_size_changed):
         get_viewport().size_changed.connect(_on_viewport_size_changed)
     _ensure_trigger_debug_overlay()
+    _ensure_dev_console()
+    _ensure_edit_mode()
 
     MvGame.room_manager = _room_manager
 
@@ -265,6 +269,14 @@ func _input(event: InputEvent) -> void:
             if PlanetaryInterface.pending_return_to_editor:
                 get_viewport().set_input_as_handled()
                 get_tree().change_scene_to_file.call_deferred("res://Space/scenes/main.tscn")
+        elif ke.keycode == KEY_QUOTELEFT and not ke.ctrl_pressed and not ke.alt_pressed:
+            if _dev_console != null:
+                get_viewport().set_input_as_handled()
+                _dev_console.toggle()
+        elif ke.keycode == KEY_F2 and not ke.ctrl_pressed and not ke.alt_pressed:
+            if _edit_mode != null:
+                get_viewport().set_input_as_handled()
+                _edit_mode.toggle()
 
 
 func _physics_process(_delta: float) -> void:
@@ -490,6 +502,28 @@ func _ensure_hud() -> void:
     _hud = CanvasLayer.new()
     _hud.set_script(HUD_SCRIPT)
     add_child(_hud)
+
+
+func _ensure_dev_console() -> void:
+    if _dev_console != null:
+        return
+    _dev_console = MvDevConsole.new()
+    _dev_console.layer = 128
+    add_child(_dev_console)
+
+
+func _ensure_edit_mode() -> void:
+    if _edit_mode != null:
+        return
+    _edit_mode = MvEditMode.new()
+    add_child(_edit_mode)
+
+
+# Player world position for the dev console's `spawn` command (slice 1).
+func get_player_position() -> Vector2:
+    if _player != null and is_instance_valid(_player):
+        return _player.global_position
+    return Vector2.ZERO
 
 
 # ===== Region meta =====
