@@ -67,6 +67,17 @@ Each domain editor (entity, behavior, dialogue, trigger, environment, etc.) has 
 
 Playtest roundtrip: the environment editor stages pack/region/room in `PlanetaryInterface`, launches MV, and Ctrl+9 returns to the Space editor.
 
+## In-Game Authoring (Console + Edit Mode)
+
+A second authoring path runs inside the live game, separate from the desktop Editor Suite, on the `feature/in-game-authoring` branch. Everything it writes goes to the same JSON content packs (copy-on-write to the user pack).
+
+- **Dev console** — `DevConsole` autoload (`MV/scripts/console/dev_console.gd`), toggled with backtick; one instance survives the MV↔Space scene swap and routes commands by context. MV: paste a trigger JSON (validated via `EcaSchema`, injected via `MvTriggerEngine.add_global_rule`, persisted via `PedIO`), `fire`, `spawn`. Space: `add_poi <type> <name>` (placed live + saved to `Systems/systems.json` via `SystemIO`). Shared: `flag`, `wizard <player|enemy>`, `help`, `clear`.
+- **Edit mode** — `MvEditMode` (`MV/scripts/console/edit_mode.gd`), F2 in MV. Freezes the sim; LMB/RMB paint/erase tiles or place/delete entities (Tab switches sub-mode), `P` tile palette, `Ctrl+Z` undo, `Ctrl+S` saves `tile_layers`/`collision`/`bts`/`entities` to `rooms.json`. Tile/entity mutation lives on `MvRoomManager` (`paint_cell`/`erase_cell`/`place_entity`/`remove_entity_near`/etc.).
+- **Wizards** — `wizard enemy` (console Q&A → full entity def via `EntIO` + idle behavior via `BehIO`); `wizard player` (picker overlay `MvPlayerWizard` → sprite preset via `PspIO`, physics → `PhysicsProfile.tres` via `ResourceSaver`, stats/abilities via `PedIO`).
+- **Cross-engine** — `PlanetaryInterface.edit_session_active` flags an open authoring overlay across the scene swap.
+
+These are hardcoded dev overlays, not authored UI, so they are intentionally NOT in `SUPPORTED_FEATURES.md` (that file is generated from `ui_contract.gd` and scoped to authored screens).
+
 ## God-File Split (Completed Refactoring)
 
 `Space/scripts/runtime/` contains controllers extracted from a former monolithic `main.gd`: `StarfieldRenderer`, `UICoordinator`, `SpawnManager`, `CreativeModeController`, `WorldRenderer`. Also extracted to autoloads: `StationGenerator`, `InputSetup`, `ModuleSprites`.

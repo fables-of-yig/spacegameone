@@ -20,20 +20,10 @@ const BehIO := preload("res://Space/scripts/shared/beh/beh_io.gd")
 const SystemIO := preload("res://Space/scripts/shared/system_io.gd")
 
 const LOGICAL_CONDITIONS := ["and", "or", "not"]
-const POI_TYPES := ["station", "hostile_station", "salvage", "resource", "anomaly", "ruin", "npc_colony"]
+const POI_TYPES := ["station", "hostile_station", "salvage", "resource", "anomaly", "ruin", "npc_colony", "planet"]
 const ENEMY_CATEGORIES := ["enemy", "boss", "interactable", "pickup", "logic", "fx", "other"]
 
 # Wizard step tables. Each step: {key, prompt, def}. Empty answer takes the def.
-const PLAYER_STEPS := [
-	{"key": "id", "prompt": "player id (e.g. hero)", "def": ""},
-	{"key": "name", "prompt": "display name", "def": ""},
-	{"key": "hp_max", "prompt": "max HP", "def": "50"},
-	{"key": "str", "prompt": "strength (melee)", "def": "5"},
-	{"key": "con", "prompt": "constitution (defense)", "def": "4"},
-	{"key": "int", "prompt": "intelligence (projectile)", "def": "3"},
-	{"key": "lck", "prompt": "luck (crit/drops)", "def": "4"},
-	{"key": "abilities", "prompt": "ability ids, comma-separated (or blank)", "def": ""},
-]
 const ENEMY_STEPS := [
 	{"key": "id", "prompt": "enemy id (e.g. goblin)", "def": ""},
 	{"key": "name", "prompt": "display name", "def": ""},
@@ -413,6 +403,8 @@ func _cmd_add_poi(rest: String) -> void:
 		"orbit_dist": rel.length(), "orbit_angle": rad_to_deg(rel.angle()),
 		"sprite": "", "visual_scale": 1.0, "anim_frames": 1, "anim_fps": 0.0, "gravity_radius": 0,
 	}
+	if poi_type == "planet":
+		poi["planet_data"] = _default_planet_data(poi_name, str(poi["id"]))
 	var systems: Dictionary = DataManager.systems
 	var sysd_v: Variant = systems.get(sys, null)
 	if typeof(sysd_v) != TYPE_DICTIONARY:
@@ -429,8 +421,26 @@ func _cmd_add_poi(rest: String) -> void:
 	_space_respawn_pois(host, sys)
 	if saved:
 		_ok("added POI '%s' (%s) in '%s' — live + saved" % [poi_name, poi_type, sys])
+		if poi_type == "planet":
+			_warn("planet lands at region 'surface' → room 'start' by default — set the real region/room in the editor")
 	else:
 		_warn("added POI '%s' live, but the disk save failed" % poi_name)
+
+
+func _default_planet_data(planet_name: String, poi_id: String) -> Dictionary:
+	return {
+		"name": planet_name,
+		"pack_id": _pack_id(),
+		"poi_id": poi_id,
+		"regions": [{"id": "surface", "name": "Surface", "spawn_room": "start"}],
+		"sky_color": [0.35, 0.5, 0.8],
+		"horizon_color": [0.5, 0.6, 0.35],
+		"terrain_colors": [[0.16, 0.3, 0.16], [0.1, 0.22, 0.1], [0.08, 0.18, 0.06]],
+		"roughness": 0.6,
+		"turret_count": [0, 0],
+		"patrol_count": [0, 0],
+		"surface_pois": [],
+	}
 
 
 func _cmd_save_systems() -> void:
@@ -487,7 +497,7 @@ func _open_player_wizard() -> void:
 
 
 func _wiz_steps() -> Array:
-	return PLAYER_STEPS if _wiz.get("kind", "") == "player" else ENEMY_STEPS
+	return ENEMY_STEPS
 
 
 func _wiz_prompt() -> void:
@@ -520,55 +530,11 @@ func _wizard_answer(text: String) -> void:
 	(_wiz["answers"] as Dictionary)[key] = ans
 	_wiz["step"] = i + 1
 	if int(_wiz["step"]) >= steps.size():
-		var kind: String = str(_wiz.get("kind", ""))
 		var answers: Dictionary = _wiz.get("answers", {})
 		_wiz = {}
-		if kind == "player":
-			_finish_player(answers)
-		else:
-			_finish_enemy(answers)
+		_finish_enemy(answers)
 	else:
 		_wiz_prompt()
-
-
-func _finish_player(a: Dictionary) -> void:
-	var pack_id := _pack_id()
-	var stats := {
-		"base": {
-			"level": 1, "exp": 0, "exp_to_next": 100,
-			"hp_max": int(str(a.get("hp_max", "50"))),
-			"mp_max": 10, "heart_max": 5,
-			"str": int(str(a.get("str", "5"))),
-			"con": int(str(a.get("con", "4"))),
-			"int": int(str(a.get("int", "3"))),
-			"lck": int(str(a.get("lck", "4"))),
-		},
-		"growth": {
-			"hp_per_level": 4, "mp_per_level": 2, "heart_per_level": 1,
-			"str_per_level": 1, "con_per_level": 1, "int_per_level": 1,
-			"lck_per_level": 1, "exp_curve_multiplier": 1.5,
-		},
-	}
-	if not PedIO.save_stats(pack_id, stats):
-		_err("player wizard: saving stats failed")
-		return
-	var ability_csv := str(a.get("abilities", "")).strip_edges()
-	var added_abilities := 0
-	if not ability_csv.is_empty():
-		var root := PedIO.load_abilities(pack_id)
-		var arr_v: Variant = root.get("abilities", [])
-		var arr: Array = arr_v if typeof(arr_v) == TYPE_ARRAY else []
-		for raw_id in ability_csv.split(",", false):
-			var aid := str(raw_id).strip_edges()
-			if aid.is_empty():
-				continue
-			if not _has_id(arr, aid):
-				arr.append({"id": aid, "name": aid.capitalize(), "category": "movement", "description": "", "params": {}})
-				added_abilities += 1
-		root["abilities"] = arr
-		PedIO.save_abilities(pack_id, root)
-	_ok("player wizard: saved stats (hp %s) + %d new ability id(s) to '%s'" % [
-		str(a.get("hp_max", "50")), added_abilities, pack_id])
 
 
 func _finish_enemy(a: Dictionary) -> void:

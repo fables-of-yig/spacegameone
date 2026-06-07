@@ -299,8 +299,13 @@ func _place_entity() -> void:
 
 func _delete_entity() -> void:
 	var rm := _rm()
-	if rm != null and rm.remove_entity_near(get_global_mouse_position()):
-		_set_status("deleted entity (delete isn't undoable yet)")
+	if rm == null:
+		return
+	var rec := rm.remove_entity_near(get_global_mouse_position())
+	if not rec.is_empty():
+		_undo.append({"op": "entity_delete", "record": rec})
+		_trim_undo()
+		_set_status("deleted entity")
 
 
 func _current_entity_id() -> String:
@@ -337,6 +342,10 @@ func _undo_last() -> void:
 		"entity_place":
 			if rm.remove_entity_by_id(str(op.get("uid", ""))):
 				_set_status("undid entity placement")
+		"entity_delete":
+			var rec: Dictionary = op.get("record", {})
+			if not rec.is_empty() and rm.place_entity_record(rec):
+				_set_status("undid entity deletion")
 	queue_redraw()
 
 
@@ -453,7 +462,7 @@ func _save() -> void:
 	var raw: Dictionary = raw_v
 	var rooms: Dictionary = raw.get("rooms", {})
 	if not rooms.has(addr):
-		_set_status("save failed: room '%s' not in rooms.json (variant rooms aren't saved yet)" % addr)
+		_set_status("save failed: room '%s' not found in rooms.json on disk" % addr)
 		return
 	var raw_room: Dictionary = rooms[addr]
 	raw_room["collision"] = info.get("collision", [])

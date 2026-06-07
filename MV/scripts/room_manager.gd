@@ -1457,9 +1457,9 @@ func place_entity(type_id: String, world_pos: Vector2) -> String:
 
 # Delete the live entity nearest world_pos (within `radius` px) and drop its
 # entities[] record (matched by instance_id). Returns true if one was removed.
-func remove_entity_near(world_pos: Vector2, radius: float = 12.0) -> bool:
+func remove_entity_near(world_pos: Vector2, radius: float = 12.0) -> Dictionary:
     if _entities_container == null:
-        return false
+        return {}
     var best: Node2D = null
     var best_d := radius
     for child in _entities_container.get_children():
@@ -1471,18 +1471,47 @@ func remove_entity_near(world_pos: Vector2, radius: float = 12.0) -> bool:
             best_d = d
             best = n
     if best == null:
-        return false
+        return {}
     var uid_v: Variant = best.get("instance_id")
     var uid := str(uid_v) if uid_v != null else ""
+    var removed: Dictionary = {}
     var info := current_room()
     if not info.is_empty() and not uid.is_empty():
         var entities: Array = info.get("entities", [])
         for i in range(entities.size() - 1, -1, -1):
             if str((entities[i] as Dictionary).get("instance_id", "")) == uid:
+                removed = (entities[i] as Dictionary).duplicate(true)
                 entities.remove_at(i)
                 break
         info["entities"] = entities
     best.queue_free()
+    return removed
+
+
+# Re-place an entity from a saved record (edit-mode undo of a delete): spawns the
+# live node reusing the record's instance_id/pos/tags/props and restores the
+# entities[] record verbatim.
+func place_entity_record(record: Dictionary) -> bool:
+    var info := current_room()
+    if info.is_empty():
+        return false
+    var type_id := str(record.get("type", "")).strip_edges()
+    if type_id.is_empty():
+        return false
+    var pos_v: Variant = record.get("position", Vector2.ZERO)
+    var pos: Vector2 = pos_v if pos_v is Vector2 else Vector2.ZERO
+    var tags_v: Variant = record.get("tags", [])
+    var tags: Array = tags_v if typeof(tags_v) == TYPE_ARRAY else []
+    var props_v: Variant = record.get("properties", {})
+    var props: Dictionary = (props_v as Dictionary).duplicate(true) if typeof(props_v) == TYPE_DICTIONARY else {}
+    var uid := str(record.get("instance_id", "")).strip_edges()
+    if not uid.is_empty() and not props.has("instance_id"):
+        props["instance_id"] = uid
+    if spawn_entity_dynamic(type_id, pos, tags, props) == null:
+        return false
+    var entities: Array = info.get("entities", [])
+    entities.append(record.duplicate(true))
+    info["entities"] = entities
     return true
 
 
