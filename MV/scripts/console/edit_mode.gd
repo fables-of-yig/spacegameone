@@ -37,11 +37,17 @@ var _stroke_cells: Dictionary = {}
 
 var _hud: CanvasLayer = null
 var _hud_panel: PanelContainer = null
-var _info_label: Label = null
+var _mode_tiles_btn: Button = null
+var _mode_ents_btn: Button = null
+var _sel_host: PanelContainer = null
+var _save_dot: ColorRect = null
+var _save_label: Label = null
 var _status_label: Label = null
+var _status_pill: Control = null
 var _palette: CanvasLayer = null
 var _palette_open := false
 var _atlas: Dictionary = {}
+var _dirty := false
 
 
 func _ready() -> void:
@@ -56,39 +62,151 @@ func _ready() -> void:
 	visible = false
 
 
+# Edit HUD (Nebula mockup): a top toolbar (EDIT · mode tabs · selected swatch ·
+# save state · undo/palette) plus a bottom-left key-hint pill and status pill.
+# Stays in game space (overlays live play) — no content-scale flip.
 func _build_hud() -> void:
 	_hud = CanvasLayer.new()
 	_hud.layer = 130
 	_hud.visible = false
 	add_child(_hud)
+	var root := Control.new()
+	root.set_anchors_preset(Control.PRESET_FULL_RECT)
+	root.theme = NebulaTheme.theme()
+	root.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	_hud.add_child(root)
+
+	# --- Top toolbar ---
 	var panel := PanelContainer.new()
-	panel.set_anchors_preset(Control.PRESET_TOP_WIDE)
-	panel.theme = NebulaTheme.theme()
+	panel.anchor_left = 0.0
+	panel.anchor_right = 1.0
+	panel.offset_left = 8
+	panel.offset_top = 8
+	panel.offset_right = -8
 	_hud_panel = panel
-	panel.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	# Flat dark top strip with a cyan underline — not the ornate window frame.
 	var bar := StyleBoxFlat.new()
 	bar.bg_color = Color(NebulaTheme.C_PANEL_BG.r, NebulaTheme.C_PANEL_BG.g, NebulaTheme.C_PANEL_BG.b, 0.94)
 	bar.border_color = NebulaTheme.C_ACCENT
+	bar.set_border_width_all(1)
 	bar.border_width_bottom = 2
-	bar.content_margin_left = 12.0
-	bar.content_margin_right = 12.0
-	bar.content_margin_top = 6.0
-	bar.content_margin_bottom = 6.0
+	bar.set_corner_radius_all(4)
+	bar.set_content_margin_all(8)
 	panel.add_theme_stylebox_override("panel", bar)
-	_hud.add_child(panel)
-	var vbox := VBoxContainer.new()
-	vbox.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	panel.add_child(vbox)
-	_info_label = Label.new()
-	_info_label.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	_info_label.add_theme_color_override("font_color", NebulaTheme.C_BODY)
-	vbox.add_child(_info_label)
+	root.add_child(panel)
+	var barrow := HBoxContainer.new()
+	barrow.add_theme_constant_override("separation", 10)
+	panel.add_child(barrow)
+
+	var edit_lbl := Label.new()
+	edit_lbl.text = "EDIT"
+	edit_lbl.add_theme_color_override("font_color", NebulaTheme.C_TITLE)
+	if NebulaTheme.font() != null:
+		edit_lbl.add_theme_font_override("font", NebulaTheme.font())
+	barrow.add_child(edit_lbl)
+
+	_mode_tiles_btn = NebulaUi.button("Tiles", "primary")
+	_mode_tiles_btn.pressed.connect(func(): _set_mode(false))
+	barrow.add_child(_mode_tiles_btn)
+	_mode_ents_btn = NebulaUi.button("Entities", "ghost")
+	_mode_ents_btn.pressed.connect(func(): _set_mode(true))
+	barrow.add_child(_mode_ents_btn)
+
+	var sel_lbl := Label.new()
+	sel_lbl.text = "SEL"
+	sel_lbl.add_theme_color_override("font_color", NebulaTheme.C_DIM)
+	sel_lbl.add_theme_font_size_override("font_size", NebulaTheme.size("hint"))
+	barrow.add_child(sel_lbl)
+	_sel_host = PanelContainer.new()
+	_sel_host.add_theme_stylebox_override("panel", NebulaTheme.well_box())
+	_sel_host.custom_minimum_size = Vector2(34, 34)
+	barrow.add_child(_sel_host)
+
+	var spacer := Control.new()
+	spacer.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	barrow.add_child(spacer)
+
+	_save_dot = ColorRect.new()
+	_save_dot.custom_minimum_size = Vector2(9, 9)
+	_save_dot.size_flags_vertical = Control.SIZE_SHRINK_CENTER
+	barrow.add_child(_save_dot)
+	_save_label = Label.new()
+	barrow.add_child(_save_label)
+
+	var undo_btn := NebulaUi.button("↶", "ghost")
+	undo_btn.pressed.connect(_undo_last)
+	barrow.add_child(undo_btn)
+	var pal_btn := NebulaUi.button("▦", "ghost")
+	pal_btn.pressed.connect(_open_palette)
+	barrow.add_child(pal_btn)
+
+	# --- Bottom-left key hints + status pill ---
+	var bl := VBoxContainer.new()
+	bl.set_anchors_and_offsets_preset(Control.PRESET_BOTTOM_LEFT)
+	bl.position += Vector2(8, -8)
+	bl.grow_vertical = Control.GROW_DIRECTION_BEGIN
+	bl.add_theme_constant_override("separation", 6)
+	root.add_child(bl)
+	var hints := PanelContainer.new()
+	hints.add_theme_stylebox_override("panel", _pill_box())
+	bl.add_child(hints)
+	var hb := HBoxContainer.new()
+	hb.add_theme_constant_override("separation", 12)
+	hints.add_child(hb)
+	for pair in [["LMB", "paint"], ["RMB", "erase"], ["Tab", "mode"], ["P", "palette"], ["Z", "undo"], ["S", "save"], ["Esc", "exit"]]:
+		hb.add_child(_key_hint(str(pair[0]), str(pair[1])))
+	_status_pill = PanelContainer.new()
+	(_status_pill as PanelContainer).add_theme_stylebox_override("panel", _pill_box())
+	_status_pill.visible = false
+	bl.add_child(_status_pill)
 	_status_label = Label.new()
-	_status_label.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	_status_label.add_theme_color_override("font_color", NebulaTheme.C_ACCENT)
-	vbox.add_child(_status_label)
+	(_status_pill as PanelContainer).add_child(_status_label)
 	_refresh_hud()
+
+
+func _key_hint(k: String, label: String) -> Control:
+	var hb := HBoxContainer.new()
+	hb.add_theme_constant_override("separation", 5)
+	var kbd := PanelContainer.new()
+	var kb := StyleBoxFlat.new()
+	kb.bg_color = NebulaTheme.C_PANEL_ALT
+	kb.set_corner_radius_all(3)
+	kb.content_margin_left = 5.0
+	kb.content_margin_right = 5.0
+	kb.content_margin_top = 2.0
+	kb.content_margin_bottom = 2.0
+	kbd.add_theme_stylebox_override("panel", kb)
+	var kl := Label.new()
+	kl.text = k
+	kl.add_theme_color_override("font_color", NebulaTheme.C_TITLE)
+	kl.add_theme_font_size_override("font_size", NebulaTheme.size("hint"))
+	kbd.add_child(kl)
+	hb.add_child(kbd)
+	var ll := Label.new()
+	ll.text = label
+	ll.add_theme_color_override("font_color", NebulaTheme.C_DIM)
+	ll.add_theme_font_size_override("font_size", NebulaTheme.size("hint"))
+	hb.add_child(ll)
+	return hb
+
+
+func _pill_box() -> StyleBoxFlat:
+	var b := StyleBoxFlat.new()
+	b.bg_color = Color(NebulaTheme.C_PANEL_DARK.r, NebulaTheme.C_PANEL_DARK.g, NebulaTheme.C_PANEL_DARK.b, 0.85)
+	b.set_corner_radius_all(999)
+	b.content_margin_left = 12.0
+	b.content_margin_right = 12.0
+	b.content_margin_top = 6.0
+	b.content_margin_bottom = 6.0
+	b.border_color = Color(NebulaTheme.C_BORDER.r, NebulaTheme.C_BORDER.g, NebulaTheme.C_BORDER.b, 0.22)
+	b.set_border_width_all(1)
+	return b
+
+
+func _set_mode(entities: bool) -> void:
+	_entity_mode = entities
+	_refresh_hud()
+	queue_redraw()
 
 
 func _rm() -> MvRoomManager:
@@ -280,6 +398,7 @@ func _finish_stroke() -> void:
 	if not _stroke.is_empty():
 		_undo.append({"op": "tile_stroke", "cells": _stroke.duplicate()})
 		_trim_undo()
+		_mark_dirty()
 	_stroke = []
 	_stroke_cells = {}
 
@@ -313,6 +432,7 @@ func _place_entity() -> void:
 	if not uid.is_empty():
 		_undo.append({"op": "entity_place", "uid": uid})
 		_trim_undo()
+		_mark_dirty()
 		_set_status("placed '%s'" % id)
 
 
@@ -324,6 +444,7 @@ func _delete_entity() -> void:
 	if not rec.is_empty():
 		_undo.append({"op": "entity_delete", "record": rec})
 		_trim_undo()
+		_mark_dirty()
 		_set_status("deleted entity")
 
 
@@ -503,9 +624,16 @@ func _save() -> void:
 	rooms[addr] = raw_room
 	raw["rooms"] = rooms
 	if EnvIO.save_rooms(pack.pack_id, raw):
+		_dirty = false
+		_refresh_hud()
 		_set_status("saved '%s' → user pack '%s'" % [addr, pack.pack_id])
 	else:
 		_set_status("save failed: write error")
+
+
+func _mark_dirty() -> void:
+	_dirty = true
+	_refresh_hud()
 
 
 func _serialize_entities(entities: Array) -> Array:
@@ -529,17 +657,60 @@ func _serialize_entities(entities: Array) -> Array:
 # ── HUD ─────────────────────────────────────────────────────────────────────
 
 func _refresh_hud() -> void:
-	if _info_label == null:
+	if _mode_tiles_btn == null:
 		return
+	_mode_tiles_btn.self_modulate = Color.WHITE if not _entity_mode else NebulaTheme.C_BORDER
+	_mode_ents_btn.self_modulate = Color.WHITE if _entity_mode else NebulaTheme.C_BORDER
+	_update_swatch()
+	if _save_dot != null:
+		_save_dot.color = NebulaTheme.C_ACCENT_2 if _dirty else NebulaTheme.C_BORDER
+		_save_label.text = "Unsaved changes" if _dirty else "All saved"
+		_save_label.add_theme_color_override("font_color", NebulaTheme.C_ACCENT_2 if _dirty else NebulaTheme.C_DIM)
+
+
+# Selected swatch: the tile texture region in tiles mode, the entity id in ents.
+func _update_swatch() -> void:
+	if _sel_host == null:
+		return
+	for c in _sel_host.get_children():
+		c.queue_free()
 	if _entity_mode:
 		var id := _current_entity_id()
-		var label := id if not id.is_empty() else "(pack has no entities)"
-		_info_label.text = "EDIT · ENTITIES · %s   ·   Tab=tiles  [ ] type  LMB place  RMB delete  Ctrl+Z undo  Ctrl+S save  Esc exit" % label
+		var lbl := Label.new()
+		lbl.text = id if not id.is_empty() else "—"
+		lbl.add_theme_color_override("font_color", NebulaTheme.C_BODY)
+		lbl.add_theme_font_size_override("font_size", NebulaTheme.size("hint"))
+		lbl.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+		lbl.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
+		_sel_host.add_child(lbl)
+		return
+	var atlas := _rm().current_tileset_atlas() if _rm() != null else {}
+	var tex: Texture2D = atlas.get("texture")
+	if tex != null:
+		var ts: int = int(atlas.get("tile_size", BLOCK))
+		var cols: int = maxi(1, int(atlas.get("cols", 1)))
+		var at := AtlasTexture.new()
+		at.atlas = tex
+		at.region = Rect2((_tile_idx % cols) * ts, (_tile_idx / cols) * ts, ts, ts)
+		var tr := TextureRect.new()
+		tr.texture = at
+		tr.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
+		tr.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
+		tr.texture_filter = CanvasItem.TEXTURE_FILTER_NEAREST
+		tr.custom_minimum_size = Vector2(30, 30)
+		_sel_host.add_child(tr)
 	else:
-		_info_label.text = "EDIT · TILES · tile #%d · %s   ·   Tab=entities  [ ] tile  P palette  S solid  LMB paint  RMB erase  Ctrl+Z undo  Ctrl+S save" % [
-			_tile_idx, "SOLID" if _solid else "deco"]
+		var lbl := Label.new()
+		lbl.text = "#%d" % _tile_idx
+		lbl.add_theme_color_override("font_color", NebulaTheme.C_BODY)
+		lbl.add_theme_font_size_override("font_size", NebulaTheme.size("hint"))
+		lbl.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+		lbl.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
+		_sel_host.add_child(lbl)
 
 
 func _set_status(msg: String) -> void:
-	if _status_label != null:
-		_status_label.text = msg
+	if _status_label == null or _status_pill == null:
+		return
+	_status_label.text = msg
+	_status_pill.visible = not msg.strip_edges().is_empty()
