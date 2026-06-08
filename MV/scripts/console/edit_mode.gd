@@ -26,6 +26,8 @@ var _mode := "tiles"  # "tiles" | "collision" | "entities"
 var _tile_idx := 0
 var _tileset_id := -1  # selected tileset source (-1 = room's primary)
 var _solid := true
+var _animate := false  # tiles mode: A arms animated-tile placement (brush = frames)
+var _anim_fps := 8.0
 # Paint brush: a WxH block from the palette (1x1 for a single tile). col0/row0
 # are the atlas top-left; metatile for offset (dx,dy) = (row0+dy)*cols+(col0+dx).
 var _brush := {"ts": -1, "col0": 0, "row0": 0, "w": 1, "h": 1, "cols": 1}
@@ -215,7 +217,7 @@ func _build_hud() -> void:
 	var hb := HBoxContainer.new()
 	hb.add_theme_constant_override("separation", 12)
 	hints.add_child(hb)
-	for pair in [["LMB", "paint"], ["RMB", "erase"], ["Tab", "mode"], ["P", "palette"], ["Z", "undo"], ["S", "save"], ["Esc", "exit"]]:
+	for pair in [["LMB", "paint"], ["RMB", "erase"], ["Tab", "mode"], ["P", "palette"], ["A", "animate"], ["Z", "undo"], ["S", "save"], ["Esc", "exit"]]:
 		hb.add_child(_key_hint(str(pair[0]), str(pair[1])))
 	_status_pill = PanelContainer.new()
 	(_status_pill as PanelContainer).add_theme_stylebox_override("panel", _pill_box())
@@ -356,8 +358,9 @@ func _unhandled_input(event: InputEvent) -> void:
 		return
 	if event is InputEventMouseMotion:
 		_update_hover()
-		# Tiles + collision drag-paint; entities place per-click.
-		if _mode != "entities":
+		# Tiles + collision drag-paint; entities place per-click. Animated-tile
+		# placement is click-only (each cell reloads), so it skips drag.
+		if _mode != "entities" and not (_mode == "tiles" and _animate):
 			if _painting:
 				_apply_primary()
 			elif _erasing:
@@ -401,6 +404,11 @@ func _unhandled_input(event: InputEvent) -> void:
 			KEY_P:
 				if _mode == "tiles":
 					_open_palette()
+				get_viewport().set_input_as_handled()
+			KEY_A:
+				if _mode == "tiles":
+					_animate = not _animate
+					_set_status("animated tiles: %s — select a 2+ tile strip, click to place (fps %d)" % ["ON" if _animate else "off", int(_anim_fps)])
 				get_viewport().set_input_as_handled()
 			KEY_Z:
 				if ke.ctrl_pressed:
@@ -456,6 +464,33 @@ func _apply_secondary() -> void:
 			_paint_collision(false)
 		_:
 			_erase_tile()
+
+
+# Place a single animated tile: the brush's tiles become the frame sequence.
+func _place_animated_cell() -> void:
+	var rm := _rm()
+	if rm == null or not rm.cell_in_bounds(_hover):
+		return
+	var frames := _brush_frames()
+	if frames.size() < 2:
+		_set_status("animate needs a 2+ tile strip — drag a row/column in the palette first")
+		return
+	_capture_stroke_cell(rm, _hover)
+	rm.paint_cell(_hover, int(frames[0]), _solid, int(_brush.get("ts", _tileset_id)), false)
+	rm.set_cell_animation(_hover, frames, _anim_fps)
+	_mark_dirty()
+
+
+# The brush's metatile indices in row-major order — the animation frame list.
+func _brush_frames() -> Array:
+	var cols := maxi(1, int(_brush.get("cols", 1)))
+	var col0 := int(_brush.get("col0", 0))
+	var row0 := int(_brush.get("row0", 0))
+	var out: Array = []
+	for dy in maxi(1, int(_brush.get("h", 1))):
+		for dx in maxi(1, int(_brush.get("w", 1))):
+			out.append((row0 + dy) * cols + (col0 + dx))
+	return out
 
 
 func _paint_collision(solid: bool) -> void:
@@ -570,6 +605,9 @@ func _finish_stroke() -> void:
 
 
 func _paint_tile() -> void:
+	if _animate:
+		_place_animated_cell()
+		return
 	var rm := _rm()
 	if rm == null:
 		return
