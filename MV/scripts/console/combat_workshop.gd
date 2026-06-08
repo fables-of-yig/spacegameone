@@ -41,15 +41,25 @@ const STAT_FIELDS := [
 const INT_KEYS := ["hp", "contact_damage", "attack_damage", "projectile_damage",
 	"melee_attack_trigger_frame", "projectile_attack_trigger_frame"]
 
+const STEP_SUBS := ["name, category, sprite", "hp, melee, ranged", "WHEN → DO rules", "death & impact FX", "spawn, tweak, save"]
+
 var _step := 0
+var _track := ""  # "" = track select, "enemy" = enemy track, "player" = (not built)
 var _data: Dictionary = {}
 var _sprite_sets: Array = []
 var _title: Label = null
+var _track_label: Label = null
 var _status: Label = null
-var _content: VBoxContainer = null
+var _content: VBoxContainer = null  # per-step WorkPanel body, rebuilt each step
+var _work_host: VBoxContainer = null  # scroll's content column
+var _rail_host: VBoxContainer = null
 var _nav_back: Button = null
 var _nav_next: Button = null
+var _nav_test: Button = null
+var _shell_root: Control = null
+var _track_root: Control = null
 var _skin_host: Control = null
+var _prev_scale_size := Vector2i.ZERO  # restored on close (full-res content-scale flip)
 
 
 func _ready() -> void:
@@ -59,9 +69,12 @@ func _ready() -> void:
 	visible = false
 
 
+# Builds both the entry track-select screen and the three-zone editor shell
+# (header / [step rail | work area] / bottom nav), per the Nebula mockup. Only
+# one is visible at a time (_show_screen toggles).
 func _build_shell() -> void:
 	var bg := ColorRect.new()
-	bg.color = Color(NebulaTheme.C_PANEL_DARK.r, NebulaTheme.C_PANEL_DARK.g, NebulaTheme.C_PANEL_DARK.b, 0.92)
+	bg.color = NebulaTheme.C_PANEL_DARK
 	bg.set_anchors_preset(Control.PRESET_FULL_RECT)
 	bg.mouse_filter = Control.MOUSE_FILTER_STOP
 	add_child(bg)
@@ -70,51 +83,121 @@ func _build_shell() -> void:
 	margin.theme = NebulaTheme.theme()
 	_skin_host = margin
 	for side in ["margin_left", "margin_right", "margin_top", "margin_bottom"]:
-		margin.add_theme_constant_override(side, 12)
+		margin.add_theme_constant_override(side, 18)
 	add_child(margin)
-	var frame := PanelContainer.new()
-	margin.add_child(frame)
-	var root := VBoxContainer.new()
-	root.add_theme_constant_override("separation", 8)
-	frame.add_child(root)
-	_title = Label.new()
-	_title.add_theme_color_override("font_color", NebulaTheme.C_TITLE)
-	_title.add_theme_font_size_override("font_size", NebulaTheme.size("title"))
-	if NebulaTheme.font() != null:
-		_title.add_theme_font_override("font", NebulaTheme.font())
-	root.add_child(_title)
-	root.add_child(HSeparator.new())
+	_build_track_select(margin)
+	_build_editor(margin)
+
+
+func _build_track_select(parent: Control) -> void:
+	_track_root = CenterContainer.new()
+	_track_root.set_anchors_preset(Control.PRESET_FULL_RECT)
+	parent.add_child(_track_root)
+	var col := VBoxContainer.new()
+	col.add_theme_constant_override("separation", 24)
+	col.alignment = BoxContainer.ALIGNMENT_CENTER
+	_track_root.add_child(col)
+	var title := NebulaTheme.title_label("Combat Workshop")
+	title.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	col.add_child(title)
+	var sub := Label.new()
+	sub.text = "CHOOSE WHAT TO BUILD"
+	sub.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	sub.add_theme_color_override("font_color", NebulaTheme.C_DIM)
+	col.add_child(sub)
+	var cards := HBoxContainer.new()
+	cards.add_theme_constant_override("separation", 24)
+	cards.alignment = BoxContainer.ALIGNMENT_CENTER
+	col.add_child(cards)
+	cards.add_child(NebulaUi.track_card("Build an Enemy",
+		"Identity, stats, melee & ranged, then assemble AI as WHEN → DO rules. Spawn & fight to tune.",
+		func(): _pick_track("enemy")))
+	cards.add_child(NebulaUi.track_card("Player's Attacks",
+		"Per-frame melee hitboxes and rich projectiles. Not wired into the engine yet — coming next.",
+		func(): _pick_track("player")))
+
+
+func _build_editor(parent: Control) -> void:
+	_shell_root = VBoxContainer.new()
+	_shell_root.set_anchors_preset(Control.PRESET_FULL_RECT)
+	_shell_root.add_theme_constant_override("separation", 0)
+	parent.add_child(_shell_root)
+
+	# Header: title + track label + Switch Track + close.
+	var header := HBoxContainer.new()
+	header.add_theme_constant_override("separation", 14)
+	_shell_root.add_child(header)
+	_title = NebulaTheme.title_label("Combat Workshop")
+	header.add_child(_title)
+	_track_label = Label.new()
+	_track_label.add_theme_color_override("font_color", NebulaTheme.C_DIM)
+	_track_label.size_flags_vertical = Control.SIZE_SHRINK_CENTER
+	header.add_child(_track_label)
+	var hspacer := Control.new()
+	hspacer.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	header.add_child(hspacer)
+	var switch := NebulaUi.button("Switch Track", "ghost")
+	switch.pressed.connect(func(): _pick_track(""))
+	header.add_child(switch)
+	var close := NebulaUi.button("✕", "ghost")
+	close.pressed.connect(close_workshop)
+	header.add_child(close)
+	_shell_root.add_child(_hsep())
+
+	# Body: step rail + work area.
+	var body := HBoxContainer.new()
+	body.add_theme_constant_override("separation", 16)
+	body.size_flags_vertical = Control.SIZE_EXPAND_FILL
+	_shell_root.add_child(body)
+	var rail_pad := MarginContainer.new()
+	rail_pad.add_theme_constant_override("margin_top", 12)
+	rail_pad.add_theme_constant_override("margin_right", 8)
+	rail_pad.custom_minimum_size = Vector2(248 if NebulaTheme.profile() == "full" else 130, 0)
+	body.add_child(rail_pad)
+	_rail_host = VBoxContainer.new()
+	rail_pad.add_child(_rail_host)
 	var scroll := ScrollContainer.new()
+	scroll.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	scroll.size_flags_vertical = Control.SIZE_EXPAND_FILL
 	scroll.horizontal_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED
-	root.add_child(scroll)
-	_content = VBoxContainer.new()
-	_content.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	_content.add_theme_constant_override("separation", 6)
-	scroll.add_child(_content)
+	body.add_child(scroll)
+	_work_host = VBoxContainer.new()
+	_work_host.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	_work_host.add_theme_constant_override("separation", 16)
+	scroll.add_child(_work_host)
+
 	_status = Label.new()
 	_status.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
-	root.add_child(_status)
+	_shell_root.add_child(_status)
+
+	# Bottom nav: ← Back (ghost) · ▶ Test (gold) · Next → (cyan).
+	_shell_root.add_child(_hsep())
 	var nav := HBoxContainer.new()
-	nav.add_theme_constant_override("separation", 8)
-	root.add_child(nav)
-	var cancel := Button.new()
-	cancel.text = "Cancel"
-	cancel.self_modulate = NebulaTheme.C_BORDER
-	cancel.pressed.connect(close_workshop)
-	nav.add_child(cancel)
+	nav.add_theme_constant_override("separation", 12)
+	_shell_root.add_child(nav)
+	_nav_back = NebulaUi.button("← Back", "ghost")
+	_nav_back.pressed.connect(_go_back)
+	nav.add_child(_nav_back)
 	var spacer := Control.new()
 	spacer.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	nav.add_child(spacer)
-	_nav_back = Button.new()
-	_nav_back.text = "◀ Back"
-	_nav_back.self_modulate = NebulaTheme.C_BORDER
-	_nav_back.pressed.connect(_go_back)
-	nav.add_child(_nav_back)
-	_nav_next = Button.new()
-	_nav_next.text = "Next ▶"
+	_nav_test = NebulaUi.button("▶ Test", "gold")
+	_nav_test.pressed.connect(_spawn_and_fight)
+	nav.add_child(_nav_test)
+	_nav_next = NebulaUi.button("Next →", "primary")
 	_nav_next.pressed.connect(_go_next)
 	nav.add_child(_nav_next)
+
+
+func _hsep() -> Control:
+	var s := PanelContainer.new()
+	var box := StyleBoxFlat.new()
+	box.bg_color = Color(NebulaTheme.C_BORDER.r, NebulaTheme.C_BORDER.g, NebulaTheme.C_BORDER.b, 0.18)
+	box.content_margin_top = 8.0
+	box.content_margin_bottom = 8.0
+	s.add_theme_stylebox_override("panel", box)
+	s.custom_minimum_size = Vector2(0, 2)
+	return s
 
 
 # ── Lifecycle ────────────────────────────────────────────────────────────────
@@ -122,6 +205,13 @@ func _build_shell() -> void:
 func open_workshop() -> bool:
 	if MvGame.main == null or not is_instance_valid(MvGame.main):
 		return false
+	# Render the editor at full window resolution: MV normally downscales its UI
+	# to a 480x270 space (Space/main.gd content_scale_size), which is far too
+	# small for this dense full-screen editor. The paused game behind is fully
+	# covered, so we flip to 1:1 while open and restore on close. See NebulaTheme.
+	var win := get_window()
+	_prev_scale_size = win.content_scale_size
+	win.content_scale_size = win.size
 	_init_data()
 	_step = 0
 	_reskin()
@@ -129,23 +219,54 @@ func open_workshop() -> bool:
 	MvGame.simulation_paused = true
 	visible = true
 	_set_status("")
-	_show_step()
+	_pick_track("")
 	return true
 
 
 func close_workshop() -> void:
 	visible = false
+	get_window().content_scale_size = _prev_scale_size
 	PlanetaryInterface.edit_session_active = false
 	MvGame.simulation_paused = false
 
 
-# Re-pick the scale profile (Space build vs MV show) and re-apply size-sensitive
-# overrides. See NebulaTheme's SCALE PROFILES note.
+# Re-pick the scale profile and re-apply the shared theme. See NebulaTheme.
 func _reskin() -> void:
 	if _skin_host != null:
 		_skin_host.theme = NebulaTheme.theme()
-	if _title != null:
-		_title.add_theme_font_size_override("font_size", NebulaTheme.size("title"))
+
+
+# Pick a track ("" = entry select, "enemy", "player") and show the right screen.
+func _pick_track(track: String) -> void:
+	_track = track
+	if _track_label != null:
+		_track_label.text = "/ Build an Enemy" if track == "enemy" else ("/ Player's Attacks" if track == "player" else "")
+	_track_root.visible = track == ""
+	_shell_root.visible = track != ""
+	_set_status("")
+	if track == "enemy":
+		_init_data()
+		_step = 0
+		_show_step()
+	elif track == "player":
+		_show_player_placeholder()
+
+
+func _show_player_placeholder() -> void:
+	for c in _rail_host.get_children():
+		c.queue_free()
+	for c in _work_host.get_children():
+		c.queue_free()
+	var wp := NebulaUi.work_panel("Player's Attacks — not wired yet")
+	_work_host.add_child(wp["root"])
+	var msg := Label.new()
+	msg.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	msg.add_theme_color_override("font_color", NebulaTheme.C_BODY)
+	msg.text = "The player-attack track (per-frame melee hitboxes + authored projectiles with homing/explosive/trails) isn't built into the engine yet. The enemy track is fully working — use Switch Track to build an enemy."
+	wp["body"].add_child(msg)
+	_nav_back.disabled = false
+	_nav_next.disabled = true
+	_nav_test.disabled = true
 
 
 func _init_data() -> void:
@@ -178,6 +299,8 @@ func _go_back() -> void:
 	if _step > 0:
 		_step -= 1
 		_show_step()
+	else:
+		_pick_track("")  # back from step 1 returns to track select
 
 
 func _go_next() -> void:
@@ -187,23 +310,44 @@ func _go_next() -> void:
 	if _step < STEPS.size() - 1:
 		_step += 1
 		_show_step()
-	else:
+	elif _save_all():
 		close_workshop()
 
 
 func _show_step() -> void:
-	_title.text = "⚔ Combat Workshop  —  (%d/%d) %s" % [_step + 1, STEPS.size(), STEPS[_step]]
-	for c in _content.get_children():
+	_refresh_rail()
+	for c in _work_host.get_children():
 		c.queue_free()
-	# Build deferred so the queued frees are flushed first.
+	# Each step's content lives inside a framed WorkPanel (Nebula look).
+	var wp := NebulaUi.work_panel("")
+	_work_host.add_child(wp["root"])
+	_content = wp["body"]
 	match _step:
 		0: _build_identity()
 		1: _build_stats()
 		2: _build_behavior()
 		3: _build_effects()
 		4: _build_review()
-	_nav_back.disabled = _step == 0
-	_nav_next.text = "Close" if _step == STEPS.size() - 1 else "Next ▶"
+	_nav_back.disabled = false
+	_nav_test.disabled = false
+	_nav_next.disabled = false
+	_nav_next.text = "Save & Close →" if _step == STEPS.size() - 1 else "Next →"
+
+
+func _refresh_rail() -> void:
+	for c in _rail_host.get_children():
+		c.queue_free()
+	var rail := NebulaUi.step_rail(STEPS, STEP_SUBS, _step, func(i): _jump_to_step(i))
+	_rail_host.add_child(rail)
+
+
+func _jump_to_step(i: int) -> void:
+	# Don't let the user skip past step 1 without an id.
+	if i > 0 and str(_data["id"]).strip_edges().is_empty():
+		_set_status("An entity id is required first.", true)
+		return
+	_step = clampi(i, 0, STEPS.size() - 1)
+	_show_step()
 
 
 # ── Step 1: Identity & Sprite ────────────────────────────────────────────────
