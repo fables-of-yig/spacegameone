@@ -22,9 +22,13 @@ const UNDO_LIMIT := 100
 
 var _active := false
 var _prev_paused := false
-var _entity_mode := false
+var _mode := "tiles"  # "tiles" | "collision" | "entities"
 var _tile_idx := 0
 var _solid := true
+
+const MODES := ["tiles", "collision", "entities"]
+const MODE_LABELS := {"tiles": "Tiles", "collision": "Collision", "entities": "Entities"}
+const BT_SOLID := 0x8  # mirrors MvRoomManager.BT_SOLID (solid family >= 0x8)
 var _entity_ids: Array = []
 var _entity_idx := 0
 var _hover := Vector2i(-9999, -9999)
@@ -37,8 +41,7 @@ var _stroke_cells: Dictionary = {}
 
 var _hud: CanvasLayer = null
 var _hud_panel: PanelContainer = null
-var _mode_tiles_btn: Button = null
-var _mode_ents_btn: Button = null
+var _mode_btns: Dictionary = {}  # mode name -> Button
 var _sel_host: PanelContainer = null
 var _save_dot: ColorRect = null
 var _save_label: Label = null
@@ -125,12 +128,12 @@ func _build_hud() -> void:
 		edit_lbl.add_theme_font_override("font", NebulaTheme.font())
 	barrow.add_child(edit_lbl)
 
-	_mode_tiles_btn = NebulaUi.button("Tiles", "primary")
-	_mode_tiles_btn.pressed.connect(func(): _set_mode(false))
-	barrow.add_child(_mode_tiles_btn)
-	_mode_ents_btn = NebulaUi.button("Entities", "ghost")
-	_mode_ents_btn.pressed.connect(func(): _set_mode(true))
-	barrow.add_child(_mode_ents_btn)
+	_mode_btns = {}
+	for m in MODES:
+		var mb := NebulaUi.button(str(MODE_LABELS[m]), "primary" if m == _mode else "ghost")
+		mb.pressed.connect(_set_mode.bind(str(m)))
+		barrow.add_child(mb)
+		_mode_btns[m] = mb
 
 	var sel_lbl := Label.new()
 	sel_lbl.text = "SEL"
@@ -227,8 +230,12 @@ func _pill_box() -> StyleBoxFlat:
 	return b
 
 
-func _set_mode(entities: bool) -> void:
-	_entity_mode = entities
+func _set_mode(mode: String) -> void:
+	if not MODES.has(mode):
+		return
+	_mode = mode
+	if mode != "tiles":
+		_close_palette()
 	_refresh_hud()
 	queue_redraw()
 
@@ -306,12 +313,12 @@ func _unhandled_input(event: InputEvent) -> void:
 		return
 	if event is InputEventMouseMotion:
 		_update_hover()
-		# Only tiles drag-paint; entities place per-click.
-		if not _entity_mode:
+		# Tiles + collision drag-paint; entities place per-click.
+		if _mode != "entities":
 			if _painting:
-				_paint_tile()
+				_apply_primary()
 			elif _erasing:
-				_erase_tile()
+				_apply_secondary()
 		return
 	if event is InputEventMouseButton:
 		var mb := event as InputEventMouseButton
@@ -319,20 +326,20 @@ func _unhandled_input(event: InputEvent) -> void:
 			_painting = mb.pressed
 			if mb.pressed:
 				_update_hover()
-				if not _entity_mode:
+				if _mode != "entities":
 					_begin_stroke()
 				_apply_primary()
-			elif not _entity_mode:
+			elif _mode != "entities":
 				_finish_stroke()
 			get_viewport().set_input_as_handled()
 		elif mb.button_index == MOUSE_BUTTON_RIGHT:
 			_erasing = mb.pressed
 			if mb.pressed:
 				_update_hover()
-				if not _entity_mode:
+				if _mode != "entities":
 					_begin_stroke()
 				_apply_secondary()
-			elif not _entity_mode:
+			elif _mode != "entities":
 				_finish_stroke()
 			get_viewport().set_input_as_handled()
 		return
@@ -340,8 +347,7 @@ func _unhandled_input(event: InputEvent) -> void:
 		var ke := event as InputEventKey
 		match ke.keycode:
 			KEY_TAB:
-				_entity_mode = not _entity_mode
-				_refresh_hud()
+				_cycle_mode()
 				get_viewport().set_input_as_handled()
 			KEY_BRACKETLEFT:
 				_cycle(-1)
@@ -350,7 +356,7 @@ func _unhandled_input(event: InputEvent) -> void:
 				_cycle(1)
 				get_viewport().set_input_as_handled()
 			KEY_P:
-				if not _entity_mode:
+				if _mode == "tiles":
 					_open_palette()
 				get_viewport().set_input_as_handled()
 			KEY_Z:
@@ -370,7 +376,7 @@ func _unhandled_input(event: InputEvent) -> void:
 
 
 func _cycle(dir: int) -> void:
-	if _entity_mode:
+	if _mode == "entities":
 		if not _entity_ids.is_empty():
 			_entity_idx = wrapi(_entity_idx + dir, 0, _entity_ids.size())
 	else:
@@ -378,18 +384,38 @@ func _cycle(dir: int) -> void:
 	_refresh_hud()
 
 
+func _cycle_mode() -> void:
+	var i := MODES.find(_mode)
+	_set_mode(str(MODES[wrapi(i + 1, 0, MODES.size())]))
+
+
 func _apply_primary() -> void:
-	if _entity_mode:
-		_place_entity()
-	else:
-		_paint_tile()
+	match _mode:
+		"entities":
+			_place_entity()
+		"collision":
+			_paint_collision(true)
+		_:
+			_paint_tile()
 
 
 func _apply_secondary() -> void:
-	if _entity_mode:
-		_delete_entity()
-	else:
-		_erase_tile()
+	match _mode:
+		"entities":
+			_delete_entity()
+		"collision":
+			_paint_collision(false)
+		_:
+			_erase_tile()
+
+
+func _paint_collision(solid: bool) -> void:
+	var rm := _rm()
+	if rm == null or not rm.cell_in_bounds(_hover):
+		return
+	_capture_stroke_cell(rm, _hover)
+	if rm.paint_collision(_hover, solid, false):
+		queue_redraw()
 
 
 func _process(_delta: float) -> void:
@@ -645,7 +671,7 @@ func _on_palette_click(event: InputEvent) -> void:
 		var col := int(pos.x / ts)
 		var row := int(pos.y / ts)
 		_tile_idx = maxi(0, row * cols + col)
-		_entity_mode = false
+		_mode = "tiles"
 		_refresh_hud()
 		_close_palette()
 
@@ -820,8 +846,12 @@ func _draw() -> void:
 	var rm := _rm()
 	if rm == null or not rm.cell_in_bounds(_hover):
 		return
+	# In collision mode, reveal the (otherwise invisible) collider cells so the
+	# user can see and fix stray/missing collision.
+	if _mode == "collision":
+		_draw_collision_overlay(rm)
 	var rect := Rect2(Vector2(_hover.x * BLOCK, _hover.y * BLOCK), Vector2(BLOCK, BLOCK))
-	if _entity_mode:
+	if _mode == "entities":
 		var c := NebulaTheme.C_ACCENT
 		draw_rect(rect, Color(c.r, c.g, c.b, 0.15), true)
 		draw_rect(rect, c, false, 1.0)
@@ -830,6 +860,19 @@ func _draw() -> void:
 		var edge := NebulaTheme.C_ERROR if _erasing else NebulaTheme.C_SUCCESS
 		draw_rect(rect, Color(edge.r, edge.g, edge.b, 0.18), true)
 		draw_rect(rect, edge, false, 1.0)
+
+
+func _draw_collision_overlay(rm: MvRoomManager) -> void:
+	var rows: Array = rm.collision_rows()
+	var fill := Color(NebulaTheme.C_ERROR.r, NebulaTheme.C_ERROR.g, NebulaTheme.C_ERROR.b, 0.22)
+	for r in rows.size():
+		var row_v: Variant = rows[r]
+		if typeof(row_v) != TYPE_ARRAY:
+			continue
+		var row: Array = row_v
+		for c in row.size():
+			if int(row[c]) >= BT_SOLID:
+				draw_rect(Rect2(Vector2(c * BLOCK, r * BLOCK), Vector2(BLOCK, BLOCK)), fill, true)
 
 
 # ── Persistence ─────────────────────────────────────────────────────────────
@@ -947,10 +990,10 @@ func _serialize_entities(entities: Array) -> Array:
 # ── HUD ─────────────────────────────────────────────────────────────────────
 
 func _refresh_hud() -> void:
-	if _mode_tiles_btn == null:
+	if _mode_btns.is_empty():
 		return
-	_mode_tiles_btn.self_modulate = Color.WHITE if not _entity_mode else NebulaTheme.C_BORDER
-	_mode_ents_btn.self_modulate = Color.WHITE if _entity_mode else NebulaTheme.C_BORDER
+	for m in _mode_btns:
+		(_mode_btns[m] as Button).self_modulate = Color.WHITE if m == _mode else NebulaTheme.C_BORDER
 	_update_swatch()
 	if _save_dot != null:
 		_save_dot.color = NebulaTheme.C_ACCENT_2 if _dirty else NebulaTheme.C_BORDER
@@ -964,10 +1007,13 @@ func _update_swatch() -> void:
 		return
 	for c in _sel_host.get_children():
 		c.queue_free()
-	if _entity_mode:
-		var id := _current_entity_id()
+	if _mode != "tiles":
 		var lbl := Label.new()
-		lbl.text = id if not id.is_empty() else "—"
+		if _mode == "entities":
+			var id := _current_entity_id()
+			lbl.text = id if not id.is_empty() else "—"
+		else:
+			lbl.text = "SOLID"
 		lbl.add_theme_color_override("font_color", NebulaTheme.C_BODY)
 		lbl.add_theme_font_size_override("font_size", NebulaTheme.size("hint"))
 		lbl.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER

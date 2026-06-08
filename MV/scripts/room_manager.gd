@@ -1360,6 +1360,25 @@ func paint_cell(cell: Vector2i, metatile_idx: int, solid: bool, rebuild_collisio
     return true
 
 
+# Set only the collision nibble at a cell (no tile change) — for the edit-mode
+# collision brush, which can add invisible colliders or clear stray ones. The
+# stroke finish rebuilds the merged rectangle colliders.
+func paint_collision(cell: Vector2i, solid: bool, rebuild_collision: bool = true) -> bool:
+    var info := current_room()
+    if info.is_empty() or not cell_in_bounds(cell):
+        return false
+    _set_collision_cell(info, cell, BT_SOLID if solid else BT_AIR)
+    if rebuild_collision:
+        _build_collision(info)
+    return true
+
+
+# The current room's collision grid (rows of block-type nibbles) for the
+# edit-mode collision overlay. Cells >= BT_SOLID (0x8) are the solid family.
+func collision_rows() -> Array:
+    return current_room().get("collision", [])
+
+
 # Clear the main-layer tile at `cell` and mark it BT_AIR (non-colliding).
 func erase_cell(cell: Vector2i, rebuild_collision: bool = true) -> bool:
     var info := current_room()
