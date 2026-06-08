@@ -54,7 +54,8 @@ func _ready() -> void:
 	process_mode = Node.PROCESS_MODE_ALWAYS
 	z_index = 4096
 	z_as_relative = false
-	_build_hud()
+	# HUD is built on enter() under the forced "compact" profile (it renders in
+	# MV's 480x270 viewport, which the root-based ui_scale() can't see).
 	_palette = CanvasLayer.new()
 	_palette.layer = 131
 	_palette.visible = false
@@ -66,6 +67,8 @@ func _ready() -> void:
 # save state · undo/palette) plus a bottom-left key-hint pill and status pill.
 # Stays in game space (overlays live play) — no content-scale flip.
 func _build_hud() -> void:
+	if _hud != null and is_instance_valid(_hud):
+		_hud.queue_free()
 	_hud = CanvasLayer.new()
 	_hud.layer = 130
 	_hud.visible = false
@@ -231,10 +234,10 @@ func enter() -> void:
 		return
 	_active = true
 	visible = true
-	# Re-pick the scale profile in case the HUD was built before MV set its
-	# content scale. See NebulaTheme's SCALE PROFILES note.
-	if _hud_panel != null:
-		_hud_panel.theme = NebulaTheme.theme()
+	# Force compact: the HUD renders in MV's 480x270 viewport, which the
+	# root-based ui_scale() can't measure. Build fresh so all sizes re-evaluate.
+	NebulaTheme.set_profile("compact")
+	_build_hud()
 	if _hud != null:
 		_hud.visible = true
 	_prev_paused = MvGame.simulation_paused
@@ -257,6 +260,7 @@ func exit() -> void:
 		_hud.visible = false
 	_painting = false
 	_erasing = false
+	NebulaTheme.set_profile("")
 	MvGame.simulation_paused = _prev_paused
 	PlanetaryInterface.edit_session_active = false
 
@@ -657,6 +661,8 @@ func _serialize_entities(entities: Array) -> Array:
 # ── HUD ─────────────────────────────────────────────────────────────────────
 
 func _refresh_hud() -> void:
+	if _active:
+		NebulaTheme.set_profile("compact")
 	if _mode_tiles_btn == null:
 		return
 	_mode_tiles_btn.self_modulate = Color.WHITE if not _entity_mode else NebulaTheme.C_BORDER

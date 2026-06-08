@@ -54,6 +54,7 @@ const SIZES := {
 
 static var _themes: Dictionary = {}
 static var _font: FontFile = null
+static var _forced := ""  # "full"/"compact" override; "" = auto from ui_scale()
 
 
 # --- Scale detection -----------------------------------------------------------
@@ -72,7 +73,17 @@ static func ui_scale() -> float:
 	return 1.0
 
 
+# Overlays declare their profile explicitly. The root-based ui_scale() heuristic
+# is correct for autoload overlays that render on the root window (console,
+# workshop, wizard) but WRONG for the edit HUD, which renders inside MV's
+# 480x270 viewport (a SubViewport when hosted) — so the edit HUD forces compact.
+static func set_profile(p: String) -> void:
+	_forced = p
+
+
 static func profile() -> String:
+	if _forced == "full" or _forced == "compact":
+		return _forced
 	return "compact" if ui_scale() >= 1.5 else "full"
 
 

@@ -189,6 +189,9 @@ func open() -> void:
 	if _open:
 		return
 	_open = true
+	# Console renders on the root window (autoload), so the root-based auto
+	# profile is correct; clear any forced profile a prior overlay left set.
+	NebulaTheme.set_profile("")
 	# Re-pick the scale profile: the console is built at autoload _ready in Space
 	# (full profile) but can be opened in MV (compact). See NebulaTheme.
 	if _skin_host != null:

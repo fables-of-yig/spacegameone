@@ -212,6 +212,7 @@ func open_workshop() -> bool:
 	var win := get_window()
 	_prev_scale_size = win.content_scale_size
 	win.content_scale_size = win.size
+	NebulaTheme.set_profile("full")  # renders on the root window at 1:1 while open
 	_init_data()
 	_step = 0
 	_reskin()
@@ -226,6 +227,7 @@ func open_workshop() -> bool:
 func close_workshop() -> void:
 	visible = false
 	get_window().content_scale_size = _prev_scale_size
+	NebulaTheme.set_profile("")
 	PlanetaryInterface.edit_session_active = false
 	MvGame.simulation_paused = false
 
