@@ -1340,14 +1340,15 @@ func cell_in_bounds(cell: Vector2i) -> bool:
 # `cell`. `solid` marks BT_SOLID (player can stand on it) vs BT_AIR (deco).
 # When `rebuild_collision` is false the collider rebuild is skipped so a paint
 # stroke can defer the (whole-room) rebuild to mouse-release.
-func paint_cell(cell: Vector2i, metatile_idx: int, solid: bool, rebuild_collision: bool = true) -> bool:
+func paint_cell(cell: Vector2i, metatile_idx: int, solid: bool, tileset_id: int = -1, rebuild_collision: bool = true) -> bool:
     var info := current_room()
     if info.is_empty() or not cell_in_bounds(cell):
         return false
     var data_idx := _main_layer_data_index(info)
     if data_idx < 0:
         return false
-    var packed := MvTileValue.pack(metatile_idx, false, false, int(info.get("tileset", 0)))
+    var ts_id := tileset_id if tileset_id >= 0 else int(info.get("tileset", 0))
+    var packed := MvTileValue.pack(metatile_idx, false, false, ts_id)
     if not _set_layer_tile_value(info, data_idx, cell, packed):
         return false
     var node := _tile_node_for_data_index(data_idx)
@@ -1607,10 +1608,20 @@ func current_tileset_atlas() -> Dictionary:
     var info := current_room()
     if info.is_empty():
         return {}
-    var ts := _tileset_mgr.get_tile_set(int(info.get("tileset", 0)))
+    return tileset_atlas_for(int(info.get("tileset", 0)))
+
+
+# All tileset source indices available to this pack (one per uploaded atlas).
+func available_tileset_indices() -> Array:
+    return _tileset_mgr.available_indices()
+
+
+# Atlas info ({texture, cols, rows, tile_size, index}) for a specific tileset
+# source id — used by the palette to show every uploaded tileset.
+func tileset_atlas_for(want: int) -> Dictionary:
+    var ts := _tileset_mgr.get_tile_set(want)
     if ts == null or ts.get_source_count() == 0:
         return {}
-    var want := int(info.get("tileset", 0))
     var src: TileSetAtlasSource = null
     for i in ts.get_source_count():
         var sid := ts.get_source_id(i)
@@ -1630,7 +1641,7 @@ func current_tileset_atlas() -> Dictionary:
     var cols := maxi(1, src.texture.get_width() / tsz)
     @warning_ignore("integer_division")
     var rows := maxi(1, src.texture.get_height() / tsz)
-    return {"texture": src.texture, "cols": cols, "rows": rows, "tile_size": tsz}
+    return {"texture": src.texture, "cols": cols, "rows": rows, "tile_size": tsz, "index": want}
 
 
 func block_type_at_world_pos(world_pos: Vector2) -> int:
@@ -2825,6 +2836,14 @@ func set_current_room_tileset(idx: int) -> void:
     if key.is_empty() or not _rooms.has(key):
         return
     _rooms[key]["tileset"] = idx
+    _tileset_mgr.clear_cache()
+    load_room(current_room_addr())
+
+
+# Rebuild the TileSet from disk (picking up a freshly-uploaded atlas) and
+# re-render WITHOUT changing the room's primary tileset — so existing cells keep
+# their per-cell tileset ids and a new source just becomes paintable.
+func refresh_tilesets() -> void:
     _tileset_mgr.clear_cache()
     load_room(current_room_addr())
 

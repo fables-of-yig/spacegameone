@@ -36,6 +36,11 @@ func next_index() -> int:
 	return (int(idxs.back()) + 1) if not idxs.is_empty() else 0
 
 
+# All available tileset source indices (one per tileset_NN_atlas.png).
+func available_indices() -> Array:
+	return _list_available_tilesets()
+
+
 func _get_or_build(suffix: String) -> TileSet:
 	if _multi_cache.has(suffix):
 		return _multi_cache[suffix]

@@ -24,6 +24,7 @@ var _active := false
 var _prev_paused := false
 var _mode := "tiles"  # "tiles" | "collision" | "entities"
 var _tile_idx := 0
+var _tileset_id := -1  # selected tileset source (-1 = room's primary)
 var _solid := true
 
 const MODES := ["tiles", "collision", "entities"]
@@ -49,9 +50,9 @@ var _status_label: Label = null
 var _status_pill: Control = null
 var _palette: CanvasLayer = null
 var _palette_open := false
+# (per-tileset atlas info is fetched on demand from MvRoomManager.tileset_atlas_for)
 var _env: CanvasLayer = null
 var _env_open := false
-var _atlas: Dictionary = {}
 var _dirty := false
 
 const WEATHER_PRESETS := ["none", "rain", "snow"]
@@ -464,7 +465,7 @@ func _paint_tile() -> void:
 	if rm == null or not rm.cell_in_bounds(_hover):
 		return
 	_capture_stroke_cell(rm, _hover)
-	if rm.paint_cell(_hover, _tile_idx, _solid, false):
+	if rm.paint_cell(_hover, _tile_idx, _solid, _tileset_id, false):
 		queue_redraw()
 
 
@@ -552,7 +553,6 @@ func _open_palette() -> void:
 	if rm == null:
 		return
 	_close_environment()
-	_atlas = rm.current_tileset_atlas()
 	for ch in _palette.get_children():
 		ch.queue_free()
 	var bg := ColorRect.new()
@@ -594,23 +594,48 @@ func _open_palette() -> void:
 	scroll.size_flags_vertical = Control.SIZE_EXPAND_FILL
 	scroll.add_theme_stylebox_override("panel", NebulaTheme.well_box())
 	vbox.add_child(scroll)
-	if not _atlas.is_empty() and _atlas.get("texture") != null:
-		var tex: Texture2D = _atlas["texture"]
+	var grid_col := VBoxContainer.new()
+	grid_col.add_theme_constant_override("separation", 8)
+	grid_col.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	scroll.add_child(grid_col)
+	# One section per uploaded tileset so you can paint from any of them.
+	var indices: Array = rm.available_tileset_indices()
+	var any := false
+	for idx_v in indices:
+		var idx := int(idx_v)
+		var atlas := rm.tileset_atlas_for(idx)
+		var tex: Texture2D = atlas.get("texture")
+		if tex == null:
+			continue
+		any = true
+		var hdr := Label.new()
+		hdr.text = "Tileset %d" % idx + ("  (active)" if idx == _active_tileset_id() else "")
+		hdr.add_theme_color_override("font_color", NebulaTheme.C_ACCENT if idx == _active_tileset_id() else NebulaTheme.C_DIM)
+		hdr.add_theme_font_size_override("font_size", NebulaTheme.size("hint"))
+		grid_col.add_child(hdr)
 		var tr := TextureRect.new()
 		tr.texture = tex
 		tr.texture_filter = CanvasItem.TEXTURE_FILTER_NEAREST
 		tr.custom_minimum_size = Vector2(tex.get_width(), tex.get_height())
 		tr.mouse_filter = Control.MOUSE_FILTER_STOP
-		tr.gui_input.connect(_on_palette_click)
-		scroll.add_child(tr)
-	else:
+		tr.gui_input.connect(_on_palette_click.bind(idx, atlas))
+		grid_col.add_child(tr)
+	if not any:
 		var empty := Label.new()
 		empty.text = "No tileset on this room yet.\nUpload a PNG (16px grid) to start painting."
 		empty.add_theme_color_override("font_color", NebulaTheme.C_DIM)
 		empty.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
-		scroll.add_child(empty)
+		grid_col.add_child(empty)
 	_palette.visible = true
 	_palette_open = true
+
+
+# The effective selected tileset id (resolves -1 to the room's primary).
+func _active_tileset_id() -> int:
+	if _tileset_id >= 0:
+		return _tileset_id
+	var info := _rm().current_room() if _rm() != null else {}
+	return int(info.get("tileset", 0))
 
 
 # Pick a PNG from disk and add it as this pack's next tileset atlas (16px grid),
@@ -655,22 +680,30 @@ func _on_tileset_file(src_path: String) -> void:
 		return
 	w.store_buffer(bytes)
 	w.close()
-	rm.set_current_room_tileset(idx)
+	# Keep the room's primary tileset (and existing cells) intact; just make the
+	# new source available and select it for painting. The very first tileset on
+	# a room with none becomes its primary so cells render at all.
+	var had_tileset := not rm.current_tileset_atlas().is_empty()
+	if had_tileset:
+		rm.refresh_tilesets()
+	else:
+		rm.set_current_room_tileset(idx)
+	_tileset_id = idx
 	_mark_dirty()
-	_atlas = rm.current_tileset_atlas()
 	if _palette_open:
 		_open_palette()
 	_set_status("added tileset #%d (%dx%d) — Ctrl+S to keep" % [idx, probe.get_width(), probe.get_height()])
 
 
-func _on_palette_click(event: InputEvent) -> void:
+func _on_palette_click(event: InputEvent, ts_idx: int, atlas: Dictionary) -> void:
 	if event is InputEventMouseButton and event.pressed and (event as InputEventMouseButton).button_index == MOUSE_BUTTON_LEFT:
-		var ts: int = int(_atlas.get("tile_size", BLOCK))
-		var cols: int = int(_atlas.get("cols", 1))
+		var ts: int = int(atlas.get("tile_size", BLOCK))
+		var cols: int = int(atlas.get("cols", 1))
 		var pos: Vector2 = (event as InputEventMouseButton).position
 		var col := int(pos.x / ts)
 		var row := int(pos.y / ts)
 		_tile_idx = maxi(0, row * cols + col)
+		_tileset_id = ts_idx
 		_mode = "tiles"
 		_refresh_hud()
 		_close_palette()
@@ -1020,7 +1053,7 @@ func _update_swatch() -> void:
 		lbl.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
 		_sel_host.add_child(lbl)
 		return
-	var atlas := _rm().current_tileset_atlas() if _rm() != null else {}
+	var atlas := _rm().tileset_atlas_for(_active_tileset_id()) if _rm() != null else {}
 	var tex: Texture2D = atlas.get("texture")
 	if tex != null:
 		var ts: int = int(atlas.get("tile_size", BLOCK))
