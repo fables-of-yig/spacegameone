@@ -26,6 +26,14 @@ var _mode := "tiles"  # "tiles" | "collision" | "entities"
 var _tile_idx := 0
 var _tileset_id := -1  # selected tileset source (-1 = room's primary)
 var _solid := true
+# Paint brush: a WxH block from the palette (1x1 for a single tile). col0/row0
+# are the atlas top-left; metatile for offset (dx,dy) = (row0+dy)*cols+(col0+dx).
+var _brush := {"ts": -1, "col0": 0, "row0": 0, "w": 1, "h": 1, "cols": 1}
+# Palette drag-select state.
+var _drag_active := false
+var _drag_start := Vector2i.ZERO
+var _drag_atlas: Dictionary = {}
+var _drag_sel: Panel = null
 
 const MODES := ["tiles", "collision", "entities"]
 const MODE_LABELS := {"tiles": "Tiles", "collision": "Collision", "entities": "Entities"}
@@ -382,6 +390,10 @@ func _cycle(dir: int) -> void:
 			_entity_idx = wrapi(_entity_idx + dir, 0, _entity_ids.size())
 	else:
 		_tile_idx = maxi(0, _tile_idx + dir)
+		# [ ] cycles a single-tile brush on the active tileset.
+		var atlas := _rm().tileset_atlas_for(_active_tileset_id()) if _rm() != null else {}
+		var cols := maxi(1, int(atlas.get("cols", 1)))
+		_brush = {"ts": _active_tileset_id(), "col0": _tile_idx % cols, "row0": _tile_idx / cols, "w": 1, "h": 1, "cols": cols}
 	_refresh_hud()
 
 
@@ -462,10 +474,24 @@ func _finish_stroke() -> void:
 
 func _paint_tile() -> void:
 	var rm := _rm()
-	if rm == null or not rm.cell_in_bounds(_hover):
+	if rm == null:
 		return
-	_capture_stroke_cell(rm, _hover)
-	if rm.paint_cell(_hover, _tile_idx, _solid, _tileset_id, false):
+	var ts_id := int(_brush.get("ts", _tileset_id))
+	var cols := maxi(1, int(_brush.get("cols", 1)))
+	var col0 := int(_brush.get("col0", 0))
+	var row0 := int(_brush.get("row0", 0))
+	var bw := maxi(1, int(_brush.get("w", 1)))
+	var bh := maxi(1, int(_brush.get("h", 1)))
+	var painted := false
+	for dy in bh:
+		for dx in bw:
+			var cell := _hover + Vector2i(dx, dy)
+			if not rm.cell_in_bounds(cell):
+				continue
+			_capture_stroke_cell(rm, cell)
+			if rm.paint_cell(cell, (row0 + dy) * cols + (col0 + dx), _solid, ts_id, false):
+				painted = true
+	if painted:
 		queue_redraw()
 
 
@@ -618,7 +644,7 @@ func _open_palette() -> void:
 		tr.texture_filter = CanvasItem.TEXTURE_FILTER_NEAREST
 		tr.custom_minimum_size = Vector2(tex.get_width(), tex.get_height())
 		tr.mouse_filter = Control.MOUSE_FILTER_STOP
-		tr.gui_input.connect(_on_palette_click.bind(idx, atlas))
+		tr.gui_input.connect(_on_palette_input.bind(idx, atlas, tr))
 		grid_col.add_child(tr)
 	if not any:
 		var empty := Label.new()
@@ -695,22 +721,64 @@ func _on_tileset_file(src_path: String) -> void:
 	_set_status("added tileset #%d (%dx%d) — Ctrl+S to keep" % [idx, probe.get_width(), probe.get_height()])
 
 
-func _on_palette_click(event: InputEvent, ts_idx: int, atlas: Dictionary) -> void:
-	if event is InputEventMouseButton and event.pressed and (event as InputEventMouseButton).button_index == MOUSE_BUTTON_LEFT:
-		var ts: int = int(atlas.get("tile_size", BLOCK))
-		var cols: int = int(atlas.get("cols", 1))
-		var pos: Vector2 = (event as InputEventMouseButton).position
-		var col := int(pos.x / ts)
-		var row := int(pos.y / ts)
-		_tile_idx = maxi(0, row * cols + col)
-		_tileset_id = ts_idx
-		_mode = "tiles"
-		_refresh_hud()
-		_close_palette()
+# Palette tile selection. Click picks one tile; click-and-drag selects a
+# rectangular block to paint as a brush. A cyan overlay previews the selection.
+func _on_palette_input(event: InputEvent, ts_idx: int, atlas: Dictionary, tr: TextureRect) -> void:
+	var ts: int = maxi(1, int(atlas.get("tile_size", BLOCK)))
+	if event is InputEventMouseButton and (event as InputEventMouseButton).button_index == MOUSE_BUTTON_LEFT:
+		var mb := event as InputEventMouseButton
+		var cell := Vector2i(int(mb.position.x / ts), int(mb.position.y / ts))
+		if mb.pressed:
+			_drag_active = true
+			_drag_start = cell
+			_drag_atlas = atlas
+			_tileset_id = ts_idx
+			_drag_sel = Panel.new()
+			_drag_sel.mouse_filter = Control.MOUSE_FILTER_IGNORE
+			_drag_sel.add_theme_stylebox_override("panel", NebulaUi._outline_box(NebulaTheme.C_ACCENT))
+			tr.add_child(_drag_sel)
+			_update_drag_sel(cell, ts)
+		else:
+			if _drag_active:
+				_drag_active = false
+				_set_brush_from_rect(ts_idx, atlas, _drag_start, cell)
+				_mode = "tiles"
+				_refresh_hud()
+	elif event is InputEventMouseMotion and _drag_active:
+		_update_drag_sel(Vector2i(int((event as InputEventMouseMotion).position.x / ts), int((event as InputEventMouseMotion).position.y / ts)), ts)
+
+
+func _update_drag_sel(cell: Vector2i, ts: int) -> void:
+	if _drag_sel == null:
+		return
+	var c0 := mini(_drag_start.x, cell.x)
+	var r0 := mini(_drag_start.y, cell.y)
+	var w := absi(cell.x - _drag_start.x) + 1
+	var h := absi(cell.y - _drag_start.y) + 1
+	_drag_sel.position = Vector2(c0 * ts, r0 * ts)
+	_drag_sel.size = Vector2(w * ts, h * ts)
+
+
+func _set_brush_from_rect(ts_idx: int, atlas: Dictionary, a: Vector2i, b: Vector2i) -> void:
+	var cols: int = maxi(1, int(atlas.get("cols", 1)))
+	var c0 := maxi(0, mini(a.x, b.x))
+	var r0 := maxi(0, mini(a.y, b.y))
+	_brush = {
+		"ts": ts_idx,
+		"col0": c0,
+		"row0": r0,
+		"w": absi(b.x - a.x) + 1,
+		"h": absi(b.y - a.y) + 1,
+		"cols": cols,
+	}
+	_tile_idx = r0 * cols + c0
+	_tileset_id = ts_idx
 
 
 func _close_palette() -> void:
 	_palette_open = false
+	_drag_active = false
+	_drag_sel = null
 	if _palette != null:
 		_palette.visible = false
 		for ch in _palette.get_children():
@@ -883,7 +951,9 @@ func _draw() -> void:
 	# user can see and fix stray/missing collision.
 	if _mode == "collision":
 		_draw_collision_overlay(rm)
-	var rect := Rect2(Vector2(_hover.x * BLOCK, _hover.y * BLOCK), Vector2(BLOCK, BLOCK))
+	var bw := maxi(1, int(_brush.get("w", 1))) if _mode == "tiles" else 1
+	var bh := maxi(1, int(_brush.get("h", 1))) if _mode == "tiles" else 1
+	var rect := Rect2(Vector2(_hover.x * BLOCK, _hover.y * BLOCK), Vector2(bw * BLOCK, bh * BLOCK))
 	if _mode == "entities":
 		var c := NebulaTheme.C_ACCENT
 		draw_rect(rect, Color(c.r, c.g, c.b, 0.15), true)
