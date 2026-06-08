@@ -107,6 +107,7 @@ static func _build(p: String) -> Theme:
 
 	_apply_panels(t, compact)
 	_apply_buttons(t, compact)
+	_apply_selects(t, compact)
 	_apply_inputs(t, compact)
 	_apply_text(t, p)
 	return t
@@ -168,18 +169,42 @@ static func _apply_buttons(t: Theme, compact: bool) -> void:
 			focus = base.duplicate()
 			(focus as StyleBoxTexture).modulate_color = Color(1.04, 1.04, 1.04, 1.0)
 
-	for type in ["Button", "OptionButton", "MenuButton"]:
-		t.set_stylebox("normal", type, normal)
+	t.set_stylebox("normal", "Button", normal)
+	t.set_stylebox("hover", "Button", hover)
+	t.set_stylebox("pressed", "Button", pressed)
+	t.set_stylebox("disabled", "Button", disabled)
+	t.set_stylebox("focus", "Button", focus)
+	t.set_color("font_color", "Button", C_INK)
+	t.set_color("font_hover_color", "Button", C_INK_HOVER)
+	t.set_color("font_pressed_color", "Button", C_INK)
+	t.set_color("font_focus_color", "Button", C_INK)
+	t.set_color("font_disabled_color", "Button", Color(C_INK.r, C_INK.g, C_INK.b, 0.6))
+	t.set_font_size("font_size", "Button", int((SIZES[profile()] as Dictionary)["button"]))
+
+
+# --- Dropdowns: styled like recessed input fields, NOT primary buttons. --------
+static func _apply_selects(t: Theme, compact: bool) -> void:
+	var pad := 4 if compact else 8
+	var slot := _slot_box(false, pad)
+	var hover := _slot_box(false, pad)
+	hover.bg_color = C_PANEL_ALT
+	var focus := _slot_box(true, pad)
+	for type in ["OptionButton", "MenuButton"]:
+		t.set_stylebox("normal", type, slot)
 		t.set_stylebox("hover", type, hover)
-		t.set_stylebox("pressed", type, pressed)
-		t.set_stylebox("disabled", type, disabled)
+		t.set_stylebox("pressed", type, hover)
 		t.set_stylebox("focus", type, focus)
-		t.set_color("font_color", type, C_INK)
-		t.set_color("font_hover_color", type, C_INK_HOVER)
-		t.set_color("font_pressed_color", type, C_INK)
-		t.set_color("font_focus_color", type, C_INK)
-		t.set_color("font_disabled_color", type, Color(C_INK.r, C_INK.g, C_INK.b, 0.6))
-		t.set_font_size("font_size", type, int((SIZES[profile()] as Dictionary)["button"]))
+		t.set_stylebox("disabled", type, slot)
+		t.set_color("font_color", type, C_BODY)
+		t.set_color("font_hover_color", type, C_TITLE)
+		t.set_color("font_pressed_color", type, C_BODY)
+		t.set_color("font_focus_color", type, C_BODY)
+		t.set_color("font_disabled_color", type, C_DIM)
+	# Dropdown popup list.
+	var pop := _flat(C_PANEL_BG, C_ACCENT_PRESS, 1, 4, pad)
+	t.set_stylebox("panel", "PopupMenu", pop)
+	t.set_color("font_color", "PopupMenu", C_BODY)
+	t.set_color("font_hover_color", "PopupMenu", C_TITLE)
 
 
 # --- Inputs: recessed dark slots with a cyan focus ring. -----------------------

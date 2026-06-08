@@ -318,9 +318,14 @@ func _show_step() -> void:
 	_refresh_rail()
 	for c in _work_host.get_children():
 		c.queue_free()
-	# Each step's content lives inside a framed WorkPanel (Nebula look).
+	# Each step's content lives inside a framed WorkPanel (Nebula look). Cap the
+	# width so fields don't stretch across the whole screen; left-aligned leaves
+	# room for a preview pane on the right (mockup's 2-column work area).
 	var wp := NebulaUi.work_panel("")
-	_work_host.add_child(wp["root"])
+	var panel: Control = wp["root"]
+	panel.size_flags_horizontal = Control.SIZE_SHRINK_BEGIN
+	panel.custom_minimum_size = Vector2(880 if NebulaTheme.profile() == "full" else 300, 0)
+	_work_host.add_child(panel)
 	_content = wp["body"]
 	match _step:
 		0: _build_identity()
