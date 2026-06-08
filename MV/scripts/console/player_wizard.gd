@@ -30,6 +30,8 @@ const STAT_FIELDS := [
 	{"key": "lck", "label": "Luck", "min": 0.0, "max": 99.0, "step": 1.0, "def": 4},
 ]
 
+const STEP_SUBS := ["preset frames & poses", "physics profile", "base stats", "granted abilities", "apply & save"]
+
 var _step := 0
 var _applied := false
 var _result := ""
@@ -37,9 +39,12 @@ var _data := {}
 var _presets: Array = []
 var _title: Label = null
 var _content: VBoxContainer = null
+var _work_host: VBoxContainer = null
+var _rail_host: VBoxContainer = null
 var _nav_back: Button = null
 var _nav_next: Button = null
 var _skin_host: Control = null
+var _prev_scale_size := Vector2i.ZERO
 
 
 func _ready() -> void:
@@ -49,9 +54,11 @@ func _ready() -> void:
 	visible = false
 
 
+# Three-zone shell (header / [step rail | work area] / nav), mirroring the
+# Combat Workshop and the Nebula mockup.
 func _build_shell() -> void:
 	var bg := ColorRect.new()
-	bg.color = Color(NebulaTheme.C_PANEL_DARK.r, NebulaTheme.C_PANEL_DARK.g, NebulaTheme.C_PANEL_DARK.b, 0.92)
+	bg.color = NebulaTheme.C_PANEL_DARK
 	bg.set_anchors_preset(Control.PRESET_FULL_RECT)
 	bg.mouse_filter = Control.MOUSE_FILTER_STOP
 	add_child(bg)
@@ -60,52 +67,81 @@ func _build_shell() -> void:
 	margin.theme = NebulaTheme.theme()
 	_skin_host = margin
 	for side in ["margin_left", "margin_right", "margin_top", "margin_bottom"]:
-		margin.add_theme_constant_override(side, 10)
+		margin.add_theme_constant_override(side, 18)
 	add_child(margin)
-	var frame := PanelContainer.new()
-	margin.add_child(frame)
 	var root := VBoxContainer.new()
-	root.add_theme_constant_override("separation", 8)
-	frame.add_child(root)
-	_title = Label.new()
-	_title.add_theme_color_override("font_color", NebulaTheme.C_TITLE)
-	_title.add_theme_font_size_override("font_size", NebulaTheme.size("title"))
-	if NebulaTheme.font() != null:
-		_title.add_theme_font_override("font", NebulaTheme.font())
-	root.add_child(_title)
-	root.add_child(HSeparator.new())
+	root.set_anchors_preset(Control.PRESET_FULL_RECT)
+	margin.add_child(root)
+
+	# Header.
+	var header := HBoxContainer.new()
+	header.add_theme_constant_override("separation", 14)
+	root.add_child(header)
+	_title = NebulaTheme.title_label("Player Setup")
+	header.add_child(_title)
+	var hspacer := Control.new()
+	hspacer.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	header.add_child(hspacer)
+	var close := NebulaUi.button("✕", "ghost")
+	close.pressed.connect(close_wizard)
+	header.add_child(close)
+	root.add_child(_wsep())
+
+	# Body: rail + work.
+	var body := HBoxContainer.new()
+	body.add_theme_constant_override("separation", 16)
+	body.size_flags_vertical = Control.SIZE_EXPAND_FILL
+	root.add_child(body)
+	var rail_pad := MarginContainer.new()
+	rail_pad.add_theme_constant_override("margin_top", 12)
+	rail_pad.custom_minimum_size = Vector2(248 if NebulaTheme.profile() == "full" else 130, 0)
+	body.add_child(rail_pad)
+	_rail_host = VBoxContainer.new()
+	rail_pad.add_child(_rail_host)
 	var scroll := ScrollContainer.new()
+	scroll.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	scroll.size_flags_vertical = Control.SIZE_EXPAND_FILL
-	root.add_child(scroll)
-	_content = VBoxContainer.new()
-	_content.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	_content.add_theme_constant_override("separation", 6)
-	scroll.add_child(_content)
+	scroll.horizontal_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED
+	body.add_child(scroll)
+	_work_host = VBoxContainer.new()
+	_work_host.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	_work_host.add_theme_constant_override("separation", 16)
+	scroll.add_child(_work_host)
+
+	# Nav.
+	root.add_child(_wsep())
 	var nav := HBoxContainer.new()
-	nav.add_theme_constant_override("separation", 8)
+	nav.add_theme_constant_override("separation", 12)
 	root.add_child(nav)
-	var cancel := Button.new()
-	cancel.text = "Cancel"
-	cancel.self_modulate = NebulaTheme.C_BORDER
-	cancel.pressed.connect(close_wizard)
-	nav.add_child(cancel)
+	_nav_back = NebulaUi.button("← Back", "ghost")
+	_nav_back.pressed.connect(_go_back)
+	nav.add_child(_nav_back)
 	var spacer := Control.new()
 	spacer.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	nav.add_child(spacer)
-	_nav_back = Button.new()
-	_nav_back.text = "Back"
-	_nav_back.self_modulate = NebulaTheme.C_BORDER
-	_nav_back.pressed.connect(_go_back)
-	nav.add_child(_nav_back)
-	_nav_next = Button.new()
-	_nav_next.text = "Next"
+	_nav_next = NebulaUi.button("Next →", "primary")
 	_nav_next.pressed.connect(_go_next)
 	nav.add_child(_nav_next)
+
+
+func _wsep() -> Control:
+	var s := PanelContainer.new()
+	var box := StyleBoxFlat.new()
+	box.bg_color = Color(NebulaTheme.C_BORDER.r, NebulaTheme.C_BORDER.g, NebulaTheme.C_BORDER.b, 0.18)
+	box.content_margin_top = 8.0
+	box.content_margin_bottom = 8.0
+	s.add_theme_stylebox_override("panel", box)
+	s.custom_minimum_size = Vector2(0, 2)
+	return s
 
 
 # ── Lifecycle ────────────────────────────────────────────────────────────────
 
 func open_wizard() -> void:
+	# Full window resolution while open (see MvCombatWorkshop / NebulaTheme).
+	var win := get_window()
+	_prev_scale_size = win.content_scale_size
+	win.content_scale_size = win.size
 	_init_data()
 	_step = 0
 	_applied = false
@@ -116,17 +152,14 @@ func open_wizard() -> void:
 	_show_step()
 
 
-# Re-pick the scale profile (Space build vs MV show) and re-apply size-sensitive
-# overrides. See NebulaTheme's SCALE PROFILES note.
 func _reskin() -> void:
 	if _skin_host != null:
 		_skin_host.theme = NebulaTheme.theme()
-	if _title != null:
-		_title.add_theme_font_size_override("font_size", NebulaTheme.size("title"))
 
 
 func close_wizard() -> void:
 	visible = false
+	get_window().content_scale_size = _prev_scale_size
 	PlanetaryInterface.edit_session_active = false
 
 
@@ -173,14 +206,20 @@ func _go_next() -> void:
 
 
 func _show_step() -> void:
-	_title.text = "PLAYER WIZARD   ·   (%d/%d) %s" % [_step + 1, STEPS.size(), STEPS[_step]]
+	_refresh_rail()
 	_nav_back.disabled = _step == 0
 	if _step == STEPS.size() - 1:
-		_nav_next.text = "Close" if _applied else "Finish"
+		_nav_next.text = "Close" if _applied else "Finish & Save →"
 	else:
-		_nav_next.text = "Next"
-	for ch in _content.get_children():
+		_nav_next.text = "Next →"
+	for ch in _work_host.get_children():
 		ch.queue_free()
+	var wp := NebulaUi.work_panel(STEPS[_step])
+	var panel: Control = wp["root"]
+	panel.size_flags_horizontal = Control.SIZE_SHRINK_BEGIN
+	panel.custom_minimum_size = Vector2(880 if NebulaTheme.profile() == "full" else 300, 0)
+	_work_host.add_child(panel)
+	_content = wp["body"]
 	match _step:
 		0:
 			_build_sprite_step()
@@ -192,6 +231,18 @@ func _show_step() -> void:
 			_build_abilities_step()
 		4:
 			_build_review_step()
+
+
+func _refresh_rail() -> void:
+	for c in _rail_host.get_children():
+		c.queue_free()
+	_rail_host.add_child(NebulaUi.step_rail(STEPS, STEP_SUBS, _step, func(i): _jump_to_step(i)))
+
+
+func _jump_to_step(i: int) -> void:
+	_step = clampi(i, 0, STEPS.size() - 1)
+	_applied = false
+	_show_step()
 
 
 # ── Steps ────────────────────────────────────────────────────────────────────

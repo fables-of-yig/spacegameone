@@ -44,6 +44,7 @@ var _workshop: MvCombatWorkshop = null
 var _hint: Label = null
 var _skin_host: Control = null
 var _title_lbl: Label = null
+var _chip_row: HBoxContainer = null
 
 
 func _ready() -> void:
@@ -58,32 +59,56 @@ func _ready() -> void:
 	visible = false
 
 
+# Slide-up terminal (Nebula mockup): dim backdrop + a bottom panel with a title
+# row, colored output log in a recessed well, a command-chip strip, and an input
+# line. Stays in game space (no content-scale flip) so the visible game above
+# doesn't jump scale.
 func _build_ui() -> void:
 	var bg := ColorRect.new()
-	bg.color = Color(NebulaTheme.C_PANEL_DARK.r, NebulaTheme.C_PANEL_DARK.g, NebulaTheme.C_PANEL_DARK.b, 0.6)
+	bg.color = Color(NebulaTheme.C_PANEL_DARK.r, NebulaTheme.C_PANEL_DARK.g, NebulaTheme.C_PANEL_DARK.b, 0.5)
 	bg.set_anchors_preset(Control.PRESET_FULL_RECT)
 	bg.mouse_filter = Control.MOUSE_FILTER_STOP
 	add_child(bg)
-	var margin := MarginContainer.new()
-	margin.set_anchors_preset(Control.PRESET_FULL_RECT)
-	margin.theme = NebulaTheme.theme()
-	_skin_host = margin
-	margin.add_theme_constant_override("margin_left", 8)
-	margin.add_theme_constant_override("margin_right", 8)
-	margin.add_theme_constant_override("margin_top", 6)
-	margin.add_theme_constant_override("margin_bottom", 6)
-	add_child(margin)
-	var frame := PanelContainer.new()
-	margin.add_child(frame)
+	var root := Control.new()
+	root.set_anchors_preset(Control.PRESET_FULL_RECT)
+	root.theme = NebulaTheme.theme()
+	root.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	_skin_host = root
+	add_child(root)
+
+	# Bottom terminal panel (lower ~55% of the screen).
+	var term := PanelContainer.new()
+	term.anchor_left = 0.0
+	term.anchor_right = 1.0
+	term.anchor_top = 0.45
+	term.anchor_bottom = 1.0
+	term.offset_left = 8
+	term.offset_right = -8
+	term.offset_bottom = -8
+	root.add_child(term)
+	var pad := MarginContainer.new()
+	for side in ["margin_left", "margin_right", "margin_top", "margin_bottom"]:
+		pad.add_theme_constant_override(side, 10)
+	term.add_child(pad)
 	var vbox := VBoxContainer.new()
 	vbox.add_theme_constant_override("separation", 8)
-	frame.add_child(vbox)
+	pad.add_child(vbox)
+
+	# Title row.
+	var titlerow := HBoxContainer.new()
+	titlerow.add_theme_constant_override("separation", 12)
+	vbox.add_child(titlerow)
 	_title_lbl = NebulaTheme.title_label("Dev Console")
-	vbox.add_child(_title_lbl)
-	var sub := Label.new()
-	sub.text = "Ctrl+Enter run   ·   Esc / ` close"
-	sub.add_theme_color_override("font_color", NebulaTheme.C_DIM)
-	vbox.add_child(sub)
+	titlerow.add_child(_title_lbl)
+	var tspacer := Control.new()
+	tspacer.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	titlerow.add_child(tspacer)
+	var hint := Label.new()
+	hint.text = "Ctrl+Enter run   ·   Esc / ` close"
+	hint.add_theme_color_override("font_color", NebulaTheme.C_DIM)
+	hint.size_flags_vertical = Control.SIZE_SHRINK_CENTER
+	titlerow.add_child(hint)
+
 	_log_view = RichTextLabel.new()
 	_log_view.bbcode_enabled = true
 	_log_view.scroll_active = true
@@ -92,11 +117,36 @@ func _build_ui() -> void:
 	_log_view.size_flags_vertical = Control.SIZE_EXPAND_FILL
 	_log_view.add_theme_stylebox_override("normal", NebulaTheme.well_box())
 	vbox.add_child(_log_view)
+
+	_chip_row = HBoxContainer.new()
+	_chip_row.add_theme_constant_override("separation", 6)
+	vbox.add_child(_chip_row)
+
 	_entry = TextEdit.new()
 	_entry.placeholder_text = "Paste trigger JSON or type a command (help)…"
 	_entry.custom_minimum_size = Vector2(0, 48)
 	_entry.size_flags_vertical = Control.SIZE_SHRINK_END
 	vbox.add_child(_entry)
+
+
+# Command chips for the current context; clicking pre-fills the input line.
+func _refresh_chips() -> void:
+	if _chip_row == null:
+		return
+	for c in _chip_row.get_children():
+		c.queue_free()
+	var cmds := ["help", "flag", "wizard", "workshop", "spawn", "fire"] if _in_mv() else ["help", "flag", "add_poi", "save_systems"]
+	for cmd in cmds:
+		var chip := NebulaUi.button(str(cmd), "ghost")
+		chip.focus_mode = Control.FOCUS_NONE
+		chip.pressed.connect(_on_chip.bind(str(cmd)))
+		_chip_row.add_child(chip)
+
+
+func _on_chip(cmd: String) -> void:
+	_entry.text = cmd + " "
+	_entry.set_caret_column(_entry.text.length())
+	_entry.grab_focus()
 
 
 # A small always-on corner hint so the authoring tools are discoverable without
@@ -145,6 +195,7 @@ func open() -> void:
 		_skin_host.theme = NebulaTheme.theme()
 	if _title_lbl != null:
 		_title_lbl.add_theme_font_size_override("font_size", NebulaTheme.size("title"))
+	_refresh_chips()
 	visible = true
 	PlanetaryInterface.edit_session_active = true
 	if _log_view.get_parsed_text().strip_edges().is_empty():
