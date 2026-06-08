@@ -34,6 +34,8 @@ var _drag_active := false
 var _drag_start := Vector2i.ZERO
 var _drag_atlas: Dictionary = {}
 var _drag_sel: Panel = null
+var _drag_disp := 16  # displayed tile size during a palette drag (tile_size * scale)
+var _palette_collapsed: Dictionary = {}  # tileset idx -> collapsed bool
 
 const MODES := ["tiles", "collision", "entities", "shaders"]
 const MODE_LABELS := {"tiles": "Tiles", "collision": "Collision", "entities": "Entities", "shaders": "Shaders"}
@@ -670,9 +672,19 @@ func _open_palette() -> void:
 	var vbox := VBoxContainer.new()
 	vbox.add_theme_constant_override("separation", 8)
 	frame.add_child(vbox)
-	vbox.add_child(NebulaTheme.title_label("Tile Palette"))
+	# Header: title + real close button (the frame-art ✕ is decorative).
+	var header := HBoxContainer.new()
+	header.add_theme_constant_override("separation", 8)
+	vbox.add_child(header)
+	header.add_child(NebulaTheme.title_label("Tile Palette"))
+	var hsp := Control.new()
+	hsp.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	header.add_child(hsp)
+	var close_btn := NebulaUi.button("✕", "ghost")
+	close_btn.pressed.connect(_close_palette)
+	header.add_child(close_btn)
 	var lbl := Label.new()
-	lbl.text = "click a tile   ·   P / Esc to close"
+	lbl.text = "click a tile · drag to select a block · headers collapse · P / Esc to close"
 	lbl.add_theme_color_override("font_color", NebulaTheme.C_DIM)
 	vbox.add_child(lbl)
 	var upload := NebulaUi.button("＋ Upload tileset…", "primary")
@@ -686,7 +698,9 @@ func _open_palette() -> void:
 	grid_col.add_theme_constant_override("separation", 8)
 	grid_col.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	scroll.add_child(grid_col)
-	# One section per uploaded tileset so you can paint from any of them.
+	# Fit atlases to ~half the panel width at an integer scale (crisp, not
+	# stretched). Wide atlases stay 1x; small ones scale up for visibility.
+	var avail := int(get_viewport().get_visible_rect().size.x * 0.42)
 	var indices: Array = rm.available_tileset_indices()
 	var any := false
 	for idx_v in indices:
@@ -696,18 +710,31 @@ func _open_palette() -> void:
 		if tex == null:
 			continue
 		any = true
-		var hdr := Label.new()
-		hdr.text = "Tileset %d" % idx + ("  (active)" if idx == _active_tileset_id() else "")
-		hdr.add_theme_color_override("font_color", NebulaTheme.C_ACCENT if idx == _active_tileset_id() else NebulaTheme.C_DIM)
-		hdr.add_theme_font_size_override("font_size", NebulaTheme.size("hint"))
+		var active := idx == _active_tileset_id()
+		var collapsed := bool(_palette_collapsed.get(idx, false))
+		var hdr := NebulaUi.button("%s Tileset %d%s" % ["▸" if collapsed else "▾", idx, "  ·  active" if active else ""], "ghost")
+		hdr.alignment = HORIZONTAL_ALIGNMENT_LEFT
+		hdr.self_modulate = NebulaTheme.C_ACCENT if active else NebulaTheme.C_BORDER
+		hdr.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+		hdr.pressed.connect(func():
+			_palette_collapsed[idx] = not bool(_palette_collapsed.get(idx, false))
+			_open_palette())
 		grid_col.add_child(hdr)
+		if collapsed:
+			continue
+		var scale := clampi(int(float(avail) / float(maxi(1, tex.get_width()))), 1, 4)
+		# HBox wrapper keeps the atlas left-aligned at native*scale (a VBox child
+		# would otherwise stretch to the full panel width).
+		var row := HBoxContainer.new()
 		var tr := TextureRect.new()
 		tr.texture = tex
 		tr.texture_filter = CanvasItem.TEXTURE_FILTER_NEAREST
-		tr.custom_minimum_size = Vector2(tex.get_width(), tex.get_height())
+		tr.custom_minimum_size = Vector2(tex.get_width() * scale, tex.get_height() * scale)
+		tr.size_flags_horizontal = Control.SIZE_SHRINK_BEGIN
 		tr.mouse_filter = Control.MOUSE_FILTER_STOP
-		tr.gui_input.connect(_on_palette_input.bind(idx, atlas, tr))
-		grid_col.add_child(tr)
+		tr.gui_input.connect(_on_palette_input.bind(idx, atlas, tr, scale))
+		row.add_child(tr)
+		grid_col.add_child(row)
 	if not any:
 		var empty := Label.new()
 		empty.text = "No tileset on this room yet.\nUpload a PNG (16px grid) to start painting."
@@ -785,21 +812,23 @@ func _on_tileset_file(src_path: String) -> void:
 
 # Palette tile selection. Click picks one tile; click-and-drag selects a
 # rectangular block to paint as a brush. A cyan overlay previews the selection.
-func _on_palette_input(event: InputEvent, ts_idx: int, atlas: Dictionary, tr: TextureRect) -> void:
-	var ts: int = maxi(1, int(atlas.get("tile_size", BLOCK)))
+func _on_palette_input(event: InputEvent, ts_idx: int, atlas: Dictionary, tr: TextureRect, scale: int) -> void:
+	# The atlas is displayed at tile_size * scale, so map clicks through `disp`.
+	var disp: int = maxi(1, int(atlas.get("tile_size", BLOCK)) * maxi(1, scale))
 	if event is InputEventMouseButton and (event as InputEventMouseButton).button_index == MOUSE_BUTTON_LEFT:
 		var mb := event as InputEventMouseButton
-		var cell := Vector2i(int(mb.position.x / ts), int(mb.position.y / ts))
+		var cell := Vector2i(int(mb.position.x / disp), int(mb.position.y / disp))
 		if mb.pressed:
 			_drag_active = true
 			_drag_start = cell
 			_drag_atlas = atlas
+			_drag_disp = disp
 			_tileset_id = ts_idx
 			_drag_sel = Panel.new()
 			_drag_sel.mouse_filter = Control.MOUSE_FILTER_IGNORE
 			_drag_sel.add_theme_stylebox_override("panel", NebulaUi._outline_box(NebulaTheme.C_ACCENT))
 			tr.add_child(_drag_sel)
-			_update_drag_sel(cell, ts)
+			_update_drag_sel(cell)
 		else:
 			if _drag_active:
 				_drag_active = false
@@ -807,18 +836,18 @@ func _on_palette_input(event: InputEvent, ts_idx: int, atlas: Dictionary, tr: Te
 				_mode = "tiles"
 				_refresh_hud()
 	elif event is InputEventMouseMotion and _drag_active:
-		_update_drag_sel(Vector2i(int((event as InputEventMouseMotion).position.x / ts), int((event as InputEventMouseMotion).position.y / ts)), ts)
+		_update_drag_sel(Vector2i(int((event as InputEventMouseMotion).position.x / disp), int((event as InputEventMouseMotion).position.y / disp)))
 
 
-func _update_drag_sel(cell: Vector2i, ts: int) -> void:
+func _update_drag_sel(cell: Vector2i) -> void:
 	if _drag_sel == null:
 		return
 	var c0 := mini(_drag_start.x, cell.x)
 	var r0 := mini(_drag_start.y, cell.y)
 	var w := absi(cell.x - _drag_start.x) + 1
 	var h := absi(cell.y - _drag_start.y) + 1
-	_drag_sel.position = Vector2(c0 * ts, r0 * ts)
-	_drag_sel.size = Vector2(w * ts, h * ts)
+	_drag_sel.position = Vector2(c0 * _drag_disp, r0 * _drag_disp)
+	_drag_sel.size = Vector2(w * _drag_disp, h * _drag_disp)
 
 
 func _set_brush_from_rect(ts_idx: int, atlas: Dictionary, a: Vector2i, b: Vector2i) -> void:
@@ -880,7 +909,16 @@ func _open_environment() -> void:
 	vbox.add_theme_constant_override("separation", 8)
 	vbox.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	scroll.add_child(vbox)
-	vbox.add_child(NebulaTheme.title_label("Environment"))
+	var ehdr := HBoxContainer.new()
+	ehdr.add_theme_constant_override("separation", 8)
+	vbox.add_child(ehdr)
+	ehdr.add_child(NebulaTheme.title_label("Environment"))
+	var esp := Control.new()
+	esp.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	ehdr.add_child(esp)
+	var eclose := NebulaUi.button("✕", "ghost")
+	eclose.pressed.connect(_close_environment)
+	ehdr.add_child(eclose)
 	var hint := Label.new()
 	hint.text = "changes apply live · Ctrl+S to keep · Esc to close"
 	hint.add_theme_color_override("font_color", NebulaTheme.C_DIM)
