@@ -5,7 +5,7 @@ extends CanvasLayer
 # backtick/tilde key (it handles its own input). Engine-specific commands are
 # routed by context: MV when an MV room is loaded, Space otherwise.
 #
-# Shared:   help · clear · flag <name>=<value> · wizard <player|enemy> · cancel
+# Shared:   help · clear · flag <name>=<value> · wizard <player|enemy> · workshop · cancel
 # MV:       <paste trigger JSON>  ·  fire <event> [json]  ·  spawn <entity_id>
 # Space:    add_poi <type> <name>  ·  save_systems
 #
@@ -40,6 +40,8 @@ var _entry: TextEdit = null
 var _open := false
 var _wiz: Dictionary = {}   # {kind, step, answers} while an (enemy) wizard runs
 var _player_wizard: MvPlayerWizard = null
+var _workshop: MvCombatWorkshop = null
+var _hint: Label = null
 
 
 func _ready() -> void:
@@ -48,6 +50,9 @@ func _ready() -> void:
 	_build_ui()
 	_player_wizard = MvPlayerWizard.new()
 	add_child(_player_wizard)
+	_workshop = MvCombatWorkshop.new()
+	add_child(_workshop)
+	_build_hint()
 	visible = false
 
 
@@ -82,6 +87,33 @@ func _build_ui() -> void:
 	_entry.custom_minimum_size = Vector2(0, 48)
 	_entry.size_flags_vertical = Control.SIZE_SHRINK_END
 	vbox.add_child(_entry)
+
+
+# A small always-on corner hint so the authoring tools are discoverable without
+# knowing the keybinds. Lives on its own CanvasLayer so the console's visibility
+# toggle doesn't hide it; it hides itself whenever an authoring overlay is open.
+func _build_hint() -> void:
+	var hl := CanvasLayer.new()
+	hl.layer = 90
+	add_child(hl)
+	var root := Control.new()
+	root.set_anchors_preset(Control.PRESET_FULL_RECT)
+	root.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	hl.add_child(root)
+	_hint = Label.new()
+	_hint.set_anchors_and_offsets_preset(Control.PRESET_BOTTOM_LEFT)
+	_hint.position += Vector2(8, -26)
+	_hint.modulate = Color(0.82, 0.86, 0.96, 0.5)
+	root.add_child(_hint)
+
+
+func _process(_delta: float) -> void:
+	if _hint == null:
+		return
+	var busy := _open or PlanetaryInterface.edit_session_active
+	_hint.visible = not busy
+	if not busy:
+		_hint.text = "`  authoring console" + ("    ·    F2  edit room" if _in_mv() else "")
 
 
 # ── Open / close ─────────────────────────────────────────────────────────────
@@ -166,6 +198,8 @@ func _handle_command(text: String) -> void:
 			_cmd_flag(rest)
 		"wizard":
 			_cmd_wizard(rest)
+		"workshop":
+			_cmd_workshop()
 		"fire":
 			_cmd_fire(rest)
 		"spawn":
@@ -496,6 +530,20 @@ func _open_player_wizard() -> void:
 	_player_wizard.open_wizard()
 
 
+# `workshop` opens the guided enemy builder (sprite/stats/behavior + spawn-to-fight).
+# MV-only — enemies live in the platformer. The console hides while it's up.
+func _cmd_workshop() -> void:
+	if not _in_mv():
+		_err("workshop is MV-only — land on a planet first")
+		return
+	if _workshop == null:
+		_workshop = MvCombatWorkshop.new()
+		add_child(_workshop)
+	close()
+	if not _workshop.open_workshop():
+		_err("could not open workshop (no live MV room)")
+
+
 func _wiz_steps() -> Array:
 	return ENEMY_STEPS
 
@@ -624,9 +672,10 @@ func _slug(s: String) -> String:
 
 func _print_help() -> void:
 	_log("[color=#8ab4ff]── dev console ──[/color]")
-	_log("Shared:  flag <name>=<value>   wizard <player|enemy>   clear   help")
+	_log("[color=#7fdc7f]Authoring:[/color]  workshop (build an enemy)   wizard <player|enemy>")
+	_log("Shared:  flag <name>=<value>   clear   help")
 	if _in_mv():
-		_log("MV:  <paste trigger JSON>   fire <event> [json]   spawn <entity_id>")
+		_log("MV:  <paste trigger JSON>   fire <event> [json]   spawn <entity_id>   ·   F2 = edit room")
 	else:
 		_log("Space:  add_poi <type> <name>   save_systems")
 	_log("Submit: Ctrl+Enter    Close: Esc or backtick")
