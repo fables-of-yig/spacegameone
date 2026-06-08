@@ -555,6 +555,7 @@ static func _starter_projectile_defs() -> Array:
             "hitbox_h": 6,
             "rotate_to_velocity": false,
             "trail_color": "#88ccff",
+            "impact_fx": "spark_burst",
         },
         {
             "id": "beam_charged",
@@ -576,6 +577,7 @@ static func _starter_projectile_defs() -> Array:
             "hitbox_h": 8,
             "rotate_to_velocity": false,
             "trail_color": "#66ffff",
+            "impact_fx": "spark_burst",
         },
         {
             "id": "grenade",
@@ -605,6 +607,7 @@ static func _starter_projectile_defs() -> Array:
             "break_blocks": true,
             "bomb_jump": true,
             "bomb_jump_speed": 180,
+            "explosion_fx": "explosion_pop",
         },
     ]
 

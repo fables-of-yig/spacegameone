@@ -36,6 +36,10 @@ var _sheet_path: String = ""
 var _already_hit: Dictionary = {}
 var _initial_overlap_scan_pending: bool = true
 var _ignore_world_collision: bool = false
+# Optional authored effect ids. Empty impact_fx = built-in spark burst;
+# empty explosion_fx falls back to the always-available "explosion_pop" seed.
+var _impact_fx: String = ""
+var _explosion_fx: String = ""
 
 var _shape: CollisionShape2D = null
 var _sprite: Sprite2D = null
@@ -69,6 +73,8 @@ func configure(projectile_def: Dictionary, origin: Vector2, aim_dir: Vector2, da
     _frame_count = maxi(1, int(projectile_def.get("frame_count", 1)))
     _frame_tick = maxi(1, int(projectile_def.get("frame_tick", 10)))
     _sheet_path = str(projectile_def.get("sprite_sheet", "")).strip_edges()
+    _impact_fx = str(projectile_def.get("impact_fx", "")).strip_edges()
+    _explosion_fx = str(projectile_def.get("explosion_fx", "")).strip_edges()
 
     var trail := str(projectile_def.get("trail_color", "")).strip_edges()
     if not trail.is_empty() and Color.html_is_valid(trail):
@@ -306,6 +312,7 @@ func _explode() -> void:
     if _exploded:
         return
     _exploded = true
+    _spawn_explosion_fx(global_position)
     var radius := _blast_radius
     if radius <= 0.0:
         queue_free()
@@ -454,9 +461,20 @@ func _spawn_impact_fx(hit_pos: Vector2, normal: Vector2 = Vector2.ZERO) -> void:
     var parent := get_parent()
     if parent == null:
         return
+    if not _impact_fx.is_empty():
+        if MvFx.spawn("", _impact_fx, parent, hit_pos, normal) != null:
+            return
     var fx := _MvBulletImpactFx.new()
     parent.add_child(fx)
     fx.setup(hit_pos, normal, 5)
+
+
+func _spawn_explosion_fx(pos: Vector2) -> void:
+    var parent := get_parent()
+    if parent == null:
+        return
+    var fx_id := _explosion_fx if not _explosion_fx.is_empty() else "explosion_pop"
+    MvFx.spawn("", fx_id, parent, pos, Vector2.ZERO)
 
 
 func _impact_normal_toward(target: Node) -> Vector2:
