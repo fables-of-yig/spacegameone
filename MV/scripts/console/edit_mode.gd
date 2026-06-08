@@ -500,9 +500,6 @@ func _open_palette() -> void:
 	if rm == null:
 		return
 	_atlas = rm.current_tileset_atlas()
-	if _atlas.is_empty() or _atlas.get("texture") == null:
-		_set_status("no tileset atlas to show")
-		return
 	for ch in _palette.get_children():
 		ch.queue_free()
 	var bg := ColorRect.new()
@@ -537,19 +534,80 @@ func _open_palette() -> void:
 	lbl.text = "click a tile   ·   P / Esc to close"
 	lbl.add_theme_color_override("font_color", NebulaTheme.C_DIM)
 	vbox.add_child(lbl)
+	var upload := NebulaUi.button("＋ Upload tileset…", "primary")
+	upload.pressed.connect(_upload_tileset)
+	vbox.add_child(upload)
 	var scroll := ScrollContainer.new()
 	scroll.size_flags_vertical = Control.SIZE_EXPAND_FILL
 	scroll.add_theme_stylebox_override("panel", NebulaTheme.well_box())
 	vbox.add_child(scroll)
-	var tex: Texture2D = _atlas["texture"]
-	var tr := TextureRect.new()
-	tr.texture = tex
-	tr.custom_minimum_size = Vector2(tex.get_width(), tex.get_height())
-	tr.mouse_filter = Control.MOUSE_FILTER_STOP
-	tr.gui_input.connect(_on_palette_click)
-	scroll.add_child(tr)
+	if not _atlas.is_empty() and _atlas.get("texture") != null:
+		var tex: Texture2D = _atlas["texture"]
+		var tr := TextureRect.new()
+		tr.texture = tex
+		tr.texture_filter = CanvasItem.TEXTURE_FILTER_NEAREST
+		tr.custom_minimum_size = Vector2(tex.get_width(), tex.get_height())
+		tr.mouse_filter = Control.MOUSE_FILTER_STOP
+		tr.gui_input.connect(_on_palette_click)
+		scroll.add_child(tr)
+	else:
+		var empty := Label.new()
+		empty.text = "No tileset on this room yet.\nUpload a PNG (16px grid) to start painting."
+		empty.add_theme_color_override("font_color", NebulaTheme.C_DIM)
+		empty.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+		scroll.add_child(empty)
 	_palette.visible = true
 	_palette_open = true
+
+
+# Pick a PNG from disk and add it as this pack's next tileset atlas (16px grid),
+# assign it to the current room, and re-render live. Persist with Ctrl+S.
+func _upload_tileset() -> void:
+	var fd := FileDialog.new()
+	fd.access = FileDialog.ACCESS_FILESYSTEM
+	fd.file_mode = FileDialog.FILE_MODE_OPEN_FILE
+	fd.use_native_dialog = true
+	fd.title = "Choose a tileset PNG (16px grid)"
+	fd.filters = PackedStringArray(["*.png ; PNG images"])
+	fd.file_selected.connect(_on_tileset_file)
+	fd.canceled.connect(fd.queue_free)
+	fd.close_requested.connect(fd.queue_free)
+	add_child(fd)
+	fd.popup_centered(Vector2i(900, 640))
+
+
+func _on_tileset_file(src_path: String) -> void:
+	var rm := _rm()
+	var pack := MvPackLoader.current_pack
+	if rm == null or pack == null:
+		_set_status("upload failed: no pack/room")
+		return
+	var src := FileAccess.open(src_path, FileAccess.READ)
+	if src == null:
+		_set_status("upload failed: can't read file")
+		return
+	var bytes := src.get_buffer(src.get_length())
+	src.close()
+	var probe := Image.new()
+	if probe.load_png_from_buffer(bytes) != OK:
+		_set_status("upload failed: not a valid PNG")
+		return
+	var idx := rm.next_tileset_index()
+	var dir := pack.tileset_user_dir()
+	DirAccess.make_dir_recursive_absolute(dir)
+	var out_path := dir.path_join("tileset_%02d_atlas.png" % idx)
+	var w := FileAccess.open(out_path, FileAccess.WRITE)
+	if w == null:
+		_set_status("upload failed: can't write to pack")
+		return
+	w.store_buffer(bytes)
+	w.close()
+	rm.set_current_room_tileset(idx)
+	_mark_dirty()
+	_atlas = rm.current_tileset_atlas()
+	if _palette_open:
+		_open_palette()
+	_set_status("added tileset #%d (%dx%d) — Ctrl+S to keep" % [idx, probe.get_width(), probe.get_height()])
 
 
 func _on_palette_click(event: InputEvent) -> void:
@@ -633,6 +691,7 @@ func _save() -> void:
 		(raw_layers[i] as Dictionary)["tiles"] = (rt_layers[i] as Dictionary).get("tiles", [])
 	raw_room["tile_layers"] = raw_layers
 	raw_room["entities"] = _serialize_entities(info.get("entities", []))
+	raw_room["tileset"] = int(info.get("tileset", 0))
 	rooms[addr] = raw_room
 	raw["rooms"] = rooms
 	if EnvIO.save_rooms(pack.pack_id, raw):

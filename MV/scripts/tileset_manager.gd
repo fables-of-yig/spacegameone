@@ -24,6 +24,18 @@ func get_tile_set(_tileset_index: int = 0) -> TileSet:
 	return _get_or_build("")
 
 
+# Drop the built-TileSet cache so the next get_tile_set() rebuilds from disk —
+# used after an in-game tileset upload adds a new tileset_NN_atlas.png.
+func clear_cache() -> void:
+	_multi_cache.clear()
+
+
+# Next free tileset index (max existing + 1, or 0 if none).
+func next_index() -> int:
+	var idxs := _list_available_tilesets()
+	return (int(idxs.back()) + 1) if not idxs.is_empty() else 0
+
+
 func _get_or_build(suffix: String) -> TileSet:
 	if _multi_cache.has(suffix):
 		return _multi_cache[suffix]

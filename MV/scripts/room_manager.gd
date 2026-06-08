@@ -2789,6 +2789,23 @@ func _current_loaded_room_addr() -> String:
     return _loaded_room_addr if not _loaded_room_addr.is_empty() else _current_room_addr
 
 
+# Next free tileset index for an uploaded atlas (in-game tileset authoring).
+func next_tileset_index() -> int:
+    return _tileset_mgr.next_index()
+
+
+# Reassign the current room's tileset index and re-render its tile layers live.
+# Rebuilds the TileSet from disk (picking up a freshly-uploaded atlas). Does not
+# move the player or reset entities. Persist the change via the editor's save.
+func set_current_room_tileset(idx: int) -> void:
+    var key := _current_loaded_room_addr()
+    if key.is_empty() or not _rooms.has(key):
+        return
+    _rooms[key]["tileset"] = idx
+    _tileset_mgr.clear_cache()
+    load_room(current_room_addr())
+
+
 func has_room(addr: String) -> bool:
     return _rooms.has(addr)
 
