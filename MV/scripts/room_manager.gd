@@ -2859,6 +2859,62 @@ func set_current_room_shader_regions(regions: Array) -> void:
     load_room(current_room_addr())
 
 
+# The current room's parsed shader regions (for the edit-mode shader overlay).
+func shader_regions_list() -> Array:
+    return current_room().get("shader_regions", [])
+
+
+# Append one shader region (raw dict; hex tint ok) and re-render live.
+func add_shader_region(region: Dictionary) -> void:
+    var key := _current_loaded_room_addr()
+    if key.is_empty() or not _rooms.has(key):
+        return
+    var regs: Array = (_rooms[key].get("shader_regions", []) as Array).duplicate()
+    var norm := _parse_shader_regions({"shader_regions": [region]})
+    if norm.is_empty():
+        return
+    regs.append(norm[0])
+    _rooms[key]["shader_regions"] = regs
+    load_room(current_room_addr())
+
+
+# Set (or clear, if empty) the single whole-room "room_fx" shader region used by
+# the Environment panel, preserving any painted regions with other ids.
+func set_room_fx_region(region: Dictionary) -> void:
+    var key := _current_loaded_room_addr()
+    if key.is_empty() or not _rooms.has(key):
+        return
+    var regs: Array = (_rooms[key].get("shader_regions", []) as Array).filter(
+        func(r): return str((r as Dictionary).get("id", "")) != "room_fx")
+    if not region.is_empty():
+        var norm := _parse_shader_regions({"shader_regions": [region]})
+        if not norm.is_empty():
+            regs.append(norm[0])
+    _rooms[key]["shader_regions"] = regs
+    load_room(current_room_addr())
+
+
+# Remove the topmost shader region containing `cell` (block coords). Returns
+# true if one was removed.
+func remove_shader_region_at(cell: Vector2i) -> bool:
+    var key := _current_loaded_room_addr()
+    if key.is_empty() or not _rooms.has(key):
+        return false
+    var regs: Array = (_rooms[key].get("shader_regions", []) as Array).duplicate()
+    for i in range(regs.size() - 1, -1, -1):
+        var r: Dictionary = regs[i]
+        var x0 := float(r.get("x_blocks", 0.0))
+        var y0 := float(r.get("y_blocks", 0.0))
+        var w := float(r.get("width_blocks", 0.0))
+        var h := float(r.get("height_blocks", 0.0))
+        if float(cell.x) >= x0 and float(cell.x) < x0 + w and float(cell.y) >= y0 and float(cell.y) < y0 + h:
+            regs.remove_at(i)
+            _rooms[key]["shader_regions"] = regs
+            load_room(current_room_addr())
+            return true
+    return false
+
+
 func has_room(addr: String) -> bool:
     return _rooms.has(addr)
 

@@ -35,9 +35,14 @@ var _drag_start := Vector2i.ZERO
 var _drag_atlas: Dictionary = {}
 var _drag_sel: Panel = null
 
-const MODES := ["tiles", "collision", "entities"]
-const MODE_LABELS := {"tiles": "Tiles", "collision": "Collision", "entities": "Entities"}
+const MODES := ["tiles", "collision", "entities", "shaders"]
+const MODE_LABELS := {"tiles": "Tiles", "collision": "Collision", "entities": "Entities", "shaders": "Shaders"}
 const BT_SOLID := 0x8  # mirrors MvRoomManager.BT_SOLID (solid family >= 0x8)
+
+# Shader-region painting (Shaders mode): drag a rectangle to drop an effect.
+var _shader_preset_idx := 1  # index into SHADER_PRESETS; [ ] cycles
+var _shader_drag := false
+var _shader_start := Vector2i.ZERO
 var _entity_ids: Array = []
 var _entity_idx := 0
 var _hover := Vector2i(-9999, -9999)
@@ -320,6 +325,10 @@ func _unhandled_input(event: InputEvent) -> void:
 				get_viewport().set_input_as_handled()
 				_close_environment()
 		return
+	# Shaders mode is a marquee drag (rect), not per-cell paint.
+	if _mode == "shaders" and (event is InputEventMouseMotion or event is InputEventMouseButton):
+		_handle_shader_mouse(event)
+		return
 	if event is InputEventMouseMotion:
 		_update_hover()
 		# Tiles + collision drag-paint; entities place per-click.
@@ -388,6 +397,8 @@ func _cycle(dir: int) -> void:
 	if _mode == "entities":
 		if not _entity_ids.is_empty():
 			_entity_idx = wrapi(_entity_idx + dir, 0, _entity_ids.size())
+	elif _mode == "shaders":
+		_shader_preset_idx = wrapi(_shader_preset_idx + dir, 0, SHADER_PRESETS.size())
 	else:
 		_tile_idx = maxi(0, _tile_idx + dir)
 		# [ ] cycles a single-tile brush on the active tileset.
@@ -429,6 +440,57 @@ func _paint_collision(solid: bool) -> void:
 	_capture_stroke_cell(rm, _hover)
 	if rm.paint_collision(_hover, solid, false):
 		queue_redraw()
+
+
+# Shaders mode: LMB drags a rectangle to add a shader region, RMB removes the
+# region under the cursor. [ ] cycles the effect; the SEL swatch shows it.
+func _handle_shader_mouse(event: InputEvent) -> void:
+	var rm := _rm()
+	if rm == null:
+		return
+	if event is InputEventMouseMotion:
+		_update_hover()
+		if _shader_drag:
+			queue_redraw()
+		return
+	var mb := event as InputEventMouseButton
+	if mb.button_index == MOUSE_BUTTON_LEFT:
+		if mb.pressed:
+			_update_hover()
+			_shader_drag = true
+			_shader_start = _hover
+		elif _shader_drag:
+			_shader_drag = false
+			_commit_shader_region()
+		get_viewport().set_input_as_handled()
+	elif mb.button_index == MOUSE_BUTTON_RIGHT and mb.pressed:
+		_update_hover()
+		if rm.remove_shader_region_at(_hover):
+			_mark_dirty()
+			queue_redraw()
+		get_viewport().set_input_as_handled()
+
+
+func _commit_shader_region() -> void:
+	var preset := str(SHADER_PRESETS[_shader_preset_idx])
+	if preset == "none":
+		_set_status("pick an effect ([ ]) before painting a shader region")
+		return
+	var c0 := mini(_shader_start.x, _hover.x)
+	var r0 := mini(_shader_start.y, _hover.y)
+	_rm().add_shader_region({
+		"id": "fx_%d" % Time.get_ticks_msec(),
+		"x_blocks": c0,
+		"y_blocks": r0,
+		"width_blocks": absi(_hover.x - _shader_start.x) + 1,
+		"height_blocks": absi(_hover.y - _shader_start.y) + 1,
+		"shader_preset": preset,
+		"shader_tint": "ffffff",
+		"shader_strength": 0.6,
+		"shader_speed": 1.0,
+	})
+	_mark_dirty()
+	queue_redraw()
 
 
 func _process(_delta: float) -> void:
@@ -869,7 +931,7 @@ func _open_environment() -> void:
 	_s_spd = _env_spin(0.0, 4.0, 0.05, float(sr.get("shader_speed", 1.0)))
 	_s_spd.value_changed.connect(func(_v): _env_apply_shader())
 	vbox.add_child(NebulaUi.labeled("Speed", _s_spd, 120))
-	vbox.add_child(_env_note("Shader FX is screen-space over the whole room. Tip: parallax backdrop import is coming next."))
+	vbox.add_child(_env_note("This is the whole-room effect. For effects on PART of a room, use the Shaders edit mode (drag a rectangle). Parallax backdrop import is coming next."))
 
 	_env.visible = true
 	_env_open = true
@@ -907,14 +969,16 @@ func _env_apply_weather() -> void:
 	_mark_dirty()
 
 
-# Apply the room-wide shader FX (none = clear) — reloads the room to re-render.
+# Apply the room-wide shader FX (none = clear). Updates only the "room_fx"
+# whole-room region, preserving any painted regions (Shaders mode).
 func _env_apply_shader() -> void:
 	if _s_preset == null:
 		return
-	var regions: Array = []
-	if SHADER_PRESETS[_s_preset.selected] != "none":
+	if SHADER_PRESETS[_s_preset.selected] == "none":
+		_rm().set_room_fx_region({})
+	else:
 		var info := _rm().current_room()
-		regions.append({
+		_rm().set_room_fx_region({
 			"id": "room_fx",
 			"x_blocks": 0.0,
 			"y_blocks": 0.0,
@@ -925,10 +989,7 @@ func _env_apply_shader() -> void:
 			"shader_strength": _s_str.value,
 			"shader_speed": _s_spd.value,
 		})
-	_rm().set_current_room_shader_regions(regions)
 	_mark_dirty()
-	# load_room rebuilt the world; the env panel CanvasLayer is our own child and
-	# survives, so no rebuild needed here.
 
 
 func _close_environment() -> void:
@@ -951,6 +1012,8 @@ func _draw() -> void:
 	# user can see and fix stray/missing collision.
 	if _mode == "collision":
 		_draw_collision_overlay(rm)
+	elif _mode == "shaders":
+		_draw_shader_overlay(rm)
 	var bw := maxi(1, int(_brush.get("w", 1))) if _mode == "tiles" else 1
 	var bh := maxi(1, int(_brush.get("h", 1))) if _mode == "tiles" else 1
 	var rect := Rect2(Vector2(_hover.x * BLOCK, _hover.y * BLOCK), Vector2(bw * BLOCK, bh * BLOCK))
@@ -976,6 +1039,29 @@ func _draw_collision_overlay(rm: MvRoomManager) -> void:
 		for c in row.size():
 			if int(row[c]) >= BT_SOLID:
 				draw_rect(Rect2(Vector2(c * BLOCK, r * BLOCK), Vector2(BLOCK, BLOCK)), fill, true)
+
+
+func _draw_shader_overlay(rm: MvRoomManager) -> void:
+	var accent := NebulaTheme.C_ACCENT
+	for r_v in rm.shader_regions_list():
+		if typeof(r_v) != TYPE_DICTIONARY:
+			continue
+		var r: Dictionary = r_v
+		var rr := Rect2(
+			Vector2(float(r.get("x_blocks", 0.0)) * BLOCK, float(r.get("y_blocks", 0.0)) * BLOCK),
+			Vector2(float(r.get("width_blocks", 0.0)) * BLOCK, float(r.get("height_blocks", 0.0)) * BLOCK))
+		draw_rect(rr, Color(accent.r, accent.g, accent.b, 0.10), true)
+		draw_rect(rr, accent, false, 1.0)
+	# In-progress drag rectangle.
+	if _shader_drag:
+		var c0 := mini(_shader_start.x, _hover.x)
+		var rw0 := mini(_shader_start.y, _hover.y)
+		var w := absi(_hover.x - _shader_start.x) + 1
+		var h := absi(_hover.y - _shader_start.y) + 1
+		var dr := Rect2(Vector2(c0 * BLOCK, rw0 * BLOCK), Vector2(w * BLOCK, h * BLOCK))
+		var gold := NebulaTheme.C_ACCENT_2
+		draw_rect(dr, Color(gold.r, gold.g, gold.b, 0.18), true)
+		draw_rect(dr, gold, false, 2.0)
 
 
 # ── Persistence ─────────────────────────────────────────────────────────────
@@ -1115,6 +1201,8 @@ func _update_swatch() -> void:
 		if _mode == "entities":
 			var id := _current_entity_id()
 			lbl.text = id if not id.is_empty() else "—"
+		elif _mode == "shaders":
+			lbl.text = str(SHADER_PRESETS[_shader_preset_idx]).to_upper()
 		else:
 			lbl.text = "SOLID"
 		lbl.add_theme_color_override("font_color", NebulaTheme.C_BODY)
