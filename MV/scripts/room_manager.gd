@@ -2806,6 +2806,17 @@ func set_current_room_tileset(idx: int) -> void:
     load_room(current_room_addr())
 
 
+# Set the current room's screen-space shader regions and re-render so they apply
+# live (load_room -> _apply_backdrop clears + re-adds the shader fx). Pass raw
+# region dicts (hex tint ok); they're normalized via _parse_shader_regions.
+func set_current_room_shader_regions(regions: Array) -> void:
+    var key := _current_loaded_room_addr()
+    if key.is_empty() or not _rooms.has(key):
+        return
+    _rooms[key]["shader_regions"] = _parse_shader_regions({"shader_regions": regions})
+    load_room(current_room_addr())
+
+
 func has_room(addr: String) -> bool:
     return _rooms.has(addr)
 

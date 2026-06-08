@@ -46,8 +46,22 @@ var _status_label: Label = null
 var _status_pill: Control = null
 var _palette: CanvasLayer = null
 var _palette_open := false
+var _env: CanvasLayer = null
+var _env_open := false
 var _atlas: Dictionary = {}
 var _dirty := false
+
+const WEATHER_PRESETS := ["none", "rain", "snow"]
+const SHADER_PRESETS := ["none", "flicker", "wave", "heat"]
+
+var _w_preset: OptionButton = null
+var _w_color: ColorPickerButton = null
+var _w_int: SpinBox = null
+var _w_spd: SpinBox = null
+var _s_preset: OptionButton = null
+var _s_tint: ColorPickerButton = null
+var _s_str: SpinBox = null
+var _s_spd: SpinBox = null
 
 
 func _ready() -> void:
@@ -60,6 +74,10 @@ func _ready() -> void:
 	_palette.layer = 131
 	_palette.visible = false
 	add_child(_palette)
+	_env = CanvasLayer.new()
+	_env.layer = 131
+	_env.visible = false
+	add_child(_env)
 	visible = false
 
 
@@ -141,6 +159,9 @@ func _build_hud() -> void:
 	var pal_btn := NebulaUi.button("▦", "ghost")
 	pal_btn.pressed.connect(_open_palette)
 	barrow.add_child(pal_btn)
+	var env_btn := NebulaUi.button("Environment", "ghost")
+	env_btn.pressed.connect(_open_environment)
+	barrow.add_child(env_btn)
 
 	# --- Bottom-left key hints + status pill ---
 	var bl := VBoxContainer.new()
@@ -254,6 +275,7 @@ func exit() -> void:
 	if not _active:
 		return
 	_close_palette()
+	_close_environment()
 	_active = false
 	visible = false
 	if _hud != null:
@@ -277,6 +299,13 @@ func _unhandled_input(event: InputEvent) -> void:
 			if pk.keycode == KEY_P or pk.keycode == KEY_ESCAPE:
 				get_viewport().set_input_as_handled()
 				_close_palette()
+		return
+	if _env_open:
+		# Environment panel is modal; its controls handle their own input.
+		if event is InputEventKey and event.pressed and not event.echo:
+			if (event as InputEventKey).keycode == KEY_ESCAPE:
+				get_viewport().set_input_as_handled()
+				_close_environment()
 		return
 	if event is InputEventMouseMotion:
 		_update_hover()
@@ -367,7 +396,7 @@ func _apply_secondary() -> void:
 
 
 func _process(_delta: float) -> void:
-	if _active and not _palette_open:
+	if _active and not _palette_open and not _env_open:
 		_update_hover()
 
 
@@ -499,6 +528,7 @@ func _open_palette() -> void:
 	var rm := _rm()
 	if rm == null:
 		return
+	_close_environment()
 	_atlas = rm.current_tileset_atlas()
 	for ch in _palette.get_children():
 		ch.queue_free()
@@ -631,6 +661,160 @@ func _close_palette() -> void:
 			ch.queue_free()
 
 
+# ── Environment panel (weather + screen-space shader FX) ──────────────────────
+
+func _open_environment() -> void:
+	var rm := _rm()
+	if rm == null:
+		return
+	_close_palette()
+	for ch in _env.get_children():
+		ch.queue_free()
+	var info := rm.current_room()
+	var bg := ColorRect.new()
+	bg.color = Color(NebulaTheme.C_PANEL_DARK.r, NebulaTheme.C_PANEL_DARK.g, NebulaTheme.C_PANEL_DARK.b, 0.7)
+	bg.set_anchors_preset(Control.PRESET_FULL_RECT)
+	bg.mouse_filter = Control.MOUSE_FILTER_STOP
+	_env.add_child(bg)
+	var margin := MarginContainer.new()
+	margin.anchor_left = 0.4
+	margin.anchor_top = 0.0
+	margin.anchor_right = 1.0
+	margin.anchor_bottom = 1.0
+	margin.theme = NebulaTheme.theme()
+	for side in ["margin_left", "margin_right", "margin_top", "margin_bottom"]:
+		margin.add_theme_constant_override(side, 8)
+	_env.add_child(margin)
+	var frame := PanelContainer.new()
+	margin.add_child(frame)
+	var scroll := ScrollContainer.new()
+	scroll.horizontal_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED
+	frame.add_child(scroll)
+	var vbox := VBoxContainer.new()
+	vbox.add_theme_constant_override("separation", 8)
+	vbox.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	scroll.add_child(vbox)
+	vbox.add_child(NebulaTheme.title_label("Environment"))
+	var hint := Label.new()
+	hint.text = "changes apply live · Ctrl+S to keep · Esc to close"
+	hint.add_theme_color_override("font_color", NebulaTheme.C_DIM)
+	vbox.add_child(hint)
+
+	# --- Weather ---
+	var w: Dictionary = info.get("weather", {})
+	vbox.add_child(NebulaUi.section_header("Weather"))
+	_w_preset = OptionButton.new()
+	for i in WEATHER_PRESETS.size():
+		_w_preset.add_item(str(WEATHER_PRESETS[i]).capitalize(), i)
+	_w_preset.selected = maxi(0, WEATHER_PRESETS.find(str(w.get("preset", "none"))))
+	_w_preset.item_selected.connect(func(_i): _env_apply_weather())
+	vbox.add_child(NebulaUi.labeled("Preset", _w_preset, 120))
+	_w_color = ColorPickerButton.new()
+	_w_color.custom_minimum_size = Vector2(0, 24)
+	_w_color.color = w.get("color", Color(0.81, 0.91, 1.0))
+	_w_color.color_changed.connect(func(_c): _env_apply_weather())
+	vbox.add_child(NebulaUi.labeled("Tint", _w_color, 120))
+	_w_int = _env_spin(0.0, 2.0, 0.05, float(w.get("intensity", 0.7)))
+	_w_int.value_changed.connect(func(_v): _env_apply_weather())
+	vbox.add_child(NebulaUi.labeled("Intensity", _w_int, 120))
+	_w_spd = _env_spin(0.0, 4.0, 0.05, float(w.get("speed", 1.0)))
+	_w_spd.value_changed.connect(func(_v): _env_apply_weather())
+	vbox.add_child(NebulaUi.labeled("Speed", _w_spd, 120))
+
+	# --- Screen-space shader FX (room-wide) ---
+	var sr: Dictionary = {}
+	var srs_v: Variant = info.get("shader_regions", [])
+	if srs_v is Array and not (srs_v as Array).is_empty():
+		sr = (srs_v as Array)[0]
+	vbox.add_child(NebulaUi.section_header("Shader FX"))
+	_s_preset = OptionButton.new()
+	for i in SHADER_PRESETS.size():
+		_s_preset.add_item(str(SHADER_PRESETS[i]).capitalize(), i)
+	var cur_preset := str(sr.get("shader_preset", "none")) if not sr.is_empty() else "none"
+	_s_preset.selected = maxi(0, SHADER_PRESETS.find(cur_preset))
+	_s_preset.item_selected.connect(func(_i): _env_apply_shader())
+	vbox.add_child(NebulaUi.labeled("Effect", _s_preset, 120))
+	_s_tint = ColorPickerButton.new()
+	_s_tint.custom_minimum_size = Vector2(0, 24)
+	_s_tint.color = sr.get("shader_tint", Color.WHITE)
+	_s_tint.color_changed.connect(func(_c): _env_apply_shader())
+	vbox.add_child(NebulaUi.labeled("Tint", _s_tint, 120))
+	_s_str = _env_spin(0.0, 2.0, 0.05, float(sr.get("shader_strength", 0.6)))
+	_s_str.value_changed.connect(func(_v): _env_apply_shader())
+	vbox.add_child(NebulaUi.labeled("Strength", _s_str, 120))
+	_s_spd = _env_spin(0.0, 4.0, 0.05, float(sr.get("shader_speed", 1.0)))
+	_s_spd.value_changed.connect(func(_v): _env_apply_shader())
+	vbox.add_child(NebulaUi.labeled("Speed", _s_spd, 120))
+	vbox.add_child(_env_note("Shader FX is screen-space over the whole room. Tip: parallax backdrop import is coming next."))
+
+	_env.visible = true
+	_env_open = true
+
+
+func _env_spin(lo: float, hi: float, step: float, val: float) -> SpinBox:
+	var sb := SpinBox.new()
+	sb.min_value = lo
+	sb.max_value = hi
+	sb.step = step
+	sb.value = val
+	sb.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	return sb
+
+
+func _env_note(text: String) -> Control:
+	var l := Label.new()
+	l.text = text
+	l.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	l.add_theme_color_override("font_color", NebulaTheme.C_DIM)
+	l.add_theme_font_size_override("font_size", NebulaTheme.size("hint"))
+	return l
+
+
+# Apply weather live (no reload) and mark dirty.
+func _env_apply_weather() -> void:
+	if _w_preset == null:
+		return
+	_rm().set_room_weather("", {
+		"preset": WEATHER_PRESETS[_w_preset.selected],
+		"color": _w_color.color.to_html(),
+		"intensity": _w_int.value,
+		"speed": _w_spd.value,
+	})
+	_mark_dirty()
+
+
+# Apply the room-wide shader FX (none = clear) — reloads the room to re-render.
+func _env_apply_shader() -> void:
+	if _s_preset == null:
+		return
+	var regions: Array = []
+	if SHADER_PRESETS[_s_preset.selected] != "none":
+		var info := _rm().current_room()
+		regions.append({
+			"id": "room_fx",
+			"x_blocks": 0.0,
+			"y_blocks": 0.0,
+			"width_blocks": float(info.get("width_blocks", 0)),
+			"height_blocks": float(info.get("height_blocks", 0)),
+			"shader_preset": SHADER_PRESETS[_s_preset.selected],
+			"shader_tint": _s_tint.color.to_html(),
+			"shader_strength": _s_str.value,
+			"shader_speed": _s_spd.value,
+		})
+	_rm().set_current_room_shader_regions(regions)
+	_mark_dirty()
+	# load_room rebuilt the world; the env panel CanvasLayer is our own child and
+	# survives, so no rebuild needed here.
+
+
+func _close_environment() -> void:
+	_env_open = false
+	if _env != null:
+		_env.visible = false
+		for ch in _env.get_children():
+			ch.queue_free()
+
+
 # ── Cursor ──────────────────────────────────────────────────────────────────
 
 func _draw() -> void:
@@ -692,6 +876,8 @@ func _save() -> void:
 	raw_room["tile_layers"] = raw_layers
 	raw_room["entities"] = _serialize_entities(info.get("entities", []))
 	raw_room["tileset"] = int(info.get("tileset", 0))
+	raw_room["weather"] = _serialize_weather(info.get("weather", {}))
+	raw_room["shader_regions"] = _serialize_shader_regions(info.get("shader_regions", []))
 	rooms[addr] = raw_room
 	raw["rooms"] = rooms
 	if EnvIO.save_rooms(pack.pack_id, raw):
@@ -705,6 +891,42 @@ func _save() -> void:
 func _mark_dirty() -> void:
 	_dirty = true
 	_refresh_hud()
+
+
+# Serialize the parsed (Color-typed) weather/shader data back to JSON-safe dicts.
+func _serialize_weather(w: Dictionary) -> Dictionary:
+	if w.is_empty():
+		return {}
+	var col: Color = w.get("color", Color.WHITE)
+	return {
+		"preset": str(w.get("preset", "none")),
+		"color": col.to_html(),
+		"intensity": float(w.get("intensity", 0.7)),
+		"speed": float(w.get("speed", 1.0)),
+	}
+
+
+func _serialize_shader_regions(regions_v: Variant) -> Array:
+	var out: Array = []
+	if not (regions_v is Array):
+		return out
+	for r_v in (regions_v as Array):
+		if typeof(r_v) != TYPE_DICTIONARY:
+			continue
+		var r: Dictionary = r_v
+		var tint: Color = r.get("shader_tint", Color.WHITE)
+		out.append({
+			"id": str(r.get("id", "room_fx")),
+			"x_blocks": float(r.get("x_blocks", 0.0)),
+			"y_blocks": float(r.get("y_blocks", 0.0)),
+			"width_blocks": float(r.get("width_blocks", 0.0)),
+			"height_blocks": float(r.get("height_blocks", 0.0)),
+			"shader_preset": str(r.get("shader_preset", "flicker")),
+			"shader_tint": tint.to_html(),
+			"shader_strength": float(r.get("shader_strength", 0.6)),
+			"shader_speed": float(r.get("shader_speed", 1.0)),
+		})
+	return out
 
 
 func _serialize_entities(entities: Array) -> Array:
