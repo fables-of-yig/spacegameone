@@ -2828,6 +2828,15 @@ func next_tileset_index() -> int:
     return _tileset_mgr.next_index()
 
 
+# Palette folder-tree metadata ({ "<idx>": {name, folder} }).
+func tileset_meta() -> Dictionary:
+    return _tileset_mgr.load_meta()
+
+
+func save_tileset_meta(meta: Dictionary) -> bool:
+    return _tileset_mgr.save_meta(meta)
+
+
 # Reassign the current room's tileset index and re-render its tile layers live.
 # Rebuilds the TileSet from disk (picking up a freshly-uploaded atlas). Does not
 # move the player or reset entities. Persist the change via the editor's save.

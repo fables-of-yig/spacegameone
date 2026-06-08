@@ -41,6 +41,40 @@ func available_indices() -> Array:
 	return _list_available_tilesets()
 
 
+const _META_REL := "Tilesets/manifest.json"
+
+
+# Tileset metadata for the palette folder tree: { "<idx>": {name, folder} }.
+func load_meta() -> Dictionary:
+	if _pack == null:
+		return {}
+	var path := _pack.resolve_read(_META_REL)
+	if not FileAccess.file_exists(path):
+		return {}
+	var f := FileAccess.open(path, FileAccess.READ)
+	if f == null:
+		return {}
+	var txt := f.get_as_text()
+	f.close()
+	var parsed: Variant = JSON.parse_string(txt)
+	if typeof(parsed) == TYPE_DICTIONARY:
+		var t: Variant = (parsed as Dictionary).get("tilesets", {})
+		if typeof(t) == TYPE_DICTIONARY:
+			return t
+	return {}
+
+
+func save_meta(meta: Dictionary) -> bool:
+	if _pack == null:
+		return false
+	var f := FileAccess.open(_pack.resolve_write(_META_REL), FileAccess.WRITE)
+	if f == null:
+		return false
+	f.store_string(JSON.stringify({"tilesets": meta}, "  "))
+	f.close()
+	return true
+
+
 func _get_or_build(suffix: String) -> TileSet:
 	if _multi_cache.has(suffix):
 		return _multi_cache[suffix]

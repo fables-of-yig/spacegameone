@@ -38,6 +38,9 @@ var _drag_atlas: Dictionary = {}
 var _drag_sel: Panel = null
 var _drag_disp := 16  # displayed tile size during a palette drag (tile_size * scale)
 var _palette_collapsed: Dictionary = {}  # tileset idx -> collapsed bool
+var _folder_collapsed: Dictionary = {}  # folder name -> collapsed bool
+var _editing_tileset := -1  # tileset idx whose rename/move row is open (-1 = none)
+var _pal_meta: Dictionary = {}  # tileset folder-tree metadata for this palette session
 
 const MODES := ["tiles", "collision", "entities", "shaders"]
 const MODE_LABELS := {"tiles": "Tiles", "collision": "Collision", "entities": "Entities", "shaders": "Shaders"}
@@ -772,40 +775,41 @@ func _open_palette() -> void:
 	# Fit atlases to ~half the panel width at an integer scale (crisp, not
 	# stretched). Wide atlases stay 1x; small ones scale up for visibility.
 	var avail := int(get_viewport().get_visible_rect().size.x * 0.42)
+	_pal_meta = rm.tileset_meta()
 	var indices: Array = rm.available_tileset_indices()
-	var any := false
+	# Group tilesets by their folder (blank = root).
+	var root: Array = []
+	var folders: Dictionary = {}
 	for idx_v in indices:
 		var idx := int(idx_v)
-		var atlas := rm.tileset_atlas_for(idx)
-		var tex: Texture2D = atlas.get("texture")
-		if tex == null:
+		if rm.tileset_atlas_for(idx).get("texture") == null:
 			continue
-		any = true
-		var active := idx == _active_tileset_id()
-		var collapsed := bool(_palette_collapsed.get(idx, false))
-		var hdr := NebulaUi.button("%s Tileset %d%s" % ["▸" if collapsed else "▾", idx, "  ·  selected" if active else ""], "ghost")
-		hdr.alignment = HORIZONTAL_ALIGNMENT_LEFT
-		hdr.self_modulate = NebulaTheme.C_ACCENT if active else NebulaTheme.C_BORDER
-		hdr.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-		hdr.pressed.connect(func():
-			_palette_collapsed[idx] = not bool(_palette_collapsed.get(idx, false))
+		var folder := str((_pal_meta.get(str(idx), {}) as Dictionary).get("folder", "")).strip_edges()
+		if folder.is_empty():
+			root.append(idx)
+		else:
+			if not folders.has(folder):
+				folders[folder] = []
+			(folders[folder] as Array).append(idx)
+	var any := not root.is_empty() or not folders.is_empty()
+	for idx in root:
+		_build_tileset_section(grid_col, rm, idx, avail)
+	var folder_names: Array = folders.keys()
+	folder_names.sort()
+	for folder in folder_names:
+		var fc := bool(_folder_collapsed.get(folder, false))
+		var fhdr := NebulaUi.button("%s  📁 %s" % ["▸" if fc else "▾", folder], "ghost")
+		fhdr.alignment = HORIZONTAL_ALIGNMENT_LEFT
+		fhdr.self_modulate = NebulaTheme.C_ACCENT_2
+		fhdr.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+		fhdr.pressed.connect(func():
+			_folder_collapsed[folder] = not bool(_folder_collapsed.get(folder, false))
 			_open_palette())
-		grid_col.add_child(hdr)
-		if collapsed:
+		grid_col.add_child(fhdr)
+		if fc:
 			continue
-		var scale := clampi(int(float(avail) / float(maxi(1, tex.get_width()))), 1, 4)
-		# HBox wrapper keeps the atlas left-aligned at native*scale (a VBox child
-		# would otherwise stretch to the full panel width).
-		var row := HBoxContainer.new()
-		var tr := TextureRect.new()
-		tr.texture = tex
-		tr.texture_filter = CanvasItem.TEXTURE_FILTER_NEAREST
-		tr.custom_minimum_size = Vector2(tex.get_width() * scale, tex.get_height() * scale)
-		tr.size_flags_horizontal = Control.SIZE_SHRINK_BEGIN
-		tr.mouse_filter = Control.MOUSE_FILTER_STOP
-		tr.gui_input.connect(_on_palette_input.bind(idx, atlas, tr, scale))
-		row.add_child(tr)
-		grid_col.add_child(row)
+		for idx in folders[folder]:
+			_build_tileset_section(grid_col, rm, idx, avail)
 	if not any:
 		var empty := Label.new()
 		empty.text = "No tileset on this room yet.\nUpload a PNG (16px grid) to start painting."
@@ -814,6 +818,70 @@ func _open_palette() -> void:
 		grid_col.add_child(empty)
 	_palette.visible = true
 	_palette_open = true
+
+
+# One tileset entry in the palette: name/collapse header + ✎ rename/move + grid.
+func _build_tileset_section(grid_col: VBoxContainer, rm: MvRoomManager, idx: int, avail: int) -> void:
+	var atlas := rm.tileset_atlas_for(idx)
+	var tex: Texture2D = atlas.get("texture")
+	if tex == null:
+		return
+	var m: Dictionary = _pal_meta.get(str(idx), {})
+	var nm := str(m.get("name", "")).strip_edges()
+	if nm.is_empty():
+		nm = "Tileset %d" % idx
+	var active := idx == _active_tileset_id()
+	var collapsed := bool(_palette_collapsed.get(idx, false))
+	var hrow := HBoxContainer.new()
+	hrow.add_theme_constant_override("separation", 4)
+	var hdr := NebulaUi.button("%s %s%s" % ["▸" if collapsed else "▾", nm, "  ·  selected" if active else ""], "ghost")
+	hdr.alignment = HORIZONTAL_ALIGNMENT_LEFT
+	hdr.self_modulate = NebulaTheme.C_ACCENT if active else NebulaTheme.C_BORDER
+	hdr.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	hdr.pressed.connect(func():
+		_palette_collapsed[idx] = not bool(_palette_collapsed.get(idx, false))
+		_open_palette())
+	hrow.add_child(hdr)
+	var edit := NebulaUi.button("✎", "ghost")
+	edit.pressed.connect(func():
+		_editing_tileset = -1 if _editing_tileset == idx else idx
+		_open_palette())
+	hrow.add_child(edit)
+	grid_col.add_child(hrow)
+	if _editing_tileset == idx:
+		var er := HBoxContainer.new()
+		er.add_theme_constant_override("separation", 4)
+		var nle := LineEdit.new()
+		nle.text = nm
+		nle.placeholder_text = "name"
+		nle.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+		er.add_child(nle)
+		var fle := LineEdit.new()
+		fle.text = str(m.get("folder", ""))
+		fle.placeholder_text = "folder"
+		fle.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+		er.add_child(fle)
+		var ok := NebulaUi.button("✓", "primary")
+		ok.pressed.connect(func():
+			_pal_meta[str(idx)] = {"name": nle.text.strip_edges(), "folder": fle.text.strip_edges()}
+			rm.save_tileset_meta(_pal_meta)
+			_editing_tileset = -1
+			_open_palette())
+		er.add_child(ok)
+		grid_col.add_child(er)
+	if collapsed:
+		return
+	var scale := clampi(int(float(avail) / float(maxi(1, tex.get_width()))), 1, 4)
+	var row := HBoxContainer.new()
+	var tr := TextureRect.new()
+	tr.texture = tex
+	tr.texture_filter = CanvasItem.TEXTURE_FILTER_NEAREST
+	tr.custom_minimum_size = Vector2(tex.get_width() * scale, tex.get_height() * scale)
+	tr.size_flags_horizontal = Control.SIZE_SHRINK_BEGIN
+	tr.mouse_filter = Control.MOUSE_FILTER_STOP
+	tr.gui_input.connect(_on_palette_input.bind(idx, atlas, tr, scale))
+	row.add_child(tr)
+	grid_col.add_child(row)
 
 
 # The effective selected tileset id (resolves -1 to the room's primary).
