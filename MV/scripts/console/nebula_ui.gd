@@ -180,7 +180,101 @@ static func track_card(title: String, desc: String, on_pick: Callable, enabled :
 	return card
 
 
+# PreviewPane — a recessed well with a centered placeholder body and proportional
+# hit/hurt box overlays (mockup's sprite-preview pane). `boxes` is an array of
+# {x,y,w,h (0..1 fractions), color: Color, fill: bool, label: String}. An optional
+# `sprite` Texture2D is drawn centered when provided (else a dashed placeholder).
+static func preview_pane(label_text: String, boxes: Array, sprite: Texture2D = null, height := 300) -> Control:
+	var pane := PanelContainer.new()
+	pane.add_theme_stylebox_override("panel", NT.well_box())
+	pane.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	pane.custom_minimum_size = Vector2(0, height)
+	var area := Control.new()
+	area.set_anchors_preset(Control.PRESET_FULL_RECT)
+	area.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	pane.add_child(area)
+
+	if sprite != null:
+		var tex := TextureRect.new()
+		tex.texture = sprite
+		tex.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
+		tex.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
+		tex.texture_filter = CanvasItem.TEXTURE_FILTER_NEAREST
+		tex.set_anchors_preset(Control.PRESET_FULL_RECT)
+		tex.mouse_filter = Control.MOUSE_FILTER_IGNORE
+		area.add_child(tex)
+	else:
+		var ph := PanelContainer.new()
+		ph.add_theme_stylebox_override("panel", _outline_box(Color(NT.C_BORDER.r, NT.C_BORDER.g, NT.C_BORDER.b, 0.5)))
+		_anchor_frac(ph, 0.42, 0.28, 0.58, 0.72)
+		var pl := Label.new()
+		pl.text = "placeholder\nbody"
+		pl.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+		pl.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
+		pl.add_theme_color_override("font_color", NT.C_DIM)
+		pl.add_theme_font_size_override("font_size", NT.size("hint"))
+		ph.add_child(pl)
+		area.add_child(ph)
+
+	for b_v in boxes:
+		var b: Dictionary = b_v
+		area.add_child(_overlay_box(b))
+
+	var lbl := Label.new()
+	lbl.text = label_text.to_upper()
+	lbl.add_theme_color_override("font_color", NT.C_DIM)
+	lbl.add_theme_font_size_override("font_size", NT.size("hint"))
+	lbl.set_anchors_and_offsets_preset(Control.PRESET_BOTTOM_LEFT)
+	lbl.position += Vector2(8, -8)
+	area.add_child(lbl)
+	return pane
+
+
+static func _overlay_box(b: Dictionary) -> Control:
+	var c := Control.new()
+	c.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	_anchor_frac(c, float(b.get("x", 0.4)), float(b.get("y", 0.3)),
+		float(b.get("x", 0.4)) + float(b.get("w", 0.2)), float(b.get("y", 0.3)) + float(b.get("h", 0.4)))
+	var col: Color = b.get("color", NT.C_ACCENT)
+	var border := PanelContainer.new()
+	border.set_anchors_preset(Control.PRESET_FULL_RECT)
+	border.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	var box := _outline_box(col)
+	if bool(b.get("fill", false)):
+		box.bg_color = Color(col.r, col.g, col.b, 0.14)
+	border.add_theme_stylebox_override("panel", box)
+	c.add_child(border)
+	var lbl := Label.new()
+	lbl.text = str(b.get("label", ""))
+	lbl.add_theme_color_override("font_color", col)
+	lbl.add_theme_font_size_override("font_size", NT.size("hint"))
+	lbl.position = Vector2(0, -16)
+	lbl.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	c.add_child(lbl)
+	return c
+
+
+static func _anchor_frac(ctrl: Control, l: float, t: float, r: float, b: float) -> void:
+	ctrl.anchor_left = l
+	ctrl.anchor_top = t
+	ctrl.anchor_right = r
+	ctrl.anchor_bottom = b
+	ctrl.offset_left = 0
+	ctrl.offset_top = 0
+	ctrl.offset_right = 0
+	ctrl.offset_bottom = 0
+
+
 # --- low-level boxes ---
+
+static func _outline_box(border_col: Color) -> StyleBoxFlat:
+	var b := StyleBoxFlat.new()
+	b.bg_color = Color(0, 0, 0, 0)
+	b.set_corner_radius_all(3)
+	b.set_content_margin_all(0)
+	b.border_color = border_col
+	b.set_border_width_all(2)
+	return b
 
 static func _panel_box() -> StyleBoxFlat:
 	var compact := NT.profile() == "compact"

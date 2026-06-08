@@ -318,15 +318,28 @@ func _show_step() -> void:
 	_refresh_rail()
 	for c in _work_host.get_children():
 		c.queue_free()
-	# Each step's content lives inside a framed WorkPanel (Nebula look). Cap the
-	# width so fields don't stretch across the whole screen; left-aligned leaves
-	# room for a preview pane on the right (mockup's 2-column work area).
+	# Each step's content lives inside a framed WorkPanel. Steps that have a
+	# preview render two columns (work | preview), per the mockup; the rest cap
+	# the work panel width so fields don't stretch edge-to-edge.
 	var wp := NebulaUi.work_panel("")
 	var panel: Control = wp["root"]
-	panel.size_flags_horizontal = Control.SIZE_SHRINK_BEGIN
-	panel.custom_minimum_size = Vector2(880 if NebulaTheme.profile() == "full" else 300, 0)
-	_work_host.add_child(panel)
 	_content = wp["body"]
+	var preview := _build_preview(_step)
+	if preview != null:
+		var row := HBoxContainer.new()
+		row.add_theme_constant_override("separation", 16)
+		row.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+		panel.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+		panel.size_flags_stretch_ratio = 1.1
+		preview.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+		preview.size_flags_stretch_ratio = 0.9
+		row.add_child(panel)
+		row.add_child(preview)
+		_work_host.add_child(row)
+	else:
+		panel.size_flags_horizontal = Control.SIZE_SHRINK_BEGIN
+		panel.custom_minimum_size = Vector2(880 if NebulaTheme.profile() == "full" else 300, 0)
+		_work_host.add_child(panel)
 	match _step:
 		0: _build_identity()
 		1: _build_stats()
@@ -337,6 +350,43 @@ func _show_step() -> void:
 	_nav_test.disabled = false
 	_nav_next.disabled = false
 	_nav_next.text = "Save & Close →" if _step == STEPS.size() - 1 else "Next →"
+
+
+# Builds the right-side "Preview" column for steps that have one (identity,
+# stats, test). Returns null for full-width steps (behavior, effects). The
+# hurtbox is auto-derived from the body, so it shows even without art.
+func _build_preview(step: int) -> Control:
+	var boxes: Array = []
+	var label := ""
+	match step:
+		0:
+			label = "Idle · " + _disp_name()
+			boxes = [{"x": 0.37, "y": 0.26, "w": 0.26, "h": 0.48, "color": NebulaTheme.C_SUCCESS, "label": "hurtbox (auto)"}]
+		1:
+			label = "Body / hurtbox · " + _disp_name()
+			boxes = [
+				{"x": 0.37, "y": 0.24, "w": 0.26, "h": 0.50, "color": NebulaTheme.C_SUCCESS, "label": "hurtbox"},
+				{"x": 0.30, "y": 0.70, "w": 0.40, "h": 0.14, "color": NebulaTheme.C_ACCENT_2, "fill": true, "label": "melee range"},
+			]
+		4:
+			label = "Live · " + _disp_name()
+			boxes = [{"x": 0.37, "y": 0.24, "w": 0.26, "h": 0.50, "color": NebulaTheme.C_SUCCESS, "label": "hp %s" % _data["stats"].get("hp", 0)}]
+		_:
+			return null
+	var wp := NebulaUi.work_panel("Preview")
+	wp["body"].add_child(NebulaUi.preview_pane(label, boxes))
+	if step == 1:
+		var note := _hint("The hurtbox is derived from the sprite size — it can't be hand-drawn for enemies.")
+		wp["body"].add_child(note)
+	return wp["root"]
+
+
+func _disp_name() -> String:
+	var nm := str(_data["name"]).strip_edges()
+	if not nm.is_empty():
+		return nm
+	var id := str(_data["id"]).strip_edges()
+	return id if not id.is_empty() else "(unnamed)"
 
 
 func _refresh_rail() -> void:
