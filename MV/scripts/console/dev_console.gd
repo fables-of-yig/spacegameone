@@ -42,6 +42,8 @@ var _wiz: Dictionary = {}   # {kind, step, answers} while an (enemy) wizard runs
 var _player_wizard: MvPlayerWizard = null
 var _workshop: MvCombatWorkshop = null
 var _hint: Label = null
+var _skin_host: Control = null
+var _title_lbl: Label = null
 
 
 func _ready() -> void:
@@ -65,6 +67,7 @@ func _build_ui() -> void:
 	var margin := MarginContainer.new()
 	margin.set_anchors_preset(Control.PRESET_FULL_RECT)
 	margin.theme = NebulaTheme.theme()
+	_skin_host = margin
 	margin.add_theme_constant_override("margin_left", 8)
 	margin.add_theme_constant_override("margin_right", 8)
 	margin.add_theme_constant_override("margin_top", 6)
@@ -75,8 +78,8 @@ func _build_ui() -> void:
 	var vbox := VBoxContainer.new()
 	vbox.add_theme_constant_override("separation", 8)
 	frame.add_child(vbox)
-	var title := NebulaTheme.title_label("Dev Console")
-	vbox.add_child(title)
+	_title_lbl = NebulaTheme.title_label("Dev Console")
+	vbox.add_child(_title_lbl)
 	var sub := Label.new()
 	sub.text = "Ctrl+Enter run   ·   Esc / ` close"
 	sub.add_theme_color_override("font_color", NebulaTheme.C_DIM)
@@ -136,6 +139,12 @@ func open() -> void:
 	if _open:
 		return
 	_open = true
+	# Re-pick the scale profile: the console is built at autoload _ready in Space
+	# (full profile) but can be opened in MV (compact). See NebulaTheme.
+	if _skin_host != null:
+		_skin_host.theme = NebulaTheme.theme()
+	if _title_lbl != null:
+		_title_lbl.add_theme_font_size_override("font_size", NebulaTheme.size("title"))
 	visible = true
 	PlanetaryInterface.edit_session_active = true
 	if _log_view.get_parsed_text().strip_edges().is_empty():

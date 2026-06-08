@@ -36,6 +36,7 @@ var _stroke: Array = []
 var _stroke_cells: Dictionary = {}
 
 var _hud: CanvasLayer = null
+var _hud_panel: PanelContainer = null
 var _info_label: Label = null
 var _status_label: Label = null
 var _palette: CanvasLayer = null
@@ -63,6 +64,7 @@ func _build_hud() -> void:
 	var panel := PanelContainer.new()
 	panel.set_anchors_preset(Control.PRESET_TOP_WIDE)
 	panel.theme = NebulaTheme.theme()
+	_hud_panel = panel
 	panel.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	# Flat dark top strip with a cyan underline — not the ornate window frame.
 	var bar := StyleBoxFlat.new()
@@ -111,6 +113,10 @@ func enter() -> void:
 		return
 	_active = true
 	visible = true
+	# Re-pick the scale profile in case the HUD was built before MV set its
+	# content scale. See NebulaTheme's SCALE PROFILES note.
+	if _hud_panel != null:
+		_hud_panel.theme = NebulaTheme.theme()
 	if _hud != null:
 		_hud.visible = true
 	_prev_paused = MvGame.simulation_paused

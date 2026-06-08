@@ -39,6 +39,7 @@ var _title: Label = null
 var _content: VBoxContainer = null
 var _nav_back: Button = null
 var _nav_next: Button = null
+var _skin_host: Control = null
 
 
 func _ready() -> void:
@@ -57,6 +58,7 @@ func _build_shell() -> void:
 	var margin := MarginContainer.new()
 	margin.set_anchors_preset(Control.PRESET_FULL_RECT)
 	margin.theme = NebulaTheme.theme()
+	_skin_host = margin
 	for side in ["margin_left", "margin_right", "margin_top", "margin_bottom"]:
 		margin.add_theme_constant_override(side, 10)
 	add_child(margin)
@@ -67,7 +69,7 @@ func _build_shell() -> void:
 	frame.add_child(root)
 	_title = Label.new()
 	_title.add_theme_color_override("font_color", NebulaTheme.C_TITLE)
-	_title.add_theme_font_size_override("font_size", NebulaTheme.SIZE_TITLE)
+	_title.add_theme_font_size_override("font_size", NebulaTheme.size("title"))
 	if NebulaTheme.font() != null:
 		_title.add_theme_font_override("font", NebulaTheme.font())
 	root.add_child(_title)
@@ -108,9 +110,19 @@ func open_wizard() -> void:
 	_step = 0
 	_applied = false
 	_result = ""
+	_reskin()
 	PlanetaryInterface.edit_session_active = true
 	visible = true
 	_show_step()
+
+
+# Re-pick the scale profile (Space build vs MV show) and re-apply size-sensitive
+# overrides. See NebulaTheme's SCALE PROFILES note.
+func _reskin() -> void:
+	if _skin_host != null:
+		_skin_host.theme = NebulaTheme.theme()
+	if _title != null:
+		_title.add_theme_font_size_override("font_size", NebulaTheme.size("title"))
 
 
 func close_wizard() -> void:
