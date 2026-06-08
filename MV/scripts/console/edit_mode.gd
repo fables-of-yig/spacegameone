@@ -510,10 +510,18 @@ func _open_palette() -> void:
 	bg.set_anchors_preset(Control.PRESET_FULL_RECT)
 	bg.mouse_filter = Control.MOUSE_FILTER_STOP
 	_palette.add_child(bg)
+	# Right-docked panel. A Control under a CanvasLayer is sized by anchors/
+	# offsets (not custom_minimum_size), so anchor the right ~55% explicitly.
 	var margin := MarginContainer.new()
-	margin.set_anchors_preset(Control.PRESET_RIGHT_WIDE)
+	margin.anchor_left = 0.45
+	margin.anchor_top = 0.0
+	margin.anchor_right = 1.0
+	margin.anchor_bottom = 1.0
+	margin.offset_left = 0
+	margin.offset_top = 0
+	margin.offset_right = 0
+	margin.offset_bottom = 0
 	margin.theme = NebulaTheme.theme()
-	margin.custom_minimum_size = Vector2(360, 0)
 	margin.add_theme_constant_override("margin_left", 8)
 	margin.add_theme_constant_override("margin_right", 8)
 	margin.add_theme_constant_override("margin_top", 6)
