@@ -80,6 +80,15 @@ var _dirty := false
 const WEATHER_PRESETS := ["none", "rain", "snow"]
 const SHADER_PRESETS := ["none", "flicker", "wave", "heat"]
 
+const PARALLAX_NAMES := ["far", "mid", "near"]
+const PARALLAX_PRESETS := {
+	"gentle": [[0.04, 0.02], [0.10, 0.05], [0.20, 0.08]],
+	"balanced": [[0.10, 0.05], [0.24, 0.10], [0.42, 0.16]],
+	"locked": [[1.0, 1.0], [1.0, 1.0], [1.0, 1.0]],
+}
+var _bg_layers: Dictionary = {}  # name -> {image, sx, sy}
+var _bg_enabled := true
+
 var _w_preset: OptionButton = null
 var _w_color: ColorPickerButton = null
 var _w_int: SpinBox = null
@@ -993,7 +1002,52 @@ func _open_environment() -> void:
 	_s_spd = _env_spin(0.0, 4.0, 0.05, float(sr.get("shader_speed", 1.0)))
 	_s_spd.value_changed.connect(func(_v): _env_apply_shader())
 	vbox.add_child(NebulaUi.labeled("Speed", _s_spd, 120))
-	vbox.add_child(_env_note("This is the whole-room effect. For effects on PART of a room, use the Shaders edit mode (drag a rectangle). Parallax backdrop import is coming next."))
+	vbox.add_child(_env_note("This is the whole-room effect. For effects on PART of a room, use the Shaders edit mode (drag a rectangle)."))
+
+	# --- Parallax backdrop ---
+	_bg_init_from(info)
+	vbox.add_child(NebulaUi.section_header("Parallax Backdrop"))
+	var en := CheckBox.new()
+	en.text = "Enabled"
+	en.button_pressed = _bg_enabled
+	en.toggled.connect(func(v):
+		_bg_enabled = v
+		_bg_apply())
+	vbox.add_child(en)
+	var bg_preset := OptionButton.new()
+	for p in ["gentle", "balanced", "locked"]:
+		bg_preset.add_item(str(p).capitalize())
+	bg_preset.item_selected.connect(func(i):
+		_bg_apply_preset(["gentle", "balanced", "locked"][i])
+		_open_environment())
+	vbox.add_child(NebulaUi.labeled("Scroll speed", bg_preset, 120))
+	for nm in PARALLAX_NAMES:
+		var layer: Dictionary = _bg_layers.get(nm, {})
+		var img := str(layer.get("image", ""))
+		var row := HBoxContainer.new()
+		row.add_theme_constant_override("separation", 8)
+		var nlbl := Label.new()
+		nlbl.text = str(nm).capitalize()
+		nlbl.custom_minimum_size = Vector2(60, 0)
+		nlbl.add_theme_color_override("font_color", NebulaTheme.C_BODY)
+		row.add_child(nlbl)
+		var flbl := Label.new()
+		flbl.text = img.get_file() if not img.is_empty() else "(none)"
+		flbl.add_theme_color_override("font_color", NebulaTheme.C_ACCENT if not img.is_empty() else NebulaTheme.C_DIM)
+		flbl.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+		flbl.clip_text = true
+		row.add_child(flbl)
+		var imp := NebulaUi.button("Import", "ghost")
+		imp.pressed.connect(_import_parallax.bind(str(nm)))
+		row.add_child(imp)
+		if not img.is_empty():
+			var clr := NebulaUi.button("✕", "ghost")
+			clr.pressed.connect(func():
+				_bg_layers[nm] = {"image": "", "sx": layer.get("sx", 0.2), "sy": layer.get("sy", 0.1)}
+				_bg_apply()
+				_open_environment())
+			row.add_child(clr)
+		vbox.add_child(row)
 
 	_env.visible = true
 	_env_open = true
@@ -1060,6 +1114,100 @@ func _close_environment() -> void:
 		_env.visible = false
 		for ch in _env.get_children():
 			ch.queue_free()
+
+
+# --- Parallax backdrop ---
+
+func _bg_init_from(info: Dictionary) -> void:
+	_bg_layers = {}
+	_bg_enabled = bool(info.get("parallax_enabled", true))
+	var defaults: Array = PARALLAX_PRESETS["balanced"]
+	for i in PARALLAX_NAMES.size():
+		_bg_layers[PARALLAX_NAMES[i]] = {"image": "", "sx": defaults[i][0], "sy": defaults[i][1]}
+	for l_v in info.get("parallax_layers", []):
+		if typeof(l_v) != TYPE_DICTIONARY:
+			continue
+		var l: Dictionary = l_v
+		var nm := str(l.get("name", ""))
+		if _bg_layers.has(nm):
+			_bg_layers[nm] = {
+				"image": str(l.get("image", "")),
+				"sx": float(l.get("scroll_speed_x", (_bg_layers[nm] as Dictionary)["sx"])),
+				"sy": float(l.get("scroll_speed_y", (_bg_layers[nm] as Dictionary)["sy"])),
+			}
+
+
+func _bg_apply() -> void:
+	var layers: Array = []
+	for nm in PARALLAX_NAMES:
+		var l: Dictionary = _bg_layers.get(nm, {})
+		if str(l.get("image", "")).is_empty():
+			continue
+		layers.append({
+			"name": nm,
+			"image": str(l["image"]),
+			"scroll_speed_x": float(l["sx"]),
+			"scroll_speed_y": float(l["sy"]),
+		})
+	_rm().set_current_room_parallax(layers, _bg_enabled)
+	_mark_dirty()
+
+
+func _bg_apply_preset(preset: String) -> void:
+	var sp: Array = PARALLAX_PRESETS.get(preset, PARALLAX_PRESETS["balanced"])
+	for i in PARALLAX_NAMES.size():
+		var nm: String = PARALLAX_NAMES[i]
+		var l: Dictionary = _bg_layers.get(nm, {"image": ""})
+		l["sx"] = sp[i][0]
+		l["sy"] = sp[i][1]
+		_bg_layers[nm] = l
+	_bg_apply()
+
+
+func _import_parallax(layer_name: String) -> void:
+	var fd := FileDialog.new()
+	fd.access = FileDialog.ACCESS_FILESYSTEM
+	fd.file_mode = FileDialog.FILE_MODE_OPEN_FILE
+	fd.use_native_dialog = true
+	fd.title = "Choose a %s backdrop PNG" % layer_name
+	fd.filters = PackedStringArray(["*.png ; PNG images"])
+	fd.file_selected.connect(_on_parallax_file.bind(layer_name))
+	fd.canceled.connect(fd.queue_free)
+	fd.close_requested.connect(fd.queue_free)
+	add_child(fd)
+	fd.popup_centered(Vector2i(900, 640))
+
+
+func _on_parallax_file(src_path: String, layer_name: String) -> void:
+	var pack := MvPackLoader.current_pack
+	if pack == null:
+		_set_status("import failed: no pack")
+		return
+	var src := FileAccess.open(src_path, FileAccess.READ)
+	if src == null:
+		_set_status("import failed: can't read file")
+		return
+	var bytes := src.get_buffer(src.get_length())
+	src.close()
+	var probe := Image.new()
+	if probe.load_png_from_buffer(bytes) != OK:
+		_set_status("import failed: not a valid PNG")
+		return
+	var rel := "Backdrops/%s_%d.png" % [layer_name, Time.get_ticks_msec()]
+	var out_path := pack.resolve_write(rel)
+	var w := FileAccess.open(out_path, FileAccess.WRITE)
+	if w == null:
+		_set_status("import failed: can't write to pack")
+		return
+	w.store_buffer(bytes)
+	w.close()
+	var l: Dictionary = _bg_layers.get(layer_name, {"sx": 0.2, "sy": 0.1})
+	l["image"] = rel
+	_bg_layers[layer_name] = l
+	_bg_apply()
+	if _env_open:
+		_open_environment()
+	_set_status("imported %s backdrop" % layer_name)
 
 
 # ── Per-region shader editor (Shaders mode: click a region) ───────────────────
@@ -1263,11 +1411,14 @@ func _save() -> void:
 	var raw_layers: Array = raw_room.get("tile_layers", [])
 	for i in range(mini(rt_layers.size(), raw_layers.size())):
 		(raw_layers[i] as Dictionary)["tiles"] = (rt_layers[i] as Dictionary).get("tiles", [])
+		(raw_layers[i] as Dictionary)["animations"] = (rt_layers[i] as Dictionary).get("animations", {})
 	raw_room["tile_layers"] = raw_layers
 	raw_room["entities"] = _serialize_entities(info.get("entities", []))
 	raw_room["tileset"] = int(info.get("tileset", 0))
 	raw_room["weather"] = _serialize_weather(info.get("weather", {}))
 	raw_room["shader_regions"] = _serialize_shader_regions(info.get("shader_regions", []))
+	raw_room["parallax_layers"] = info.get("parallax_layers", [])
+	raw_room["parallax_enabled"] = bool(info.get("parallax_enabled", true))
 	rooms[addr] = raw_room
 	raw["rooms"] = rooms
 	if EnvIO.save_rooms(pack.pack_id, raw):

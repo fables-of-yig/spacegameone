@@ -2840,6 +2840,51 @@ func set_current_room_tileset(idx: int) -> void:
     load_room(current_room_addr())
 
 
+# Set the current room's parallax backdrop layers (raw {name,image,scroll_speed_x,
+# scroll_speed_y} dicts) + enabled flag, and re-render live.
+func set_current_room_parallax(layers: Array, enabled: bool) -> void:
+    var key := _current_loaded_room_addr()
+    if key.is_empty() or not _rooms.has(key):
+        return
+    _rooms[key]["parallax_layers"] = layers
+    _rooms[key]["parallax_enabled"] = enabled
+    load_room(current_room_addr())
+
+
+# Set a per-cell tile animation (frames = metatile indices) on the main layer
+# and re-render so it animates live. Empty frames removes the animation.
+func set_cell_animation(cell: Vector2i, frames: Array, fps: float) -> void:
+    var key := _current_loaded_room_addr()
+    if key.is_empty() or not _rooms.has(key):
+        return
+    var info: Dictionary = _rooms[key]
+    var data_idx := _main_layer_data_index(info)
+    var layers: Array = info.get("tile_layers", [])
+    if data_idx < 0 or data_idx >= layers.size():
+        return
+    var layer: Dictionary = layers[data_idx]
+    var anims: Dictionary = (layer.get("animations", {}) as Dictionary).duplicate()
+    var ckey := "%d,%d" % [cell.x, cell.y]
+    if frames.is_empty():
+        anims.erase(ckey)
+    else:
+        anims[ckey] = {"frames": frames, "fps": fps, "loop": true}
+    layer["animations"] = anims
+    layers[data_idx] = layer
+    info["tile_layers"] = layers
+    load_room(current_room_addr())
+
+
+# The main layer's animations dict ("col,row" -> cfg), for persistence.
+func main_layer_animations() -> Dictionary:
+    var info := current_room()
+    var data_idx := _main_layer_data_index(info)
+    var layers: Array = info.get("tile_layers", [])
+    if data_idx < 0 or data_idx >= layers.size():
+        return {}
+    return (layers[data_idx] as Dictionary).get("animations", {})
+
+
 # Rebuild the TileSet from disk (picking up a freshly-uploaded atlas) and
 # re-render WITHOUT changing the room's primary tileset — so existing cells keep
 # their per-cell tileset ids and a new source just becomes paintable.
