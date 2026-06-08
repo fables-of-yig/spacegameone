@@ -895,6 +895,7 @@ func _register_builtins() -> void:
 	register_action("unlock_player", _act_unlock_player)
 	register_action("spawn_player", _act_spawn_player)
 	register_action("spawn_entity", _act_spawn_entity)
+	register_action("spawn_fx", _act_spawn_fx)
 	register_action("despawn_entity", _act_despawn_entity)
 	register_action("spawn_entity_at_zone", _act_spawn_entity_at_zone)
 	register_action("spawn_space_ship", _act_spawn_space_ship)
@@ -1363,6 +1364,20 @@ func _act_spawn_entity(action: Dictionary, _payload: Dictionary) -> void:
 	if typeof(data) != TYPE_DICTIONARY:
 		data = {}
 	action_spawn_entity.emit(eid, Vector2(x, y), data)
+
+
+func _act_spawn_fx(action: Dictionary, payload: Dictionary) -> void:
+	var effect_id: String = str(action.get("effect_id", "")).strip_edges()
+	if effect_id.is_empty():
+		return
+	var pos := Vector2.ZERO
+	var x_text := str(action.get("x", "")).strip_edges()
+	var y_text := str(action.get("y", "")).strip_edges()
+	if not x_text.is_empty() and not y_text.is_empty() and x_text.is_valid_float() and y_text.is_valid_float():
+		pos = Vector2(float(x_text), float(y_text))
+	elif typeof(payload.get("position")) == TYPE_VECTOR2:
+		pos = payload.get("position")
+	MvFx.spawn("", effect_id, null, pos)
 
 
 func _act_despawn_entity(action: Dictionary, _payload: Dictionary) -> void:

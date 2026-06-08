@@ -6,7 +6,8 @@ extends CanvasLayer
 #   1. Identity & Sprite — id / name / category / sprite_set / movement_mode
 #   2. Stats & Combat    — hp + contact / melee / projectile stat fields
 #   3. Behavior          — WHEN <condition> DO <action> rules -> a Beehave selector tree
-#   4. Test & Save       — Save (EntIO + BehIO) and Spawn & Fight (spawn_entity_dynamic)
+#   4. Effects           — pick/create death + projectile-impact effects (EffIO + MvFx)
+#   5. Test & Save       — Save (EntIO + BehIO) and Spawn & Fight (spawn_entity_dynamic)
 # Everything writes copy-on-write to the user pack (EntIO/BehIO) and the saved enemy
 # is immediately spawnable, so the loop is build -> fight -> tweak -> re-fight.
 #
@@ -17,8 +18,9 @@ extends CanvasLayer
 
 const EntIO := preload("res://Space/scripts/shared/ent/ent_io.gd")
 const BehIO := preload("res://Space/scripts/shared/beh/beh_io.gd")
+const EffIO := preload("res://Space/scripts/shared/eff/eff_io.gd")
 
-const STEPS := ["Identity & Sprite", "Stats & Combat", "Behavior", "Test & Save"]
+const STEPS := ["Identity & Sprite", "Stats & Combat", "Behavior", "Effects", "Test & Save"]
 const CATEGORIES := ["enemy", "boss"]
 const MOVEMENT_MODES := ["ground", "hover", "fly"]
 
@@ -129,6 +131,8 @@ func _init_data() -> void:
 		"id": "", "name": "", "category": "enemy",
 		"sprite_set": "", "movement_mode": "ground",
 		"hover_amp": 6.0, "hover_speed": 1.2,
+		"death_fx": "", "impact_fx": "",
+		"fx_draft": EffIO.default_effect("new_effect"),
 		"stats": {}, "rules": [],
 	}
 	for f in STAT_FIELDS:
@@ -174,7 +178,8 @@ func _show_step() -> void:
 		0: _build_identity()
 		1: _build_stats()
 		2: _build_behavior()
-		3: _build_review()
+		3: _build_effects()
+		4: _build_review()
 	_nav_back.disabled = _step == 0
 	_nav_next.text = "Close" if _step == STEPS.size() - 1 else "Next ▶"
 
@@ -353,7 +358,136 @@ func _param_control(fkey: String, fkind: String, params: Dictionary) -> Control:
 	return sb
 
 
-# ── Step 4: Test & Save ──────────────────────────────────────────────────────
+# ── Step 4: Effects ──────────────────────────────────────────────────────────
+
+func _build_effects() -> void:
+	_content.add_child(_section("Effects"))
+	var ids := MvFx.list_ids(_pack_id())
+	_content.add_child(_fx_picker("Death effect", "death_fx", ids))
+	_content.add_child(_fx_picker("Projectile impact effect", "impact_fx", ids))
+	_content.add_child(_hint("Death effect plays when the creature dies. Impact effect only applies to ranged enemies (a behavior rule using 'Shoot a projectile'). Pick a built-in or make your own below."))
+	_content.add_child(HSeparator.new())
+	_content.add_child(_section("Create / tune an effect"))
+	_build_effect_creator()
+
+
+func _fx_picker(label: String, key: String, ids: Array) -> Control:
+	var opt := OptionButton.new()
+	opt.add_item("(none)", 0)
+	for i in ids.size():
+		opt.add_item(str(ids[i]), i + 1)
+	var cur := ids.find(str(_data[key]))
+	opt.selected = (cur + 1) if cur >= 0 else 0
+	opt.item_selected.connect(func(idx): _data[key] = "" if idx == 0 else str(ids[idx - 1]))
+	return _labeled(label, opt)
+
+
+func _build_effect_creator() -> void:
+	var d: Dictionary = _data["fx_draft"]
+	var id_e := LineEdit.new()
+	id_e.text = str(d.get("id", ""))
+	id_e.placeholder_text = "effect id (e.g. fire_burst)"
+	id_e.text_changed.connect(func(t): d["id"] = t.strip_edges())
+	_content.add_child(_labeled("Effect id", id_e))
+	var nm_e := LineEdit.new()
+	nm_e.text = str(d.get("name", ""))
+	nm_e.text_changed.connect(func(t): d["name"] = t)
+	_content.add_child(_labeled("Name", nm_e))
+	_content.add_child(_labeled("Particle count", _fx_spin(d, "count", 1.0, 64.0, 1.0, true)))
+	var cols: Array = d.get("colors", ["#ffffff"])
+	var c1 := ColorPickerButton.new()
+	c1.color = _html(str(cols[0]) if cols.size() > 0 else "#ffffff")
+	c1.custom_minimum_size = Vector2(120, 0)
+	c1.color_changed.connect(func(c): _set_color(d, 0, c))
+	_content.add_child(_labeled("Color A", c1))
+	var c2 := ColorPickerButton.new()
+	c2.color = _html(str(cols[1]) if cols.size() > 1 else "#ffffff")
+	c2.custom_minimum_size = Vector2(120, 0)
+	c2.color_changed.connect(func(c): _set_color(d, 1, c))
+	_content.add_child(_labeled("Color B", c2))
+	_content.add_child(_labeled("Speed min (px/s)", _fx_spin(d, "speed_min", 0.0, 600.0, 2.0, false)))
+	_content.add_child(_labeled("Speed max (px/s)", _fx_spin(d, "speed_max", 0.0, 600.0, 2.0, false)))
+	_content.add_child(_labeled("Size min", _fx_spin(d, "size_min", 0.1, 8.0, 0.1, false)))
+	_content.add_child(_labeled("Size max", _fx_spin(d, "size_max", 0.1, 8.0, 0.1, false)))
+	_content.add_child(_labeled("Lifetime (s)", _fx_spin(d, "lifetime", 0.05, 3.0, 0.05, false)))
+	_content.add_child(_labeled("Gravity (px/s²)", _fx_spin(d, "gravity", -600.0, 1200.0, 10.0, false)))
+	_content.add_child(_labeled("Spread (rad, 6.28 = full)", _fx_spin(d, "spread", 0.0, 6.283, 0.1, false)))
+	var dir_cb := CheckBox.new()
+	dir_cb.button_pressed = bool(d.get("directional", false))
+	dir_cb.toggled.connect(func(v): d["directional"] = v)
+	_content.add_child(_labeled("Directional (bias toward travel)", dir_cb))
+	var btns := HBoxContainer.new()
+	var test_b := Button.new()
+	test_b.text = "▶  Test at player"
+	test_b.pressed.connect(_test_effect)
+	btns.add_child(test_b)
+	var save_b := Button.new()
+	save_b.text = "💾  Save effect to pack"
+	save_b.pressed.connect(_save_effect)
+	btns.add_child(save_b)
+	_content.add_child(btns)
+
+
+func _fx_spin(d: Dictionary, key: String, lo: float, hi: float, step: float, isint: bool) -> SpinBox:
+	var sb := _spin(lo, hi, step, float(d.get(key, 0)))
+	sb.value_changed.connect(func(v): d[key] = int(round(v)) if isint else v)
+	return sb
+
+
+func _html(s: String) -> Color:
+	return Color.html(s) if not s.strip_edges().is_empty() else Color(1, 1, 1)
+
+
+func _set_color(d: Dictionary, idx: int, c: Color) -> void:
+	var cols: Array = d.get("colors", [])
+	while cols.size() <= idx:
+		cols.append("#ffffff")
+	cols[idx] = "#" + c.to_html(false)
+	d["colors"] = cols
+
+
+func _save_effect() -> void:
+	var draft: Dictionary = _data["fx_draft"]
+	var id := str(draft.get("id", "")).strip_edges()
+	if id.is_empty():
+		_set_status("The effect needs an id before saving.", true)
+		return
+	var pid := _pack_id()
+	var root := EffIO.load_or_init(pid)
+	var arr_v: Variant = root.get("effects", [])
+	var arr: Array = arr_v if typeof(arr_v) == TYPE_ARRAY else []
+	var replaced := false
+	for i in arr.size():
+		if typeof(arr[i]) == TYPE_DICTIONARY and str((arr[i] as Dictionary).get("id", "")) == id:
+			arr[i] = draft.duplicate(true)
+			replaced = true
+			break
+	if not replaced:
+		arr.append(draft.duplicate(true))
+	root["effects"] = arr
+	if not EffIO.save_effects(pid, root):
+		_set_status("Saving the effect failed (see Godot Output).", true)
+		return
+	MvFx.clear_cache()
+	_set_status("Saved effect '%s' — now selectable above." % id)
+	_show_step()
+
+
+func _test_effect() -> void:
+	var m := MvGame.main as MvMain
+	if m == null:
+		_set_status("Test needs a live MV room.", true)
+		return
+	var draft: Dictionary = _data["fx_draft"]
+	var pos := m.get_player_position() + Vector2(0, -8)
+	visible = false
+	MvFx.spawn_def(draft, null, pos)
+	var dur := maxf(0.3, float(draft.get("lifetime", 0.3)) + 0.2)
+	var timer := get_tree().create_timer(dur)
+	timer.timeout.connect(func(): visible = true)
+
+
+# ── Step 5: Test & Save ──────────────────────────────────────────────────────
 
 func _build_review() -> void:
 	_content.add_child(_section("Review"))
@@ -383,6 +517,10 @@ func _summary_text() -> String:
 		str(_data["category"]), str(_data["movement_mode"])])
 	lines.append("HP %s · contact %s · move %s px/s" % [s.get("hp"), s.get("contact_damage"), s.get("move_speed")])
 	lines.append("sprite: %s" % ("(placeholder)" if str(_data["sprite_set"]).is_empty() else str(_data["sprite_set"])))
+	var dfx := str(_data["death_fx"]).strip_edges()
+	var ifx := str(_data["impact_fx"]).strip_edges()
+	if not dfx.is_empty() or not ifx.is_empty():
+		lines.append("fx: death=%s · impact=%s" % [dfx if not dfx.is_empty() else "—", ifx if not ifx.is_empty() else "—"])
 	var rules: Array = _data["rules"]
 	for r_v in rules:
 		var r: Dictionary = r_v
@@ -423,6 +561,8 @@ func _save_all() -> bool:
 	ent["sprite_set"] = str(_data["sprite_set"]).strip_edges()
 	ent["movement_mode"] = str(_data["movement_mode"])
 	ent["behavior"] = beh_id
+	ent["death_fx"] = str(_data["death_fx"]).strip_edges()
+	ent["impact_fx"] = str(_data["impact_fx"]).strip_edges()
 	var stats: Dictionary = _data["stats"]
 	for f in STAT_FIELDS:
 		var k := str(f["key"])

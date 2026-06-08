@@ -15,6 +15,8 @@ const _MvBulletImpactFx := preload("res://MV/scripts/bullet_impact_fx.gd")
 @export var lifetime: float = 2.0
 
 var direction: Vector2 = Vector2.RIGHT
+# Optional authored effect id for the impact burst; empty = built-in spark burst.
+var impact_fx: String = ""
 
 var _age: float = 0.0
 var _shape: CollisionShape2D = null
@@ -255,6 +257,9 @@ func _spawn_impact_fx(hit_pos: Vector2, normal: Vector2 = Vector2.ZERO) -> void:
     var parent := get_parent()
     if parent == null:
         return
+    if not impact_fx.is_empty():
+        if MvFx.spawn("", impact_fx, parent, hit_pos, normal) != null:
+            return
     var fx := _MvBulletImpactFx.new()
     parent.add_child(fx)
     fx.setup(hit_pos, normal, 4)

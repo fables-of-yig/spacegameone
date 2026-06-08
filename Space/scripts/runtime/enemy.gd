@@ -196,8 +196,20 @@ func _on_defeat() -> void:
         _contact_shape.set_deferred("disabled", true)
     _play_death_pose()
     _spawn_item_drops()
+    _spawn_death_fx()
     enemy_defeated.emit(entity_id)
     MvTriggerEngine.fire_event("enemy_defeated", { "entity_id": entity_id })
+
+
+# Spawns the entity's authored `death_fx` effect (if any) at its position.
+func _spawn_death_fx() -> void:
+    var fx_id := str(_entity.get("death_fx", "")).strip_edges()
+    if fx_id.is_empty():
+        return
+    var parent := get_parent()
+    if parent == null:
+        return
+    MvFx.spawn(pack_id, fx_id, parent, global_position)
 
 
 func _spawn_item_drops() -> void:
@@ -625,6 +637,7 @@ func fire_projectile(dir: Vector2, speed: float = -1.0, damage: int = -1,
     proj.speed = speed if speed > 0.0 else projectile_speed
     proj.damage = damage if damage >= 0 else projectile_damage
     proj.lifetime = maxf(0.05, lifetime)
+    proj.impact_fx = str(_entity.get("impact_fx", "")).strip_edges()
     proj.global_position = global_position
     parent.add_child(proj)
     return true
