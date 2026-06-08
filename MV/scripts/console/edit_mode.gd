@@ -62,16 +62,29 @@ func _build_hud() -> void:
 	add_child(_hud)
 	var panel := PanelContainer.new()
 	panel.set_anchors_preset(Control.PRESET_TOP_WIDE)
+	panel.theme = NebulaTheme.theme()
 	panel.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	# Flat dark top strip with a cyan underline — not the ornate window frame.
+	var bar := StyleBoxFlat.new()
+	bar.bg_color = Color(NebulaTheme.C_PANEL_BG.r, NebulaTheme.C_PANEL_BG.g, NebulaTheme.C_PANEL_BG.b, 0.94)
+	bar.border_color = NebulaTheme.C_ACCENT
+	bar.border_width_bottom = 2
+	bar.content_margin_left = 12.0
+	bar.content_margin_right = 12.0
+	bar.content_margin_top = 6.0
+	bar.content_margin_bottom = 6.0
+	panel.add_theme_stylebox_override("panel", bar)
 	_hud.add_child(panel)
 	var vbox := VBoxContainer.new()
 	vbox.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	panel.add_child(vbox)
 	_info_label = Label.new()
 	_info_label.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	_info_label.add_theme_color_override("font_color", NebulaTheme.C_BODY)
 	vbox.add_child(_info_label)
 	_status_label = Label.new()
 	_status_label.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	_status_label.add_theme_color_override("font_color", NebulaTheme.C_ACCENT)
 	vbox.add_child(_status_label)
 	_refresh_hud()
 
@@ -362,24 +375,32 @@ func _open_palette() -> void:
 	for ch in _palette.get_children():
 		ch.queue_free()
 	var bg := ColorRect.new()
-	bg.color = Color(0.03, 0.04, 0.06, 0.94)
+	bg.color = Color(NebulaTheme.C_PANEL_DARK.r, NebulaTheme.C_PANEL_DARK.g, NebulaTheme.C_PANEL_DARK.b, 0.7)
 	bg.set_anchors_preset(Control.PRESET_FULL_RECT)
 	bg.mouse_filter = Control.MOUSE_FILTER_STOP
 	_palette.add_child(bg)
 	var margin := MarginContainer.new()
-	margin.set_anchors_preset(Control.PRESET_FULL_RECT)
+	margin.set_anchors_preset(Control.PRESET_RIGHT_WIDE)
+	margin.theme = NebulaTheme.theme()
+	margin.custom_minimum_size = Vector2(360, 0)
 	margin.add_theme_constant_override("margin_left", 8)
 	margin.add_theme_constant_override("margin_right", 8)
 	margin.add_theme_constant_override("margin_top", 6)
 	margin.add_theme_constant_override("margin_bottom", 6)
 	_palette.add_child(margin)
+	var frame := PanelContainer.new()
+	margin.add_child(frame)
 	var vbox := VBoxContainer.new()
-	margin.add_child(vbox)
+	vbox.add_theme_constant_override("separation", 8)
+	frame.add_child(vbox)
+	vbox.add_child(NebulaTheme.title_label("Tile Palette"))
 	var lbl := Label.new()
-	lbl.text = "TILE PALETTE — click a tile   ·   P / Esc to close"
+	lbl.text = "click a tile   ·   P / Esc to close"
+	lbl.add_theme_color_override("font_color", NebulaTheme.C_DIM)
 	vbox.add_child(lbl)
 	var scroll := ScrollContainer.new()
 	scroll.size_flags_vertical = Control.SIZE_EXPAND_FILL
+	scroll.add_theme_stylebox_override("panel", NebulaTheme.well_box())
 	vbox.add_child(scroll)
 	var tex: Texture2D = _atlas["texture"]
 	var tr := TextureRect.new()
@@ -423,12 +444,12 @@ func _draw() -> void:
 		return
 	var rect := Rect2(Vector2(_hover.x * BLOCK, _hover.y * BLOCK), Vector2(BLOCK, BLOCK))
 	if _entity_mode:
-		var c := Color(0.4, 0.8, 1.0, 0.95)
+		var c := NebulaTheme.C_ACCENT
 		draw_rect(rect, Color(c.r, c.g, c.b, 0.15), true)
 		draw_rect(rect, c, false, 1.0)
 		draw_circle(rect.position + Vector2(BLOCK, BLOCK) * 0.5, 2.5, c)
 	else:
-		var edge := Color(1.0, 0.4, 0.4, 0.95) if _erasing else Color(0.45, 1.0, 0.5, 0.95)
+		var edge := NebulaTheme.C_ERROR if _erasing else NebulaTheme.C_SUCCESS
 		draw_rect(rect, Color(edge.r, edge.g, edge.b, 0.18), true)
 		draw_rect(rect, edge, false, 1.0)
 

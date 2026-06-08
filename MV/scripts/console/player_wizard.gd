@@ -50,19 +50,26 @@ func _ready() -> void:
 
 func _build_shell() -> void:
 	var bg := ColorRect.new()
-	bg.color = Color(0.05, 0.06, 0.09, 0.96)
+	bg.color = Color(NebulaTheme.C_PANEL_DARK.r, NebulaTheme.C_PANEL_DARK.g, NebulaTheme.C_PANEL_DARK.b, 0.92)
 	bg.set_anchors_preset(Control.PRESET_FULL_RECT)
 	bg.mouse_filter = Control.MOUSE_FILTER_STOP
 	add_child(bg)
 	var margin := MarginContainer.new()
 	margin.set_anchors_preset(Control.PRESET_FULL_RECT)
+	margin.theme = NebulaTheme.theme()
 	for side in ["margin_left", "margin_right", "margin_top", "margin_bottom"]:
 		margin.add_theme_constant_override(side, 10)
 	add_child(margin)
+	var frame := PanelContainer.new()
+	margin.add_child(frame)
 	var root := VBoxContainer.new()
-	root.add_theme_constant_override("separation", 6)
-	margin.add_child(root)
+	root.add_theme_constant_override("separation", 8)
+	frame.add_child(root)
 	_title = Label.new()
+	_title.add_theme_color_override("font_color", NebulaTheme.C_TITLE)
+	_title.add_theme_font_size_override("font_size", NebulaTheme.SIZE_TITLE)
+	if NebulaTheme.font() != null:
+		_title.add_theme_font_override("font", NebulaTheme.font())
 	root.add_child(_title)
 	root.add_child(HSeparator.new())
 	var scroll := ScrollContainer.new()
@@ -70,12 +77,14 @@ func _build_shell() -> void:
 	root.add_child(scroll)
 	_content = VBoxContainer.new()
 	_content.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	_content.add_theme_constant_override("separation", 4)
+	_content.add_theme_constant_override("separation", 6)
 	scroll.add_child(_content)
 	var nav := HBoxContainer.new()
+	nav.add_theme_constant_override("separation", 8)
 	root.add_child(nav)
 	var cancel := Button.new()
 	cancel.text = "Cancel"
+	cancel.self_modulate = NebulaTheme.C_BORDER
 	cancel.pressed.connect(close_wizard)
 	nav.add_child(cancel)
 	var spacer := Control.new()
@@ -83,6 +92,7 @@ func _build_shell() -> void:
 	nav.add_child(spacer)
 	_nav_back = Button.new()
 	_nav_back.text = "Back"
+	_nav_back.self_modulate = NebulaTheme.C_BORDER
 	_nav_back.pressed.connect(_go_back)
 	nav.add_child(_nav_back)
 	_nav_next = Button.new()

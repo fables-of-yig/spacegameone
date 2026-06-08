@@ -58,29 +58,36 @@ func _ready() -> void:
 
 func _build_ui() -> void:
 	var bg := ColorRect.new()
-	bg.color = Color(0.04, 0.05, 0.08, 0.9)
+	bg.color = Color(NebulaTheme.C_PANEL_DARK.r, NebulaTheme.C_PANEL_DARK.g, NebulaTheme.C_PANEL_DARK.b, 0.6)
 	bg.set_anchors_preset(Control.PRESET_FULL_RECT)
 	bg.mouse_filter = Control.MOUSE_FILTER_STOP
 	add_child(bg)
 	var margin := MarginContainer.new()
 	margin.set_anchors_preset(Control.PRESET_FULL_RECT)
+	margin.theme = NebulaTheme.theme()
 	margin.add_theme_constant_override("margin_left", 8)
 	margin.add_theme_constant_override("margin_right", 8)
 	margin.add_theme_constant_override("margin_top", 6)
 	margin.add_theme_constant_override("margin_bottom", 6)
 	add_child(margin)
+	var frame := PanelContainer.new()
+	margin.add_child(frame)
 	var vbox := VBoxContainer.new()
-	vbox.add_theme_constant_override("separation", 4)
-	margin.add_child(vbox)
-	var title := Label.new()
-	title.text = "DEV CONSOLE   ·   Ctrl+Enter run   ·   Esc / ` close"
+	vbox.add_theme_constant_override("separation", 8)
+	frame.add_child(vbox)
+	var title := NebulaTheme.title_label("Dev Console")
 	vbox.add_child(title)
+	var sub := Label.new()
+	sub.text = "Ctrl+Enter run   ·   Esc / ` close"
+	sub.add_theme_color_override("font_color", NebulaTheme.C_DIM)
+	vbox.add_child(sub)
 	_log_view = RichTextLabel.new()
 	_log_view.bbcode_enabled = true
 	_log_view.scroll_active = true
 	_log_view.scroll_following = true
 	_log_view.focus_mode = Control.FOCUS_NONE
 	_log_view.size_flags_vertical = Control.SIZE_EXPAND_FILL
+	_log_view.add_theme_stylebox_override("normal", NebulaTheme.well_box())
 	vbox.add_child(_log_view)
 	_entry = TextEdit.new()
 	_entry.placeholder_text = "Paste trigger JSON or type a command (help)…"
