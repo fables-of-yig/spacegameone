@@ -205,14 +205,7 @@ func _hsep() -> Control:
 func open_workshop() -> bool:
 	if MvGame.main == null or not is_instance_valid(MvGame.main):
 		return false
-	# Render the editor at full window resolution: MV normally downscales its UI
-	# to a 480x270 space (Space/main.gd content_scale_size), which is far too
-	# small for this dense full-screen editor. The paused game behind is fully
-	# covered, so we flip to 1:1 while open and restore on close. See NebulaTheme.
-	var win := get_window()
-	_prev_scale_size = win.content_scale_size
-	win.content_scale_size = win.size
-	NebulaTheme.set_profile("full")  # renders on the root window at 1:1 while open
+	# The game renders at native 1920 now, so the editor is already full-res.
 	_init_data()
 	_step = 0
 	_reskin()
@@ -226,8 +219,6 @@ func open_workshop() -> bool:
 
 func close_workshop() -> void:
 	visible = false
-	get_window().content_scale_size = _prev_scale_size
-	NebulaTheme.set_profile("")
 	PlanetaryInterface.edit_session_active = false
 	MvGame.simulation_paused = false
 

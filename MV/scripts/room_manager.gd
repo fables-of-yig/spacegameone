@@ -2741,10 +2741,14 @@ func _update_backdrop_layer_transform(entry: Dictionary, cam: Camera2D, cam_pos:
 
 
 func _camera_view_world_size(cam: Camera2D) -> Vector2:
+    # Visible world span = viewport / zoom (Godot Camera2D: zoom > 1 magnifies,
+    # showing less world). Native viewport (1920) at zoom 4 = 480 world px.
     var viewport_size: Vector2 = cam.get_viewport_rect().size
+    var zx := cam.zoom.x if cam.zoom.x > 0.0 else 1.0
+    var zy := cam.zoom.y if cam.zoom.y > 0.0 else 1.0
     return Vector2(
-        maxf(1.0, viewport_size.x * cam.zoom.x),
-        maxf(1.0, viewport_size.y * cam.zoom.y)
+        maxf(1.0, viewport_size.x / zx),
+        maxf(1.0, viewport_size.y / zy)
     )
 
 

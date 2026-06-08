@@ -1319,18 +1319,10 @@ func _trigger_landing(pack_id: String, poi_id: String, region_id: String,
 
     _planet_iface.begin_landing(pid, poi_id, resolved_region, resolved_room)
 
-    # Configure the planet viewport for the right mode.
-    #   Editor: stretch_shrink=1 → SubViewport renders at native 1920x1080
-    #           so the MVMania level/sprite editor (designed for ~1280x720)
-    #           has enough canvas. Otherwise the editor UI is rendered into
-    #           480x270 and looks cartoonishly oversized + clicks land in
-    #           the wrong place because of the coordinate translation.
-    #   Game:   stretch_shrink=4 → 480x270 internal, scaled 4x to 1920x1080,
-    #           preserving the pixel-art look of MVMania gameplay.
-    if edit_mode:
-        planet_viewport_container.stretch_shrink = 1
-    else:
-        planet_viewport_container.stretch_shrink = 4
+    # The planet SubViewport always renders at native 1920x1080 now
+    # (stretch_shrink=1). MVMania frames gameplay via Camera2D zoom rather than a
+    # 480x270 downscale, so both the game and its editor get the full canvas.
+    planet_viewport_container.stretch_shrink = 1
     # Force a resort so the SubViewport's size is recomputed from the new
     # stretch_shrink value — Godot's SubViewportContainer only updates the
     # inner size on NOTIFICATION_SORT_CHILDREN.

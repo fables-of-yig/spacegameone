@@ -82,9 +82,11 @@ static func set_profile(p: String) -> void:
 
 
 static func profile() -> String:
-	if _forced == "full" or _forced == "compact":
-		return _forced
-	return "compact" if ui_scale() >= 1.5 else "full"
+	# The game now renders at native 1920 everywhere (Camera2D zoom handles
+	# gameplay framing), so all overlays use the full-resolution profile. The
+	# compact path + ui_scale()/set_profile() are retained but dormant in case a
+	# downscaled context is ever reintroduced.
+	return "full"
 
 
 static func size(role: String) -> int:

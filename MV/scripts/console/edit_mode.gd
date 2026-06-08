@@ -255,9 +255,7 @@ func enter() -> void:
 		return
 	_active = true
 	visible = true
-	# Force compact: the HUD renders in MV's 480x270 viewport, which the
-	# root-based ui_scale() can't measure. Build fresh so all sizes re-evaluate.
-	NebulaTheme.set_profile("compact")
+	# Native resolution now — build the HUD fresh (full profile).
 	_build_hud()
 	if _hud != null:
 		_hud.visible = true
@@ -282,7 +280,6 @@ func exit() -> void:
 		_hud.visible = false
 	_painting = false
 	_erasing = false
-	NebulaTheme.set_profile("")
 	MvGame.simulation_paused = _prev_paused
 	PlanetaryInterface.edit_session_active = false
 
@@ -950,8 +947,6 @@ func _serialize_entities(entities: Array) -> Array:
 # ── HUD ─────────────────────────────────────────────────────────────────────
 
 func _refresh_hud() -> void:
-	if _active:
-		NebulaTheme.set_profile("compact")
 	if _mode_tiles_btn == null:
 		return
 	_mode_tiles_btn.self_modulate = Color.WHITE if not _entity_mode else NebulaTheme.C_BORDER

@@ -48,6 +48,11 @@ var _shake_offset: Vector2 = Vector2.ZERO
 # editor (1280x720) sizes when the editor opened. Editor's deferred, so we
 # only need the game size; keep the constant so a future re-add is trivial.
 const GAME_VIEWPORT: Vector2i = Vector2i(480, 270)
+# The game renders at native window resolution (1920x1080); gameplay framing
+# comes from Camera2D zoom instead of a content-scale downscale. Default zoom
+# keeps the classic framing: 1920 / 480 = 4 (same visible world span as the old
+# 480x270 base). Lower the zoom for cinematic wide shots, raise it to push in.
+const DEFAULT_CAMERA_ZOOM := 4.0
 
 var _transitioning: bool = false
 var _fade: float = 1.0
@@ -117,15 +122,12 @@ func _ready() -> void:
         process_mode = Node.PROCESS_MODE_ALWAYS
     MvGame.simulation_paused = false
 
-    # Only claim the root viewport when running standalone. When hosted
-    # inside SSB's planet SubViewport, the parent project owns the root
-    # viewport at 1920x1080 and the planet runs at 480x270 via the
-    # container's stretch_shrink.
-    if not PlanetaryInterface.hosted:
-        get_tree().root.content_scale_size = GAME_VIEWPORT
+    # The game renders at native resolution now (no content-scale downscale);
+    # Camera2D zoom provides the gameplay framing. UI renders crisp at 1920.
 
     _room_manager = $RoomLayer as MvRoomManager
     _camera = $Camera2D
+    _camera.zoom = Vector2(DEFAULT_CAMERA_ZOOM, DEFAULT_CAMERA_ZOOM)
     _fade_rect = $FadeLayer/FadeRect
     if PlanetaryInterface.hosted:
         _room_manager.process_mode = Node.PROCESS_MODE_ALWAYS

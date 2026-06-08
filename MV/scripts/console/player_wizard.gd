@@ -138,11 +138,7 @@ func _wsep() -> Control:
 # ── Lifecycle ────────────────────────────────────────────────────────────────
 
 func open_wizard() -> void:
-	# Full window resolution while open (see MvCombatWorkshop / NebulaTheme).
-	var win := get_window()
-	_prev_scale_size = win.content_scale_size
-	win.content_scale_size = win.size
-	NebulaTheme.set_profile("full")  # renders on the root window at 1:1 while open
+	# The game renders at native 1920 now, so the wizard is already full-res.
 	_init_data()
 	_step = 0
 	_applied = false
@@ -160,8 +156,6 @@ func _reskin() -> void:
 
 func close_wizard() -> void:
 	visible = false
-	get_window().content_scale_size = _prev_scale_size
-	NebulaTheme.set_profile("")
 	PlanetaryInterface.edit_session_active = false
 
 
