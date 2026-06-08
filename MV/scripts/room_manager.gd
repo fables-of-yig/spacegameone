@@ -2884,6 +2884,13 @@ func set_cell_animation(cell: Vector2i, frames: Array, fps: float) -> void:
     load_room(current_room_addr())
 
 
+# A single cell's animation cfg ({frames, fps, loop}) on the main layer, or {}.
+func cell_animation(cell: Vector2i) -> Dictionary:
+    var anims := main_layer_animations()
+    var v: Variant = anims.get("%d,%d" % [cell.x, cell.y], {})
+    return v if typeof(v) == TYPE_DICTIONARY else {}
+
+
 # The main layer's animations dict ("col,row" -> cfg), for persistence.
 func main_layer_animations() -> Dictionary:
     var info := current_room()

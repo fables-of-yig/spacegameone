@@ -28,6 +28,7 @@ var _tileset_id := -1  # selected tileset source (-1 = room's primary)
 var _solid := true
 var _animate := false  # tiles mode: A arms animated-tile placement (brush = frames)
 var _anim_fps := 8.0
+var _stroke_anim := false  # current stroke touched a cell animation (for undo)
 # Paint brush: a WxH block from the palette (1x1 for a single tile). col0/row0
 # are the atlas top-left; metatile for offset (dx,dy) = (row0+dy)*cols+(col0+dx).
 var _brush := {"ts": -1, "col0": 0, "row0": 0, "w": 1, "h": 1, "cols": 1}
@@ -50,6 +51,11 @@ const BT_SOLID := 0x8  # mirrors MvRoomManager.BT_SOLID (solid family >= 0x8)
 var _shader_preset_idx := 1  # index into SHADER_PRESETS; [ ] cycles
 var _shader_drag := false
 var _shader_start_px := Vector2.ZERO
+# Move/resize of the selected region (drag interior = move, drag BR corner = resize).
+var _shader_op := ""  # "" | "move" | "resize"
+var _shader_op_orig := Rect2()
+var _shader_op_grab := Vector2.ZERO
+var _shader_pending := Rect2()
 # Inline per-region editor.
 var _shader_edit: CanvasLayer = null
 var _shader_edit_id := ""
@@ -411,7 +417,12 @@ func _unhandled_input(event: InputEvent) -> void:
 			KEY_A:
 				if _mode == "tiles":
 					_animate = not _animate
-					_set_status("animated tiles: %s — select a 2+ tile strip, click to place (fps %d)" % ["ON" if _animate else "off", int(_anim_fps)])
+					_set_status("animated tiles: %s — select a 2+ tile strip, click to place (fps %d · , . to adjust)" % ["ON" if _animate else "off", int(_anim_fps)])
+				get_viewport().set_input_as_handled()
+			KEY_COMMA, KEY_PERIOD:
+				if _mode == "tiles":
+					_anim_fps = clampf(_anim_fps + (1.0 if ke.keycode == KEY_PERIOD else -1.0), 1.0, 30.0)
+					_set_status("animation fps: %d" % int(_anim_fps))
 				get_viewport().set_input_as_handled()
 			KEY_Z:
 				if ke.ctrl_pressed:
@@ -479,6 +490,7 @@ func _place_animated_cell() -> void:
 		_set_status("animate needs a 2+ tile strip — drag a row/column in the palette first")
 		return
 	_capture_stroke_cell(rm, _hover)
+	_stroke_anim = true
 	rm.paint_cell(_hover, int(frames[0]), _solid, int(_brush.get("ts", _tileset_id)), false)
 	rm.set_cell_animation(_hover, frames, _anim_fps)
 	_mark_dirty()
@@ -512,25 +524,41 @@ func _handle_shader_mouse(event: InputEvent) -> void:
 	var rm := _rm()
 	if rm == null:
 		return
+	var mpos := get_global_mouse_position()
 	if event is InputEventMouseMotion:
-		if _shader_drag:
+		if _shader_op != "":
+			_update_shader_op(mpos)
+			queue_redraw()
+		elif _shader_drag:
 			queue_redraw()
 		return
 	var mb := event as InputEventMouseButton
 	if mb.button_index == MOUSE_BUTTON_LEFT:
 		if mb.pressed:
-			_shader_drag = true
-			_shader_start_px = get_global_mouse_position()
-		elif _shader_drag:
-			_shader_drag = false
-			var end_px := get_global_mouse_position()
-			if _shader_start_px.distance_to(end_px) < 5.0:
-				# A click — select the region under the cursor and edit it.
-				var id := rm.shader_region_id_at(_shader_start_px / float(BLOCK))
-				if not id.is_empty():
-					_open_shader_editor(id)
+			# If the selected region is under the cursor, move/resize it instead
+			# of starting a new marquee.
+			var sel := _selected_region_px_rect()
+			if sel.size.x > 0.0 and (sel.has_point(mpos) or _near_br_corner(mpos, sel)):
+				_shader_op = "resize" if _near_br_corner(mpos, sel) else "move"
+				_shader_op_orig = sel
+				_shader_op_grab = mpos
+				_shader_pending = sel
 			else:
-				_commit_shader_region(_shader_start_px, end_px)
+				_shader_drag = true
+				_shader_start_px = mpos
+		else:
+			if _shader_op != "":
+				_commit_shader_op()
+				_shader_op = ""
+			elif _shader_drag:
+				_shader_drag = false
+				if _shader_start_px.distance_to(mpos) < 5.0:
+					# A click — select the region under the cursor and edit it.
+					var id := rm.shader_region_id_at(_shader_start_px / float(BLOCK))
+					if not id.is_empty():
+						_open_shader_editor(id)
+				else:
+					_commit_shader_region(_shader_start_px, mpos)
 			queue_redraw()
 		get_viewport().set_input_as_handled()
 	elif mb.button_index == MOUSE_BUTTON_RIGHT and mb.pressed:
@@ -566,6 +594,45 @@ func _commit_shader_region(a_px: Vector2, b_px: Vector2) -> void:
 	queue_redraw()
 
 
+# Pixel rect of the region currently open in the inline editor (or empty).
+func _selected_region_px_rect() -> Rect2:
+	if _shader_edit_id.is_empty() or _rm() == null:
+		return Rect2()
+	for r_v in _rm().shader_regions_list():
+		var r: Dictionary = r_v
+		if str(r.get("id", "")) == _shader_edit_id:
+			return Rect2(
+				Vector2(float(r.get("x_blocks", 0.0)) * BLOCK, float(r.get("y_blocks", 0.0)) * BLOCK),
+				Vector2(float(r.get("width_blocks", 0.0)) * BLOCK, float(r.get("height_blocks", 0.0)) * BLOCK))
+	return Rect2()
+
+
+func _near_br_corner(p: Vector2, rect: Rect2) -> bool:
+	return p.distance_to(rect.position + rect.size) <= 14.0
+
+
+# Update the live preview rect while moving/resizing the selected region.
+func _update_shader_op(mpos: Vector2) -> void:
+	if _shader_op == "move":
+		_shader_pending = Rect2(_shader_op_orig.position + (mpos - _shader_op_grab), _shader_op_orig.size)
+	elif _shader_op == "resize":
+		var sz := mpos - _shader_op_orig.position
+		_shader_pending = Rect2(_shader_op_orig.position, Vector2(maxf(8.0, sz.x), maxf(8.0, sz.y)))
+
+
+# Commit the moved/resized bounds to the region (one reload).
+func _commit_shader_op() -> void:
+	if _shader_edit_id.is_empty():
+		return
+	_rm().update_shader_region(_shader_edit_id, {
+		"x_blocks": _shader_pending.position.x / float(BLOCK),
+		"y_blocks": _shader_pending.position.y / float(BLOCK),
+		"width_blocks": _shader_pending.size.x / float(BLOCK),
+		"height_blocks": _shader_pending.size.y / float(BLOCK),
+	})
+	_mark_dirty()
+
+
 func _process(_delta: float) -> void:
 	if _active and not _palette_open and not _env_open:
 		_update_hover()
@@ -586,13 +653,14 @@ func _update_hover() -> void:
 func _begin_stroke() -> void:
 	_stroke = []
 	_stroke_cells = {}
+	_stroke_anim = false
 
 
 func _capture_stroke_cell(rm: MvRoomManager, cell: Vector2i) -> void:
 	if _stroke_cells.has(cell):
 		return
 	_stroke_cells[cell] = true
-	_stroke.append({"cell": cell, "before": rm.cell_state(cell)})
+	_stroke.append({"cell": cell, "before": rm.cell_state(cell), "anim": rm.cell_animation(cell)})
 
 
 func _finish_stroke() -> void:
@@ -600,11 +668,12 @@ func _finish_stroke() -> void:
 	if rm != null:
 		rm.rebuild_collision_from_current()
 	if not _stroke.is_empty():
-		_undo.append({"op": "tile_stroke", "cells": _stroke.duplicate()})
+		_undo.append({"op": "tile_stroke", "cells": _stroke.duplicate(), "anim": _stroke_anim})
 		_trim_undo()
 		_mark_dirty()
 	_stroke = []
 	_stroke_cells = {}
+	_stroke_anim = false
 
 
 func _paint_tile() -> void:
@@ -698,7 +767,13 @@ func _undo_last() -> void:
 				var c: Vector2i = entry["cell"]
 				var b: Dictionary = entry["before"]
 				rm.set_cell_full(c, int(b["packed"]), int(b["collision"]), int(b["bts"]), false)
-			rm.rebuild_collision_from_current()
+			if bool(op.get("anim", false)):
+				for entry_v in cells:
+					var entry2: Dictionary = entry_v
+					var a: Dictionary = entry2.get("anim", {})
+					rm.set_cell_animation(entry2["cell"], a.get("frames", []), float(a.get("fps", 8.0)))
+			else:
+				rm.rebuild_collision_from_current()
 			_set_status("undid tile edit")
 		"entity_place":
 			if rm.remove_entity_by_id(str(op.get("uid", ""))):
@@ -1356,6 +1431,11 @@ func _open_shader_editor(id: String) -> void:
 	var x := NebulaUi.button("✕", "ghost")
 	x.pressed.connect(_close_shader_editor)
 	hdr.add_child(x)
+	var ehint := Label.new()
+	ehint.text = "drag inside to move · drag the gold corner to resize"
+	ehint.add_theme_color_override("font_color", NebulaTheme.C_DIM)
+	ehint.add_theme_font_size_override("font_size", NebulaTheme.size("hint"))
+	vbox.add_child(ehint)
 	_se_preset = OptionButton.new()
 	for i in SHADER_PRESETS.size():
 		_se_preset.add_item(str(SHADER_PRESETS[i]).capitalize(), i)
@@ -1399,6 +1479,7 @@ func _apply_shader_edit() -> void:
 
 func _close_shader_editor() -> void:
 	_shader_edit_id = ""
+	_shader_op = ""
 	if _shader_edit != null:
 		_shader_edit.visible = false
 		for ch in _shader_edit.get_children():
@@ -1468,15 +1549,17 @@ func _draw_shader_overlay(rm: MvRoomManager) -> void:
 		var gold := NebulaTheme.C_ACCENT_2
 		draw_rect(dr, Color(gold.r, gold.g, gold.b, 0.18), true)
 		draw_rect(dr, gold, false, 2.0)
-	# Highlight the region being edited.
-	if not _shader_edit_id.is_empty():
-		for r_v in rm.shader_regions_list():
-			var r: Dictionary = r_v
-			if str(r.get("id", "")) == _shader_edit_id:
-				var er := Rect2(
-					Vector2(float(r.get("x_blocks", 0.0)) * BLOCK, float(r.get("y_blocks", 0.0)) * BLOCK),
-					Vector2(float(r.get("width_blocks", 0.0)) * BLOCK, float(r.get("height_blocks", 0.0)) * BLOCK))
-				draw_rect(er, NebulaTheme.C_ACCENT_2, false, 2.0)
+	# Highlight the region being edited + its bottom-right resize handle.
+	var sel := _selected_region_px_rect()
+	if sel.size.x > 0.0:
+		draw_rect(sel, NebulaTheme.C_ACCENT_2, false, 2.0)
+		var corner := sel.position + sel.size
+		draw_rect(Rect2(corner - Vector2(6, 6), Vector2(12, 12)), NebulaTheme.C_ACCENT_2, true)
+	# Live move/resize preview.
+	if _shader_op != "":
+		var gold := NebulaTheme.C_ACCENT_2
+		draw_rect(_shader_pending, Color(gold.r, gold.g, gold.b, 0.20), true)
+		draw_rect(_shader_pending, gold, false, 2.0)
 
 
 # ── Persistence ─────────────────────────────────────────────────────────────
