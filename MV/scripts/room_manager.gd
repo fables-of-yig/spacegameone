@@ -2894,25 +2894,51 @@ func set_room_fx_region(region: Dictionary) -> void:
     load_room(current_room_addr())
 
 
-# Remove the topmost shader region containing `cell` (block coords). Returns
-# true if one was removed.
-func remove_shader_region_at(cell: Vector2i) -> bool:
-    var key := _current_loaded_room_addr()
-    if key.is_empty() or not _rooms.has(key):
-        return false
-    var regs: Array = (_rooms[key].get("shader_regions", []) as Array).duplicate()
+# Topmost shader region id containing `pt` (block-space float point), or "".
+func shader_region_id_at(pt: Vector2) -> String:
+    var regs: Array = shader_regions_list()
     for i in range(regs.size() - 1, -1, -1):
         var r: Dictionary = regs[i]
         var x0 := float(r.get("x_blocks", 0.0))
         var y0 := float(r.get("y_blocks", 0.0))
-        var w := float(r.get("width_blocks", 0.0))
-        var h := float(r.get("height_blocks", 0.0))
-        if float(cell.x) >= x0 and float(cell.x) < x0 + w and float(cell.y) >= y0 and float(cell.y) < y0 + h:
-            regs.remove_at(i)
-            _rooms[key]["shader_regions"] = regs
-            load_room(current_room_addr())
-            return true
-    return false
+        if pt.x >= x0 and pt.x < x0 + float(r.get("width_blocks", 0.0)) and pt.y >= y0 and pt.y < y0 + float(r.get("height_blocks", 0.0)):
+            return str(r.get("id", ""))
+    return ""
+
+
+# Remove a shader region by id. Returns true if one was removed.
+func remove_shader_region_by_id(id: String) -> bool:
+    var key := _current_loaded_room_addr()
+    if key.is_empty() or not _rooms.has(key) or id.is_empty():
+        return false
+    var regs: Array = (_rooms[key].get("shader_regions", []) as Array).filter(
+        func(r): return str((r as Dictionary).get("id", "")) != id)
+    if regs.size() == (_rooms[key].get("shader_regions", []) as Array).size():
+        return false
+    _rooms[key]["shader_regions"] = regs
+    load_room(current_room_addr())
+    return true
+
+
+# Merge `props` (raw; hex tint ok) into the shader region with `id` and re-render.
+func update_shader_region(id: String, props: Dictionary) -> void:
+    var key := _current_loaded_room_addr()
+    if key.is_empty() or not _rooms.has(key) or id.is_empty():
+        return
+    var regs: Array = (_rooms[key].get("shader_regions", []) as Array).duplicate()
+    for i in regs.size():
+        var r: Dictionary = regs[i]
+        if str(r.get("id", "")) != id:
+            continue
+        var merged := r.duplicate()
+        for k in props:
+            merged[k] = props[k]
+        var norm := _parse_shader_regions({"shader_regions": [merged]})
+        if not norm.is_empty():
+            regs[i] = norm[0]
+        break
+    _rooms[key]["shader_regions"] = regs
+    load_room(current_room_addr())
 
 
 func has_room(addr: String) -> bool:

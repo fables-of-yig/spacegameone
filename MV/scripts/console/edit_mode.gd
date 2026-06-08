@@ -41,10 +41,17 @@ const MODES := ["tiles", "collision", "entities", "shaders"]
 const MODE_LABELS := {"tiles": "Tiles", "collision": "Collision", "entities": "Entities", "shaders": "Shaders"}
 const BT_SOLID := 0x8  # mirrors MvRoomManager.BT_SOLID (solid family >= 0x8)
 
-# Shader-region painting (Shaders mode): drag a rectangle to drop an effect.
+# Shader-region painting (Shaders mode): free-drag a pixel rectangle.
 var _shader_preset_idx := 1  # index into SHADER_PRESETS; [ ] cycles
 var _shader_drag := false
-var _shader_start := Vector2i.ZERO
+var _shader_start_px := Vector2.ZERO
+# Inline per-region editor.
+var _shader_edit: CanvasLayer = null
+var _shader_edit_id := ""
+var _se_preset: OptionButton = null
+var _se_tint: ColorPickerButton = null
+var _se_str: SpinBox = null
+var _se_spd: SpinBox = null
 var _entity_ids: Array = []
 var _entity_idx := 0
 var _hover := Vector2i(-9999, -9999)
@@ -97,6 +104,10 @@ func _ready() -> void:
 	_env.layer = 131
 	_env.visible = false
 	add_child(_env)
+	_shader_edit = CanvasLayer.new()
+	_shader_edit.layer = 132
+	_shader_edit.visible = false
+	add_child(_shader_edit)
 	visible = false
 
 
@@ -252,6 +263,8 @@ func _set_mode(mode: String) -> void:
 	_mode = mode
 	if mode != "tiles":
 		_close_palette()
+	if mode != "shaders":
+		_close_shader_editor()
 	_refresh_hud()
 	queue_redraw()
 
@@ -297,6 +310,7 @@ func exit() -> void:
 		return
 	_close_palette()
 	_close_environment()
+	_close_shader_editor()
 	_active = false
 	visible = false
 	if _hud != null:
@@ -444,48 +458,58 @@ func _paint_collision(solid: bool) -> void:
 		queue_redraw()
 
 
-# Shaders mode: LMB drags a rectangle to add a shader region, RMB removes the
-# region under the cursor. [ ] cycles the effect; the SEL swatch shows it.
+# Shaders mode: LMB free-drags a pixel rectangle to add a region; a tiny drag
+# (a click) inside an existing region opens its inline editor. RMB removes the
+# region under the cursor. [ ] cycles the effect the next painted region uses.
 func _handle_shader_mouse(event: InputEvent) -> void:
 	var rm := _rm()
 	if rm == null:
 		return
 	if event is InputEventMouseMotion:
-		_update_hover()
 		if _shader_drag:
 			queue_redraw()
 		return
 	var mb := event as InputEventMouseButton
 	if mb.button_index == MOUSE_BUTTON_LEFT:
 		if mb.pressed:
-			_update_hover()
 			_shader_drag = true
-			_shader_start = _hover
+			_shader_start_px = get_global_mouse_position()
 		elif _shader_drag:
 			_shader_drag = false
-			_commit_shader_region()
+			var end_px := get_global_mouse_position()
+			if _shader_start_px.distance_to(end_px) < 5.0:
+				# A click — select the region under the cursor and edit it.
+				var id := rm.shader_region_id_at(_shader_start_px / float(BLOCK))
+				if not id.is_empty():
+					_open_shader_editor(id)
+			else:
+				_commit_shader_region(_shader_start_px, end_px)
+			queue_redraw()
 		get_viewport().set_input_as_handled()
 	elif mb.button_index == MOUSE_BUTTON_RIGHT and mb.pressed:
-		_update_hover()
-		if rm.remove_shader_region_at(_hover):
+		var id := rm.shader_region_id_at(get_global_mouse_position() / float(BLOCK))
+		if not id.is_empty() and rm.remove_shader_region_by_id(id):
+			if id == _shader_edit_id:
+				_close_shader_editor()
 			_mark_dirty()
 			queue_redraw()
 		get_viewport().set_input_as_handled()
 
 
-func _commit_shader_region() -> void:
+func _commit_shader_region(a_px: Vector2, b_px: Vector2) -> void:
 	var preset := str(SHADER_PRESETS[_shader_preset_idx])
 	if preset == "none":
 		_set_status("pick an effect ([ ]) before painting a shader region")
 		return
-	var c0 := mini(_shader_start.x, _hover.x)
-	var r0 := mini(_shader_start.y, _hover.y)
+	var x0 := minf(a_px.x, b_px.x)
+	var y0 := minf(a_px.y, b_px.y)
+	# Stored in (fractional) block units; the runtime multiplies by BLOCK_SIZE.
 	_rm().add_shader_region({
 		"id": "fx_%d" % Time.get_ticks_msec(),
-		"x_blocks": c0,
-		"y_blocks": r0,
-		"width_blocks": absi(_hover.x - _shader_start.x) + 1,
-		"height_blocks": absi(_hover.y - _shader_start.y) + 1,
+		"x_blocks": x0 / float(BLOCK),
+		"y_blocks": y0 / float(BLOCK),
+		"width_blocks": absf(b_px.x - a_px.x) / float(BLOCK),
+		"height_blocks": absf(b_px.y - a_px.y) / float(BLOCK),
 		"shader_preset": preset,
 		"shader_tint": "ffffff",
 		"shader_strength": 0.6,
@@ -712,7 +736,7 @@ func _open_palette() -> void:
 		any = true
 		var active := idx == _active_tileset_id()
 		var collapsed := bool(_palette_collapsed.get(idx, false))
-		var hdr := NebulaUi.button("%s Tileset %d%s" % ["▸" if collapsed else "▾", idx, "  ·  active" if active else ""], "ghost")
+		var hdr := NebulaUi.button("%s Tileset %d%s" % ["▸" if collapsed else "▾", idx, "  ·  selected" if active else ""], "ghost")
 		hdr.alignment = HORIZONTAL_ALIGNMENT_LEFT
 		hdr.self_modulate = NebulaTheme.C_ACCENT if active else NebulaTheme.C_BORDER
 		hdr.size_flags_horizontal = Control.SIZE_EXPAND_FILL
@@ -1038,20 +1062,112 @@ func _close_environment() -> void:
 			ch.queue_free()
 
 
+# ── Per-region shader editor (Shaders mode: click a region) ───────────────────
+
+func _open_shader_editor(id: String) -> void:
+	var reg := {}
+	for r_v in _rm().shader_regions_list():
+		if str((r_v as Dictionary).get("id", "")) == id:
+			reg = r_v
+			break
+	if reg.is_empty():
+		return
+	_shader_edit_id = id
+	for ch in _shader_edit.get_children():
+		ch.queue_free()
+	# Compact panel docked top-right; non-modal so the world stays editable.
+	var margin := MarginContainer.new()
+	margin.anchor_left = 1.0
+	margin.anchor_top = 0.0
+	margin.anchor_right = 1.0
+	margin.anchor_bottom = 0.0
+	margin.offset_left = -408
+	margin.offset_top = 8
+	margin.offset_right = -8
+	margin.offset_bottom = 360
+	margin.theme = NebulaTheme.theme()
+	_shader_edit.add_child(margin)
+	var frame := PanelContainer.new()
+	margin.add_child(frame)
+	var vbox := VBoxContainer.new()
+	vbox.add_theme_constant_override("separation", 8)
+	frame.add_child(vbox)
+	var hdr := HBoxContainer.new()
+	hdr.add_theme_constant_override("separation", 8)
+	vbox.add_child(hdr)
+	hdr.add_child(NebulaTheme.title_label("Shader Region"))
+	var sp := Control.new()
+	sp.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	hdr.add_child(sp)
+	var x := NebulaUi.button("✕", "ghost")
+	x.pressed.connect(_close_shader_editor)
+	hdr.add_child(x)
+	_se_preset = OptionButton.new()
+	for i in SHADER_PRESETS.size():
+		_se_preset.add_item(str(SHADER_PRESETS[i]).capitalize(), i)
+	_se_preset.selected = maxi(0, SHADER_PRESETS.find(str(reg.get("shader_preset", "flicker"))))
+	_se_preset.item_selected.connect(func(_i): _apply_shader_edit())
+	vbox.add_child(NebulaUi.labeled("Effect", _se_preset, 110))
+	_se_tint = ColorPickerButton.new()
+	_se_tint.custom_minimum_size = Vector2(0, 24)
+	_se_tint.color = reg.get("shader_tint", Color.WHITE)
+	_se_tint.color_changed.connect(func(_c): _apply_shader_edit())
+	vbox.add_child(NebulaUi.labeled("Tint", _se_tint, 110))
+	_se_str = _env_spin(0.0, 2.0, 0.05, float(reg.get("shader_strength", 0.6)))
+	_se_str.value_changed.connect(func(_v): _apply_shader_edit())
+	vbox.add_child(NebulaUi.labeled("Strength", _se_str, 110))
+	_se_spd = _env_spin(0.0, 4.0, 0.05, float(reg.get("shader_speed", 1.0)))
+	_se_spd.value_changed.connect(func(_v): _apply_shader_edit())
+	vbox.add_child(NebulaUi.labeled("Speed", _se_spd, 110))
+	var del := NebulaUi.button("🗑 Delete region", "gold")
+	del.pressed.connect(func():
+		var rid := _shader_edit_id
+		_close_shader_editor()
+		if _rm().remove_shader_region_by_id(rid):
+			_mark_dirty()
+			queue_redraw())
+	vbox.add_child(del)
+	_shader_edit.visible = true
+	queue_redraw()
+
+
+func _apply_shader_edit() -> void:
+	if _shader_edit_id.is_empty() or _se_preset == null:
+		return
+	_rm().update_shader_region(_shader_edit_id, {
+		"shader_preset": SHADER_PRESETS[_se_preset.selected],
+		"shader_tint": _se_tint.color.to_html(),
+		"shader_strength": _se_str.value,
+		"shader_speed": _se_spd.value,
+	})
+	_mark_dirty()
+
+
+func _close_shader_editor() -> void:
+	_shader_edit_id = ""
+	if _shader_edit != null:
+		_shader_edit.visible = false
+		for ch in _shader_edit.get_children():
+			ch.queue_free()
+	queue_redraw()
+
+
 # ── Cursor ──────────────────────────────────────────────────────────────────
 
 func _draw() -> void:
 	if not _active:
 		return
 	var rm := _rm()
-	if rm == null or not rm.cell_in_bounds(_hover):
+	if rm == null:
 		return
-	# In collision mode, reveal the (otherwise invisible) collider cells so the
-	# user can see and fix stray/missing collision.
+	# Mode overlays draw regardless of the cursor (they cover the whole room).
 	if _mode == "collision":
 		_draw_collision_overlay(rm)
 	elif _mode == "shaders":
 		_draw_shader_overlay(rm)
+	# The per-cursor brush rect needs a valid hovered cell.
+	if not rm.cell_in_bounds(_hover):
+		return
 	var bw := maxi(1, int(_brush.get("w", 1))) if _mode == "tiles" else 1
 	var bh := maxi(1, int(_brush.get("h", 1))) if _mode == "tiles" else 1
 	var rect := Rect2(Vector2(_hover.x * BLOCK, _hover.y * BLOCK), Vector2(bw * BLOCK, bh * BLOCK))
@@ -1090,16 +1206,23 @@ func _draw_shader_overlay(rm: MvRoomManager) -> void:
 			Vector2(float(r.get("width_blocks", 0.0)) * BLOCK, float(r.get("height_blocks", 0.0)) * BLOCK))
 		draw_rect(rr, Color(accent.r, accent.g, accent.b, 0.10), true)
 		draw_rect(rr, accent, false, 1.0)
-	# In-progress drag rectangle.
+	# In-progress free-drag rectangle (pixel precise).
 	if _shader_drag:
-		var c0 := mini(_shader_start.x, _hover.x)
-		var rw0 := mini(_shader_start.y, _hover.y)
-		var w := absi(_hover.x - _shader_start.x) + 1
-		var h := absi(_hover.y - _shader_start.y) + 1
-		var dr := Rect2(Vector2(c0 * BLOCK, rw0 * BLOCK), Vector2(w * BLOCK, h * BLOCK))
+		var cur := get_global_mouse_position()
+		var dr := Rect2(Vector2(minf(_shader_start_px.x, cur.x), minf(_shader_start_px.y, cur.y)),
+			Vector2(absf(cur.x - _shader_start_px.x), absf(cur.y - _shader_start_px.y)))
 		var gold := NebulaTheme.C_ACCENT_2
 		draw_rect(dr, Color(gold.r, gold.g, gold.b, 0.18), true)
 		draw_rect(dr, gold, false, 2.0)
+	# Highlight the region being edited.
+	if not _shader_edit_id.is_empty():
+		for r_v in rm.shader_regions_list():
+			var r: Dictionary = r_v
+			if str(r.get("id", "")) == _shader_edit_id:
+				var er := Rect2(
+					Vector2(float(r.get("x_blocks", 0.0)) * BLOCK, float(r.get("y_blocks", 0.0)) * BLOCK),
+					Vector2(float(r.get("width_blocks", 0.0)) * BLOCK, float(r.get("height_blocks", 0.0)) * BLOCK))
+				draw_rect(er, NebulaTheme.C_ACCENT_2, false, 2.0)
 
 
 # ── Persistence ─────────────────────────────────────────────────────────────
