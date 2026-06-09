@@ -122,11 +122,12 @@ func _set_sys_pos(id: String, g: Vector2) -> void:
 func _gui_input(event: InputEvent) -> void:
 	if not _active:
 		return
-	if event is InputEventMouseMotion and _dragging != "":
-		_set_sys_pos(_dragging, _to_galaxy((event as InputEventMouseMotion).position))
-		_dirty = true
-		queue_redraw()
-		accept_event()
+	if event is InputEventMouseMotion:
+		if _dragging != "":
+			_set_sys_pos(_dragging, _to_galaxy((event as InputEventMouseMotion).position))
+			_dirty = true
+			accept_event()
+		queue_redraw()  # also refresh hover / pending link line
 		return
 	if event is InputEventMouseButton:
 		var mb := event as InputEventMouseButton
@@ -238,10 +239,19 @@ func _save() -> void:
 
 # ── Draw ─────────────────────────────────────────────────────────────────────
 
+const C_LANE := Color(0.5, 0.608, 0.627, 0.34)
+const C_LANE_LIT := Color(0.247, 0.827, 1.0, 0.7)
+const C_CYAN := Color("#3fd3ff")
+const C_CYAN_HI := Color("#b6fdff")
+const C_GOLD := Color("#ffcc33")
+const C_GOLD_HI := Color("#ffe9a0")
+
+
 func _draw() -> void:
 	if not _active:
 		return
-	# Connection lanes (dedupe a<->b).
+	var hover := _system_at(get_local_mouse_position()) if _mode == "move" and _dragging == "" else ""
+	# Jump lanes (dedupe a<->b); lit cyan when touching the selected system.
 	var drawn: Dictionary = {}
 	for id: String in DataManager.systems:
 		var ap := _to_screen(_sys_pos(id))
@@ -253,23 +263,38 @@ func _draw() -> void:
 			if drawn.has(key):
 				continue
 			drawn[key] = true
-			draw_line(ap, _to_screen(_sys_pos(conn)), Color(NebulaTheme.C_BORDER.r, NebulaTheme.C_BORDER.g, NebulaTheme.C_BORDER.b, 0.5), 2.0)
-	# Pending link line.
+			var lit := _selected != "" and (id == _selected or conn == _selected)
+			draw_line(ap, _to_screen(_sys_pos(conn)), C_LANE_LIT if lit else C_LANE, 2.0 if lit else 1.3)
+	# Pending gold link line follows the cursor in Link mode.
 	if _mode == "link" and _link_from != "" and DataManager.systems.has(_link_from):
-		draw_line(_to_screen(_sys_pos(_link_from)), get_local_mouse_position(), NebulaTheme.C_ACCENT_2, 2.0)
+		draw_dashed_line(_to_screen(_sys_pos(_link_from)), get_local_mouse_position(), Color("#ffd84a"), 2.0, 7.0)
 	# System nodes.
-	var font := ThemeDB.fallback_font
+	var font := NebulaTheme.font()
+	if font == null:
+		font = ThemeDB.fallback_font
 	for id: String in DataManager.systems:
 		var sp := _to_screen(_sys_pos(id))
 		var sel := id == _selected or id == _link_from
 		var is_cur := id == str(GameManager.current_system)
-		var col := NebulaTheme.C_ACCENT_2 if sel else (NebulaTheme.C_TITLE if is_cur else NebulaTheme.C_ACCENT)
-		var rad := clampf(float((DataManager.systems[id] as Dictionary).get("star_size", 60)) * 0.12, 6.0, 18.0)
-		draw_circle(sp, rad, Color(col.r, col.g, col.b, 0.85))
+		var base := C_GOLD if is_cur else C_CYAN
+		var rad := clampf(7.0 + float((DataManager.systems[id] as Dictionary).get("star_size", 60)) * 0.10, 9.0, 20.0)
+		# bloom
+		draw_circle(sp, rad + (9.0 if sel else 5.0), Color(base.r, base.g, base.b, 0.18 if sel else 0.10))
+		# disc + highlight + dark rim
+		draw_circle(sp, rad, base.darkened(0.1))
+		draw_circle(sp - Vector2(rad * 0.26, rad * 0.3), rad * 0.42, base.lightened(0.6))
+		draw_arc(sp, rad, 0, TAU, 28, Color(0.02, 0.05, 0.07, 0.9), 1.0)
+		if id == hover and not sel:
+			draw_arc(sp, rad + 3.0, 0, TAU, 28, Color(base.r, base.g, base.b, 0.65), 1.5)
 		if sel:
-			draw_arc(sp, rad + 4, 0, TAU, 24, col, 2.0)
-		if font != null:
-			draw_string(font, sp + Vector2(rad + 4, 4), str((DataManager.systems[id] as Dictionary).get("name", id)), HORIZONTAL_ALIGNMENT_LEFT, -1, 13, col)
+			draw_arc(sp, rad + 2.0, 0, TAU, 32, Color(0.02, 0.03, 0.05), 2.0)
+			draw_arc(sp, rad + 4.0, 0, TAU, 32, C_GOLD_HI if is_cur else C_CYAN_HI, 2.0)
+		# label
+		var nm := str((DataManager.systems[id] as Dictionary).get("name", id))
+		var lcol := C_CYAN_HI if sel else (C_GOLD if is_cur else NebulaTheme.C_BODY)
+		var lw := font.get_string_size(nm, HORIZONTAL_ALIGNMENT_LEFT, -1, 10).x
+		draw_string(font, sp + Vector2(-lw * 0.5 + 1, rad + 16), nm, HORIZONTAL_ALIGNMENT_LEFT, -1, 10, Color(0, 0, 0, 0.85))
+		draw_string(font, sp + Vector2(-lw * 0.5, rad + 15), nm, HORIZONTAL_ALIGNMENT_LEFT, -1, 10, lcol)
 
 
 # ── HUD (toolbar + side panel) ───────────────────────────────────────────────
@@ -321,19 +346,38 @@ func _build_hud() -> void:
 	# Side panel for the selected system.
 	if _selected != "" and DataManager.systems.has(_selected):
 		_build_side_panel()
-	# Bottom hint + status.
-	var bl := VBoxContainer.new()
-	bl.set_anchors_and_offsets_preset(Control.PRESET_BOTTOM_LEFT)
-	bl.position += Vector2(10, -10)
-	bl.grow_vertical = Control.GROW_DIRECTION_BEGIN
-	_hud.add_child(bl)
-	var hint := Label.new()
-	hint.text = "Move: drag systems · Link: click two systems to connect/disconnect · RMB delete · Save persists"
-	hint.add_theme_color_override("font_color", NebulaTheme.C_DIM)
-	bl.add_child(hint)
+	# Bottom-left: mode status pill (mode dot + label + key hints + status text).
+	var pill := PanelContainer.new()
+	pill.set_anchors_and_offsets_preset(Control.PRESET_BOTTOM_LEFT)
+	pill.position += Vector2(14, -14)
+	pill.grow_vertical = Control.GROW_DIRECTION_BEGIN
+	pill.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	var pbox := StyleBoxFlat.new()
+	pbox.bg_color = Color(0.031, 0.047, 0.071, 0.84)
+	pbox.set_corner_radius_all(16)
+	pbox.set_content_margin_all(9)
+	pbox.set_border_width_all(1)
+	pbox.border_color = Color(0.247, 0.827, 1.0, 0.28)
+	pill.add_theme_stylebox_override("panel", pbox)
+	_hud.add_child(pill)
+	var prow := HBoxContainer.new()
+	prow.add_theme_constant_override("separation", 12)
+	pill.add_child(prow)
+	var dot := Label.new()
+	dot.text = "●"
+	dot.add_theme_color_override("font_color", NebulaTheme.C_ACCENT_2 if _mode == "link" else NebulaTheme.C_TITLE)
+	prow.add_child(dot)
+	var mlbl := Label.new()
+	mlbl.text = "LINK MODE" if _mode == "link" else "MOVE MODE"
+	mlbl.add_theme_color_override("font_color", NebulaTheme.C_ACCENT_2 if _mode == "link" else NebulaTheme.C_TITLE)
+	prow.add_child(mlbl)
+	var hints := Label.new()
+	hints.text = ("Click·first   Click·to link   Esc·cancel" if _mode == "link" else "Drag·move   Click·select   Click bg·deselect")
+	hints.add_theme_color_override("font_color", NebulaTheme.C_DIM)
+	prow.add_child(hints)
 	_status = Label.new()
 	_status.add_theme_color_override("font_color", NebulaTheme.C_ACCENT)
-	bl.add_child(_status)
+	prow.add_child(_status)
 
 
 func _build_side_panel() -> void:
@@ -342,50 +386,144 @@ func _build_side_panel() -> void:
 	margin.anchor_left = 1.0
 	margin.anchor_right = 1.0
 	margin.anchor_bottom = 1.0
-	margin.offset_left = -348
+	margin.offset_left = -316
 	margin.offset_top = 70
-	margin.offset_right = -8
-	margin.offset_bottom = -50
+	margin.offset_right = -18
+	margin.offset_bottom = -64
 	margin.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	_hud.add_child(margin)
 	var frame := PanelContainer.new()
 	frame.mouse_filter = Control.MOUSE_FILTER_STOP
 	margin.add_child(frame)
 	var vb := VBoxContainer.new()
-	vb.add_theme_constant_override("separation", 8)
+	vb.add_theme_constant_override("separation", 13)
 	frame.add_child(vb)
-	vb.add_child(NebulaUi.section_header("System · %s" % _selected))
+
+	# Header: INSPECTOR + CURRENT chip.
+	var head := HBoxContainer.new()
+	head.add_theme_constant_override("separation", 8)
+	var htitle := NebulaTheme.title_label("Inspector")
+	htitle.add_theme_font_size_override("font_size", NebulaTheme.size("section"))
+	head.add_child(htitle)
+	if _selected == str(GameManager.current_system):
+		var chip := Label.new()
+		chip.text = " CURRENT "
+		chip.add_theme_color_override("font_color", NebulaTheme.C_ACCENT_2)
+		chip.add_theme_font_size_override("font_size", NebulaTheme.size("hint"))
+		head.add_child(chip)
+	vb.add_child(head)
+
 	var nm := LineEdit.new()
 	nm.text = str(sys.get("name", ""))
 	nm.text_changed.connect(func(t):
 		(DataManager.systems[_selected] as Dictionary)["name"] = t
 		_dirty = true
 		queue_redraw())
-	vb.add_child(NebulaUi.labeled("Name", nm, 90))
-	var ss := SpinBox.new()
+	vb.add_child(NebulaUi.labeled("System name", nm, 100))
+
+	# Star size (real star_size field; slider).
+	var ss := HSlider.new()
 	ss.min_value = 10
 	ss.max_value = 300
 	ss.step = 5
 	ss.value = float(sys.get("star_size", 60))
+	ss.custom_minimum_size = Vector2(0, 18)
+	var ss_read := Label.new()
+	ss_read.text = "%d" % int(ss.value)
+	ss_read.add_theme_color_override("font_color", NebulaTheme.C_TITLE)
 	ss.value_changed.connect(func(v):
 		(DataManager.systems[_selected] as Dictionary)["star_size"] = int(v)
+		ss_read.text = "%d" % int(v)
 		_dirty = true
 		queue_redraw())
-	vb.add_child(NebulaUi.labeled("Star size", ss, 90))
+	var ss_row := HBoxContainer.new()
+	ss_row.add_theme_constant_override("separation", 10)
+	var ss_lbl := Label.new()
+	ss_lbl.text = "STAR SIZE"
+	ss_lbl.add_theme_color_override("font_color", NebulaTheme.C_TITLE)
+	ss_lbl.add_theme_font_size_override("font_size", NebulaTheme.size("hint"))
+	ss_lbl.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	ss_row.add_child(ss_lbl)
+	ss_row.add_child(ss_read)
+	vb.add_child(ss_row)
+	vb.add_child(ss)
+
+	# Jump lanes chip list + count.
 	var conns: Array = sys.get("connections", [])
-	var cl := Label.new()
-	cl.text = "Links: " + (", ".join(conns) if not conns.is_empty() else "(none)")
-	cl.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
-	cl.add_theme_color_override("font_color", NebulaTheme.C_DIM)
-	vb.add_child(cl)
-	var poic := Label.new()
-	poic.text = "%d POIs (edit in-system with `mapedit`)" % (sys.get("pois", []) as Array).size()
-	poic.add_theme_color_override("font_color", NebulaTheme.C_DIM)
-	poic.add_theme_font_size_override("font_size", NebulaTheme.size("hint"))
-	vb.add_child(poic)
-	var del := NebulaUi.button("🗑 Delete system", "gold")
+	var lh := HBoxContainer.new()
+	var lh_lbl := Label.new()
+	lh_lbl.text = "JUMP LANES"
+	lh_lbl.add_theme_color_override("font_color", NebulaTheme.C_TITLE)
+	lh_lbl.add_theme_font_size_override("font_size", NebulaTheme.size("hint"))
+	lh_lbl.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	lh.add_child(lh_lbl)
+	var lh_n := Label.new()
+	lh_n.text = str(conns.size())
+	lh_n.add_theme_color_override("font_color", NebulaTheme.C_DIM)
+	lh.add_child(lh_n)
+	vb.add_child(lh)
+	var chips := HFlowContainer.new()
+	chips.add_theme_constant_override("h_separation", 6)
+	chips.add_theme_constant_override("v_separation", 6)
+	if conns.is_empty():
+		var none := Label.new()
+		none.text = "No links — use Link mode."
+		none.add_theme_color_override("font_color", NebulaTheme.C_DIM)
+		none.add_theme_font_size_override("font_size", NebulaTheme.size("hint"))
+		chips.add_child(none)
+	else:
+		for cid_v in conns:
+			var cid := str(cid_v)
+			var o: Dictionary = DataManager.systems.get(cid, {})
+			var chip := PanelContainer.new()
+			chip.add_theme_stylebox_override("panel", NebulaTheme.well_box())
+			var cl := Label.new()
+			cl.text = str(o.get("name", cid))
+			cl.add_theme_color_override("font_color", NebulaTheme.C_BODY)
+			cl.add_theme_font_size_override("font_size", NebulaTheme.size("hint"))
+			chip.add_child(cl)
+			chips.add_child(chip)
+	vb.add_child(chips)
+
+	# POI count + star class wells.
+	var wells := HBoxContainer.new()
+	wells.add_theme_constant_override("separation", 10)
+	wells.add_child(_well("POINTS OF INTEREST", str((sys.get("pois", []) as Array).size())))
+	wells.add_child(_well("STAR CLASS", _star_class(int(sys.get("star_size", 60)))))
+	vb.add_child(wells)
+
+	var del := NebulaUi.button("Delete system", "gold")
 	del.pressed.connect(func(): _delete_system(_selected))
 	vb.add_child(del)
+
+
+func _well(label: String, value: String) -> Control:
+	var p := PanelContainer.new()
+	p.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	p.add_theme_stylebox_override("panel", NebulaTheme.well_box())
+	var vb := VBoxContainer.new()
+	vb.add_theme_constant_override("separation", 2)
+	p.add_child(vb)
+	var l := Label.new()
+	l.text = label
+	l.add_theme_color_override("font_color", NebulaTheme.C_DIM)
+	l.add_theme_font_size_override("font_size", NebulaTheme.size("hint"))
+	vb.add_child(l)
+	var v := Label.new()
+	v.text = value
+	v.add_theme_color_override("font_color", NebulaTheme.C_TITLE)
+	vb.add_child(v)
+	return p
+
+
+func _star_class(star_size: int) -> String:
+	if star_size < 50:
+		return "M"
+	if star_size < 90:
+		return "K"
+	if star_size < 150:
+		return "G"
+	return "F"
 
 
 func _set_mode(m: String) -> void:
