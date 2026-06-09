@@ -41,6 +41,7 @@ var _open := false
 var _wiz: Dictionary = {}   # {kind, step, answers} while an (enemy) wizard runs
 var _player_wizard: MvPlayerWizard = null
 var _workshop: MvCombatWorkshop = null
+var _trigger_editor: MvTriggerEditor = null
 var _hint: Label = null
 var _skin_host: Control = null
 var _title_lbl: Label = null
@@ -55,6 +56,8 @@ func _ready() -> void:
 	add_child(_player_wizard)
 	_workshop = MvCombatWorkshop.new()
 	add_child(_workshop)
+	_trigger_editor = MvTriggerEditor.new()
+	add_child(_trigger_editor)
 	_build_hint()
 	visible = false
 
@@ -135,7 +138,7 @@ func _refresh_chips() -> void:
 		return
 	for c in _chip_row.get_children():
 		c.queue_free()
-	var cmds := ["help", "flag", "wizard", "workshop", "spawn", "fire"] if _in_mv() else ["help", "flag", "add_poi", "save_systems"]
+	var cmds := ["help", "flag", "wizard", "workshop", "triggers", "spawn", "fire"] if _in_mv() else ["help", "flag", "add_poi", "save_systems"]
 	for cmd in cmds:
 		var chip := NebulaUi.button(str(cmd), "ghost")
 		chip.focus_mode = Control.FOCUS_NONE
@@ -266,6 +269,8 @@ func _handle_command(text: String) -> void:
 			_cmd_wizard(rest)
 		"workshop":
 			_cmd_workshop()
+		"triggers", "trig":
+			_cmd_triggers()
 		"fire":
 			_cmd_fire(rest)
 		"spawn":
@@ -610,6 +615,15 @@ func _cmd_workshop() -> void:
 		_err("could not open workshop (no live MV room)")
 
 
+# `triggers` opens the visual trigger editor (list + event/condition/action forms).
+func _cmd_triggers() -> void:
+	if _trigger_editor == null:
+		_trigger_editor = MvTriggerEditor.new()
+		add_child(_trigger_editor)
+	close()
+	_trigger_editor.open_editor()
+
+
 func _wiz_steps() -> Array:
 	return ENEMY_STEPS
 
@@ -738,7 +752,7 @@ func _slug(s: String) -> String:
 
 func _print_help() -> void:
 	_log("[color=#8ab4ff]── dev console ──[/color]")
-	_log("[color=#7fdc7f]Authoring:[/color]  workshop (build an enemy)   wizard <player|enemy>")
+	_log("[color=#7fdc7f]Authoring:[/color]  workshop (enemy)   wizard <player|enemy>   triggers (rule editor)")
 	_log("Shared:  flag <name>=<value>   clear   help")
 	if _in_mv():
 		_log("MV:  <paste trigger JSON>   fire <event> [json]   spawn <entity_id>   ·   F2 = edit room")
