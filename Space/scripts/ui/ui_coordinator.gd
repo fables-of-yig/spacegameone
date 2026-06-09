@@ -83,7 +83,16 @@ func _apply_hud_visibility() -> void:
 # Overlays the editor-built HUD screen (if any) on top of the hardcoded
 # HUD. Absent a saved screen, this is a no-op and the hardcoded HUD runs
 # exactly as before.
+# Disabled: the Nebula tank-gauge HUD (hud.gd) is now canonical, and UIIo
+# auto-provisions a stock hud_space screen for every pack, which would always
+# overlay (and clutter) the Nebula gauges. Flip back to restore authored HUD
+# overlays. Mirrors MvHud.ALLOW_AUTHORED_HUD.
+const ALLOW_AUTHORED_HUD := false
+
+
 func _mount_hud_screen_overlay(hud_root: Control, player: Node2D) -> void:
+    if not ALLOW_AUTHORED_HUD:
+        return
     var UIIo = preload("res://Space/scripts/shared/ui/ui_io.gd")
     var HudDataSource = preload("res://Space/scripts/ui/hud_data_source.gd")
     var AuthoredScreenRuntime = preload("res://Space/scripts/ui/authored_screen_runtime.gd")
