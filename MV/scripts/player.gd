@@ -1837,6 +1837,13 @@ func _attack_definition_by_id(attack_id: String) -> Dictionary:
 
 
 func _active_ranged_attack() -> Dictionary:
+    # Prefer the HUD-selected active attack when it is a ranged (projectile)
+    # attack, so the spell bar's 1/2/3 selection drives the primary fire.
+    var active_id: String = PlayerInventory.get_active_attack_id().strip_edges()
+    if not active_id.is_empty():
+        var d := _attack_definition_by_id(active_id)
+        if str(d.get("type", "")) == "projectile":
+            return d
     return _attack_definition_by_id(PlayerInventory.get_ranged_attack_id())
 
 

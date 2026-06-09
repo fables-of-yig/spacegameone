@@ -328,13 +328,19 @@ static func _draw_ability_slot(ci: CanvasItem, rect: Rect2, s: Dictionary) -> vo
 # top_right: the top-right corner the map aligns to.
 # cells: Array of {col:int, row:int, w:int, h:int, state:String("cur"/"exp"/"unx"), marker:String("item"/"save"/"boss"/"")}
 # grid is laid out at `cell` px; returns nothing. Frame + title per Minimap spec.
-static func draw_minimap(ci: CanvasItem, top_right: Vector2, cells: Array, cols: int, rows: int, cell: float, title: String, area: String) -> void:
+static func draw_minimap(ci: CanvasItem, top_right: Vector2, cells: Array, cols: int, rows: int, cell: float, title: String, area: String, min_cols := 5, min_rows := 4) -> void:
 	var f := font()
 	var pad := 8.0
-	var grid_pad := 4.0
+	var grid_pad := 6.0
 	var head_h := float(FS_SMALL) + 8.0
-	var grid_w := float(cols) * cell + grid_pad * 2.0
-	var grid_h := float(rows) * cell + grid_pad * 2.0
+	# Pad the grid out to a minimum pane size and center the actual cells, so a
+	# one-room map still reads as a full panel.
+	var disp_cols := maxi(cols, min_cols)
+	var disp_rows := maxi(rows, min_rows)
+	var off_col := int(floor(float(disp_cols - cols) / 2.0))
+	var off_row := int(floor(float(disp_rows - rows) / 2.0))
+	var grid_w := float(disp_cols) * cell + grid_pad * 2.0
+	var grid_h := float(disp_rows) * cell + grid_pad * 2.0
 	var panel_w := grid_w + pad * 2.0
 	var panel_h := head_h + grid_h + pad
 	var px := top_right.x - panel_w
@@ -358,7 +364,7 @@ static func draw_minimap(ci: CanvasItem, top_right: Vector2, cells: Array, cols:
 		var cd2: Dictionary = cell_data
 		var cw := maxi(1, int(cd2.get("w", 1)))
 		var ch := maxi(1, int(cd2.get("h", 1)))
-		var cr := Rect2(gx + float(cd2.get("col", 0)) * cell, gy + float(cd2.get("row", 0)) * cell,
+		var cr := Rect2(gx + float(int(cd2.get("col", 0)) + off_col) * cell, gy + float(int(cd2.get("row", 0)) + off_row) * cell,
 			float(cw) * cell - 2.0, float(ch) * cell - 2.0)
 		var state := str(cd2.get("state", "unx"))
 		match state:

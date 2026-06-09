@@ -18,6 +18,7 @@ const BOSS_COLOR: Color = Color(0.9, 0.25, 0.2)
 const BOSS_BG: Color = Color(0.15, 0.15, 0.2, 0.8)
 
 var _top_hud: Control = null
+var _spell_ids: Array = []   # attack ids per spell slot, parallel to the bar
 var _quest_label: Label = null
 var _boss_bar: Control = null
 var _boss_label: Label = null
@@ -146,7 +147,7 @@ func _draw_top_hud() -> void:
 	_ensure_minimap()
 	if not _map_cells.is_empty():
 		NebulaHud.draw_minimap(ci, Vector2(_top_hud.size.x - 16.0, 14.0), _map_cells,
-			_map_cols, _map_rows, 22.0, "Map", "")
+			_map_cols, _map_rows, 28.0, "Map", "", 5, 4)
 
 
 # Real ability slots: primary ranged, melee, secondary (with ammo). The active
@@ -154,6 +155,7 @@ func _draw_top_hud() -> void:
 # a real timer exists.
 func _gather_spells() -> Array:
 	var slots: Array = []
+	_spell_ids = []
 	if not PlayerInventory.has_method("get_active_attack_id"):
 		return slots
 	var active := str(PlayerInventory.get_active_attack_id())
@@ -184,8 +186,39 @@ func _gather_spells() -> Array:
 					slot["ammo"] = int(PlayerInventory.get_var(akey, 0))
 					slot["ammo_max"] = amax
 		slots.append(slot)
+		_spell_ids.append(aid)
 		idx += 1
 	return slots
+
+
+# Number keys 1..N select the matching spell slot (sets the active attack so the
+# bar highlights it and the primary fire uses it when it's a ranged attack).
+func _input(event: InputEvent) -> void:
+	if _using_custom_screen or _top_hud == null or not _mv_runtime_available():
+		return
+	if MvGame.simulation_paused:  # console / edit mode open
+		return
+	if not (event is InputEventKey):
+		return
+	var k := event as InputEventKey
+	if not k.pressed or k.echo:
+		return
+	var idx := -1
+	match k.keycode:
+		KEY_1: idx = 0
+		KEY_2: idx = 1
+		KEY_3: idx = 2
+		KEY_4: idx = 3
+	if idx < 0 or idx >= _spell_ids.size():
+		return
+	var fo := get_viewport().gui_get_focus_owner()
+	if fo is LineEdit or fo is TextEdit:
+		return
+	var aid := str(_spell_ids[idx])
+	if aid != "" and PlayerInventory.has_method("set_active_attack_id"):
+		PlayerInventory.set_active_attack_id(aid)
+		_top_hud.queue_redraw()
+		get_viewport().set_input_as_handled()
 
 
 # Maps an attack to a HUD icon by keyword, falling back to a per-slot default.
