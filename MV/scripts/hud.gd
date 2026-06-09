@@ -57,7 +57,17 @@ func _ready() -> void:
 		_build_boss_bar()
 
 
+# The Nebula tank-gauge HUD is now the canonical MV runtime HUD, so the authored
+# hud_mv/hud screen no longer overrides it (UIIo auto-provisions a stock hud_mv
+# for every pack, which would otherwise always win). Other authored screens
+# (pause/inventory/shop/dialogue/etc.) are unaffected. Flip ALLOW_AUTHORED_HUD
+# back to true to restore per-pack authored HUD override.
+const ALLOW_AUTHORED_HUD := false
+
+
 func _try_custom_screen() -> void:
+	if not ALLOW_AUTHORED_HUD:
+		return
 	if _using_custom_screen or not _mv_runtime_available():
 		return
 	var pack_id := ""
