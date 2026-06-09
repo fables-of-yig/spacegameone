@@ -42,6 +42,7 @@ var _wiz: Dictionary = {}   # {kind, step, answers} while an (enemy) wizard runs
 var _player_wizard: MvPlayerWizard = null
 var _workshop: MvCombatWorkshop = null
 var _trigger_editor: MvTriggerEditor = null
+var _dialogue_editor: MvDialogueEditor = null
 var _hint: Label = null
 var _skin_host: Control = null
 var _title_lbl: Label = null
@@ -58,6 +59,8 @@ func _ready() -> void:
 	add_child(_workshop)
 	_trigger_editor = MvTriggerEditor.new()
 	add_child(_trigger_editor)
+	_dialogue_editor = MvDialogueEditor.new()
+	add_child(_dialogue_editor)
 	_build_hint()
 	visible = false
 
@@ -138,7 +141,7 @@ func _refresh_chips() -> void:
 		return
 	for c in _chip_row.get_children():
 		c.queue_free()
-	var cmds := ["help", "flag", "wizard", "workshop", "triggers", "spawn", "fire"] if _in_mv() else ["help", "flag", "add_poi", "save_systems"]
+	var cmds := ["help", "flag", "wizard", "workshop", "triggers", "dialogue", "spawn", "fire"] if _in_mv() else ["help", "flag", "add_poi", "save_systems"]
 	for cmd in cmds:
 		var chip := NebulaUi.button(str(cmd), "ghost")
 		chip.focus_mode = Control.FOCUS_NONE
@@ -271,6 +274,8 @@ func _handle_command(text: String) -> void:
 			_cmd_workshop()
 		"triggers", "trig":
 			_cmd_triggers()
+		"dialogue", "dlg":
+			_cmd_dialogue()
 		"fire":
 			_cmd_fire(rest)
 		"spawn":
@@ -624,6 +629,15 @@ func _cmd_triggers() -> void:
 	_trigger_editor.open_editor()
 
 
+# `dialogue` opens the conversation editor (lines + branching choices + Play).
+func _cmd_dialogue() -> void:
+	if _dialogue_editor == null:
+		_dialogue_editor = MvDialogueEditor.new()
+		add_child(_dialogue_editor)
+	close()
+	_dialogue_editor.open_editor()
+
+
 func _wiz_steps() -> Array:
 	return ENEMY_STEPS
 
@@ -752,7 +766,7 @@ func _slug(s: String) -> String:
 
 func _print_help() -> void:
 	_log("[color=#8ab4ff]── dev console ──[/color]")
-	_log("[color=#7fdc7f]Authoring:[/color]  workshop (enemy)   wizard <player|enemy>   triggers (rule editor)")
+	_log("[color=#7fdc7f]Authoring:[/color]  workshop (enemy)   wizard <player|enemy>   triggers   dialogue")
 	_log("Shared:  flag <name>=<value>   clear   help")
 	if _in_mv():
 		_log("MV:  <paste trigger JSON>   fire <event> [json]   spawn <entity_id>   ·   F2 = edit room")
