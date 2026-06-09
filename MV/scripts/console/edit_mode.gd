@@ -43,8 +43,18 @@ var _folder_collapsed: Dictionary = {}  # folder name -> collapsed bool
 var _editing_tileset := -1  # tileset idx whose rename/move row is open (-1 = none)
 var _pal_meta: Dictionary = {}  # tileset folder-tree metadata for this palette session
 
-const MODES := ["tiles", "collision", "entities", "shaders"]
-const MODE_LABELS := {"tiles": "Tiles", "collision": "Collision", "entities": "Entities", "shaders": "Shaders"}
+const MODES := ["tiles", "collision", "entities", "shaders", "triggers"]
+const MODE_LABELS := {"tiles": "Tiles", "collision": "Collision", "entities": "Entities", "shaders": "Shaders", "triggers": "Triggers"}
+
+# Trigger-zone placement (Triggers mode): free-drag a rectangle to drop a
+# trigger_volume entity; click one to edit its zone_id/event.
+var _trig_drag := false
+var _trig_start_px := Vector2.ZERO
+var _zone_edit: CanvasLayer = null
+var _zone_edit_uid := ""
+var _ze_id: LineEdit = null
+var _ze_event: OptionButton = null
+const ZONE_EVENTS := ["zone_enter", "zone_exit"]
 const BT_SOLID := 0x8  # mirrors MvRoomManager.BT_SOLID (solid family >= 0x8)
 
 # Shader-region painting (Shaders mode): free-drag a pixel rectangle.
@@ -128,6 +138,10 @@ func _ready() -> void:
 	_shader_edit.layer = 132
 	_shader_edit.visible = false
 	add_child(_shader_edit)
+	_zone_edit = CanvasLayer.new()
+	_zone_edit.layer = 132
+	_zone_edit.visible = false
+	add_child(_zone_edit)
 	visible = false
 
 
@@ -285,6 +299,8 @@ func _set_mode(mode: String) -> void:
 		_close_palette()
 	if mode != "shaders":
 		_close_shader_editor()
+	if mode != "triggers":
+		_close_zone_editor()
 	_refresh_hud()
 	queue_redraw()
 
@@ -331,6 +347,7 @@ func exit() -> void:
 	_close_palette()
 	_close_environment()
 	_close_shader_editor()
+	_close_zone_editor()
 	_active = false
 	visible = false
 	if _hud != null:
@@ -364,6 +381,10 @@ func _unhandled_input(event: InputEvent) -> void:
 	# Shaders mode is a marquee drag (rect), not per-cell paint.
 	if _mode == "shaders" and (event is InputEventMouseMotion or event is InputEventMouseButton):
 		_handle_shader_mouse(event)
+		return
+	# Triggers mode: free-drag to place a trigger volume (also a marquee).
+	if _mode == "triggers" and (event is InputEventMouseMotion or event is InputEventMouseButton):
+		_handle_trigger_mouse(event)
 		return
 	if event is InputEventMouseMotion:
 		_update_hover()
@@ -631,6 +652,182 @@ func _commit_shader_op() -> void:
 		"height_blocks": _shader_pending.size.y / float(BLOCK),
 	})
 	_mark_dirty()
+
+
+# ── Triggers mode (in-world trigger volumes) ─────────────────────────────────
+
+func _handle_trigger_mouse(event: InputEvent) -> void:
+	var rm := _rm()
+	if rm == null:
+		return
+	var mpos := get_global_mouse_position()
+	if event is InputEventMouseMotion:
+		if _trig_drag:
+			queue_redraw()
+		return
+	var mb := event as InputEventMouseButton
+	if mb.button_index == MOUSE_BUTTON_LEFT:
+		if mb.pressed:
+			_trig_drag = true
+			_trig_start_px = mpos
+		elif _trig_drag:
+			_trig_drag = false
+			if _trig_start_px.distance_to(mpos) < 5.0:
+				var uid := _trigger_uid_at(mpos)
+				if not uid.is_empty():
+					_open_zone_editor(uid)
+			else:
+				_place_trigger_volume(_trig_start_px, mpos)
+			queue_redraw()
+		get_viewport().set_input_as_handled()
+	elif mb.button_index == MOUSE_BUTTON_RIGHT and mb.pressed:
+		var uid := _trigger_uid_at(mpos)
+		if not uid.is_empty():
+			var rec := _trigger_record(uid)
+			if rm.remove_entity_by_id(uid):
+				if not rec.is_empty():
+					_undo.append({"op": "entity_delete", "record": rec})
+					_trim_undo()
+				if uid == _zone_edit_uid:
+					_close_zone_editor()
+				_mark_dirty()
+				queue_redraw()
+		get_viewport().set_input_as_handled()
+
+
+# World-px rect of a trigger volume (centered Area2D + RectangleShape2D).
+func _trigger_px_rect(rec: Dictionary) -> Rect2:
+	var p: Dictionary = rec.get("properties", {})
+	var sz := Vector2(float(p.get("width", 16)), float(p.get("height", 16)))
+	var pos_v: Variant = rec.get("position", Vector2.ZERO)
+	var center: Vector2 = pos_v if pos_v is Vector2 else Vector2.ZERO
+	return Rect2(center - sz * 0.5, sz)
+
+
+func _trigger_uid_at(world_px: Vector2) -> String:
+	var recs := _rm().trigger_volume_records()
+	for i in range(recs.size() - 1, -1, -1):
+		var rec: Dictionary = recs[i]
+		if _trigger_px_rect(rec).has_point(world_px):
+			return str(rec.get("instance_id", ""))
+	return ""
+
+
+func _trigger_record(uid: String) -> Dictionary:
+	for rec_v in _rm().trigger_volume_records():
+		if str((rec_v as Dictionary).get("instance_id", "")) == uid:
+			return rec_v
+	return {}
+
+
+func _place_trigger_volume(a: Vector2, b: Vector2) -> void:
+	var rm := _rm()
+	var center := (a + b) * 0.5
+	var w := maxf(8.0, absf(b.x - a.x))
+	var h := maxf(8.0, absf(b.y - a.y))
+	var uid := "trigger_volume_ed_%d" % Time.get_ticks_msec()
+	var zid := "zone_%d" % (rm.trigger_volume_records().size() + 1)
+	var rec := {
+		"type": "trigger_volume",
+		"position": center,
+		"instance_id": uid,
+		"tags": [],
+		"properties": {"instance_id": uid, "width": w, "height": h, "zone_id": zid, "event_name": "zone_enter"},
+	}
+	if rm.place_entity_record(rec):
+		_undo.append({"op": "entity_place", "uid": uid})
+		_trim_undo()
+		_mark_dirty()
+		_set_status("placed trigger zone '%s' (zone_enter) — match it in a rule (triggers)" % zid)
+	queue_redraw()
+
+
+func _open_zone_editor(uid: String) -> void:
+	var rec := _trigger_record(uid)
+	if rec.is_empty():
+		return
+	var p: Dictionary = rec.get("properties", {})
+	_zone_edit_uid = uid
+	for ch in _zone_edit.get_children():
+		ch.queue_free()
+	var margin := MarginContainer.new()
+	margin.anchor_left = 1.0
+	margin.anchor_right = 1.0
+	margin.offset_left = -408
+	margin.offset_top = 8
+	margin.offset_right = -8
+	margin.offset_bottom = 260
+	margin.theme = NebulaTheme.theme()
+	_zone_edit.add_child(margin)
+	var frame := PanelContainer.new()
+	margin.add_child(frame)
+	var vbox := VBoxContainer.new()
+	vbox.add_theme_constant_override("separation", 8)
+	frame.add_child(vbox)
+	var hdr := HBoxContainer.new()
+	hdr.add_theme_constant_override("separation", 8)
+	vbox.add_child(hdr)
+	hdr.add_child(NebulaTheme.title_label("Trigger Zone"))
+	var sp := Control.new()
+	sp.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	hdr.add_child(sp)
+	var x := NebulaUi.button("✕", "ghost")
+	x.pressed.connect(_close_zone_editor)
+	hdr.add_child(x)
+	_ze_id = LineEdit.new()
+	_ze_id.text = str(p.get("zone_id", ""))
+	_ze_id.placeholder_text = "zone id"
+	_ze_id.text_changed.connect(func(_t): _apply_zone_edit())
+	vbox.add_child(NebulaUi.labeled("Zone id", _ze_id, 110))
+	_ze_event = OptionButton.new()
+	for i in ZONE_EVENTS.size():
+		_ze_event.add_item(str(ZONE_EVENTS[i]), i)
+	_ze_event.selected = maxi(0, ZONE_EVENTS.find(str(p.get("event_name", "zone_enter"))))
+	_ze_event.item_selected.connect(func(_i): _apply_zone_edit())
+	vbox.add_child(NebulaUi.labeled("Fires", _ze_event, 110))
+	vbox.add_child(_hint_label("A rule with this event + a condition matching zone_id runs when the player enters/leaves."))
+	var del := NebulaUi.button("🗑 Delete zone", "gold")
+	del.pressed.connect(func():
+		var u := _zone_edit_uid
+		var rec2 := _trigger_record(u)
+		_close_zone_editor()
+		if _rm().remove_entity_by_id(u):
+			if not rec2.is_empty():
+				_undo.append({"op": "entity_delete", "record": rec2})
+				_trim_undo()
+			_mark_dirty()
+			queue_redraw())
+	vbox.add_child(del)
+	_zone_edit.visible = true
+	queue_redraw()
+
+
+func _apply_zone_edit() -> void:
+	if _zone_edit_uid.is_empty() or _ze_id == null:
+		return
+	_rm().update_entity_props(_zone_edit_uid, {
+		"zone_id": _ze_id.text.strip_edges(),
+		"event_name": ZONE_EVENTS[_ze_event.selected],
+	})
+	_mark_dirty()
+
+
+func _close_zone_editor() -> void:
+	_zone_edit_uid = ""
+	if _zone_edit != null:
+		_zone_edit.visible = false
+		for ch in _zone_edit.get_children():
+			ch.queue_free()
+	queue_redraw()
+
+
+func _hint_label(text: String) -> Label:
+	var l := Label.new()
+	l.text = text
+	l.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	l.add_theme_color_override("font_color", NebulaTheme.C_DIM)
+	l.add_theme_font_size_override("font_size", NebulaTheme.size("hint"))
+	return l
 
 
 func _process(_delta: float) -> void:
@@ -1500,6 +1697,8 @@ func _draw() -> void:
 		_draw_collision_overlay(rm)
 	elif _mode == "shaders":
 		_draw_shader_overlay(rm)
+	elif _mode == "triggers":
+		_draw_trigger_overlay(rm)
 	# The per-cursor brush rect needs a valid hovered cell.
 	if not rm.cell_in_bounds(_hover):
 		return
@@ -1528,6 +1727,28 @@ func _draw_collision_overlay(rm: MvRoomManager) -> void:
 		for c in row.size():
 			if int(row[c]) >= BT_SOLID:
 				draw_rect(Rect2(Vector2(c * BLOCK, r * BLOCK), Vector2(BLOCK, BLOCK)), fill, true)
+
+
+func _draw_trigger_overlay(rm: MvRoomManager) -> void:
+	var font := ThemeDB.fallback_font
+	for rec_v in rm.trigger_volume_records():
+		var rec: Dictionary = rec_v
+		var rr := _trigger_px_rect(rec)
+		var sel := str(rec.get("instance_id", "")) == _zone_edit_uid
+		var col := NebulaTheme.C_ACCENT_2 if sel else NebulaTheme.C_ACCENT
+		draw_rect(rr, Color(col.r, col.g, col.b, 0.12), true)
+		draw_rect(rr, col, false, 2.0)
+		var p: Dictionary = rec.get("properties", {})
+		if font != null:
+			draw_string(font, rr.position + Vector2(3, 12), "%s · %s" % [str(p.get("zone_id", "?")), str(p.get("event_name", "zone_enter"))], HORIZONTAL_ALIGNMENT_LEFT, -1, 10, col)
+	# In-progress placement rectangle.
+	if _trig_drag:
+		var cur := get_global_mouse_position()
+		var dr := Rect2(Vector2(minf(_trig_start_px.x, cur.x), minf(_trig_start_px.y, cur.y)),
+			Vector2(absf(cur.x - _trig_start_px.x), absf(cur.y - _trig_start_px.y)))
+		var g := NebulaTheme.C_ACCENT_2
+		draw_rect(dr, Color(g.r, g.g, g.b, 0.18), true)
+		draw_rect(dr, g, false, 2.0)
 
 
 func _draw_shader_overlay(rm: MvRoomManager) -> void:

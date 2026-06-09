@@ -1508,6 +1508,50 @@ func remove_entity_near(world_pos: Vector2, radius: float = 12.0) -> Dictionary:
     return removed
 
 
+# Records (entities[] dicts) of all placed trigger-volume entities in this room,
+# for the edit-mode Triggers overlay.
+func trigger_volume_records() -> Array:
+    var out: Array = []
+    for e_v in current_room().get("entities", []):
+        if typeof(e_v) == TYPE_DICTIONARY and str((e_v as Dictionary).get("type", "")) == "trigger_volume":
+            out.append(e_v)
+    return out
+
+
+# Merge `props` into a placed entity's record and respawn its live node so the
+# change applies immediately (used to edit a trigger volume's zone_id/event).
+func update_entity_props(uid: String, props: Dictionary) -> bool:
+    var info := current_room()
+    if info.is_empty() or uid.strip_edges().is_empty():
+        return false
+    var entities: Array = info.get("entities", [])
+    var ridx := -1
+    for i in entities.size():
+        if str((entities[i] as Dictionary).get("instance_id", "")) == uid:
+            ridx = i
+            break
+    if ridx < 0:
+        return false
+    var rec: Dictionary = entities[ridx]
+    var p: Dictionary = (rec.get("properties", {}) as Dictionary).duplicate(true)
+    for k in props:
+        p[k] = props[k]
+    rec["properties"] = p
+    entities[ridx] = rec
+    info["entities"] = entities
+    if _entities_container != null:
+        for child in _entities_container.get_children():
+            var v: Variant = child.get("instance_id")
+            if v != null and str(v) == uid:
+                child.queue_free()
+                break
+    var pos_v: Variant = rec.get("position", Vector2.ZERO)
+    spawn_entity_dynamic(str(rec.get("type", "trigger_volume")),
+        pos_v if pos_v is Vector2 else Vector2.ZERO,
+        rec.get("tags", []), p)
+    return true
+
+
 # Re-place an entity from a saved record (edit-mode undo of a delete): spawns the
 # live node reusing the record's instance_id/pos/tags/props and restores the
 # entities[] record verbatim.
