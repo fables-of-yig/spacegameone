@@ -161,7 +161,9 @@ func _ready() -> void:
         _player.process_mode = Node.PROCESS_MODE_ALWAYS
     ($PlayerLayer as Node).add_child(_player)
     _player.entered_door.connect(_on_player_door)
-    _player.player_died.connect(_on_player_died)
+    # Death is owned solely by MvGameOver (Game Over screen → Load Last Save /
+    # Exit to Main Menu). MvMain deliberately does NOT also respawn the player,
+    # which previously fought the Game Over overlay on every death.
 
     # Apply ManiaVar stat effects to the player's physics profile before
     # the first room loads, so gravity/jump/speed reflect stat levels.
@@ -1385,12 +1387,5 @@ static func _is_floor_at(block_type: int) -> bool:
 
 
 # ===== Player death =====
-
-func _on_player_died(_source: String) -> void:
-    if _player == null:
-        return
-    # Default death handler: respawn in the current room with full HP.
-    # A future trigger system can override by also listening to player_died.
-    _player.hp = _player.max_hp
-    _player.energy = _player.max_energy
-    _spawn_player_in_room()
+# Handled by MvGameOver (game_over.gd). See _ready(): MvMain no longer connects
+# to player_died, so the Game Over screen is the single source of truth.

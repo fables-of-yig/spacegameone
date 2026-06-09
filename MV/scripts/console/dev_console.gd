@@ -41,6 +41,7 @@ var _open := false
 var _wiz: Dictionary = {}   # {kind, step, answers} while an (enemy) wizard runs
 var _player_wizard: MvPlayerWizard = null
 var _workshop: MvCombatWorkshop = null
+var _attack_workshop: MvPlayerAttackWorkshop = null
 var _trigger_editor: MvTriggerEditor = null
 var _dialogue_editor: MvDialogueEditor = null
 var _galaxy_editor: SpaceGalaxyEditor = null
@@ -59,6 +60,8 @@ func _ready() -> void:
 	add_child(_player_wizard)
 	_workshop = MvCombatWorkshop.new()
 	add_child(_workshop)
+	_attack_workshop = MvPlayerAttackWorkshop.new()
+	add_child(_attack_workshop)
 	_trigger_editor = MvTriggerEditor.new()
 	add_child(_trigger_editor)
 	_dialogue_editor = MvDialogueEditor.new()
@@ -156,7 +159,7 @@ func _refresh_chips() -> void:
 		return
 	for c in _chip_row.get_children():
 		c.queue_free()
-	var cmds := ["help", "flag", "wizard", "workshop", "triggers", "dialogue", "spawn", "fire"] if _in_mv() else ["help", "flag", "galaxyedit", "mapedit", "encounters", "shipbuilder", "add_poi", "save_systems"]
+	var cmds := ["help", "flag", "wizard", "workshop", "attacks", "triggers", "dialogue", "spawn", "fire"] if _in_mv() else ["help", "flag", "galaxyedit", "mapedit", "encounters", "shipbuilder", "add_poi", "save_systems"]
 	for cmd in cmds:
 		var chip := NebulaUi.button(str(cmd), "ghost")
 		chip.focus_mode = Control.FOCUS_NONE
@@ -287,6 +290,8 @@ func _handle_command(text: String) -> void:
 			_cmd_wizard(rest)
 		"workshop":
 			_cmd_workshop()
+		"attacks":
+			_cmd_attack_workshop()
 		"triggers", "trig":
 			_cmd_triggers()
 		"dialogue", "dlg":
@@ -693,6 +698,26 @@ func _cmd_workshop() -> void:
 		_err("could not open workshop (no live MV room)")
 
 
+# `attacks` opens the guided PLAYER attack builder (melee hitboxes + projectiles
+# → attacks.json/projectiles.json, save & fire live). MV-only.
+func _cmd_attack_workshop() -> void:
+	if not _in_mv():
+		_err("attacks is MV-only — land on a planet first")
+		return
+	close()
+	open_attack_workshop()
+
+
+# Public entry point so the Combat Workshop's "Player's Attacks" track card can
+# hand off to this overlay.
+func open_attack_workshop() -> void:
+	if _attack_workshop == null:
+		_attack_workshop = MvPlayerAttackWorkshop.new()
+		add_child(_attack_workshop)
+	if not _attack_workshop.open_workshop():
+		_err("could not open attack workshop (no live MV room)")
+
+
 # `triggers` opens the visual trigger editor (list + event/condition/action forms).
 func _cmd_triggers() -> void:
 	if _trigger_editor == null:
@@ -839,7 +864,7 @@ func _slug(s: String) -> String:
 
 func _print_help() -> void:
 	_log("[color=#8ab4ff]── dev console ──[/color]")
-	_log("[color=#7fdc7f]Authoring:[/color]  workshop (enemy)   wizard <player|enemy>   triggers   dialogue")
+	_log("[color=#7fdc7f]Authoring:[/color]  workshop (enemy)   attacks (player)   wizard <player|enemy>   triggers   dialogue")
 	_log("Shared:  flag <name>=<value>   clear   help")
 	if _in_mv():
 		_log("MV:  <paste trigger JSON>   fire <event> [json]   spawn <entity_id>   ·   F2 = edit room")

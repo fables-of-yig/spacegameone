@@ -51,6 +51,13 @@ func _ready() -> void:
 	name = "MvHud"
 	add_to_group("mv_hud")
 	visible = false
+	_build_hud()
+	var sm := get_node_or_null("/root/SettingsManager")
+	if sm != null and sm.has_signal("settings_changed"):
+		sm.settings_changed.connect(_on_settings_changed)
+
+
+func _build_hud() -> void:
 	_try_custom_screen()
 	if not _using_custom_screen:
 		_build_top_hud()
@@ -58,16 +65,42 @@ func _ready() -> void:
 		_build_boss_bar()
 
 
-# The Nebula tank-gauge HUD is now the canonical MV runtime HUD, so the authored
-# hud_mv/hud screen no longer overrides it (UIIo auto-provisions a stock hud_mv
-# for every pack, which would otherwise always win). Other authored screens
-# (pause/inventory/shop/dialogue/etc.) are unaffected. Flip ALLOW_AUTHORED_HUD
-# back to true to restore per-pack authored HUD override.
-const ALLOW_AUTHORED_HUD := false
+# Tears down and rebuilds the HUD, switching between the canonical Nebula HUD and
+# the pack's authored HUD screen. Called when the "Use authored pack UI" setting
+# is toggled at runtime.
+func _rebuild_hud() -> void:
+	for c in get_children():
+		c.queue_free()
+	_top_hud = null
+	_quest_label = null
+	_boss_bar = null
+	_boss_label = null
+	_toast_stack = null
+	_using_custom_screen = false
+	_build_hud()
+
+
+func _on_settings_changed(section: String, key: String) -> void:
+	if section == "gameplay" and key == "authored_ui_path":
+		_rebuild_hud()
+	elif section == "" and key == "":
+		# Restore Defaults fired a blanket reset.
+		_rebuild_hud()
+
+
+# Whether the loaded pack's authored HUD screen should override the canonical
+# Nebula tank-gauge HUD. Driven by the "Use authored pack UI" setting (off by
+# default). When off, the Nebula HUD is canonical and UIIo's auto-provisioned
+# stock hud_mv is ignored.
+func _authored_ui_enabled() -> bool:
+	var sm := get_node_or_null("/root/SettingsManager")
+	if sm == null:
+		return false
+	return bool(sm.get_setting("gameplay", "authored_ui_path", false))
 
 
 func _try_custom_screen() -> void:
-	if not ALLOW_AUTHORED_HUD:
+	if not _authored_ui_enabled():
 		return
 	if _using_custom_screen or not _mv_runtime_available():
 		return

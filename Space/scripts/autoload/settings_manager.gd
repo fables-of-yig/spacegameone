@@ -2,6 +2,7 @@ extends Node
 
 const SETTINGS_PATH := "user://settings.json"
 
+const BUS_MASTER := "Master"
 const BUS_MUSIC := "Music"
 const BUS_SFX := "SFX"
 const BUS_VOICE := "Voice"
@@ -10,9 +11,14 @@ const WINDOW_MODE_WINDOWED := "windowed"
 const WINDOW_MODE_FULLSCREEN := "fullscreen"
 const WINDOW_MODE_EXCLUSIVE := "exclusive_fullscreen"
 
+# Audio channels that drive a real AudioServer bus (stored 0..1, surfaced 0..100).
+const AUDIO_BUS_CHANNELS := ["master", "music", "sfx", "voice"]
+
 signal audio_settings_changed
 signal video_settings_changed
 signal input_settings_changed
+# Fired for any catalog-driven setting (graphics/gameplay/controls + audio/video).
+signal settings_changed(section: String, key: String)
 
 var _settings: Dictionary = {}
 var _default_input_bindings: Dictionary = {}
@@ -25,6 +31,12 @@ func _ready() -> void:
     _ensure_audio_buses()
     apply_audio_settings()
     call_deferred("apply_video_settings")
+    call_deferred("apply_graphics_settings")
+
+
+func _notification(what: int) -> void:
+    if what == NOTIFICATION_APPLICATION_FOCUS_OUT or what == NOTIFICATION_APPLICATION_FOCUS_IN:
+        _apply_focus_mute(what == NOTIFICATION_APPLICATION_FOCUS_OUT)
 
 
 func register_input_defaults() -> void:
@@ -58,6 +70,7 @@ func reset_audio_settings() -> void:
 func apply_audio_settings() -> void:
     _ensure_audio_buses()
     var audio := get_audio_settings()
+    _set_bus_linear(BUS_MASTER, float(audio.get("master", 0.8)))
     _set_bus_linear(BUS_MUSIC, float(audio.get("music", 0.8)))
     _set_bus_linear(BUS_SFX, float(audio.get("sfx", 0.8)))
     _set_bus_linear(BUS_VOICE, float(audio.get("voice", 0.8)))
@@ -203,11 +216,13 @@ func reset_all_settings() -> void:
         (_settings["input"] as Dictionary)["bindings"] = _default_input_bindings.duplicate(true)
     apply_audio_settings()
     apply_video_settings()
+    apply_graphics_settings()
     apply_input_settings()
     _save_settings()
     audio_settings_changed.emit()
     video_settings_changed.emit()
     input_settings_changed.emit()
+    settings_changed.emit("", "")
 
 
 func apply_input_settings() -> void:
@@ -226,10 +241,97 @@ func current_resolution() -> Vector2i:
     return Vector2i(int(video.get("width", current_size.x)), int(video.get("height", current_size.y)))
 
 
+# --- Generic catalog-driven settings (graphics / gameplay / controls + the
+# audio/video keys the Nebula settings screen drives). Values persist to the same
+# user://settings.json; only keys with a real apply path actually change engine
+# state (see SettingsCatalog `wired`). Audio bus channels are stored 0..1 but
+# surfaced 0..100 to match the catalog sliders. ---
+
+func get_setting(section: String, key: String, default_value: Variant) -> Variant:
+    if section == "video":
+        if key == "window_mode":
+            return current_window_mode()
+        if key == "resolution":
+            var res := current_resolution()
+            return "%dx%d" % [res.x, res.y]
+    var sec := _ensure_section(section, {}) as Dictionary
+    if not sec.has(key):
+        if section == "audio" and AUDIO_BUS_CHANNELS.has(key):
+            return float(_default_audio_settings().get(key, 0.8)) * 100.0
+        return default_value
+    var stored: Variant = sec[key]
+    if section == "audio" and AUDIO_BUS_CHANNELS.has(key):
+        return clampf(float(stored), 0.0, 1.0) * 100.0
+    return stored
+
+
+func set_setting(section: String, key: String, value: Variant) -> void:
+    if section == "video":
+        if key == "window_mode":
+            set_window_mode(str(value))
+            settings_changed.emit(section, key)
+            return
+        if key == "resolution":
+            var parts := str(value).split("x")
+            if parts.size() == 2:
+                set_resolution(Vector2i(int(parts[0]), int(parts[1])))
+            settings_changed.emit(section, key)
+            return
+    var sec := _ensure_section(section, {}) as Dictionary
+    var store_val: Variant = value
+    if section == "audio" and AUDIO_BUS_CHANNELS.has(key):
+        store_val = clampf(float(value) / 100.0, 0.0, 1.0)
+    sec[key] = store_val
+    _apply_one(section, key, store_val)
+    _save_settings()
+    settings_changed.emit(section, key)
+    if section == "audio":
+        audio_settings_changed.emit()
+
+
+# Re-apply every wired graphics knob (called on boot + after Restore Defaults).
+func apply_graphics_settings() -> void:
+    _apply_one("graphics", "vsync", get_setting("graphics", "vsync", true))
+    _apply_one("graphics", "fps_limit", get_setting("graphics", "fps_limit", "144"))
+    _apply_one("graphics", "ui_scale", get_setting("graphics", "ui_scale", 100))
+
+
+# The single dispatch point for "this value drives real engine state". Anything
+# not listed here is persisted only (a catalog `wired:false` PREVIEW row).
+func _apply_one(section: String, key: String, value: Variant) -> void:
+    if section == "graphics":
+        match key:
+            "vsync":
+                var mode := DisplayServer.VSYNC_ENABLED if bool(value) else DisplayServer.VSYNC_DISABLED
+                DisplayServer.window_set_vsync_mode(mode)
+            "fps_limit":
+                Engine.max_fps = maxi(int(str(value)), 0)
+            "ui_scale":
+                var root := get_tree().root
+                if root != null:
+                    root.content_scale_factor = clampf(float(value) / 100.0, 0.5, 2.0)
+    elif section == "audio":
+        if AUDIO_BUS_CHANNELS.has(key):
+            apply_audio_settings()
+        elif key == "mute_when_unfocused":
+            # Effect lands on the next focus change; nothing to apply right now.
+            pass
+
+
+func _apply_focus_mute(unfocused: bool) -> void:
+    var want_mute := bool(get_setting("audio", "mute_when_unfocused", true)) and unfocused
+    var idx := AudioServer.get_bus_index(BUS_MASTER)
+    if idx != -1:
+        AudioServer.set_bus_mute(idx, want_mute)
+
+
 func _default_settings() -> Dictionary:
     return {
         "audio": _default_audio_settings(),
         "video": _default_video_settings(),
+        "graphics": {},
+        "gameplay": {},
+        "controls": {},
         "input": {
             "bindings": {},
         },
@@ -238,6 +340,7 @@ func _default_settings() -> Dictionary:
 
 func _default_audio_settings() -> Dictionary:
     return {
+        "master": 0.8,
         "music": 0.8,
         "sfx": 0.8,
         "voice": 0.8,

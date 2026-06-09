@@ -5,6 +5,7 @@ const UIIo = preload("res://Space/scripts/shared/ui/ui_io.gd")
 const AuthoredScreenRuntime = preload("res://Space/scripts/ui/authored_screen_runtime.gd")
 const HudDataSource = preload("res://Space/scripts/ui/hud_data_source.gd")
 const SettingsMenuScript = preload("res://Space/scripts/ui/settings_menu.gd")
+const NebulaMainMenuScript = preload("res://Space/scripts/ui/nebula_main_menu.gd")
 const PackPaths = preload("res://Space/scripts/shared/pack_paths.gd")
 
 
@@ -33,6 +34,9 @@ var _delete_rects: Array = []
 var _authored_screen: Control = null
 var _authored_pack_id: String = ""
 var _settings_menu: Control = null
+var _nebula_main_menu: Control = null
+var _nebula_launcher: Control = null   # Nebula-skinned dev-hub button column
+var _nebula_update_label: Label = null # live UPDATE row sub-label
 
 signal load_slot_pressed(slot: int)
 signal creative_pressed
@@ -104,6 +108,18 @@ func _ready():
     _settings_menu.visible = false
     add_child(_settings_menu)
 
+    _nebula_main_menu = Control.new()
+    _nebula_main_menu.set_script(NebulaMainMenuScript)
+    _nebula_main_menu.visible = false
+    add_child(_nebula_main_menu)
+    _nebula_main_menu.connect("new_game_requested", _on_nebula_new_game)
+    _nebula_main_menu.connect("load_game_requested", _on_nebula_load_game)
+    _nebula_main_menu.connect("settings_requested", _open_settings_menu)
+    _nebula_main_menu.connect("exit_requested", func(): get_tree().quit())
+    _nebula_main_menu.connect("back_requested", _return_to_launcher)
+
+    _build_nebula_launcher()
+
     _campaign_name_input = LineEdit.new()
     _campaign_name_input.placeholder_text = "Campaign name..."
     _campaign_name_input.visible = false
@@ -135,6 +151,11 @@ func _process(delta):
     _time += delta
     _fade_in = minf(_fade_in + delta * 0.8, 1.0)
     _refresh_authored_screen()
+    if _nebula_launcher != null:
+        var show_launcher := _editor_modal == EditorModal.CLOSED and not _player_overlay_visible()
+        _nebula_launcher.visible = show_launcher
+        if show_launcher and _nebula_update_label != null:
+            _nebula_update_label.text = _update_sub_text()
     queue_redraw()
 
 
@@ -153,6 +174,12 @@ func _input(event):
         return
     if _settings_menu != null and _settings_menu.visible:
         return
+    # The Nebula Settings overlay (NebulaPause autoload, higher layer) is open over
+    # the launcher — let it own all input. The dev hub uses _input (which runs
+    # BEFORE GUI), so without this it would consume the click/Esc and the settings
+    # X / Esc would never reach the overlay.
+    if NebulaPause != null and NebulaPause.is_open():
+        return
     # Editor modal eats keyboard: ESC steps back (or closes); all other
     # keys are ignored so hitting N/C/F in the modal doesn't accidentally
     # start a new game.
@@ -164,15 +191,18 @@ func _input(event):
             else:
                 _close_editor_chooser()
         return
-    var authored_active := _has_authored_screen() and _editor_modal == EditorModal.CLOSED
+    var authored_active := _player_overlay_visible() and _editor_modal == EditorModal.CLOSED
+    # While the Nebula launcher column is up (bare launcher, no modal) its rows are
+    # GUI buttons, so the dev hub must not eat the mouse before GUI gets it.
+    var launcher_owns_mouse := _nebula_launcher != null and _nebula_launcher.visible
     if event is InputEventMouseMotion:
-        if authored_active:
+        if authored_active or launcher_owns_mouse:
             return
         _update_hover(event.position)
         if _editor_modal != EditorModal.CLOSED:
             queue_redraw()
     elif event is InputEventMouseButton and event.pressed and event.button_index == MOUSE_BUTTON_LEFT:
-        if authored_active:
+        if authored_active or launcher_owns_mouse:
             return
         _handle_click(event.position)
         # _handle_click may swap us to a sub-editor (env/entity/etc) that
@@ -181,6 +211,10 @@ func _input(event):
         # new canvas's _gui_input as a paint click.
         get_viewport().set_input_as_handled()
     elif event is InputEventKey and event.pressed:
+        # The Nebula title screen owns its own keys (Esc = back); don't let the
+        # dev-hub hotkeys (Q/Esc=quit, etc.) fire underneath it.
+        if authored_active:
+            return
         if event.keycode == KEY_E:
             _open_editor_chooser()
         elif event.keycode == KEY_U:
@@ -399,18 +433,14 @@ func _start_play_pack_menu(pack_id: String) -> void:
     if pack == null:
         push_warning("main_menu: failed to load pack '%s'" % pid)
         return
-    if not UIIo.screen_exists(pid, "main_menu"):
-        push_warning("main_menu: pack '%s' has no authored main_menu screen" % pid)
-        return
-    var data: Dictionary = UIIo.load_screen(pid, "main_menu")
-    if data.is_empty():
-        push_warning("main_menu: authored main_menu for pack '%s' was empty" % pid)
-        return
     UIPanels.load_pack_theme(pid)
     _authored_pack_id = pid
-    if _authored_screen != null:
-        _authored_screen.call("load_screen", "main_menu", data, HudDataSource.new(null, GameManager))
-        _authored_screen.visible = true
+    # Canonical player-facing pack title screen is the Nebula main menu (the
+    # per-pack authored "main_menu" screen is dormant, mirroring NebulaPause /
+    # the Nebula HUD). New Game / Load route back through the existing
+    # play_pack / _load_slot paths.
+    if _nebula_main_menu != null:
+        _nebula_main_menu.call("open", pid)
     _editor_modal = EditorModal.CLOSED
     _campaign_picker_mode = "editor"
     _selected_pack_id = ""
@@ -519,6 +549,8 @@ func _return_to_launcher() -> void:
     if _authored_screen != null:
         _authored_screen.call("clear_screen")
         _authored_screen.visible = false
+    if _nebula_main_menu != null:
+        _nebula_main_menu.call("close")
     visible = true
     queue_redraw()
 
@@ -582,7 +614,13 @@ func _draw():
         if s.size > 1.5:
             draw_circle(s.pos, s.size * 2.0, Color(col, b * 0.1))
 
-    if _has_authored_screen() and _editor_modal == EditorModal.CLOSED:
+    if _player_overlay_visible() and _editor_modal == EditorModal.CLOSED:
+        return
+
+    # The Nebula launcher column owns the buttons at the bare launcher (it's only
+    # visible when no modal is open). Skip the hand-drawn buttons + hints; modals
+    # are never up while it shows, so nothing else needs drawing here.
+    if _nebula_launcher != null and _nebula_launcher.visible:
         return
 
 
@@ -1138,22 +1176,135 @@ func _has_authored_screen() -> bool:
     return _authored_screen != null and _authored_screen.visible and _authored_screen.has_method("has_screen") and _authored_screen.has_screen()
 
 
+# True while a player-facing pack title screen owns the view (the Nebula main
+# menu, or a legacy authored main_menu screen). Used to suppress the dev-hub
+# draw + input so its buttons/keys don't bleed through.
+func _player_overlay_visible() -> bool:
+    if _nebula_main_menu != null and _nebula_main_menu.visible:
+        return true
+    return _has_authored_screen()
+
+
+# New Game on a chosen slot: clear that slot, direct future saves to it, then
+# enter the pack via the SAME path the dev-hub "PLAY PACK" uses (which already
+# starts a fresh campaign at the pack's start region). We intentionally don't
+# call reset_to_new_game() here — the landing path sets up pack state, and the
+# working PLAY PACK flow doesn't reset either.
+func _on_nebula_new_game(slot: int) -> void:
+    GameManager.delete_save(slot)
+    GameManager.current_save_slot = slot
+    if _nebula_main_menu != null:
+        _nebula_main_menu.call("close")
+    visible = false
+    play_pack_pressed.emit(_authored_pack_id)
+
+
+# Load Game on a chosen slot: reuse the dev-hub load path verbatim.
+func _on_nebula_load_game(slot: int) -> void:
+    if _nebula_main_menu != null:
+        _nebula_main_menu.call("close")
+    _load_slot(slot)
+
+
+# --- Nebula-skinned launcher button column (replaces the hand-drawn 5 buttons) --
+
+func _build_nebula_launcher() -> void:
+    _nebula_launcher = Control.new()
+    _nebula_launcher.set_anchors_and_offsets_preset(PRESET_FULL_RECT)
+    _nebula_launcher.mouse_filter = MOUSE_FILTER_IGNORE
+    _nebula_launcher.theme = NebulaTheme.theme()
+    _nebula_launcher.visible = false
+    add_child(_nebula_launcher)
+
+    var center := CenterContainer.new()
+    center.set_anchors_and_offsets_preset(PRESET_FULL_RECT)
+    center.mouse_filter = MOUSE_FILTER_IGNORE
+    _nebula_launcher.add_child(center)
+
+    var col := VBoxContainer.new()
+    col.add_theme_constant_override("separation", 12)
+    col.custom_minimum_size = Vector2(420, 0)
+    center.add_child(col)
+
+    var title := NebulaTheme.title_label("MV+ EDITOR")
+    title.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+    col.add_child(title)
+    var spacer := Control.new()
+    spacer.custom_minimum_size = Vector2(0, 10)
+    col.add_child(spacer)
+
+    col.add_child(_neb_launch_row("Editor", "Author packs · ships · worlds · triggers", 0, "steel"))
+    _nebula_update_label = null
+    col.add_child(_neb_launch_row("Update", _update_sub_text(), 1, "steel"))
+    col.add_child(_neb_launch_row("Play Pack", "Launch a campaign", 2, "primary"))
+    col.add_child(_neb_launch_row("Settings", "Graphics · Audio · Controls", 3, "steel"))
+    col.add_child(_neb_launch_row("Quit", "Exit to desktop", 4, "danger"))
+
+
+func _neb_launch_row(label_text: String, sub_text: String, idx: int, variant: String) -> Control:
+    var card := PanelContainer.new()
+    var box := NebulaTheme.card_box(variant == "primary")
+    if variant == "danger":
+        box.border_color = NebulaTheme.C_ERROR
+        box.border_width_left = 3
+    card.add_theme_stylebox_override("panel", box)
+    card.custom_minimum_size = Vector2(0, 58)
+    card.mouse_filter = MOUSE_FILTER_STOP
+    card.mouse_default_cursor_shape = CURSOR_POINTING_HAND
+    card.gui_input.connect(func(e: InputEvent):
+        if e is InputEventMouseButton and e.pressed and (e as InputEventMouseButton).button_index == MOUSE_BUTTON_LEFT:
+            _handle_click_by_index(idx))
+    var row := HBoxContainer.new()
+    row.add_theme_constant_override("separation", 10)
+    card.add_child(row)
+    var txt := VBoxContainer.new()
+    txt.add_theme_constant_override("separation", 0)
+    txt.size_flags_horizontal = SIZE_EXPAND_FILL
+    txt.size_flags_vertical = SIZE_SHRINK_CENTER
+    var name_lbl := Label.new()
+    name_lbl.text = label_text.to_upper()
+    name_lbl.add_theme_font_size_override("font_size", NebulaTheme.size("button"))
+    var name_col := NebulaTheme.C_TITLE if variant == "primary" else NebulaTheme.C_BODY
+    if variant == "danger":
+        name_col = NebulaTheme.C_ERROR
+    name_lbl.add_theme_color_override("font_color", name_col)
+    if NebulaTheme.font() != null:
+        name_lbl.add_theme_font_override("font", NebulaTheme.font())
+    txt.add_child(name_lbl)
+    var sub := Label.new()
+    sub.text = sub_text
+    sub.add_theme_color_override("font_color", NebulaTheme.C_DIM)
+    sub.add_theme_font_size_override("font_size", NebulaTheme.size("hint"))
+    txt.add_child(sub)
+    if idx == 1:
+        _nebula_update_label = sub  # live-updated in _process
+    row.add_child(txt)
+    var chev := Label.new()
+    chev.text = "›"
+    chev.add_theme_color_override("font_color", NebulaTheme.C_DIM)
+    chev.size_flags_vertical = SIZE_SHRINK_CENTER
+    row.add_child(chev)
+    return card
+
+
+func _update_sub_text() -> String:
+    match _update_state:
+        1: return "Checking…"
+        2: return "Downloading… %.0f%%" % Updater.download_percent
+        3: return "Updated — restart to apply"
+        4: return "Already up to date"
+        5: return "Update failed"
+        _: return "v%s · check for updates" % Updater.get_display_version()
+
+
 func _refresh_authored_screen() -> void:
-    if _authored_screen == null:
-        return
-    if _editor_modal != EditorModal.CLOSED:
-        _authored_screen.visible = false
-        return
-    var pack_id := _current_pack_id()
-    if pack_id.is_empty() or not UIIo.screen_exists(pack_id, "main_menu"):
-        _authored_pack_id = ""
+    # The per-pack authored "main_menu" screen is DORMANT — the Nebula main menu
+    # (nebula_main_menu.gd) is the canonical player title screen, mirroring how
+    # NebulaPause/HUD supersede their authored equivalents. Keep the authored host
+    # hidden so the stock placeholder screen never draws under the Nebula menu.
+    if _authored_screen != null and _authored_screen.visible:
         _authored_screen.call("clear_screen")
-        return
-    if pack_id != _authored_pack_id or not _authored_screen.call("has_screen"):
-        _authored_pack_id = pack_id
-        var data: Dictionary = UIIo.load_screen(pack_id, "main_menu")
-        _authored_screen.call("load_screen", "main_menu", data, HudDataSource.new(null, GameManager))
-    _authored_screen.visible = true
+        _authored_screen.visible = false
 
 
 func _first_populated_slot() -> int:
@@ -1229,5 +1380,6 @@ func _open_special_screen(target: String) -> bool:
 
 
 func _open_settings_menu() -> void:
-    if _settings_menu != null and _settings_menu.has_method("open_menu"):
-        _settings_menu.call("open_menu", "main_menu")
+    # Canonical settings surface is the Nebula screen (NebulaPause autoload). The
+    # legacy _settings_menu (vanilla-themed) stays on disk but is no longer wired.
+    NebulaPause.open_settings("main_menu")

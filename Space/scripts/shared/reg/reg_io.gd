@@ -215,10 +215,20 @@ static func load_region_rooms(pack_id: String, region_id: String) -> Dictionary:
 
 
 static func save_region_rooms(pack_id: String, region_id: String, rooms_data: Dictionary) -> bool:
-    _ensure_dir(region_dir(pack_id, region_id))
-    var ok := _save_json(region_rooms_json_path(pack_id, region_id), rooms_data)
+    var ok := save_region_rooms_no_flatten(pack_id, region_id, rooms_data)
     flatten_to_runtime(pack_id)
     return ok
+
+
+# Writes a region's rooms.json WITHOUT rebuilding the flattened runtime view.
+# Callers that have already written Rooms/rooms.json directly (in-game edit
+# mode) use this to keep the per-region source of truth in sync — so a later
+# RegIO.flatten_to_runtime() (e.g. opening the desktop region editor) rebuilds
+# from current sources instead of clobbering the live edits — without risking a
+# full re-flatten dropping shipped-only regions (see _build_flat_runtime_rooms).
+static func save_region_rooms_no_flatten(pack_id: String, region_id: String, rooms_data: Dictionary) -> bool:
+    _ensure_dir(region_dir(pack_id, region_id))
+    return _save_json(region_rooms_json_path(pack_id, region_id), rooms_data)
 
 
 # Loads Regions/<region>/room_variants.json. Returns the default shape

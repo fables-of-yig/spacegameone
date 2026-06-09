@@ -2628,9 +2628,10 @@ func _unhandled_input(event: InputEvent):
             _discard_recording_and_return()
             return
 
-        pause_open = true
-        get_tree().paused = true
-        pause_menu.open_menu()
+        # Canonical pause is the cross-engine Nebula overlay (it sets pause_open +
+        # get_tree().paused itself and routes Resume/Save/Settings/Exit). The old
+        # authored-pause path on pause_menu.gd is dormant, mirroring the Nebula HUD.
+        NebulaPause.open()
         return
 
     if editor_open:
@@ -2650,9 +2651,7 @@ func _unhandled_input(event: InputEvent):
         if pause_open:
             _on_pause_resumed()
         else:
-            pause_open = true
-            get_tree().paused = true
-            pause_menu.open_menu()
+            NebulaPause.open()
         return
 
     if event.is_action_pressed("toggle_pause") and not pause_open:

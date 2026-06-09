@@ -17,6 +17,7 @@ extends Node2D
 # The palette shows the room's tileset atlas; click a tile to select it.
 
 const EnvIO := preload("res://Space/scripts/shared/env/env_io.gd")
+const RegIO := preload("res://Space/scripts/shared/reg/reg_io.gd")
 const BLOCK := 16
 const UNDO_LIMIT := 100
 
@@ -2075,11 +2076,72 @@ func _save() -> void:
 	rooms[addr] = raw_room
 	raw["rooms"] = rooms
 	if EnvIO.save_rooms(pack.pack_id, raw):
+		# Mirror the same patch into the per-region source of truth so a later
+		# RegIO.flatten_to_runtime() (e.g. opening the desktop region editor)
+		# rebuilds Rooms/rooms.json from current sources instead of silently
+		# discarding these in-game edits.
+		var synced := _sync_region_source(pack.pack_id, addr, raw_room)
 		_dirty = false
 		_refresh_hud()
-		_set_status("saved '%s' → user pack '%s'" % [addr, pack.pack_id])
+		var note := "saved '%s' → user pack '%s'" % [addr, pack.pack_id]
+		if synced:
+			note += " (region source synced)"
+		_set_status(note)
 	else:
 		_set_status("save failed: write error")
+
+
+# Patches the same geometry/content fields into the room's per-region source
+# (Regions/<region>/rooms.json) that _save() just wrote to the flattened
+# Rooms/rooms.json. Returns true when a source room was found and updated.
+# Skips silently (returns false) for bare-addr rooms or rooms that exist only
+# in the flat view — the flat write already persisted those.
+func _sync_region_source(pack_id: String, addr: String, patched: Dictionary) -> bool:
+	var parsed := RegIO.parse_room_addr(addr)
+	var region_id := str(parsed.get("region_id", ""))
+	var room_key := str(parsed.get("room_addr", ""))
+	if region_id.is_empty() or room_key.is_empty():
+		return false
+	# Don't materialize a region source that doesn't exist (load_region_rooms
+	# would create a default file as a side effect).
+	if not FileAccess.file_exists(RegIO.region_rooms_json_path(pack_id, region_id)):
+		return false
+	var region_doc := RegIO.load_region_rooms(pack_id, region_id)
+	var rooms_v: Variant = region_doc.get("rooms", {})
+	if typeof(rooms_v) != TYPE_DICTIONARY:
+		return false
+	var rooms: Dictionary = rooms_v
+	if not rooms.has(room_key):
+		return false
+	var src_room: Dictionary = rooms[room_key]
+	# Mirror exactly the fields _save() patches into the flat room. Door
+	# targets / region_id / addr are NOT touched here: flatten re-derives them.
+	src_room["collision"] = patched.get("collision", [])
+	src_room["bts"] = patched.get("bts", [])
+	var patched_layers: Array = patched.get("tile_layers", [])
+	var src_layers: Array = src_room.get("tile_layers", [])
+	for i in range(mini(patched_layers.size(), src_layers.size())):
+		(src_layers[i] as Dictionary)["tiles"] = (patched_layers[i] as Dictionary).get("tiles", [])
+		(src_layers[i] as Dictionary)["animations"] = (patched_layers[i] as Dictionary).get("animations", {})
+	src_room["tile_layers"] = src_layers
+	src_room["entities"] = patched.get("entities", [])
+	src_room["tileset"] = int(patched.get("tileset", 0))
+	src_room["weather"] = patched.get("weather", {})
+	src_room["shader_regions"] = patched.get("shader_regions", [])
+	src_room["parallax_layers"] = patched.get("parallax_layers", [])
+	src_room["parallax_enabled"] = bool(patched.get("parallax_enabled", true))
+	src_room["zones"] = patched.get("zones", [])
+	src_room["width_blocks"] = int(patched.get("width_blocks", src_room.get("width_blocks", 1)))
+	src_room["height_blocks"] = int(patched.get("height_blocks", src_room.get("height_blocks", 1)))
+	src_room["width_px"] = int(patched.get("width_px", src_room.get("width_px", 16)))
+	src_room["height_px"] = int(patched.get("height_px", src_room.get("height_px", 16)))
+	src_room["width_screens"] = float(patched.get("width_screens", src_room.get("width_screens", 1.0)))
+	src_room["height_screens"] = float(patched.get("height_screens", src_room.get("height_screens", 1.0)))
+	rooms[room_key] = src_room
+	region_doc["rooms"] = rooms
+	# No-flatten write: Rooms/rooms.json is already current from EnvIO.save_rooms
+	# above, and a full re-flatten could drop shipped-only regions.
+	return RegIO.save_region_rooms_no_flatten(pack_id, region_id, region_doc)
 
 
 func _mark_dirty() -> void:

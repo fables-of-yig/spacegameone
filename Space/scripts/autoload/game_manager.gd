@@ -2166,11 +2166,13 @@ func save_game(slot: int = -1) -> bool:
         "save_version": 3, 
         "save_slot": slot, 
         "slot_info": {
-            "hull_name": hull_data.get("name", "Unknown"), 
-            "system_name": sys_data.get("name", "Unknown"), 
-            "credits": credits, 
-            "crew_count": 0, 
-        }, 
+            "hull_name": hull_data.get("name", "Unknown"),
+            "system_name": sys_data.get("name", "Unknown"),
+            "credits": credits,
+            "crew_count": 0,
+            "save_time": Time.get_unix_time_from_system(),
+            "total_game_hours": total_game_hours,
+        },
     }
     var file = FileAccess.open(_get_save_path(slot), FileAccess.WRITE)
     if not file:

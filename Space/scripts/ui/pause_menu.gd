@@ -287,5 +287,6 @@ func _open_special_screen(target: String) -> bool:
 
 
 func _open_settings_menu() -> void:
-    if _settings_menu != null and _settings_menu.has_method("open_menu"):
-        _settings_menu.call("open_menu", "pause_menu")
+    # Route the (dormant) authored-pause Settings action to the canonical Nebula
+    # settings screen as well, so there's one settings surface everywhere.
+    NebulaPause.open_settings("pause_menu")

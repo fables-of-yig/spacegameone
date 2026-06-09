@@ -3,12 +3,12 @@ extends CanvasLayer
 # Death screen overlay. Shows "Game Over" with Continue (reload last save)
 # and Quit options. Triggered by the player's player_died signal.
 
-const UIPanels := preload("res://Space/scripts/ui/ui_panels.gd")
 const UIIo := preload("res://Space/scripts/shared/ui/ui_io.gd")
 const AuthoredScreenRuntime := preload("res://Space/scripts/ui/authored_screen_runtime.gd")
 const HudDataSource := preload("res://Space/scripts/ui/hud_data_source.gd")
 
 var _panel: Control = null
+var _card: PanelContainer = null
 var _active: bool = false
 var _authored_screen: Control = null
 var _authored_pack_id: String = ""
@@ -39,6 +39,7 @@ func show_game_over() -> void:
 	_active = true
 	visible = true
 	MvGame.simulation_paused = true
+	_reskin()
 	_refresh_authored_screen()
 
 
@@ -57,10 +58,24 @@ func _on_player_died(_source: String) -> void:
 	show_game_over()
 
 
-func _on_continue() -> void:
+func _on_load_last_save() -> void:
 	_active = false
 	visible = false
 	MvGame.simulation_paused = false
+	var save_mgr: Node = get_node_or_null("/root/MvSaveManager")
+	if save_mgr != null:
+		var slot: int = int(save_mgr.call("most_recent_slot"))
+		if slot >= 0:
+			save_mgr.call("load_game", slot)
+			return
+	# No save exists yet (e.g. editor playtest, or died before first save):
+	# fall back to respawning at the room start so the player isn't stuck.
+	_respawn_fallback()
+
+
+# Used only when no save is available. Restores the player into the current /
+# start room without loading from disk.
+func _respawn_fallback() -> void:
 	if PlanetaryInterface.hosted or PlanetaryInterface.pending_return_to_editor:
 		var room_mgr_hosted: Node = MvGame.room_manager
 		if room_mgr_hosted != null and room_mgr_hosted.has_method("current_room"):
@@ -74,18 +89,12 @@ func _on_continue() -> void:
 			if MvGame.main != null and MvGame.main.has_method("_spawn_player_in_room"):
 				MvGame.main.call("_spawn_player_in_room")
 		return
-	var save_mgr: Node = get_node_or_null("/root/MvSaveManager")
-	if save_mgr != null:
-		for i in 3:
-			if save_mgr.call("has_save", i):
-				save_mgr.call("load_game", i)
-				return
 	var room_mgr: Node = MvGame.room_manager
 	if room_mgr != null and room_mgr.has_method("load_start_room"):
 		room_mgr.call("load_start_room")
 
 
-func _on_quit() -> void:
+func _on_exit_to_menu() -> void:
 	_active = false
 	visible = false
 	MvGame.simulation_paused = false
@@ -103,46 +112,87 @@ func _on_quit() -> void:
 		DataManager.galaxy_seed = 0
 		get_tree().change_scene_to_file.call_deferred("res://Space/scenes/main.tscn")
 		return
-	get_tree().quit()
+	# Standalone / editor playtest: return to the Space main menu rather than
+	# quitting the application.
+	GameManager.skip_main_menu = false
+	get_tree().change_scene_to_file.call_deferred("res://Space/scenes/main.tscn")
 
 
+# Built from the Claude Design "Game Over" handoff: heavily-dimmed veil + a
+# centered armored card with a two-line red defeat title and exactly two
+# full-width options — Load Game (cyan primary) / Exit (steel ghost).
 func _build_ui() -> void:
 	_panel = Control.new()
-	_panel.anchor_right = 1.0
-	_panel.anchor_bottom = 1.0
+	_panel.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	_panel.draw.connect(_draw_bg)
 
-	var vbox := VBoxContainer.new()
-	vbox.anchor_left = 0.5
-	vbox.anchor_right = 0.5
-	vbox.anchor_top = 0.4
-	vbox.offset_left = -80
-	vbox.offset_right = 80
-	vbox.add_theme_constant_override("separation", 12)
+	var center := CenterContainer.new()
+	center.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	_panel.add_child(center)
 
+	_card = PanelContainer.new()
+	_card.theme = NebulaTheme.theme()
+	_card.add_theme_stylebox_override("panel", NebulaTheme.panel_box())
+	_card.custom_minimum_size = Vector2(430, 0)
+	center.add_child(_card)
+
+	var pad := MarginContainer.new()
+	for side in ["margin_left", "margin_right", "margin_top", "margin_bottom"]:
+		pad.add_theme_constant_override(side, 28)
+	_card.add_child(pad)
+
+	var col := VBoxContainer.new()
+	col.add_theme_constant_override("separation", 22)
+	col.alignment = BoxContainer.ALIGNMENT_CENTER
+	pad.add_child(col)
+
+	# Two-line red "GAME / OVER" defeat title (Robyn Brutalist, embossed).
 	var title := Label.new()
-	title.text = "GAME OVER"
+	title.text = "GAME\nOVER"
 	title.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	title.add_theme_font_size_override("font_size", 24)
-	title.add_theme_color_override("font_color", UIPanels.text_color("error"))
-	vbox.add_child(title)
+	title.add_theme_color_override("font_color", NebulaTheme.C_ERROR)
+	title.add_theme_font_size_override("font_size", 50)
+	title.add_theme_constant_override("outline_size", 6)
+	title.add_theme_color_override("font_outline_color", Color("#5a1410"))
+	var tf := NebulaTheme.font()
+	if tf != null:
+		title.add_theme_font_override("font", tf)
+	col.add_child(title)
 
-	var continue_btn := Button.new()
-	continue_btn.text = "Continue"
-	continue_btn.pressed.connect(_on_continue)
-	vbox.add_child(continue_btn)
+	# Options ~78% of the body width, stacked.
+	var btns_pad := MarginContainer.new()
+	btns_pad.add_theme_constant_override("margin_left", 24)
+	btns_pad.add_theme_constant_override("margin_right", 24)
+	col.add_child(btns_pad)
+	var btns := VBoxContainer.new()
+	btns.add_theme_constant_override("separation", 12)
+	btns_pad.add_child(btns)
 
-	var quit_btn := Button.new()
-	quit_btn.text = "Quit"
-	quit_btn.pressed.connect(_on_quit)
-	vbox.add_child(quit_btn)
+	var load_btn := NebulaUi.button("Load Game", "primary")
+	load_btn.custom_minimum_size = Vector2(0, 48)
+	load_btn.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	load_btn.pressed.connect(_on_load_last_save)
+	btns.add_child(load_btn)
 
-	_panel.add_child(vbox)
+	var exit_btn := NebulaUi.button("Exit", "ghost")
+	exit_btn.custom_minimum_size = Vector2(0, 48)
+	exit_btn.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	exit_btn.pressed.connect(_on_exit_to_menu)
+	btns.add_child(exit_btn)
+
 	add_child(_panel)
 
 
+# Re-apply the scale-aware Nebula theme in case the profile changed since build.
+func _reskin() -> void:
+	if _card != null:
+		_card.theme = NebulaTheme.theme()
+		_card.add_theme_stylebox_override("panel", NebulaTheme.panel_box())
+
+
 func _draw_bg() -> void:
-	UIPanels.draw_dim(_panel, Rect2(Vector2.ZERO, _panel.size))
+	# Handoff veil: rgba(5,7,11,.72) over the dimmed deep-space snapshot.
+	_panel.draw_rect(Rect2(Vector2.ZERO, _panel.size), Color(0.0196, 0.0275, 0.0431, 0.72))
 
 
 func _current_pack_id() -> String:
@@ -185,7 +235,7 @@ func _on_authored_action(action_id: String, action_args: String, _element_id: St
 					MvGame.simulation_paused = false
 					forced_save_mgr.call("load_game", forced_slot)
 					return
-			_on_continue()
+			_on_load_last_save()
 		"load_game":
 			if action_args.is_valid_int():
 				var slot := int(action_args)
@@ -196,11 +246,11 @@ func _on_authored_action(action_id: String, action_args: String, _element_id: St
 					MvGame.simulation_paused = false
 					save_mgr.call("load_game", slot)
 					return
-			_on_continue()
+			_on_load_last_save()
 		"quit_to_menu", "quit_game":
-			_on_quit()
+			_on_exit_to_menu()
 		"close_screen":
-			_on_continue()
+			_on_load_last_save()
 		"open_screen":
 			if action_args in ["boss_intro", "cinematic"]:
 				UiHostActions.open_cinematic(_current_pack_id(), "game_over", action_args)

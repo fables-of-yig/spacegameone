@@ -374,6 +374,16 @@ func clear() -> void:
 	_defs_pack_id = ""
 
 
+# Drops the cached attack/projectile definitions so the next access re-reads
+# them from disk. Called by the in-game Player Attack Workshop after it writes
+# attacks.json / projectiles.json, so an authored attack is usable immediately
+# without a room reload. Unlike clear(), this preserves live inventory state.
+func reload_combat_defs() -> void:
+	_attack_defs_cache.clear()
+	_projectile_defs_cache.clear()
+	_defs_pack_id = ""
+
+
 func _ensure_defs_loaded() -> void:
 	var pack_id := MvPackLoader.current_pack.pack_id if MvPackLoader.current_pack != null else "demo"
 	if pack_id == _defs_pack_id \

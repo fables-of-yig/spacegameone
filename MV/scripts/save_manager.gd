@@ -95,6 +95,31 @@ func has_save(slot: int) -> bool:
 	return FileAccess.file_exists(_save_path(_current_pack_id(), slot))
 
 
+func has_any_save() -> bool:
+	return most_recent_slot() >= 0
+
+
+# Returns the slot index of the newest save (by timestamp) for the current
+# pack, or -1 if no save exists. Used by the Game Over screen's
+# "Load Last Save" action.
+func most_recent_slot() -> int:
+	var best_slot: int = -1
+	var best_ts: float = -1.0
+	var pack_id := _current_pack_id()
+	for i in MAX_SLOTS:
+		var path := _save_path(pack_id, i)
+		if not FileAccess.file_exists(path):
+			continue
+		var raw := MvPackLoader.read_json_dict(path)
+		if raw.is_empty():
+			continue
+		var ts := float(raw.get("timestamp", 0))
+		if ts > best_ts:
+			best_ts = ts
+			best_slot = i
+	return best_slot
+
+
 func list_saves() -> Array:
 	var out: Array = []
 	var pack_id := _current_pack_id()

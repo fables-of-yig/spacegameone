@@ -13,8 +13,9 @@ extends CanvasLayer
 #
 # NOTE on scope (honest): an enemy attacks via behavior leaves (`attack`/`shoot`) plus
 # the stat fields below — NOT via the player's authored attacks.json/projectiles.json.
-# Rich per-frame hitboxes / authored projectiles / FX are the PLAYER track (not built
-# here yet). FX is engine-fixed and not authorable.
+# The player's rich per-frame hitboxes / authored projectiles live in the separate
+# Player Attack Workshop (MvPlayerAttackWorkshop, console `attacks`), reachable from
+# the "Player's Attacks" track card here.
 
 const EntIO := preload("res://Space/scripts/shared/ent/ent_io.gd")
 const BehIO := preload("res://Space/scripts/shared/beh/beh_io.gd")
@@ -113,8 +114,8 @@ func _build_track_select(parent: Control) -> void:
 		"Identity, stats, melee & ranged, then assemble AI as WHEN → DO rules. Spawn & fight to tune.",
 		func(): _pick_track("enemy")))
 	cards.add_child(NebulaUi.track_card("Player's Attacks",
-		"Per-frame melee hitboxes and rich projectiles. Not wired into the engine yet — coming next.",
-		func(): _pick_track("player")))
+		"Per-frame melee hitboxes and rich projectiles → the player's attacks.json / projectiles.json. Save & fire live.",
+		func(): _open_player_track()))
 
 
 func _build_editor(parent: Control) -> void:
@@ -242,24 +243,14 @@ func _pick_track(track: String) -> void:
 		_step = 0
 		_show_step()
 	elif track == "player":
-		_show_player_placeholder()
+		_open_player_track()
 
 
-func _show_player_placeholder() -> void:
-	for c in _rail_host.get_children():
-		c.queue_free()
-	for c in _work_host.get_children():
-		c.queue_free()
-	var wp := NebulaUi.work_panel("Player's Attacks — not wired yet")
-	_work_host.add_child(wp["root"])
-	var msg := Label.new()
-	msg.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
-	msg.add_theme_color_override("font_color", NebulaTheme.C_BODY)
-	msg.text = "The player-attack track (per-frame melee hitboxes + authored projectiles with homing/explosive/trails) isn't built into the engine yet. The enemy track is fully working — use Switch Track to build an enemy."
-	wp["body"].add_child(msg)
-	_nav_back.disabled = false
-	_nav_next.disabled = true
-	_nav_test.disabled = true
+# Hand off to the dedicated Player Attack Workshop overlay (owned by DevConsole).
+func _open_player_track() -> void:
+	close_workshop()
+	if DevConsole != null and DevConsole.has_method("open_attack_workshop"):
+		DevConsole.open_attack_workshop()
 
 
 func _init_data() -> void:

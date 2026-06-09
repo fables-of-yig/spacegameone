@@ -34,10 +34,15 @@ func _init() -> void:
 		if not t.has_stylebox("focus", "LineEdit"):
 			push_error("NEBULASMOKE: input focus stylebox missing")
 			ok = false
-		if t.get_stylebox("panel", "PanelContainer") is StyleBoxTexture:
-			print("NEBULASMOKE: window frame is StyleBoxTexture (9-slice wired)")
+		# The default panel is now the flat armored panel_box() (no painted-frame
+		# decorations); a StyleBoxFlat here is correct, not a regression.
+		var panel_sb := t.get_stylebox("panel", "PanelContainer")
+		if panel_sb is StyleBoxFlat:
+			print("NEBULASMOKE: window frame is flat panel_box (decorations stripped)")
+		elif panel_sb is StyleBoxTexture:
+			print("NEBULASMOKE: window frame is StyleBoxTexture (9-slice)")
 		else:
-			push_error("NEBULASMOKE: window frame is not a textured 9-slice")
+			push_error("NEBULASMOKE: panel stylebox is neither flat nor texture")
 			ok = false
 
 	# Builder helpers must produce real styleboxes.

@@ -44,6 +44,7 @@ BeehaveGlobalMetrics="*res://addons/beehave/metrics/beehave_global_metrics.gd"
 BeehaveGlobalDebugger="*res://addons/beehave/debug/global_debugger.gd"
 EditorTooltip="*res://Space/scripts/editor/editor_tooltip.gd"
 DevConsole="*res://MV/scripts/console/dev_console.gd"
+NebulaPause="*res://Space/scripts/ui/nebula_pause_menu.gd"
 
 [display]
 
@@ -51,6 +52,10 @@ window/size/viewport_width=1920
 window/size/viewport_height=1080
 window/size/mode=3
 window/stretch/mode="canvas_items"
+
+[dotnet]
+
+project/assembly_name="MV+ Editor"
 
 [editor_overrides]
 

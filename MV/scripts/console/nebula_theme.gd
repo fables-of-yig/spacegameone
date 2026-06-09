@@ -126,7 +126,11 @@ static func _build(p: String) -> Theme:
 	return t
 
 
-# --- Panels: painted 9-slice at full scale, flat token panel when compact. ------
+# --- Panels: painted 9-slice armored window frame.
+# window-landscape.png has been cleaned (the decorative corner ✕ and bottom vents
+# that read as fake buttons were painted out — see tools/frame_clean.gd), so the
+# ornate armored frame is the default again. The flat panel_box() remains for
+# panels that want a plain surface.
 static func _apply_panels(t: Theme, compact: bool) -> void:
 	var box: StyleBox = null
 	if compact:
@@ -139,7 +143,7 @@ static func _apply_panels(t: Theme, compact: bool) -> void:
 			win.content_margin_right = 28.0
 			win.content_margin_top = 24.0
 			win.content_margin_bottom = 24.0
-		box = win if win != null else _flat(C_PANEL_BG, C_BORDER, 1, 8, 12)
+		box = win if win != null else panel_box()
 	t.set_stylebox("panel", "PanelContainer", box)
 	t.set_stylebox("panel", "Panel", box)
 
@@ -253,6 +257,18 @@ static func card_box(selected := false) -> StyleBoxFlat:
 	var b := _flat(C_PANEL_ALT, C_ACCENT if selected else Color(C_BORDER.r, C_BORDER.g, C_BORDER.b, 0.35), 1, 6, pad)
 	if selected:
 		b.border_width_left = 3
+	return b
+
+
+# Clean armored window panel — flat token fill + thin steel border + soft rounded
+# corners, WITHOUT the ornate painted-frame texture. Used by the runtime overlays
+# (pause / settings / keybindings) so the frame has no baked-in decorative ✕ or
+# bottom vents that read as fake buttons. Same palette as the textured frame.
+static func panel_box() -> StyleBoxFlat:
+	var pad := 14 if profile() == "compact" else 20
+	var b := _flat(C_PANEL_BG, Color(C_BORDER.r, C_BORDER.g, C_BORDER.b, 0.45), 1, 16, pad)
+	b.shadow_color = Color(0, 0, 0, 0.35)
+	b.shadow_size = 10
 	return b
 
 
