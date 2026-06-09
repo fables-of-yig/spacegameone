@@ -44,6 +44,7 @@ var _workshop: MvCombatWorkshop = null
 var _trigger_editor: MvTriggerEditor = null
 var _dialogue_editor: MvDialogueEditor = null
 var _galaxy_editor: SpaceGalaxyEditor = null
+var _encounters_editor: SpaceEncountersEditor = null
 var _hint: Label = null
 var _skin_host: Control = null
 var _title_lbl: Label = null
@@ -69,6 +70,12 @@ func _ready() -> void:
 	add_child(galaxy_layer)
 	_galaxy_editor = SpaceGalaxyEditor.new()
 	galaxy_layer.add_child(_galaxy_editor)
+	# Encounters editor — same independent-CanvasLayer pattern.
+	var enc_layer := CanvasLayer.new()
+	enc_layer.layer = 126
+	add_child(enc_layer)
+	_encounters_editor = SpaceEncountersEditor.new()
+	enc_layer.add_child(_encounters_editor)
 	_build_hint()
 	visible = false
 
@@ -149,7 +156,7 @@ func _refresh_chips() -> void:
 		return
 	for c in _chip_row.get_children():
 		c.queue_free()
-	var cmds := ["help", "flag", "wizard", "workshop", "triggers", "dialogue", "spawn", "fire"] if _in_mv() else ["help", "flag", "galaxyedit", "mapedit", "shipbuilder", "add_poi", "save_systems"]
+	var cmds := ["help", "flag", "wizard", "workshop", "triggers", "dialogue", "spawn", "fire"] if _in_mv() else ["help", "flag", "galaxyedit", "mapedit", "encounters", "shipbuilder", "add_poi", "save_systems"]
 	for cmd in cmds:
 		var chip := NebulaUi.button(str(cmd), "ghost")
 		chip.focus_mode = Control.FOCUS_NONE
@@ -294,6 +301,8 @@ func _handle_command(text: String) -> void:
 			_cmd_mapedit()
 		"galaxyedit", "galaxy":
 			_cmd_galaxyedit()
+		"encounters", "encedit":
+			_cmd_encounters()
 		"shipbuilder", "build":
 			_cmd_shipbuilder()
 		"save_systems":
@@ -526,6 +535,18 @@ func _cmd_galaxyedit() -> void:
 		return
 	close()
 	_galaxy_editor.open_editor()
+
+
+# `encounters` opens the Encounters Editor (void/random-encounter defs).
+func _cmd_encounters() -> void:
+	if _space_host() == null:
+		_err("encounters is Space-only")
+		return
+	if _encounters_editor == null:
+		_err("encounters editor unavailable")
+		return
+	close()
+	_encounters_editor.open_editor()
 
 
 # `mapedit` opens the Space map editor (drag/place/rename/delete POIs).
@@ -823,7 +844,7 @@ func _print_help() -> void:
 	if _in_mv():
 		_log("MV:  <paste trigger JSON>   fire <event> [json]   spawn <entity_id>   ·   F2 = edit room")
 	else:
-		_log("Space:  galaxyedit (systems)   mapedit (POIs)   shipbuilder   add_poi <type> <name>   save_systems")
+		_log("Space:  galaxyedit (systems)   mapedit (POIs)   encounters (void defs)   shipbuilder   add_poi <type> <name>   save_systems")
 	_log("Submit: Ctrl+Enter    Close: Esc or backtick")
 
 

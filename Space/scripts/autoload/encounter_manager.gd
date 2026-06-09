@@ -1,6 +1,7 @@
 extends Node
 
 const PedIO := preload("res://Space/scripts/shared/ped/ped_io.gd")
+const EncIO := preload("res://Space/scripts/shared/enc/enc_io.gd")
 
 signal encounter_started(event_id: String, enc_id: int)
 
@@ -35,6 +36,24 @@ var encounter_counts: Dictionary = {}
 func _ready():
     process_mode = Node.PROCESS_MODE_ALWAYS
     _load_encounter_tuning()
+    reload_defs_for_pack(_current_pack_id())
+
+
+# Loads the encounter def table for a pack (user override -> shipped -> demo ->
+# global game data) and applies it live. Called at boot and by the in-game
+# Encounters Editor after Save so authored defs take effect immediately.
+func reload_defs_for_pack(pack_id: String) -> void:
+    var defs := EncIO.load_defs(pack_id)
+    if not defs.is_empty():
+        load_encounters(defs)
+
+
+func _current_pack_id() -> String:
+    if MvPackLoader.current_pack != null:
+        return str(MvPackLoader.current_pack.pack_id)
+    if not str(PlanetaryInterface.pending_pack_id).is_empty():
+        return str(PlanetaryInterface.pending_pack_id)
+    return "demo"
 
 func load_encounters(data: Dictionary):
 
@@ -96,6 +115,9 @@ func pick_encounter() -> Variant:
     for enc_id in all_encounters:
         var enc = all_encounters[enc_id]
 
+        # Authored disable (in-game Encounters Editor).
+        if not enc.get("enabled", true):
+            continue
 
         if enc.get("unique", false) and seen_encounters.has(enc_id):
             continue
