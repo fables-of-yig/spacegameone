@@ -3,6 +3,7 @@ extends Area2D
 
 
 
+var poi_id: String = ""
 var poi_name: String = ""
 var poi_type: String = ""
 var poi_description: String = ""
@@ -72,6 +73,7 @@ func _ready():
     queue_redraw()
 
 func setup(data: Dictionary, eid: String):
+    poi_id = str(data.get("id", ""))
     poi_name = data.get("name", "Unknown")
     poi_type = data.get("type", "anomaly")
     poi_description = data.get("description", "")

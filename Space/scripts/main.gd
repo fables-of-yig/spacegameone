@@ -138,6 +138,7 @@ var starfield: Node2D = null
 var _ui: Node = null
 var _spawn: Node = null
 var _cmc: Node = null
+var _map_editor: SpaceMapEditor = null
 var _world_renderer: Node2D = null
 
 var camera_zoom: float = 1.0
@@ -243,6 +244,9 @@ func _ready():
     _cmc = CreativeModeController.new()
     _cmc.owner_main = self
     add_child(_cmc)
+    _map_editor = SpaceMapEditor.new()
+    _map_editor.setup(self)
+    add_child(_map_editor)
     _ui = UICoordinator.new()
     add_child(_ui)
     hud_control = _ui.setup_hud(player, system_world_positions)
@@ -1816,6 +1820,12 @@ func _any_panel_open() -> bool:
         and region_picker.has_method("is_open") \
         and region_picker.is_open()
     return builder_open or star_map_open or event_open or editor_open or pause_open or picker_open
+
+# In-game Space map editor (drag/place/rename/delete POIs). Console: `mapedit`.
+func toggle_map_editor() -> void:
+    if _map_editor != null:
+        _map_editor.toggle()
+
 
 func _toggle_builder():
     if builder_open or star_map_open or jumping or event_open or editor_open:
