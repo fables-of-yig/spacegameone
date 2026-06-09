@@ -1827,6 +1827,16 @@ func toggle_map_editor() -> void:
         _map_editor.toggle()
 
 
+# Open the ship builder for authoring (console `shipbuilder`), bypassing the
+# near-a-station gameplay gate so you can build/test-fly anywhere while editing.
+func open_ship_builder_authoring() -> void:
+    if builder_open or star_map_open or jumping or event_open or editor_open:
+        return
+    builder.open_builder()
+    builder_open = true
+    GameManager.builder_open = true
+
+
 func _toggle_builder():
     if builder_open or star_map_open or jumping or event_open or editor_open:
         return

@@ -141,7 +141,7 @@ func _refresh_chips() -> void:
 		return
 	for c in _chip_row.get_children():
 		c.queue_free()
-	var cmds := ["help", "flag", "wizard", "workshop", "triggers", "dialogue", "spawn", "fire"] if _in_mv() else ["help", "flag", "mapedit", "add_poi", "save_systems"]
+	var cmds := ["help", "flag", "wizard", "workshop", "triggers", "dialogue", "spawn", "fire"] if _in_mv() else ["help", "flag", "mapedit", "shipbuilder", "add_poi", "save_systems"]
 	for cmd in cmds:
 		var chip := NebulaUi.button(str(cmd), "ghost")
 		chip.focus_mode = Control.FOCUS_NONE
@@ -284,6 +284,8 @@ func _handle_command(text: String) -> void:
 			_cmd_add_poi(rest)
 		"mapedit":
 			_cmd_mapedit()
+		"shipbuilder", "build":
+			_cmd_shipbuilder()
 		"save_systems":
 			_cmd_save_systems()
 		_:
@@ -490,6 +492,19 @@ func _validate_condition(c: Variant, errors: Array) -> void:
 
 
 # ── Space commands ───────────────────────────────────────────────────────────
+
+# `shipbuilder` opens the ship builder for authoring (anywhere, build->test-fly).
+func _cmd_shipbuilder() -> void:
+	var host := _space_host()
+	if host == null:
+		_err("shipbuilder is Space-only")
+		return
+	close()
+	if host.has_method("open_ship_builder_authoring"):
+		host.open_ship_builder_authoring()
+	else:
+		_err("ship builder unavailable")
+
 
 # `mapedit` opens the Space map editor (drag/place/rename/delete POIs).
 func _cmd_mapedit() -> void:
@@ -786,7 +801,7 @@ func _print_help() -> void:
 	if _in_mv():
 		_log("MV:  <paste trigger JSON>   fire <event> [json]   spawn <entity_id>   ·   F2 = edit room")
 	else:
-		_log("Space:  mapedit (drag POIs)   add_poi <type> <name>   save_systems")
+		_log("Space:  mapedit (drag POIs)   shipbuilder   add_poi <type> <name>   save_systems")
 	_log("Submit: Ctrl+Enter    Close: Esc or backtick")
 
 
