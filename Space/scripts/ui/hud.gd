@@ -111,13 +111,13 @@ func _draw():
         "label": "Hull", "value": int(player.health), "max": int(max_health),
         "total": maxi(1, int(ceil(max_health / 100.0))),
         "tone": "energy", "danger_tone": "crystal", "danger_at": 0.2,
-        "per_row": 7, "size": 26.0, "low_at": 2.0, "glyph": "hp",
+        "per_row": 7, "size": 26.0, "low_at": 2.0, "glyph": "hp", "icon_tex": NebulaHud.icon("hp"),
     })
     var max_shields: float = maxf(player.max_shields, 1.0)
     NebulaHud.draw_tank_gauge(self, Vector2(bar_x + hull_size.x + 22.0, bar_y), {
         "label": "Shields", "value": int(player.shields), "max": int(max_shields),
         "total": maxi(1, int(ceil(max_shields / 100.0))),
-        "tone": "shield", "per_row": 5, "size": 26.0, "low_at": 1.0, "glyph": "shield",
+        "tone": "shield", "per_row": 5, "size": 26.0, "low_at": 1.0, "glyph": "shield", "icon_tex": NebulaHud.icon("shield"),
     })
     bar_y += hull_size.y + gap + 4
 
@@ -982,22 +982,23 @@ func _draw_weapon_bar(_font: Font, p_src: Node):
     NebulaHud.draw_ability_bar(self, size.x * 0.5, size.y - 132.0, "Weapons", slots, 52.0, true)
 
 
-# Maps a Space weapon subtype/name to a HUD icon.
+# Maps a Space weapon subtype/name to a Claude Design HUD icon
+# (set: hp / lightning / shield / fire / magnet / crystal).
 func _weapon_icon(subtype: String, wname: String, slot: int) -> String:
     var s := (subtype + " " + wname).to_lower()
-    if s.findn("plasma") >= 0 or s.findn("crystal") >= 0:
+    if s.findn("plasma") >= 0 or s.findn("crystal") >= 0 or s.findn("lance") >= 0:
         return "crystal"
     if s.findn("missile") >= 0 or s.findn("rocket") >= 0 or s.findn("torpedo") >= 0:
-        return "comet"
-    if s.findn("mine") >= 0 or s.findn("bomb") >= 0 or s.findn("flak") >= 0:
-        return "burst"
-    if s.findn("fire") >= 0 or s.findn("flame") >= 0 or s.findn("incend") >= 0:
         return "fire"
-    if s.findn("beam") >= 0 or s.findn("lance") >= 0 or s.findn("laser") >= 0 or s.findn("energy") >= 0 or s.findn("pulse") >= 0:
-        return "bolt"
+    if s.findn("rail") >= 0 or s.findn("gauss") >= 0 or s.findn("mag") >= 0:
+        return "magnet"
+    if s.findn("mine") >= 0 or s.findn("bomb") >= 0 or s.findn("flak") >= 0 or s.findn("fire") >= 0 or s.findn("flame") >= 0:
+        return "fire"
+    if s.findn("beam") >= 0 or s.findn("laser") >= 0 or s.findn("energy") >= 0 or s.findn("pulse") >= 0:
+        return "lightning"
     if slot == 3:
-        return "sun"
-    return "star"
+        return "shield"
+    return "lightning"
 
 func _draw_radial_menu(font: Font, p_src: Node):
     if not p_src or not "radial_open" in p_src:

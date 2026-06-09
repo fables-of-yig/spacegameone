@@ -18,19 +18,19 @@ func _initialize() -> void:
 
 
 func _paint(c: Control) -> void:
-	# HP gauge in danger (forces crystal tone + partial pip + low blink).
+	# HP gauge in danger (forces crystal tone + partial pip + low blink + icon tex).
 	NebulaHud.draw_tank_gauge(c, Vector2(20, 20), {
 		"label": "HP", "value": 140, "max": 1400, "total": 14,
 		"tone": "energy", "danger_tone": "crystal", "danger_at": 0.2,
-		"per_row": 7, "size": 30.0, "low_at": 2.0, "glyph": "hp"})
+		"per_row": 7, "size": 30.0, "low_at": 2.0, "glyph": "hp", "icon_tex": NebulaHud.icon("hp")})
 	# Energy gauge (cyan, partial).
 	NebulaHud.draw_tank_gauge(c, Vector2(20, 160), {
 		"label": "Energy", "value": 380, "max": 1000, "total": 10,
-		"tone": "magic", "per_row": 5, "size": 30.0, "low_at": 1.0, "glyph": "bolt"})
+		"tone": "magic", "per_row": 5, "size": 30.0, "low_at": 1.0, "glyph": "bolt", "icon_tex": NebulaHud.icon("lightning")})
 	# Ability bar: slot with ammo+name+cooldown+selected, and a bare spell slot.
 	var slots := [
-		{"key": "1", "tex": NebulaHud.icon("comet"), "glow": NebulaHud.C_ACCENT, "cd": 0.4, "selected": true, "ammo": 2, "ammo_max": 8, "name": "Missiles"},
-		{"key": "2", "tex": NebulaHud.icon("bolt"), "glow": NebulaHud.C_ACCENT, "cd": 0.0},
+		{"key": "1", "tex": NebulaHud.icon("fire"), "glow": NebulaHud.C_ACCENT, "cd": 0.4, "selected": true, "ammo": 2, "ammo_max": 8, "name": "Missiles"},
+		{"key": "2", "tex": NebulaHud.icon("lightning"), "glow": NebulaHud.C_ACCENT, "cd": 0.0},
 		{"key": "3", "tex": NebulaHud.icon("crystal"), "glow": NebulaHud.C_ACCENT, "cd": 0.0, "ammo": -1, "ammo_max": -1, "name": "Lance"},
 	]
 	NebulaHud.draw_ability_bar(c, 700, 20, "Weapons", slots, 52.0, true)

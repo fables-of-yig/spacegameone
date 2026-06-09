@@ -2,16 +2,16 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://btot83r1urkbc"
-path="res://.godot/imported/comet.png-70e9cf2135b2948009c6b0ee50002ff1.ctex"
+uid="uid://dw5astxg2l7ba"
+path="res://.godot/imported/hp.png-7c080aafea1fa63a9c027674bbbb8f13.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://Assets/UI/nebula/hud/comet.png"
-dest_files=["res://.godot/imported/comet.png-70e9cf2135b2948009c6b0ee50002ff1.ctex"]
+source_file="res://Assets/UI/nebula/hud/hp.png"
+dest_files=["res://.godot/imported/hp.png-7c080aafea1fa63a9c027674bbbb8f13.ctex"]
 
 [params]
 

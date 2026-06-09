@@ -122,6 +122,7 @@ static func draw_tank_gauge(ci: CanvasItem, origin: Vector2, opts: Dictionary) -
 	var pip := float(opts.get("size", 30.0))
 	var low_at := float(opts.get("low_at", 1.0))
 	var glyph := str(opts.get("glyph", ""))
+	var icon_tex: Texture2D = opts.get("icon_tex", null)
 
 	var filled := float(value) / 100.0
 	var ratio := filled / float(total)
@@ -174,13 +175,22 @@ static func draw_tank_gauge(ci: CanvasItem, origin: Vector2, opts: Dictionary) -
 			ci.draw_rect(Rect2(fill_rect.position, Vector2(fill_rect.size.x, 1.5)),
 				Color(t["fill_strong"].r, t["fill_strong"].g, t["fill_strong"].b, 0.9))
 
-		# Pip glyph icon (vector — no pack art for HP/bolt at this size).
-		if glyph != "":
-			var op := 0.22
-			if is_full:
-				op = 1.0
-			elif is_partial:
-				op = 0.4 + 0.6 * frac
+		# Pip icon: Claude Design powerup PNG (hp/lightning/shield) at 72%, opacity
+		# by fill state per the TankGauge spec (full=1, partial ramps, empty dim).
+		# Falls back to a vector glyph if the texture is missing.
+		var op := 0.22
+		if is_full:
+			op = 1.0
+		elif is_partial:
+			op = 0.4 + 0.6 * frac
+		if icon_tex != null:
+			var isz := Vector2(pip, pip) * 0.72
+			var ipos := rect.get_center() - isz * 0.5
+			var mod := Color(1.0, 1.0, 1.0, op)
+			if not is_full and not is_partial:
+				mod = Color(0.6, 0.62, 0.64, op)  # desaturate empty pips
+			ci.draw_texture_rect(icon_tex, Rect2(ipos, isz), false, mod)
+		elif glyph != "":
 			_draw_glyph(ci, rect.get_center(), pip * 0.5, glyph, Color(t["ring"].r, t["ring"].g, t["ring"].b, op))
 
 	var pips_w := float(cols) * pip + float(cols - 1) * PIP_GAP

@@ -123,12 +123,12 @@ func _draw_top_hud() -> void:
 		"label": "HP", "value": int(player.hp), "max": int(player.max_hp),
 		"total": maxi(1, int(ceil(float(player.max_hp) / 100.0))),
 		"tone": "energy", "danger_tone": "crystal", "danger_at": 0.2,
-		"per_row": 7, "size": 30.0, "low_at": 2.0, "glyph": "hp",
+		"per_row": 7, "size": 30.0, "low_at": 2.0, "glyph": "hp", "icon_tex": NebulaHud.icon("hp"),
 	})
 	NebulaHud.draw_tank_gauge(ci, Vector2(16 + hp_size.x + 22.0, 14), {
 		"label": "Energy", "value": int(player.energy), "max": int(player.max_energy),
 		"total": maxi(1, int(ceil(float(player.max_energy) / 100.0))),
-		"tone": "magic", "per_row": 5, "size": 30.0, "low_at": 1.0, "glyph": "bolt",
+		"tone": "magic", "per_row": 5, "size": 30.0, "low_at": 1.0, "glyph": "bolt", "icon_tex": NebulaHud.icon("lightning"),
 	})
 	# CENTER — spell bar (real abilities; active one selected).
 	NebulaHud.draw_ability_bar(ci, _top_hud.size.x * 0.5, 18.0, "Spells", _gather_spells(), 54.0, true)
@@ -152,7 +152,7 @@ func _gather_spells() -> Array:
 	var secondary := str(PlayerInventory.get_secondary_attack_id()) if PlayerInventory.has_method("get_secondary_attack_id") else ""
 	var seen: Dictionary = {}
 	var idx := 1
-	for entry in [[ranged, "bolt"], [melee, "star"], [secondary, "comet"]]:
+	for entry in [[ranged, "lightning"], [melee, "fire"], [secondary, "fire"]]:
 		var aid := str(entry[0])
 		if aid.is_empty() or seen.has(aid):
 			continue
@@ -190,9 +190,9 @@ func _attack_icon(attack_id: String, ability_name: String, fallback: String) -> 
 	if s.findn("magnet") >= 0 or s.findn("pull") >= 0 or s.findn("grapple") >= 0:
 		return "magnet"
 	if s.findn("missile") >= 0 or s.findn("rocket") >= 0 or s.findn("grenade") >= 0:
-		return "comet"
+		return "fire"
 	if s.findn("beam") >= 0 or s.findn("laser") >= 0 or s.findn("energy") >= 0 or s.findn("shot") >= 0:
-		return "bolt"
+		return "lightning"
 	return fallback
 
 
