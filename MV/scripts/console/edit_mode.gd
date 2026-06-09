@@ -43,13 +43,17 @@ var _folder_collapsed: Dictionary = {}  # folder name -> collapsed bool
 var _editing_tileset := -1  # tileset idx whose rename/move row is open (-1 = none)
 var _pal_meta: Dictionary = {}  # tileset folder-tree metadata for this palette session
 
-const MODES := ["tiles", "collision", "entities", "shaders", "triggers"]
-const MODE_LABELS := {"tiles": "Tiles", "collision": "Collision", "entities": "Entities", "shaders": "Shaders", "triggers": "Triggers"}
+const MODES := ["tiles", "collision", "entities", "shaders", "triggers", "doors"]
+const MODE_LABELS := {"tiles": "Tiles", "collision": "Collision", "entities": "Entities", "shaders": "Shaders", "triggers": "Triggers", "doors": "Doors"}
+const DOOR_DIRECTIONS := ["right", "left", "up", "down"]
 
 # Trigger-zone placement (Triggers mode): free-drag a rectangle to drop a
 # trigger_volume entity; click one to edit its zone_id/event.
 var _trig_drag := false
 var _trig_start_px := Vector2.ZERO
+var _door_drag := false
+var _door_start_px := Vector2.ZERO
+var _door_edit_id := ""
 var _zone_edit: CanvasLayer = null
 var _zone_edit_uid := ""
 var _ze_id: LineEdit = null
@@ -301,6 +305,8 @@ func _set_mode(mode: String) -> void:
 		_close_shader_editor()
 	if mode != "triggers":
 		_close_zone_editor()
+	if mode != "doors":
+		_close_door_editor()
 	_refresh_hud()
 	queue_redraw()
 
@@ -385,6 +391,10 @@ func _unhandled_input(event: InputEvent) -> void:
 	# Triggers mode: free-drag to place a trigger volume (also a marquee).
 	if _mode == "triggers" and (event is InputEventMouseMotion or event is InputEventMouseButton):
 		_handle_trigger_mouse(event)
+		return
+	# Doors mode: free-drag to place a door transition zone (also a marquee).
+	if _mode == "doors" and (event is InputEventMouseMotion or event is InputEventMouseButton):
+		_handle_door_mouse(event)
 		return
 	if event is InputEventMouseMotion:
 		_update_hover()
@@ -828,6 +838,209 @@ func _hint_label(text: String) -> Label:
 	l.add_theme_color_override("font_color", NebulaTheme.C_DIM)
 	l.add_theme_font_size_override("font_size", NebulaTheme.size("hint"))
 	return l
+
+
+# ── Doors mode (room transitions) ────────────────────────────────────────────
+# Doors are zones (kind:"door") in the room's zones[]. Drag a rect to place one,
+# click to edit its target room/door/direction, RMB to delete.
+
+func _handle_door_mouse(event: InputEvent) -> void:
+	var rm := _rm()
+	if rm == null:
+		return
+	var mpos := get_global_mouse_position()
+	if event is InputEventMouseMotion:
+		if _door_drag:
+			queue_redraw()
+		return
+	var mb := event as InputEventMouseButton
+	if mb.button_index == MOUSE_BUTTON_LEFT:
+		if mb.pressed:
+			_door_drag = true
+			_door_start_px = mpos
+		elif _door_drag:
+			_door_drag = false
+			if _door_start_px.distance_to(mpos) < 5.0:
+				var id := _door_id_at(mpos)
+				if not id.is_empty():
+					_open_door_editor(id)
+			else:
+				_place_door(_door_start_px, mpos)
+			queue_redraw()
+		get_viewport().set_input_as_handled()
+	elif mb.button_index == MOUSE_BUTTON_RIGHT and mb.pressed:
+		var id := _door_id_at(mpos)
+		if not id.is_empty():
+			if rm.remove_zone_by_id(id):
+				if id == _door_edit_id:
+					_close_door_editor()
+				_mark_dirty()
+				queue_redraw()
+		get_viewport().set_input_as_handled()
+
+
+func _door_px_rect(zone: Dictionary) -> Rect2:
+	var b := float(MvRoomManager.BLOCK_SIZE)
+	return Rect2(
+		float(zone.get("x_blocks", 0.0)) * b, float(zone.get("y_blocks", 0.0)) * b,
+		maxf(1.0, float(zone.get("width_blocks", 1.0))) * b, maxf(1.0, float(zone.get("height_blocks", 1.0))) * b)
+
+
+func _door_id_at(world_px: Vector2) -> String:
+	var doors := _rm().door_zone_list()
+	for i in range(doors.size() - 1, -1, -1):
+		if _door_px_rect(doors[i]).has_point(world_px):
+			return str((doors[i] as Dictionary).get("id", ""))
+	return ""
+
+
+func _place_door(a: Vector2, b: Vector2) -> void:
+	var rm := _rm()
+	var bs := float(MvRoomManager.BLOCK_SIZE)
+	var x0 := floorf(minf(a.x, b.x) / bs)
+	var y0 := floorf(minf(a.y, b.y) / bs)
+	var x1 := ceilf(maxf(a.x, b.x) / bs)
+	var y1 := ceilf(maxf(a.y, b.y) / bs)
+	var did := rm.add_door_zone(x0, y0, maxf(1.0, x1 - x0), maxf(1.0, y1 - y0))
+	if not did.is_empty():
+		_mark_dirty()
+		_set_status("placed door '%s' — click it to set its target room/door" % did)
+		_open_door_editor(did)
+	queue_redraw()
+
+
+func _door_record(id: String) -> Dictionary:
+	for z_v in _rm().door_zone_list():
+		if str((z_v as Dictionary).get("id", "")) == id:
+			return z_v
+	return {}
+
+
+func _open_door_editor(id: String) -> void:
+	var rec := _door_record(id)
+	if rec.is_empty():
+		return
+	_door_edit_id = id
+	for ch in _zone_edit.get_children():
+		ch.queue_free()
+	var margin := MarginContainer.new()
+	margin.anchor_left = 1.0
+	margin.anchor_right = 1.0
+	margin.offset_left = -408
+	margin.offset_top = 8
+	margin.offset_right = -8
+	margin.offset_bottom = 320
+	margin.theme = NebulaTheme.theme()
+	_zone_edit.add_child(margin)
+	var frame := PanelContainer.new()
+	margin.add_child(frame)
+	var vbox := VBoxContainer.new()
+	vbox.add_theme_constant_override("separation", 8)
+	frame.add_child(vbox)
+	var hdr := HBoxContainer.new()
+	hdr.add_theme_constant_override("separation", 8)
+	vbox.add_child(hdr)
+	hdr.add_child(NebulaTheme.title_label("Door"))
+	var sp := Control.new()
+	sp.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	hdr.add_child(sp)
+	var x := NebulaUi.button("✕", "ghost")
+	x.pressed.connect(_close_door_editor)
+	hdr.add_child(x)
+
+	# Target room picker (every authored room addr) + "(none)".
+	var room_opt := OptionButton.new()
+	var addrs: Array = _rm().room_addrs()
+	addrs.sort()
+	room_opt.add_item("(none)")
+	var cur_target := str(rec.get("target_room", ""))
+	for i in addrs.size():
+		var addr := str(addrs[i])
+		room_opt.add_item(addr)
+		if addr == cur_target:
+			room_opt.select(i + 1)
+	room_opt.item_selected.connect(func(i: int):
+		_rm().update_zone_props(_door_edit_id, {"target_room": ("" if i == 0 else str(addrs[i - 1]))}, false)
+		_mark_dirty(); queue_redraw())
+	vbox.add_child(NebulaUi.labeled("Target room", room_opt, 110))
+
+	var tdoor := LineEdit.new()
+	tdoor.text = str(rec.get("target_door_id", ""))
+	tdoor.placeholder_text = "door id in target room"
+	tdoor.text_changed.connect(func(t):
+		_rm().update_zone_props(_door_edit_id, {"target_door_id": str(t).strip_edges()}, false)
+		_mark_dirty())
+	vbox.add_child(NebulaUi.labeled("Arrive at door", tdoor, 110))
+
+	var dir := OptionButton.new()
+	for i in DOOR_DIRECTIONS.size():
+		dir.add_item(str(DOOR_DIRECTIONS[i]))
+	dir.selected = maxi(0, DOOR_DIRECTIONS.find(str(rec.get("direction", "right"))))
+	dir.item_selected.connect(func(i: int):
+		_rm().update_zone_props(_door_edit_id, {"direction": str(DOOR_DIRECTIONS[i])}, false)
+		_mark_dirty(); queue_redraw())
+	vbox.add_child(NebulaUi.labeled("Exit facing", dir, 110))
+
+	var launch := CheckButton.new()
+	launch.text = "Launch to Space (return to ship)"
+	launch.button_pressed = bool(rec.get("launch_to_space", false))
+	launch.toggled.connect(func(on):
+		_rm().update_zone_props(_door_edit_id, {"launch_to_space": on}, false)
+		_mark_dirty())
+	vbox.add_child(launch)
+
+	var locked := CheckButton.new()
+	locked.text = "Locked (needs requirements)"
+	locked.button_pressed = bool(rec.get("locked", false))
+	locked.toggled.connect(func(on):
+		_rm().update_zone_props(_door_edit_id, {"locked": on}, false)
+		_mark_dirty())
+	vbox.add_child(locked)
+
+	vbox.add_child(_hint_labelfor_door())
+	var del := NebulaUi.button("🗑 Delete door", "gold")
+	del.pressed.connect(func():
+		if _rm().remove_zone_by_id(_door_edit_id):
+			_close_door_editor()
+			_mark_dirty()
+			queue_redraw())
+	vbox.add_child(del)
+	_zone_edit.visible = true
+	queue_redraw()
+
+
+func _hint_labelfor_door() -> Label:
+	return _hint_label("Walking into this zone loads Target room and places the player at its 'Arrive at door'. Pair both doors by id for a two-way link.")
+
+
+func _close_door_editor() -> void:
+	_door_edit_id = ""
+	if _zone_edit != null:
+		_zone_edit.visible = false
+		for ch in _zone_edit.get_children():
+			ch.queue_free()
+	queue_redraw()
+
+
+func _draw_door_overlay(rm: MvRoomManager) -> void:
+	var font := NebulaTheme.font()
+	for z_v in rm.door_zone_list():
+		var zone: Dictionary = z_v
+		var rect := _door_px_rect(zone)
+		var sel := str(zone.get("id", "")) == _door_edit_id
+		var col := NebulaTheme.C_ACCENT_2 if sel else NebulaTheme.C_ACCENT
+		draw_rect(rect, Color(col.r, col.g, col.b, 0.14))
+		draw_rect(rect, col, false, 2.0)
+		var tgt := str(zone.get("target_room", ""))
+		var label := "%s → %s : %s" % [str(zone.get("id", "")), (tgt if tgt != "" else "?"), str(zone.get("direction", ""))]
+		if font != null:
+			draw_string(font, rect.position + Vector2(3, -4), label, HORIZONTAL_ALIGNMENT_LEFT, -1, 11, col)
+	# Live marquee while dragging.
+	if _door_drag:
+		var m := get_global_mouse_position()
+		var r := Rect2(_door_start_px, m - _door_start_px).abs()
+		draw_rect(r, Color(NebulaTheme.C_ACCENT_2.r, NebulaTheme.C_ACCENT_2.g, NebulaTheme.C_ACCENT_2.b, 0.18))
+		draw_rect(r, NebulaTheme.C_ACCENT_2, false, 1.5)
 
 
 func _process(_delta: float) -> void:
@@ -1335,6 +1548,16 @@ func _open_environment() -> void:
 	hint.add_theme_color_override("font_color", NebulaTheme.C_DIM)
 	vbox.add_child(hint)
 
+	# --- Room size (blocks) ---
+	vbox.add_child(NebulaUi.section_header("Room Size"))
+	var rs_w := _env_spin(8, 400, 1, float(info.get("width_blocks", 30)))
+	var rs_h := _env_spin(8, 400, 1, float(info.get("height_blocks", 17)))
+	rs_w.value_changed.connect(func(_v): _env_apply_room_size(rs_w, rs_h))
+	rs_h.value_changed.connect(func(_v): _env_apply_room_size(rs_w, rs_h))
+	vbox.add_child(NebulaUi.labeled("Width (blocks)", rs_w, 120))
+	vbox.add_child(NebulaUi.labeled("Height (blocks)", rs_h, 120))
+	vbox.add_child(_hint_label("Grows/crops the room grid (1 block = 16px). New space fills empty; shrinking trims the far edge. Applies live."))
+
 	# --- Weather ---
 	var w: Dictionary = info.get("weather", {})
 	vbox.add_child(NebulaUi.section_header("Weather"))
@@ -1451,6 +1674,16 @@ func _env_note(text: String) -> Control:
 
 
 # Apply weather live (no reload) and mark dirty.
+func _env_apply_room_size(w_spin: SpinBox, h_spin: SpinBox) -> void:
+	var rm := _rm()
+	if rm == null:
+		return
+	if rm.resize_current_room(int(w_spin.value), int(h_spin.value)):
+		_mark_dirty()
+		_set_status("resized room to %d×%d blocks" % [int(w_spin.value), int(h_spin.value)])
+		queue_redraw()
+
+
 func _env_apply_weather() -> void:
 	if _w_preset == null:
 		return
@@ -1699,6 +1932,8 @@ func _draw() -> void:
 		_draw_shader_overlay(rm)
 	elif _mode == "triggers":
 		_draw_trigger_overlay(rm)
+	elif _mode == "doors":
+		_draw_door_overlay(rm)
 	# The per-cursor brush rect needs a valid hovered cell.
 	if not rm.cell_in_bounds(_hover):
 		return
@@ -1829,6 +2064,14 @@ func _save() -> void:
 	raw_room["shader_regions"] = _serialize_shader_regions(info.get("shader_regions", []))
 	raw_room["parallax_layers"] = info.get("parallax_layers", [])
 	raw_room["parallax_enabled"] = bool(info.get("parallax_enabled", true))
+	# Door/trigger zones + room dimensions (F2 doors mode + room-size setting).
+	raw_room["zones"] = info.get("zones", [])
+	raw_room["width_blocks"] = int(info.get("width_blocks", raw_room.get("width_blocks", 1)))
+	raw_room["height_blocks"] = int(info.get("height_blocks", raw_room.get("height_blocks", 1)))
+	raw_room["width_px"] = int(info.get("width_px", int(info.get("width_blocks", 1)) * 16))
+	raw_room["height_px"] = int(info.get("height_px", int(info.get("height_blocks", 1)) * 16))
+	raw_room["width_screens"] = float(info.get("width_screens", raw_room.get("width_screens", 1.0)))
+	raw_room["height_screens"] = float(info.get("height_screens", raw_room.get("height_screens", 1.0)))
 	rooms[addr] = raw_room
 	raw["rooms"] = rooms
 	if EnvIO.save_rooms(pack.pack_id, raw):

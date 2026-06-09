@@ -1317,6 +1317,130 @@ func rebuild_collision_from_current() -> void:
         _build_collision(_rooms[_current_room_addr])
 
 
+# ── In-game room resize + door zones (F2 edit mode) ───────────────────────────
+
+# Resize the live room's grid: crop/pad collision + bts + every tile layer to
+# new_w x new_h blocks, update the dimension fields, and re-render in place
+# (load_room rebuilds from the in-memory, already-edited _rooms data, so unsaved
+# tile/entity edits are preserved). Returns true on a real change.
+func resize_current_room(new_w: int, new_h: int) -> bool:
+    if not _rooms.has(_current_room_addr):
+        return false
+    new_w = clampi(new_w, 8, 400)
+    new_h = clampi(new_h, 8, 400)
+    var info: Dictionary = _rooms[_current_room_addr]
+    var old_w := int(info.get("width_blocks", new_w))
+    var old_h := int(info.get("height_blocks", new_h))
+    if new_w == old_w and new_h == old_h:
+        return false
+    info["collision"] = _resize_grid(info.get("collision", []), new_w, new_h)
+    var bts_v: Variant = info.get("bts", [])
+    if bts_v is Array and not (bts_v as Array).is_empty() and (bts_v as Array)[0] is Array:
+        info["bts"] = _resize_grid(bts_v, new_w, new_h)
+    for layer_v in info.get("tile_layers", []):
+        if typeof(layer_v) == TYPE_DICTIONARY:
+            (layer_v as Dictionary)["tiles"] = _resize_grid((layer_v as Dictionary).get("tiles", []), new_w, new_h)
+    info["width_blocks"] = new_w
+    info["height_blocks"] = new_h
+    info["width_px"] = new_w * BLOCK_SIZE
+    info["height_px"] = new_h * BLOCK_SIZE
+    var blocks_per_screen_w := float(old_w) / maxf(1.0, float(info.get("width_screens", 1.0)))
+    var blocks_per_screen_h := float(old_h) / maxf(1.0, float(info.get("height_screens", 1.0)))
+    info["width_screens"] = float(new_w) / maxf(1.0, blocks_per_screen_w)
+    info["height_screens"] = float(new_h) / maxf(1.0, blocks_per_screen_h)
+    _rooms[_current_room_addr] = info
+    load_room(_current_room_addr)
+    return true
+
+
+# Crop/pad a [rows][cols] grid to h rows x w cols, filling new cells with 0.
+func _resize_grid(grid_v: Variant, w: int, h: int) -> Array:
+    var out: Array = []
+    var src: Array = grid_v if grid_v is Array else []
+    for r in h:
+        var row: Array = []
+        var src_row: Array = src[r] if r < src.size() and src[r] is Array else []
+        for c in w:
+            row.append(src_row[c] if c < src_row.size() else 0.0)
+        out.append(row)
+    return out
+
+
+# Door zones live in the room's zones[] with kind:"door".
+func room_zones() -> Array:
+    if _rooms.has(_current_room_addr):
+        var z: Variant = (_rooms[_current_room_addr] as Dictionary).get("zones", [])
+        if z is Array:
+            return z
+    return []
+
+
+func door_zone_list() -> Array:
+    var out: Array = []
+    for z_v in room_zones():
+        if typeof(z_v) == TYPE_DICTIONARY and str((z_v as Dictionary).get("kind", "")).strip_edges().to_lower() == "door":
+            out.append(z_v)
+    return out
+
+
+func room_addrs() -> Array:
+    return _rooms.keys()
+
+
+# Add a door zone (block coords, top-left). Re-renders so the door is live.
+func add_door_zone(x_blocks: float, y_blocks: float, w_blocks: float, h_blocks: float) -> String:
+    if not _rooms.has(_current_room_addr):
+        return ""
+    var info: Dictionary = _rooms[_current_room_addr]
+    var zones: Array = info.get("zones", [])
+    var did := "door_%d" % Time.get_ticks_msec()
+    zones.append({
+        "id": did, "kind": "door",
+        "x_blocks": x_blocks, "y_blocks": y_blocks,
+        "width_blocks": maxf(1.0, w_blocks), "height_blocks": maxf(1.0, h_blocks),
+        "target_room": "", "target_door_id": "", "direction": "right",
+        "launch_to_space": false, "enabled": true, "locked": false,
+    })
+    info["zones"] = zones
+    _rooms[_current_room_addr] = info
+    load_room(_current_room_addr)
+    return did
+
+
+func remove_zone_by_id(zid: String) -> bool:
+    if not _rooms.has(_current_room_addr):
+        return false
+    var info: Dictionary = _rooms[_current_room_addr]
+    var zones: Array = info.get("zones", [])
+    for i in range(zones.size() - 1, -1, -1):
+        if str((zones[i] as Dictionary).get("id", "")) == zid:
+            zones.remove_at(i)
+            info["zones"] = zones
+            _rooms[_current_room_addr] = info
+            load_room(_current_room_addr)
+            return true
+    return false
+
+
+# Merge fields into a zone. reload re-renders (needed when geometry/door
+# wiring changes should take effect live); pass false for cheap text edits.
+func update_zone_props(zid: String, fields: Dictionary, reload := true) -> bool:
+    if not _rooms.has(_current_room_addr):
+        return false
+    var info: Dictionary = _rooms[_current_room_addr]
+    var zones: Array = info.get("zones", [])
+    for i in zones.size():
+        if str((zones[i] as Dictionary).get("id", "")) == zid:
+            for k in fields:
+                (zones[i] as Dictionary)[k] = fields[k]
+            info["zones"] = zones
+            _rooms[_current_room_addr] = info
+            if reload:
+                load_room(_current_room_addr)
+            return true
+    return false
+
+
 # ── In-game tile editing (slice 2) ────────────────────────────────────────
 # Public API for the in-game edit mode. Mutates the live room's main-role tile
 # layer + collision array, re-renders the affected cell, and (optionally)
