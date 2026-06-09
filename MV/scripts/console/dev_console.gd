@@ -43,6 +43,7 @@ var _player_wizard: MvPlayerWizard = null
 var _workshop: MvCombatWorkshop = null
 var _trigger_editor: MvTriggerEditor = null
 var _dialogue_editor: MvDialogueEditor = null
+var _galaxy_editor: SpaceGalaxyEditor = null
 var _hint: Label = null
 var _skin_host: Control = null
 var _title_lbl: Label = null
@@ -61,6 +62,13 @@ func _ready() -> void:
 	add_child(_trigger_editor)
 	_dialogue_editor = MvDialogueEditor.new()
 	add_child(_dialogue_editor)
+	# Galaxy editor is a Control; host it on its own CanvasLayer so it renders
+	# independently of the console's visibility (like the other editor overlays).
+	var galaxy_layer := CanvasLayer.new()
+	galaxy_layer.layer = 126
+	add_child(galaxy_layer)
+	_galaxy_editor = SpaceGalaxyEditor.new()
+	galaxy_layer.add_child(_galaxy_editor)
 	_build_hint()
 	visible = false
 
@@ -141,7 +149,7 @@ func _refresh_chips() -> void:
 		return
 	for c in _chip_row.get_children():
 		c.queue_free()
-	var cmds := ["help", "flag", "wizard", "workshop", "triggers", "dialogue", "spawn", "fire"] if _in_mv() else ["help", "flag", "mapedit", "shipbuilder", "add_poi", "save_systems"]
+	var cmds := ["help", "flag", "wizard", "workshop", "triggers", "dialogue", "spawn", "fire"] if _in_mv() else ["help", "flag", "galaxyedit", "mapedit", "shipbuilder", "add_poi", "save_systems"]
 	for cmd in cmds:
 		var chip := NebulaUi.button(str(cmd), "ghost")
 		chip.focus_mode = Control.FOCUS_NONE
@@ -284,6 +292,8 @@ func _handle_command(text: String) -> void:
 			_cmd_add_poi(rest)
 		"mapedit":
 			_cmd_mapedit()
+		"galaxyedit", "galaxy":
+			_cmd_galaxyedit()
 		"shipbuilder", "build":
 			_cmd_shipbuilder()
 		"save_systems":
@@ -504,6 +514,18 @@ func _cmd_shipbuilder() -> void:
 		host.open_ship_builder_authoring()
 	else:
 		_err("ship builder unavailable")
+
+
+# `galaxyedit` opens the galaxy editor (move/link/add/rename systems).
+func _cmd_galaxyedit() -> void:
+	if _space_host() == null:
+		_err("galaxyedit is Space-only")
+		return
+	if _galaxy_editor == null:
+		_err("galaxy editor unavailable")
+		return
+	close()
+	_galaxy_editor.open_editor()
 
 
 # `mapedit` opens the Space map editor (drag/place/rename/delete POIs).
@@ -801,7 +823,7 @@ func _print_help() -> void:
 	if _in_mv():
 		_log("MV:  <paste trigger JSON>   fire <event> [json]   spawn <entity_id>   ·   F2 = edit room")
 	else:
-		_log("Space:  mapedit (drag POIs)   shipbuilder   add_poi <type> <name>   save_systems")
+		_log("Space:  galaxyedit (systems)   mapedit (POIs)   shipbuilder   add_poi <type> <name>   save_systems")
 	_log("Submit: Ctrl+Enter    Close: Esc or backtick")
 
 
