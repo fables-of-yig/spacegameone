@@ -1392,4 +1392,5 @@ func _on_player_died(_source: String) -> void:
     # Default death handler: respawn in the current room with full HP.
     # A future trigger system can override by also listening to player_died.
     _player.hp = _player.max_hp
+    _player.energy = _player.max_energy
     _spawn_player_in_room()

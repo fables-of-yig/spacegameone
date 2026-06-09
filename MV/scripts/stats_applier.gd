@@ -157,6 +157,11 @@ static func _write_result(profile: MvPhysicsProfile, player: MvPlayer, target: S
 		"max_hp":
 			player.max_hp = int(value)
 			player.hp = mini(player.hp, player.max_hp)
+		"max_energy":
+			player.max_energy = int(value)
+			player.energy = mini(player.energy, player.max_energy)
+		"energy":
+			player.energy = mini(int(value), player.max_energy)
 		"invuln_seconds": player.invuln_seconds = value
 		# Combat/defense vars stored as game_vars for other systems to read
 		"melee_damage_mult", "projectile_damage_mult", "melee_range_mult", \

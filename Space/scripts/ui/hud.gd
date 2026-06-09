@@ -105,16 +105,21 @@ func _draw():
     var bar_y = m
 
 
-    var hull_pct: float
-    hull_pct = player.health / player.max_health
-    _draw_bar(Vector2(bar_x, bar_y), bw, bh, hull_pct, Color(0.15, 0.75, 0.25), "HULL")
-    bar_y += bh + gap
-
-
-    var shield_pct: float
-    shield_pct = player.shields / player.max_shields if player.max_shields > 0 else 0.0
-    _draw_bar(Vector2(bar_x, bar_y), bw, bh, shield_pct, Color(0.25, 0.45, 1.0), "SHIELD")
-    bar_y += bh + gap + 4
+    # Hull + Shields Nebula tank gauges (ported from the Ship-HUD handoff).
+    var max_health: float = maxf(player.max_health, 1.0)
+    var hull_size := NebulaHud.draw_tank_gauge(self, Vector2(bar_x, bar_y), {
+        "label": "Hull", "value": int(player.health), "max": int(max_health),
+        "total": maxi(1, int(ceil(max_health / 100.0))),
+        "tone": "energy", "danger_tone": "crystal", "danger_at": 0.2,
+        "per_row": 7, "size": 26.0, "low_at": 2.0, "glyph": "hp",
+    })
+    var max_shields: float = maxf(player.max_shields, 1.0)
+    NebulaHud.draw_tank_gauge(self, Vector2(bar_x + hull_size.x + 22.0, bar_y), {
+        "label": "Shields", "value": int(player.shields), "max": int(max_shields),
+        "total": maxi(1, int(ceil(max_shields / 100.0))),
+        "tone": "shield", "per_row": 5, "size": 26.0, "low_at": 1.0, "glyph": "shield",
+    })
+    bar_y += hull_size.y + gap + 4
 
 
     var boost_pct = 1.0
@@ -873,14 +878,9 @@ func _draw_crosshair():
 
     draw_arc(aim_pos, cr * 0.8, 0, TAU, 16, Color(cc, cc.a * 0.15), 0.5)
 
-func _draw_weapon_bar(font: Font, p_src: Node):
+func _draw_weapon_bar(_font: Font, p_src: Node):
     if not p_src:
         return
-    var slot_sz: float = 96.0
-    var gap: float = 8.0
-    var total_w = slot_sz * 4 + gap * 3
-    var bar_x = (size.x - total_w) * 0.5
-    var bar_y = size.y - slot_sz - 14.0
 
     var colors = [
         Color(0.9, 0.35, 0.3),
@@ -953,67 +953,51 @@ func _draw_weapon_bar(font: Font, p_src: Node):
     # Slot 3: Power (Tab)
     slot_names[3] = PRESET_NAMES[p_src.power_preset] if p_src.power_preset < PRESET_NAMES.size() else "?"
 
-    # --- Draw each slot ---
+    # --- Nebula weapon bar: icon slots + cooldown/heat sweep + ∞ ammo + name ---
+    # Space weapons aren't ammo-counted (energy/heat + per-module cooldowns), so
+    # the ammo readout is ∞; the cooldown sweep reflects heat or the longest
+    # remaining module cooldown.
+    var slots: Array = []
     for si in 4:
-        var sx = bar_x + si * (slot_sz + gap)
-        var sy = bar_y
-        var col = colors[si]
-
-        # Background + border
-        draw_rect(Rect2(sx, sy, slot_sz, slot_sz), Color(0.03, 0.03, 0.05, 0.85))
-        draw_rect(Rect2(sx, sy, slot_sz, slot_sz), Color(col, 0.45), false, 1.5)
-        draw_line(Vector2(sx, sy), Vector2(sx + slot_sz, sy), Color(col, 0.7), 2.0)
-
-        # Key label top-left
-        draw_string(font, Vector2(sx + 5, sy + 14), "[%s]" % keys[si], HORIZONTAL_ALIGNMENT_LEFT, -1, 11, Color(col, 0.7))
-
-        # Weapon name
-        var wname = slot_names[si] if slot_names[si] != "" else "--"
-        draw_string(font, Vector2(sx + 5, sy + 38), wname, HORIZONTAL_ALIGNMENT_LEFT, int(slot_sz - 10), 12, col)
-
-        # Count
-        if slot_counts[si] > 1:
-            draw_string(font, Vector2(sx + 5, sy + 52), "x%d" % slot_counts[si], HORIZONTAL_ALIGNMENT_LEFT, -1, 10, Color(col, 0.6))
-
-        # Heat bar
+        var cd := 0.0
         if slot_indicator[si] == "heat" and "weapon_heat" in p_src:
             var heat = p_src.weapon_heat.get(slot_subtypes[si], 0.0)
             var threshold = p_src.overheat_threshold if "overheat_threshold" in p_src else 100.0
-            var heat_pct = clampf(heat / maxf(threshold, 1.0), 0.0, 1.0)
-            var bw = slot_sz - 14.0
-            var bh: float = 8.0
-            var bx = sx + 7.0
-            var by = sy + slot_sz - 16.0
-            draw_rect(Rect2(bx, by, bw, bh), Color(0.12, 0.12, 0.12, 0.8))
-            if heat_pct > 0.01:
-                var fill_col: Color
-                if heat_pct < 0.5:
-                    fill_col = Color(0.3 + heat_pct * 1.2, 0.85, 0.3)
-                else:
-                    fill_col = Color(0.9, maxf(0.85 - (heat_pct - 0.5) * 1.4, 0.15), 0.3)
-                draw_rect(Rect2(bx, by, bw * heat_pct, bh), fill_col)
-            draw_rect(Rect2(bx, by, bw, bh), Color(col, 0.3), false, 1.0)
+            cd = clampf(heat / maxf(threshold, 1.0), 0.0, 1.0)
+        elif slot_indicator[si] == "cooldown":
+            for cdd in slot_cooldowns[si]:
+                var fr := float(cdd.get("remaining", 0.0)) / maxf(float(cdd.get("max_cd", 1.0)), 0.01)
+                cd = maxf(cd, clampf(fr, 0.0, 1.0))
+        var slot := {
+            "key": str(keys[si]),
+            "tex": NebulaHud.icon(_weapon_icon(str(slot_subtypes[si]), str(slot_names[si]), si)),
+            "glow": colors[si],
+            "cd": cd,
+            "name": str(slot_names[si]) if slot_names[si] != "" else "--",
+        }
+        if si < 3:
+            slot["ammo"] = -1
+            slot["ammo_max"] = -1
+        slots.append(slot)
+    NebulaHud.draw_ability_bar(self, size.x * 0.5, size.y - 132.0, "Weapons", slots, 52.0, true)
 
-        # Cooldown circles
-        if slot_indicator[si] == "cooldown":
-            var cds = slot_cooldowns[si]
-            if cds.size() > 0:
-                var cr: float = 5.0
-                var spacing = minf(cr * 2.8, (slot_sz - 14.0) / maxf(cds.size(), 1))
-                var cx_start = sx + (slot_sz - spacing * cds.size()) * 0.5 + spacing * 0.5
-                var cy = sy + slot_sz - 12.0
-                for j in cds.size():
-                    var cx = cx_start + j * spacing
-                    var cd_rem = cds[j].get("remaining", 0.0)
-                    var cd_max = cds[j].get("max_cd", 1.0)
-                    if cd_rem <= 0.0:
-                        draw_circle(Vector2(cx, cy), cr, Color(0.3, 0.85, 0.3, 0.9))
-                    else:
-                        draw_circle(Vector2(cx, cy), cr, Color(0.15, 0.15, 0.15, 0.7))
-                        var progress = 1.0 - clampf(cd_rem / maxf(cd_max, 0.01), 0.0, 1.0)
-                        if progress > 0.01:
-                            draw_arc(Vector2(cx, cy), cr * 0.65, -PI / 2.0, -PI / 2.0 + progress * TAU, 16, Color(0.3, 0.85, 0.3, 0.8), cr * 0.7)
-                        draw_arc(Vector2(cx, cy), cr, 0, TAU, 16, Color(0.4, 0.4, 0.4, 0.4), 1.0)
+
+# Maps a Space weapon subtype/name to a HUD icon.
+func _weapon_icon(subtype: String, wname: String, slot: int) -> String:
+    var s := (subtype + " " + wname).to_lower()
+    if s.findn("plasma") >= 0 or s.findn("crystal") >= 0:
+        return "crystal"
+    if s.findn("missile") >= 0 or s.findn("rocket") >= 0 or s.findn("torpedo") >= 0:
+        return "comet"
+    if s.findn("mine") >= 0 or s.findn("bomb") >= 0 or s.findn("flak") >= 0:
+        return "burst"
+    if s.findn("fire") >= 0 or s.findn("flame") >= 0 or s.findn("incend") >= 0:
+        return "fire"
+    if s.findn("beam") >= 0 or s.findn("lance") >= 0 or s.findn("laser") >= 0 or s.findn("energy") >= 0 or s.findn("pulse") >= 0:
+        return "bolt"
+    if slot == 3:
+        return "sun"
+    return "star"
 
 func _draw_radial_menu(font: Font, p_src: Node):
     if not p_src or not "radial_open" in p_src:

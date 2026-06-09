@@ -29,6 +29,8 @@ func save_game(slot: int) -> bool:
 			"position_y": player.position.y if player != null else 0.0,
 			"hp": player.hp if player != null else 99,
 			"max_hp": player.max_hp if player != null else 99,
+			"energy": player.energy if player != null else 100,
+			"max_energy": player.max_energy if player != null else 100,
 		},
 	}
 
@@ -80,6 +82,8 @@ func load_game(slot: int) -> bool:
 		player.position = target_pos
 		player.hp = int(player_data.get("hp", player.max_hp))
 		player.max_hp = int(player_data.get("max_hp", 99))
+		player.max_energy = int(player_data.get("max_energy", player.max_energy))
+		player.energy = int(player_data.get("energy", player.max_energy))
 
 	print("[MvSaveManager] loaded slot %d" % slot)
 	game_loaded.emit(slot)

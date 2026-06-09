@@ -172,8 +172,17 @@ var _shine_spark_vel: Vector2 = Vector2.ZERO
 var _shine_spark_active: bool = false
 
 # ===== Phase 8 player stats (HP / iframes) =====
+# HP and Energy are tank-based vitals on the Nebula HUD: each tank = 100, and
+# collectible upgrades raise the cap toward HP_TANK_MAX / ENERGY_TANK_MAX tanks
+# (the fully-upgraded maxima). Starting capacity comes from authored stats.
+# Energy is a real persisted/authorable stat; no ability spends it yet (spell
+# costs aren't built) — spend_energy() is ready for when they are.
+const HP_TANK_MAX: int = 14       # fully upgraded = 1400
+const ENERGY_TANK_MAX: int = 10   # fully upgraded = 1000
 @export var max_hp: int = 99
 @export var hp: int = 99
+@export var max_energy: int = 100
+@export var energy: int = 100
 @export var invuln_seconds: float = 1.0
 var _invuln_timer: float = 0.0
 # Knockback: brief input lockout + horizontal impulse away from the damage
@@ -2927,6 +2936,39 @@ func heal(amount: int) -> void:
     if amount <= 0:
         return
     hp = min(max_hp, hp + amount)
+
+
+# ===== Energy (Nebula HUD vital) =====
+
+# Restores energy up to the current cap. Used by future energy pickups.
+func add_energy(amount: int) -> void:
+    if amount <= 0:
+        return
+    energy = min(max_energy, energy + amount)
+
+
+# Spends energy if enough is available; returns true on success. The hook a
+# future spell/ability system calls before firing a costed attack.
+func spend_energy(amount: int) -> bool:
+    if amount <= 0:
+        return true
+    if energy < amount:
+        return false
+    energy = maxi(0, energy - amount)
+    return true
+
+
+# Raises the HP capacity by one tank (collectible upgrade), capped at
+# HP_TANK_MAX tanks, and tops the player off to the new max.
+func grant_hp_tank() -> void:
+    max_hp = mini(HP_TANK_MAX * 100, ((max_hp / 100) + 1) * 100)
+    hp = max_hp
+
+
+# Raises the energy capacity by one tank, capped at ENERGY_TANK_MAX tanks.
+func grant_energy_tank() -> void:
+    max_energy = mini(ENERGY_TANK_MAX * 100, ((max_energy / 100) + 1) * 100)
+    energy = max_energy
 
 
 # Grants the player invulnerability frames for `seconds`. The existing

@@ -17,13 +17,17 @@ const HP_BG: Color = Color(0.15, 0.15, 0.2, 0.8)
 const BOSS_COLOR: Color = Color(0.9, 0.25, 0.2)
 const BOSS_BG: Color = Color(0.15, 0.15, 0.2, 0.8)
 
-var _hp_bar: Control = null
-var _hp_label: Label = null
-var _weapon_label: Label = null
-var _resource_label: Label = null
+var _top_hud: Control = null
 var _quest_label: Label = null
 var _boss_bar: Control = null
 var _boss_label: Label = null
+
+# Minimap room grid, recomputed (BFS over room doors) only when the current
+# room changes — not every frame.
+var _map_cells: Array = []
+var _map_cols: int = 0
+var _map_rows: int = 0
+var _map_room: String = ""
 
 var boss_hp: int = 0
 var boss_max_hp: int = 0
@@ -48,9 +52,7 @@ func _ready() -> void:
 	visible = false
 	_try_custom_screen()
 	if not _using_custom_screen:
-		_build_hp_bar()
-		_build_weapon_label()
-		_build_resource_label()
+		_build_top_hud()
 		_build_quest_label()
 		_build_boss_bar()
 
@@ -92,99 +94,190 @@ func _process(_delta: float) -> void:
 		_try_custom_screen()
 	if _using_custom_screen:
 		return
-	_update_hp()
-	_update_weapon()
-	_update_resources()
+	if _top_hud != null:
+		_top_hud.queue_redraw()
 	_update_quest()
 	_update_boss()
 
 
-# ── HP bar ──────────────────────────────────────────────────────────────
+# ── Nebula top HUD (HP + Energy tanks · Spells · Minimap) ─────────────────
+# Ported 1:1 from the Claude Design Game-HUD handoff. Drawn in immediate mode
+# via NebulaHud from a full-rect child Control; data is live player state.
 
-func _build_hp_bar() -> void:
-	_hp_bar = Control.new()
-	_hp_bar.position = Vector2(MARGIN, MARGIN)
-	_hp_bar.size = Vector2(BAR_WIDTH, BAR_HEIGHT)
-	_hp_bar.draw.connect(_draw_hp_bar)
-	add_child(_hp_bar)
-
-	_hp_label = Label.new()
-	_hp_label.position = Vector2(MARGIN, MARGIN + BAR_HEIGHT + 2)
-	_hp_label.add_theme_font_size_override("font_size", UIPanels.font_size("hint_size"))
-	_hp_label.add_theme_color_override("font_color", UIPanels.text_color("body"))
-	add_child(_hp_label)
+func _build_top_hud() -> void:
+	_top_hud = Control.new()
+	_top_hud.name = "NebulaTopHud"
+	_top_hud.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	_top_hud.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	_top_hud.draw.connect(_draw_top_hud)
+	add_child(_top_hud)
 
 
-func _draw_hp_bar() -> void:
+func _draw_top_hud() -> void:
 	var player := _find_player()
 	if player == null:
 		return
-	var ratio: float = clampf(float(player.hp) / float(maxi(player.max_hp, 1)), 0.0, 1.0)
-	_hp_bar.draw_rect(Rect2(Vector2.ZERO, Vector2(BAR_WIDTH, BAR_HEIGHT)), HP_BG)
-	_hp_bar.draw_rect(Rect2(Vector2.ZERO, Vector2(BAR_WIDTH * ratio, BAR_HEIGHT)), HP_COLOR)
+	var ci: CanvasItem = _top_hud
+	# LEFT — HP (red, danger purple) + Energy (cyan) tank gauges.
+	var hp_size := NebulaHud.draw_tank_gauge(ci, Vector2(16, 14), {
+		"label": "HP", "value": int(player.hp), "max": int(player.max_hp),
+		"total": maxi(1, int(ceil(float(player.max_hp) / 100.0))),
+		"tone": "energy", "danger_tone": "crystal", "danger_at": 0.2,
+		"per_row": 7, "size": 30.0, "low_at": 2.0, "glyph": "hp",
+	})
+	NebulaHud.draw_tank_gauge(ci, Vector2(16 + hp_size.x + 22.0, 14), {
+		"label": "Energy", "value": int(player.energy), "max": int(player.max_energy),
+		"total": maxi(1, int(ceil(float(player.max_energy) / 100.0))),
+		"tone": "magic", "per_row": 5, "size": 30.0, "low_at": 1.0, "glyph": "bolt",
+	})
+	# CENTER — spell bar (real abilities; active one selected).
+	NebulaHud.draw_ability_bar(ci, _top_hud.size.x * 0.5, 18.0, "Spells", _gather_spells(), 54.0, true)
+	# RIGHT — room minimap.
+	_ensure_minimap()
+	if not _map_cells.is_empty():
+		NebulaHud.draw_minimap(ci, Vector2(_top_hud.size.x - 16.0, 14.0), _map_cells,
+			_map_cols, _map_rows, 22.0, "Map", "")
 
 
-func _update_hp() -> void:
-	var player := _find_player()
-	if player == null:
+# Real ability slots: primary ranged, melee, secondary (with ammo). The active
+# attack is shown selected. No fake cooldown animation — cd is 0 (ready) unless
+# a real timer exists.
+func _gather_spells() -> Array:
+	var slots: Array = []
+	if not PlayerInventory.has_method("get_active_attack_id"):
+		return slots
+	var active := str(PlayerInventory.get_active_attack_id())
+	var ranged := str(PlayerInventory.get_ranged_attack_id()) if PlayerInventory.has_method("get_ranged_attack_id") else ""
+	var melee := str(PlayerInventory.get_melee_attack_id()) if PlayerInventory.has_method("get_melee_attack_id") else ""
+	var secondary := str(PlayerInventory.get_secondary_attack_id()) if PlayerInventory.has_method("get_secondary_attack_id") else ""
+	var seen: Dictionary = {}
+	var idx := 1
+	for entry in [[ranged, "bolt"], [melee, "star"], [secondary, "comet"]]:
+		var aid := str(entry[0])
+		if aid.is_empty() or seen.has(aid):
+			continue
+		seen[aid] = true
+		var def: Dictionary = PlayerInventory.get_attack_definition(aid)
+		var ability_name := str(def.get("name", aid))
+		var slot := {
+			"key": str(idx),
+			"tex": NebulaHud.icon(_attack_icon(aid, ability_name, str(entry[1]))),
+			"glow": NebulaHud.C_ACCENT,
+			"cd": 0.0,
+			"selected": aid == active,
+		}
+		if aid == secondary and PlayerInventory.has_method("get_secondary_ammo_key"):
+			var akey := str(PlayerInventory.get_secondary_ammo_key())
+			if not akey.is_empty():
+				var amax := int(PlayerInventory.get_var("max_%s" % akey, 0))
+				if amax > 0:
+					slot["ammo"] = int(PlayerInventory.get_var(akey, 0))
+					slot["ammo_max"] = amax
+		slots.append(slot)
+		idx += 1
+	return slots
+
+
+# Maps an attack to a HUD icon by keyword, falling back to a per-slot default.
+func _attack_icon(attack_id: String, ability_name: String, fallback: String) -> String:
+	var s := (attack_id + " " + ability_name).to_lower()
+	if s.findn("frost") >= 0 or s.findn("ice") >= 0 or s.findn("cryo") >= 0 or s.findn("crystal") >= 0:
+		return "crystal"
+	if s.findn("fire") >= 0 or s.findn("flame") >= 0 or s.findn("burn") >= 0:
+		return "fire"
+	if s.findn("shield") >= 0 or s.findn("aegis") >= 0 or s.findn("guard") >= 0:
+		return "shield"
+	if s.findn("magnet") >= 0 or s.findn("pull") >= 0 or s.findn("grapple") >= 0:
+		return "magnet"
+	if s.findn("missile") >= 0 or s.findn("rocket") >= 0 or s.findn("grenade") >= 0:
+		return "comet"
+	if s.findn("beam") >= 0 or s.findn("laser") >= 0 or s.findn("energy") >= 0 or s.findn("shot") >= 0:
+		return "bolt"
+	return fallback
+
+
+# Recomputes the minimap room grid (BFS over room doors from the current room),
+# only when the current room changes.
+func _ensure_minimap() -> void:
+	var rm: Node = MvGame.room_manager
+	if rm == null or not rm.has_method("rooms") or not rm.has_method("current_room"):
+		_map_cells = []
 		return
-	_hp_label.text = "%d / %d" % [player.hp, player.max_hp]
-	_hp_bar.queue_redraw()
-
-
-# ── Weapon indicator ────────────────────────────────────────────────────
-
-func _build_weapon_label() -> void:
-	_weapon_label = Label.new()
-	_weapon_label.position = Vector2(MARGIN, MARGIN + BAR_HEIGHT + 18)
-	_weapon_label.add_theme_font_size_override("font_size", UIPanels.font_size("hint_size"))
-	_weapon_label.add_theme_color_override("font_color", UIPanels.text_color("button"))
-	add_child(_weapon_label)
-
-
-func _update_weapon() -> void:
-	if PlayerInventory.has_method("get_active_attack_id") and PlayerInventory.has_method("get_attack_definition"):
-		var attack_id := str(PlayerInventory.get_active_attack_id())
-		if not attack_id.is_empty():
-			var attack_def: Dictionary = PlayerInventory.get_attack_definition(attack_id)
-			var attack_name := str(attack_def.get("name", "")).strip_edges()
-			if not attack_name.is_empty():
-				_weapon_label.text = attack_name.to_upper()
-				return
-	var w := PlayerInventory.get_active_weapon_type()
-	match w:
-		PlayerInventory.WeaponType.GRENADE_LAUNCHER:
-			_weapon_label.text = "GRENADE"
-		_:
-			_weapon_label.text = "BEAM"
-
-
-func _build_resource_label() -> void:
-	_resource_label = Label.new()
-	_resource_label.position = Vector2(MARGIN, MARGIN + BAR_HEIGHT + 36)
-	_resource_label.add_theme_font_size_override("font_size", UIPanels.font_size("hint_size"))
-	_resource_label.add_theme_color_override("font_color", UIPanels.text_color("body"))
-	add_child(_resource_label)
-
-
-func _update_resources() -> void:
-	if _resource_label == null:
+	var cur := str(rm.current_room().get("addr", ""))
+	if cur == _map_room and not _map_cells.is_empty():
 		return
-	var gold := int(PlayerInventory.get_var("gold", 0))
-	var ammo := int(PlayerInventory.get_var("ammo_missile", 0))
-	var max_ammo := int(PlayerInventory.get_var("max_ammo_missile", 0))
-	var player := _find_player()
-	var missile_mode := ""
-	if player != null and player.has_method("is_secondary_mode_active") and bool(player.call("is_secondary_mode_active")):
-		missile_mode = " ON"
-	_resource_label.text = "GOLD %d   MISSILES%s %d / %d" % [gold, missile_mode, ammo, max_ammo]
+	_map_room = cur
+	var all_rooms: Dictionary = rm.rooms()
+	if all_rooms.is_empty() or cur.is_empty():
+		_map_cells = []
+		return
+	var grid: Dictionary = { cur: Vector2i.ZERO }
+	var queue: Array = [cur]
+	while not queue.is_empty():
+		var addr: String = queue.pop_front()
+		var info: Dictionary = all_rooms.get(addr, {})
+		var base: Vector2i = grid[addr]
+		var w := maxi(int(info.get("width_screens", 1)), 1)
+		var h := maxi(int(info.get("height_screens", 1)), 1)
+		for door in info.get("doors", []):
+			var target := str(door.get("target", ""))
+			if target.is_empty() or grid.has(target) or not all_rooms.has(target):
+				continue
+			var tinfo: Dictionary = all_rooms.get(target, {})
+			var tw := maxi(int(tinfo.get("width_screens", 1)), 1)
+			var th := maxi(int(tinfo.get("height_screens", 1)), 1)
+			var off := Vector2i.ZERO
+			match str(door.get("direction", "")):
+				"right": off = Vector2i(w, 0)
+				"left": off = Vector2i(-tw, 0)
+				"down": off = Vector2i(0, h)
+				"up": off = Vector2i(0, -th)
+			grid[target] = base + off
+			queue.append(target)
+	var vis: Dictionary = {}
+	if MvMapScreen != null and MvMapScreen.has_method("visited_snapshot"):
+		vis = MvMapScreen.visited_snapshot()
+	var min_c := 0
+	var min_r := 0
+	var max_c := 1
+	var max_r := 1
+	var first := true
+	for addr in grid:
+		var p: Vector2i = grid[addr]
+		var info: Dictionary = all_rooms.get(addr, {})
+		var w := maxi(int(info.get("width_screens", 1)), 1)
+		var h := maxi(int(info.get("height_screens", 1)), 1)
+		if first:
+			min_c = p.x ; min_r = p.y ; max_c = p.x + w ; max_r = p.y + h ; first = false
+		else:
+			min_c = mini(min_c, p.x) ; min_r = mini(min_r, p.y)
+			max_c = maxi(max_c, p.x + w) ; max_r = maxi(max_r, p.y + h)
+	var cells: Array = []
+	for addr in grid:
+		var p: Vector2i = grid[addr]
+		var info: Dictionary = all_rooms.get(addr, {})
+		var st := "unx"
+		if addr == cur:
+			st = "cur"
+		elif vis.has(addr):
+			st = "exp"
+		cells.append({
+			"col": p.x - min_c, "row": p.y - min_r,
+			"w": maxi(int(info.get("width_screens", 1)), 1),
+			"h": maxi(int(info.get("height_screens", 1)), 1),
+			"state": st,
+		})
+	_map_cells = cells
+	_map_cols = maxi(1, max_c - min_c)
+	_map_rows = maxi(1, max_r - min_r)
 
 
 # ── Boss HP bar ─────────────────────────────────────────────────────────
 
 func _build_quest_label() -> void:
 	_quest_label = Label.new()
-	_quest_label.position = Vector2(MARGIN, MARGIN + BAR_HEIGHT + 54)
+	# Below the Nebula top-HUD tank gauges (two pip rows).
+	_quest_label.position = Vector2(16, 128)
 	_quest_label.custom_minimum_size = Vector2(260, 36)
 	_quest_label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	_quest_label.add_theme_font_size_override("font_size", UIPanels.font_size("hint_size"))
@@ -262,7 +355,8 @@ func _build_boss_bar() -> void:
 	_boss_bar = Control.new()
 	_boss_bar.anchor_left = 0.5
 	_boss_bar.anchor_right = 0.5
-	_boss_bar.position = Vector2(-BAR_WIDTH * 0.5, MARGIN)
+	# Below the centered spell bar.
+	_boss_bar.position = Vector2(-BAR_WIDTH * 0.5, 124)
 	_boss_bar.size = Vector2(BAR_WIDTH * 2, BAR_HEIGHT + 2)
 	_boss_bar.draw.connect(_draw_boss_bar)
 	_boss_bar.visible = false
@@ -271,7 +365,7 @@ func _build_boss_bar() -> void:
 	_boss_label = Label.new()
 	_boss_label.anchor_left = 0.5
 	_boss_label.anchor_right = 0.5
-	_boss_label.position = Vector2(-BAR_WIDTH * 0.5, MARGIN + BAR_HEIGHT + 4)
+	_boss_label.position = Vector2(-BAR_WIDTH * 0.5, 124 + BAR_HEIGHT + 4)
 	_boss_label.add_theme_font_size_override("font_size", UIPanels.font_size("hint_size"))
 	_boss_label.add_theme_color_override("font_color", UIPanels.text_color("error"))
 	_boss_label.visible = false
