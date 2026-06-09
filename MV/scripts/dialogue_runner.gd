@@ -21,6 +21,8 @@ var _panel: Control = null
 var _speaker_label: Label = null
 var _text_label: RichTextLabel = null
 var _choice_container: VBoxContainer = null
+var _portrait_slot: PanelContainer = null
+var _portrait: TextureRect = null
 
 var _lines: Array = []
 var _line_index: int = 0
@@ -141,6 +143,7 @@ func _show_line() -> void:
 			return
 
 	_speaker_label.text = str(line.get("speaker", ""))
+	_set_portrait(str(line.get("portrait", "")))
 	_full_text = str(line.get("text", ""))
 	_char_index = 0
 	_char_timer = 0.0
@@ -204,7 +207,6 @@ func _build_choices(choices: Array) -> void:
 		btn.text = str(entry.get("text", "..."))
 		btn.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 		btn.alignment = HORIZONTAL_ALIGNMENT_LEFT
-		btn.add_theme_color_override("font_color", UIPanels.text_color("button"))
 		btn.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 		btn.custom_minimum_size = Vector2(0.0, 40.0)
 		btn.pressed.connect(_on_choice_pressed.bind(int(entry.get("choice_index", -1))))
@@ -321,60 +323,83 @@ func current_ui_state() -> Dictionary:
 
 # ── UI construction ─────────────────────────────────────────────────────
 
+# Nebula-skinned dialogue box: bottom armored frame + portrait slot + nameplate
+# + typewriter line + choices. (Used when no authored dialogue screen is set.)
 func _build_ui() -> void:
 	_panel = Control.new()
-	_panel.anchor_left = 0.0
-	_panel.anchor_right = 1.0
-	_panel.anchor_bottom = 1.0
+	_panel.set_anchors_preset(Control.PRESET_BOTTOM_WIDE)
 	_panel.anchor_top = 1.0
 	_panel.offset_top = -BOX_HEIGHT - BOX_MARGIN
 	_panel.offset_bottom = -BOX_MARGIN
 	_panel.offset_left = BOX_MARGIN
 	_panel.offset_right = -BOX_MARGIN
-	_panel.draw.connect(_draw_panel_bg)
+	_panel.theme = NebulaTheme.theme()
+	add_child(_panel)
+
+	var frame := PanelContainer.new()
+	frame.set_anchors_preset(Control.PRESET_FULL_RECT)
+	_panel.add_child(frame)
+	var hb := HBoxContainer.new()
+	hb.add_theme_constant_override("separation", 14)
+	frame.add_child(hb)
+
+	# Portrait (hidden unless the line carries a portrait path).
+	_portrait_slot = PanelContainer.new()
+	_portrait_slot.add_theme_stylebox_override("panel", NebulaTheme.well_box())
+	_portrait_slot.custom_minimum_size = Vector2(96, 96)
+	_portrait_slot.size_flags_vertical = Control.SIZE_SHRINK_CENTER
+	_portrait_slot.visible = false
+	hb.add_child(_portrait_slot)
+	_portrait = TextureRect.new()
+	_portrait.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
+	_portrait.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
+	_portrait.texture_filter = CanvasItem.TEXTURE_FILTER_NEAREST
+	_portrait_slot.add_child(_portrait)
+
+	var col := VBoxContainer.new()
+	col.add_theme_constant_override("separation", 8)
+	col.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	hb.add_child(col)
 
 	_speaker_label = Label.new()
-	_speaker_label.anchor_right = 1.0
-	_speaker_label.offset_left = 10.0
-	_speaker_label.offset_top = 4.0
-	_speaker_label.offset_right = -10.0
-	_speaker_label.offset_bottom = 22.0
-	_speaker_label.add_theme_color_override("font_color", UIPanels.text_color("title"))
-	_speaker_label.add_theme_font_size_override("font_size", UIPanels.font_size("body_size"))
-	_panel.add_child(_speaker_label)
+	_speaker_label.add_theme_color_override("font_color", NebulaTheme.C_TITLE)
+	_speaker_label.add_theme_font_size_override("font_size", NebulaTheme.size("section"))
+	if NebulaTheme.font() != null:
+		_speaker_label.add_theme_font_override("font", NebulaTheme.font())
+	col.add_child(_speaker_label)
 
 	_text_label = RichTextLabel.new()
-	_text_label.anchor_right = 1.0
-	_text_label.offset_left = 12.0
-	_text_label.offset_top = 28.0
-	_text_label.offset_right = -12.0
-	_text_label.offset_bottom = 112.0
 	_text_label.bbcode_enabled = false
 	_text_label.scroll_active = false
 	_text_label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	_text_label.fit_content = true
-	_text_label.add_theme_color_override("default_color", UIPanels.text_color("body"))
-	_text_label.add_theme_font_size_override("normal_font_size", UIPanels.font_size("hint_size"))
-	_panel.add_child(_text_label)
+	_text_label.size_flags_vertical = Control.SIZE_EXPAND_FILL
+	_text_label.add_theme_color_override("default_color", NebulaTheme.C_BODY)
+	col.add_child(_text_label)
 
 	_choice_container = VBoxContainer.new()
-	_choice_container.anchor_right = 1.0
-	_choice_container.anchor_bottom = 1.0
-	_choice_container.offset_right = -12
-	_choice_container.offset_left = 12
-	_choice_container.offset_top = 120
-	_choice_container.offset_bottom = -12
-	_choice_container.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	_choice_container.add_theme_constant_override("separation", 6)
-	_choice_container.grow_vertical = Control.GROW_DIRECTION_BEGIN
+	_choice_container.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	_choice_container.visible = false
-	_panel.add_child(_choice_container)
-
-	add_child(_panel)
+	col.add_child(_choice_container)
 
 
-func _draw_panel_bg() -> void:
-	UIPanels.draw_panel(_panel, Rect2(Vector2.ZERO, _panel.size), Color.WHITE, UIPanels.PanelVariant.ALT)
+# Show the speaker portrait if the line carries a (res:// or pack-relative)
+# image path; otherwise hide the slot.
+func _set_portrait(path: String) -> void:
+	if _portrait_slot == null:
+		return
+	var p := path.strip_edges()
+	var tex: Texture2D = null
+	if not p.is_empty():
+		if ResourceLoader.exists(p):
+			tex = load(p)
+		else:
+			var resolved := MvPackLoader.resolve_read_cascade(_current_pack_id(), "Portraits", p.get_file())
+			if ResourceLoader.exists(resolved):
+				tex = load(resolved)
+	_portrait.texture = tex
+	_portrait_slot.visible = tex != null
 
 
 func _has_authored_screen() -> bool:

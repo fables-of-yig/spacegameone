@@ -241,6 +241,12 @@ func _line_card(li: int) -> Control:
 	txt.wrap_mode = TextEdit.LINE_WRAPPING_BOUNDARY
 	txt.text_changed.connect(func(): line["text"] = txt.text)
 	body.add_child(txt)
+	# Portrait (optional): res:// path or a filename under the pack's Portraits/.
+	var port := LineEdit.new()
+	port.text = str(line.get("portrait", ""))
+	port.placeholder_text = "portrait image (optional) — res:// path or Portraits/<file>"
+	port.text_changed.connect(func(t): line["portrait"] = t.strip_edges())
+	body.add_child(NebulaUi.labeled("Portrait", port, 90))
 	# Choices.
 	var choices: Array = line.get("choices", [])
 	if not choices.is_empty():
