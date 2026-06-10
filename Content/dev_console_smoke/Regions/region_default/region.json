@@ -1,0 +1,14 @@
+{
+  "cell_blocks_x": 1,
+  "cell_blocks_y": 1,
+  "encounter_id": "",
+  "gravity_mult": 1.0,
+  "grid_cells_x": 128,
+  "grid_cells_y": 96,
+  "hazard_type": "",
+  "id": "region_default",
+  "music_id": "",
+  "name": "Default",
+  "version": "2.0",
+  "visual_theme": ""
+}

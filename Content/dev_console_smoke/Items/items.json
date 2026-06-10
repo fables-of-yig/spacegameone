@@ -1,0 +1,15 @@
+{
+  "items": [
+    {
+      "category": "currency",
+      "description": "Currency.",
+      "id": "coin",
+      "max_stack": 9999,
+      "name": "Coin",
+      "price": 1,
+      "use_amount": 0,
+      "use_arg": "",
+      "use_effect": ""
+    }
+  ]
+}

@@ -1,0 +1,58 @@
+{
+	"anchor": "top_left",
+	"anchor_offset": {
+		"x": 0,
+		"y": 0
+	},
+	"children": [
+		{
+			"anchor": "top_left",
+			"anchor_offset": {
+				"x": 0,
+				"y": 0
+			},
+			"children": [],
+			"id": "toast_message",
+			"properties": {
+				"alignment": "left",
+				"bind_var": "toast.message",
+				"decimal_places": 0,
+				"format": "{value}",
+				"opacity": 1.0,
+				"static_text": "",
+				"tab_group": "default",
+				"tab_id": "",
+				"text_role": "body",
+				"wrap": true
+			},
+			"rect": {
+				"h": 24,
+				"w": 224,
+				"x": 8,
+				"y": 8
+			},
+			"type": "label"
+		}
+	],
+	"id": "toast_root",
+	"properties": {
+		"opacity": 1.0,
+		"padding": 6,
+		"scroll": "none",
+		"sprite_mode": "9slice",
+		"sprite_slice_x": 0,
+		"sprite_slice_y": 0,
+		"sprite_source": "",
+		"sprite_tint": "#ffffff",
+		"tab_group": "default",
+		"tab_id": "",
+		"variant": "dark"
+	},
+	"rect": {
+		"h": 40,
+		"w": 240,
+		"x": 0,
+		"y": 0
+	},
+	"type": "panel"
+}

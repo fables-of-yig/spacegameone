@@ -1,0 +1,21 @@
+{
+  "libraries": [],
+  "triggers": [
+    {
+      "actions": [
+        {
+          "message": "console smoke fired",
+          "type": "log"
+        }
+      ],
+      "conditions": [
+        {
+          "tag": "lever",
+          "type": "has_tag"
+        }
+      ],
+      "event": "interact",
+      "id": "smoke_on_interact"
+    }
+  ]
+}

@@ -1,0 +1,6 @@
+[gd_resource type="Resource" script_class="MvPhysicsProfile" format=3]
+
+[ext_resource type="Script" path="res://MV/scripts/physics_profile.gd" id="1_av5ea"]
+
+[resource]
+script = ExtResource("1_av5ea")

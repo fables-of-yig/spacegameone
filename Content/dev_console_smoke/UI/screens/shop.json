@@ -1,0 +1,343 @@
+{
+	"anchor": "top_left",
+	"anchor_offset": {
+		"x": 0,
+		"y": 0
+	},
+	"children": [
+		{
+			"anchor": "top_left",
+			"anchor_offset": {
+				"x": 0,
+				"y": 0
+			},
+			"children": [],
+			"id": "shop_title",
+			"properties": {
+				"alignment": "left",
+				"bind_var": "",
+				"decimal_places": 0,
+				"format": "{value}",
+				"opacity": 1.0,
+				"static_text": "SHOP",
+				"tab_group": "default",
+				"tab_id": "",
+				"text_role": "title",
+				"wrap": false
+			},
+			"rect": {
+				"h": 24,
+				"w": 160,
+				"x": 16,
+				"y": 12
+			},
+			"type": "label"
+		},
+		{
+			"anchor": "top_left",
+			"anchor_offset": {
+				"x": 0,
+				"y": 0
+			},
+			"children": [],
+			"id": "shop_gold",
+			"properties": {
+				"alignment": "left",
+				"bind_var": "game_var.gold",
+				"decimal_places": 0,
+				"format": "Gold: {value}",
+				"opacity": 1.0,
+				"static_text": "",
+				"tab_group": "default",
+				"tab_id": "",
+				"text_role": "success",
+				"wrap": false
+			},
+			"rect": {
+				"h": 18,
+				"w": 164,
+				"x": 300,
+				"y": 14
+			},
+			"type": "label"
+		},
+		{
+			"anchor": "top_left",
+			"anchor_offset": {
+				"x": 0,
+				"y": 0
+			},
+			"children": [],
+			"id": "shop_hint",
+			"properties": {
+				"alignment": "left",
+				"bind_var": "",
+				"decimal_places": 0,
+				"format": "{value}",
+				"opacity": 1.0,
+				"static_text": "Hover an offer for details. Click an affordable row to buy it.",
+				"tab_group": "default",
+				"tab_id": "",
+				"text_role": "dim",
+				"wrap": false
+			},
+			"rect": {
+				"h": 18,
+				"w": 448,
+				"x": 16,
+				"y": 36
+			},
+			"type": "label"
+		},
+		{
+			"anchor": "top_left",
+			"anchor_offset": {
+				"x": 0,
+				"y": 0
+			},
+			"children": [],
+			"id": "shop_message",
+			"properties": {
+				"alignment": "left",
+				"bind_var": "shop.message",
+				"decimal_places": 0,
+				"format": "{value}",
+				"opacity": 1.0,
+				"static_text": "",
+				"tab_group": "default",
+				"tab_id": "",
+				"text_role": "body",
+				"wrap": false
+			},
+			"rect": {
+				"h": 18,
+				"w": 448,
+				"x": 16,
+				"y": 56
+			},
+			"type": "label"
+		},
+		{
+			"anchor": "top_left",
+			"anchor_offset": {
+				"x": 0,
+				"y": 0
+			},
+			"children": [],
+			"id": "shop_vendor_lbl",
+			"properties": {
+				"alignment": "left",
+				"bind_var": "",
+				"decimal_places": 0,
+				"format": "{value}",
+				"opacity": 1.0,
+				"static_text": "Vendor stock",
+				"tab_group": "default",
+				"tab_id": "",
+				"text_role": "body",
+				"wrap": false
+			},
+			"rect": {
+				"h": 18,
+				"w": 180,
+				"x": 16,
+				"y": 82
+			},
+			"type": "label"
+		},
+		{
+			"anchor": "top_left",
+			"anchor_offset": {
+				"x": 0,
+				"y": 0
+			},
+			"children": [],
+			"id": "shop_vendor_items",
+			"properties": {
+				"bind_array": "shop.items",
+				"item_action_arg_key": "stock_id",
+				"item_action_id": "buy_item",
+				"item_min_height": 26,
+				"item_template": {
+
+				},
+				"item_wrap": true,
+				"max_visible": 10,
+				"spacing": 4,
+				"tab_group": "default",
+				"tab_id": ""
+			},
+			"rect": {
+				"h": 112,
+				"w": 244,
+				"x": 16,
+				"y": 102
+			},
+			"type": "list"
+		},
+		{
+			"anchor": "top_left",
+			"anchor_offset": {
+				"x": 0,
+				"y": 0
+			},
+			"children": [],
+			"id": "shop_player_lbl",
+			"properties": {
+				"alignment": "left",
+				"bind_var": "",
+				"decimal_places": 0,
+				"format": "{value}",
+				"opacity": 1.0,
+				"static_text": "Player inventory",
+				"tab_group": "default",
+				"tab_id": "",
+				"text_role": "body",
+				"wrap": false
+			},
+			"rect": {
+				"h": 18,
+				"w": 180,
+				"x": 278,
+				"y": 82
+			},
+			"type": "label"
+		},
+		{
+			"anchor": "top_left",
+			"anchor_offset": {
+				"x": 0,
+				"y": 0
+			},
+			"children": [],
+			"id": "shop_player_items",
+			"properties": {
+				"bind_array": "inventory.items",
+				"item_action_arg_key": "key",
+				"item_action_id": "sell_item",
+				"item_min_height": 22,
+				"item_template": {
+
+				},
+				"item_wrap": true,
+				"max_visible": 10,
+				"spacing": 4,
+				"tab_group": "default",
+				"tab_id": ""
+			},
+			"rect": {
+				"h": 112,
+				"w": 186,
+				"x": 278,
+				"y": 102
+			},
+			"type": "list"
+		},
+		{
+			"anchor": "top_left",
+			"anchor_offset": {
+				"x": 0,
+				"y": 0
+			},
+			"children": [],
+			"id": "shop_barter_lbl",
+			"properties": {
+				"alignment": "left",
+				"bind_var": "",
+				"decimal_places": 0,
+				"format": "{value}",
+				"opacity": 1.0,
+				"static_text": "Barter offer / notes",
+				"tab_group": "default",
+				"tab_id": "",
+				"text_role": "body",
+				"wrap": false
+			},
+			"rect": {
+				"h": 18,
+				"w": 180,
+				"x": 16,
+				"y": 224
+			},
+			"type": "label"
+		},
+		{
+			"anchor": "top_left",
+			"anchor_offset": {
+				"x": 0,
+				"y": 0
+			},
+			"children": [],
+			"id": "shop_barter_note",
+			"properties": {
+				"alignment": "left",
+				"bind_var": "",
+				"decimal_places": 0,
+				"format": "{value}",
+				"opacity": 1.0,
+				"static_text": "Shop items use authored item effects, prices, and trigger events.",
+				"tab_group": "default",
+				"tab_id": "",
+				"text_role": "dim",
+				"wrap": false
+			},
+			"rect": {
+				"h": 18,
+				"w": 300,
+				"x": 16,
+				"y": 242
+			},
+			"type": "label"
+		},
+		{
+			"anchor": "top_left",
+			"anchor_offset": {
+				"x": 0,
+				"y": 0
+			},
+			"children": [],
+			"id": "shop_close",
+			"properties": {
+				"action_args": "",
+				"action_id": "close_screen",
+				"enabled_condition": "",
+				"label": "CLOSE",
+				"show_label": true,
+				"sprite_hover": "",
+				"sprite_normal": "",
+				"sprite_pressed": "",
+				"sprite_tint": "#ffffff",
+				"tab_group": "default",
+				"tab_id": ""
+			},
+			"rect": {
+				"h": 28,
+				"w": 108,
+				"x": 356,
+				"y": 232
+			},
+			"type": "button"
+		}
+	],
+	"id": "shop_root",
+	"properties": {
+		"opacity": 1.0,
+		"padding": 8,
+		"scroll": "none",
+		"sprite_mode": "9slice",
+		"sprite_slice_x": 0,
+		"sprite_slice_y": 0,
+		"sprite_source": "",
+		"sprite_tint": "#ffffff",
+		"tab_group": "default",
+		"tab_id": "",
+		"variant": "dark"
+	},
+	"rect": {
+		"h": 272,
+		"w": 480,
+		"x": 0,
+		"y": 0
+	},
+	"type": "panel"
+}

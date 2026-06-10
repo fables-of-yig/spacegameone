@@ -1,0 +1,25 @@
+{
+  "center_x": 25,
+  "center_y": 22,
+  "frame_height": 44,
+  "frame_width": 50,
+  "frames": [
+    {
+      "layers": [
+        {
+          "index": 0,
+          "sheet": "base"
+        }
+      ],
+      "pose": 1
+    }
+  ],
+  "sheet_cols": 10,
+  "sheets": [
+    {
+      "file": "player_sheet.png",
+      "id": "base",
+      "z": 0
+    }
+  ]
+}

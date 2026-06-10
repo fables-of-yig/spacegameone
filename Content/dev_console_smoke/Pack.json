@@ -1,11 +1,11 @@
 {
 	"author": "",
 	"description": "",
-	"entry_room": "start_room",
-	"name": "History Hails No Heroes",
-	"pack_id": "history_hails_no_heroes",
+	"entry_room": "region_default/start",
+	"name": "Dev Console Smoke",
+	"pack_id": "dev_console_smoke",
 	"schema_version": "1.0",
-	"start_region": "733b_island",
+	"start_region": "region_default",
 	"start_ship_template": "startship",
 	"start_system": "start",
 	"version": "0.1.0"
