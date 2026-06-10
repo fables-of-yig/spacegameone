@@ -84,6 +84,15 @@ var _start_room: String = ""
 # x-pixel within a 16px slope cell. Shape 0 is typically flat-air.
 var _slope_shapes: Array = []  # Array[Array[int]]
 
+# Built-in slope shapes used when a pack ships no SlopeShapes.json, so painted
+# slopes collide in playtest without an authored file. Mirrors
+# EnvIO.DEFAULT_SLOPE_SHAPES (editor palette fallback) — keep the two in sync.
+const DEFAULT_SLOPE_SHAPES: Array = [
+    [16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16],
+    [15, 14, 13, 12, 11, 10, 9, 8, 7, 6, 5, 4, 3, 2, 1, 0],
+    [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15],
+]
+
 # Spike profiles loaded from the pack's Hazards/spike_profiles.json.
 # Array of dicts keyed by profile id. Runtime looks up BTS byte → profile.
 var _spike_profiles: Dictionary = {}  # id (int) -> profile dict
@@ -166,18 +175,23 @@ func _process(_delta: float) -> void:
 
 
 func _load_slope_shapes(path: String) -> void:
-    # Optional per-pack asset. Packs without custom slopes can omit the file
-    # entirely; _slope_shapes stays empty and try_get_slope_floor is a no-op.
+    # A pack may ship its own SlopeShapes.json to override; otherwise we use the
+    # built-in DEFAULT_SLOPE_SHAPES so painted slopes still collide. (The shapes
+    # only matter for cells whose block type is BT_SLOPE, so populating defaults
+    # is harmless for packs that paint no slopes.)
     if not FileAccess.file_exists(path):
+        _slope_shapes = DEFAULT_SLOPE_SHAPES.duplicate(true)
         return
     var f := FileAccess.open(path, FileAccess.READ)
     if f == null:
         push_error("MvRoomManager: failed to open %s" % path)
+        _slope_shapes = DEFAULT_SLOPE_SHAPES.duplicate(true)
         return
     var raw = JSON.parse_string(f.get_as_text())
     f.close()
     if typeof(raw) != TYPE_DICTIONARY:
         push_error("MvRoomManager: failed to parse %s" % path)
+        _slope_shapes = DEFAULT_SLOPE_SHAPES.duplicate(true)
         return
     var shapes: Array = raw.get("shapes", [])
     _slope_shapes = []
@@ -186,6 +200,8 @@ func _load_slope_shapes(path: String) -> void:
         for v in sh:
             row.append(int(v))
         _slope_shapes.append(row)
+    if _slope_shapes.is_empty():
+        _slope_shapes = DEFAULT_SLOPE_SHAPES.duplicate(true)
 
 
 func _load_spike_profiles(path: String) -> void:

@@ -58,6 +58,26 @@ static func rooms_json_path(pack_id: String) -> String:
     return user_pack_dir(pack_id) + "Rooms/rooms.json"
 
 
+# Built-in default slope shapes, baked into source so they survive content-pack
+# asset purges (the old Content/demo/SlopeShapes.json was deleted as collateral
+# in a demo-pack slim-down — see SlopeShapes restore). A pack may still ship its
+# own SlopeShapes.json to override these. Format: per-pixel surface Y offsets,
+# x = 0..15 across the 16px cell, value = Y where feet rest (0=top, 15=bottom,
+# 16=no contact). Shape 0 is the all-air sentinel; shape 1 is a 45 up-ramp
+# walking right; shape 2 mirrors it (up-ramp walking left). HFlip/VFlip on a
+# SlopeCell produce the remaining variants. Mirrored by
+# MvRoomManager.DEFAULT_SLOPE_SHAPES (runtime fallback) — keep the two in sync.
+const DEFAULT_SLOPE_SHAPES: Array = [
+    [16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16],
+    [15, 14, 13, 12, 11, 10, 9, 8, 7, 6, 5, 4, 3, 2, 1, 0],
+    [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15],
+]
+
+
+static func default_slope_shapes() -> Array:
+    return DEFAULT_SLOPE_SHAPES.duplicate(true)
+
+
 static func slope_shapes_path(pack_id: String) -> String:
     var user_path := user_pack_dir(pack_id) + "SlopeShapes.json"
     if FileAccess.file_exists(user_path):
@@ -65,28 +85,28 @@ static func slope_shapes_path(pack_id: String) -> String:
     var shipped_path := shipped_pack_dir(pack_id) + "SlopeShapes.json"
     if FileAccess.file_exists(shipped_path):
         return shipped_path
-    var fallback_path := shipped_pack_dir(SHIPPED_SEED_PACK) + "SlopeShapes.json"
-    if FileAccess.file_exists(fallback_path):
-        return fallback_path
     return ""
 
 
+# Returns a pack's slope shapes. Falls back to the baked-in DEFAULT_SLOPE_SHAPES
+# whenever the pack has no (or an unreadable/empty) SlopeShapes.json, so the
+# slope tool always has shapes to offer.
 static func load_slope_shapes(pack_id: String) -> Array:
     var path := slope_shapes_path(pack_id)
     if path.is_empty():
-        return []
+        return default_slope_shapes()
     var f := FileAccess.open(path, FileAccess.READ)
     if f == null:
         push_warning("EnvIO: cannot open %s" % path)
-        return []
+        return default_slope_shapes()
     var raw = JSON.parse_string(f.get_as_text())
     f.close()
     if typeof(raw) != TYPE_DICTIONARY:
         push_warning("EnvIO: invalid slope shape file %s" % path)
-        return []
+        return default_slope_shapes()
     var shapes_v: Variant = (raw as Dictionary).get("shapes", [])
     if typeof(shapes_v) != TYPE_ARRAY:
-        return []
+        return default_slope_shapes()
     var out: Array = []
     for shape_v in shapes_v:
         if typeof(shape_v) != TYPE_ARRAY:
@@ -95,6 +115,8 @@ static func load_slope_shapes(pack_id: String) -> Array:
         for y_v in shape_v:
             row.append(int(y_v))
         out.append(row)
+    if out.is_empty():
+        return default_slope_shapes()
     return out
 
 

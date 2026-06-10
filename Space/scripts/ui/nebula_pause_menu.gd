@@ -21,6 +21,7 @@ const KeybindingsScript := preload("res://Space/scripts/ui/nebula_keybindings.gd
 const UIIo := preload("res://Space/scripts/shared/ui/ui_io.gd")
 const AuthoredScreenRuntime := preload("res://Space/scripts/ui/authored_screen_runtime.gd")
 const HudDataSource := preload("res://Space/scripts/ui/hud_data_source.gd")
+const RegIO := preload("res://Space/scripts/shared/reg/reg_io.gd")
 
 const SPACE_MAIN_SCENE := "res://Space/scenes/main.tscn"
 
@@ -30,6 +31,7 @@ var _engine: String = ""           # "mv" | "space" while a gameplay pause is op
 var _space_host: Node = null
 
 var _card_root: Control = null     # veil + centered pause card
+var _subtitle: Label = null        # header location line (system · region)
 var _settings: Control = null      # NebulaSettingsScreen
 var _keys: Control = null          # NebulaKeybindings
 var _toast: PanelContainer = null
@@ -128,6 +130,7 @@ func open() -> void:
             _space_host.set("pause_open", true)
         get_tree().paused = true
     _mode = "pause"
+    _update_location_subtitle()
     _hide_confirm()
     _apply_visibility()
 
@@ -204,6 +207,47 @@ func _is_back_pressed(event: InputEvent) -> bool:
 
 func _in_mv() -> bool:
     return MvGame.main != null and is_instance_valid(MvGame.main)
+
+
+# Header location line. Space: current star system only (no region). MV: current
+# planet/system · current region. Falls back gracefully when a name is unknown.
+func _update_location_subtitle() -> void:
+    if _subtitle == null:
+        return
+    var system_name := _current_system_name()
+    if _engine == "mv":
+        var region_name := _current_region_name()
+        var parts: Array[String] = []
+        if not system_name.is_empty():
+            parts.append(system_name)
+        if not region_name.is_empty():
+            parts.append(region_name)
+        _subtitle.text = " · ".join(parts).to_upper()
+    else:
+        _subtitle.text = system_name.to_upper()
+
+
+func _current_system_name() -> String:
+    var sys_id := str(GameManager.current_system).strip_edges()
+    if sys_id.is_empty():
+        return ""
+    var sys: Dictionary = DataManager.systems.get(sys_id, {})
+    return str(sys.get("name", sys_id)).strip_edges()
+
+
+func _current_region_name() -> String:
+    var pack: MvPackRef = MvPackLoader.current_pack
+    if pack == null:
+        return ""
+    var region_id := ""
+    if MvGame.main != null and MvGame.main.has_method("_resolve_current_region_id"):
+        region_id = str(MvGame.main._resolve_current_region_id()).strip_edges()
+    if region_id.is_empty():
+        region_id = PlanetaryInterface.pending_region_id.strip_edges()
+    if region_id.is_empty():
+        return ""
+    var meta: Dictionary = RegIO.load_region(pack.pack_id, region_id)
+    return str(meta.get("name", region_id)).strip_edges()
 
 
 func _can_open_mv() -> bool:
@@ -362,11 +406,11 @@ func _build_ui() -> void:
     title_col.add_theme_constant_override("separation", 0)
     title_col.size_flags_horizontal = Control.SIZE_EXPAND_FILL
     title_col.add_child(NT.title_label("PAUSED"))
-    var subtitle := Label.new()
-    subtitle.text = "SECTOR 7 · VOID PATROL"
-    subtitle.add_theme_color_override("font_color", NT.C_DIM)
-    subtitle.add_theme_font_size_override("font_size", NT.size("hint"))
-    title_col.add_child(subtitle)
+    _subtitle = Label.new()
+    _subtitle.text = ""
+    _subtitle.add_theme_color_override("font_color", NT.C_DIM)
+    _subtitle.add_theme_font_size_override("font_size", NT.size("hint"))
+    title_col.add_child(_subtitle)
     header.add_child(title_col)
     var close_btn := Button.new()
     close_btn.text = "✕"
